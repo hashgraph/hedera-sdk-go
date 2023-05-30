@@ -28,6 +28,7 @@ import (
 	protobuf "google.golang.org/protobuf/proto"
 )
 
+// Query is the struct used to build queries.
 type Query struct {
 	pb       *services.Query
 	pbHeader *services.QueryHeader //nolint

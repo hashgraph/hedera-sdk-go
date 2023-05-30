@@ -9,11 +9,13 @@ import (
 	"github.com/ethereum/go-ethereum/rlp"
 )
 
+// Represents the data of an Ethereum transaction.
 type EthereumTransactionData struct {
 	eip1559 *types.DynamicFeeTx
 	legacy  *types.LegacyTx
 }
 
+// EthereumTransactionDataFromBytes constructs an EthereumTransactionData from a raw byte array.
 func EthereumTransactionDataFromBytes(b []byte) (*EthereumTransactionData, error) {
 	var transactionData EthereumTransactionData
 	if b[0] == 2 {
@@ -35,6 +37,7 @@ func EthereumTransactionDataFromBytes(b []byte) (*EthereumTransactionData, error
 	return &transactionData, nil
 }
 
+// ToBytes returns the raw bytes of the Ethereum transaction.
 func (ethereumTxData *EthereumTransactionData) ToBytes() ([]byte, error) {
 	var byt []byte
 	var err error
@@ -74,6 +77,7 @@ func (ethereumTxData *EthereumTransactionData) _SetData(data []byte) *EthereumTr
 	return ethereumTxData
 }
 
+// ToJson returns a JSON representation of the Ethereum transaction.
 func (ethereumTxData *EthereumTransactionData) ToJson() ([]byte, error) {
 	var byt []byte
 	var err error
@@ -94,6 +98,7 @@ func (ethereumTxData *EthereumTransactionData) ToJson() ([]byte, error) {
 	return byt, nil
 }
 
+// EthereumTransactionDataFromJson constructs an EthereumTransactionData from a JSON string.
 func EthereumTransactionDataFromJson(b []byte) (*EthereumTransactionData, error) {
 	var eip1559 types.DynamicFeeTx
 	var leg types.LegacyTx

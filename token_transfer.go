@@ -27,6 +27,7 @@ import (
 	protobuf "google.golang.org/protobuf/proto"
 )
 
+// TokenTransfer is a token transfer record.
 type TokenTransfer struct {
 	AccountID  AccountID
 	Amount     int64
@@ -37,6 +38,7 @@ type _TokenTransfers struct {
 	transfers []TokenTransfer
 }
 
+// NewTokenTransfer creates a TokenTransfer with the given accountID and amount
 func NewTokenTransfer(accountID AccountID, amount int64) TokenTransfer {
 	return TokenTransfer{
 		AccountID: accountID,

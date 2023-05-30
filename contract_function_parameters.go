@@ -50,6 +50,7 @@ type Argument struct {
 	dynamic bool
 }
 
+// Builder for encoding parameters for a Solidity contract constructor/function call.
 func NewContractFunctionParameters() *ContractFunctionParameters {
 	return &ContractFunctionParameters{
 		function:  NewContractFunctionSelector(""),
@@ -57,6 +58,7 @@ func NewContractFunctionParameters() *ContractFunctionParameters {
 	}
 }
 
+// AddBool adds a bool parameter to the function call
 func (contract *ContractFunctionParameters) AddBool(value bool) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -72,6 +74,7 @@ func (contract *ContractFunctionParameters) AddBool(value bool) *ContractFunctio
 	return contract
 }
 
+// AddFunction adds a Solidity function reference and a function selector.
 func (contract *ContractFunctionParameters) AddFunction(address string, selector ContractFunctionSelector) (*ContractFunctionParameters, error) {
 	if len(address) != 40 {
 		return contract, errors.Unwrap(fmt.Errorf("address is required to be 40 characters"))
@@ -98,6 +101,7 @@ func (contract *ContractFunctionParameters) AddFunction(address string, selector
 	return contract, nil
 }
 
+// AddInt8 adds an int8 parameter to the function call
 func (contract *ContractFunctionParameters) AddInt8(value int8) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -109,6 +113,7 @@ func (contract *ContractFunctionParameters) AddInt8(value int8) *ContractFunctio
 	return contract
 }
 
+// AddInt16 adds an int16 parameter to the function call
 func (contract *ContractFunctionParameters) AddInt16(value int16) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -120,6 +125,7 @@ func (contract *ContractFunctionParameters) AddInt16(value int16) *ContractFunct
 	return contract
 }
 
+// AddInt24 adds an int24 parameter to the function call
 func (contract *ContractFunctionParameters) AddInt24(value int32) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -131,6 +137,7 @@ func (contract *ContractFunctionParameters) AddInt24(value int32) *ContractFunct
 	return contract
 }
 
+// AddInt32 adds an int32 parameter to the function call
 func (contract *ContractFunctionParameters) AddInt32(value int32) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -142,6 +149,7 @@ func (contract *ContractFunctionParameters) AddInt32(value int32) *ContractFunct
 	return contract
 }
 
+// AddInt40 adds an int40 parameter to the function call
 func (contract *ContractFunctionParameters) AddInt40(value int64) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -153,6 +161,7 @@ func (contract *ContractFunctionParameters) AddInt40(value int64) *ContractFunct
 	return contract
 }
 
+// AddInt48 adds an int48 parameter to the function call
 func (contract *ContractFunctionParameters) AddInt48(value int64) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -164,6 +173,7 @@ func (contract *ContractFunctionParameters) AddInt48(value int64) *ContractFunct
 	return contract
 }
 
+// AddInt56 adds an int56 parameter to the function call
 func (contract *ContractFunctionParameters) AddInt56(value int64) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -175,6 +185,7 @@ func (contract *ContractFunctionParameters) AddInt56(value int64) *ContractFunct
 	return contract
 }
 
+// AddInt64 adds an int64 parameter to the function call
 func (contract *ContractFunctionParameters) AddInt64(value int64) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -186,6 +197,7 @@ func (contract *ContractFunctionParameters) AddInt64(value int64) *ContractFunct
 	return contract
 }
 
+// AddInt72 adds an int72 parameter to the function call
 func (contract *ContractFunctionParameters) AddInt72(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -197,6 +209,7 @@ func (contract *ContractFunctionParameters) AddInt72(value []byte) *ContractFunc
 	return contract
 }
 
+// AddInt80 adds an int80 parameter to the function call
 func (contract *ContractFunctionParameters) AddInt80(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -208,6 +221,7 @@ func (contract *ContractFunctionParameters) AddInt80(value []byte) *ContractFunc
 	return contract
 }
 
+// AddInt88 adds an int88 parameter to the function call
 func (contract *ContractFunctionParameters) AddInt88(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -219,6 +233,7 @@ func (contract *ContractFunctionParameters) AddInt88(value []byte) *ContractFunc
 	return contract
 }
 
+// AddInt96 adds an int96 parameter to the function call
 func (contract *ContractFunctionParameters) AddInt96(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -230,6 +245,7 @@ func (contract *ContractFunctionParameters) AddInt96(value []byte) *ContractFunc
 	return contract
 }
 
+// AddInt104 adds an int104 parameter to the function call
 func (contract *ContractFunctionParameters) AddInt104(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -241,6 +257,7 @@ func (contract *ContractFunctionParameters) AddInt104(value []byte) *ContractFun
 	return contract
 }
 
+// AddInt112 adds an int112 parameter to the function call
 func (contract *ContractFunctionParameters) AddInt112(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -252,6 +269,7 @@ func (contract *ContractFunctionParameters) AddInt112(value []byte) *ContractFun
 	return contract
 }
 
+// AddInt120 adds an int120 parameter to the function call
 func (contract *ContractFunctionParameters) AddInt120(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -263,6 +281,7 @@ func (contract *ContractFunctionParameters) AddInt120(value []byte) *ContractFun
 	return contract
 }
 
+// AddInt128 adds an int128 parameter to the function call
 func (contract *ContractFunctionParameters) AddInt128(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -274,6 +293,7 @@ func (contract *ContractFunctionParameters) AddInt128(value []byte) *ContractFun
 	return contract
 }
 
+// AddInt136 adds an int136 parameter to the function call
 func (contract *ContractFunctionParameters) AddInt136(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -285,6 +305,7 @@ func (contract *ContractFunctionParameters) AddInt136(value []byte) *ContractFun
 	return contract
 }
 
+// AddInt144 adds an int144 parameter to the function call
 func (contract *ContractFunctionParameters) AddInt144(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -296,6 +317,7 @@ func (contract *ContractFunctionParameters) AddInt144(value []byte) *ContractFun
 	return contract
 }
 
+// AddInt152 adds an int152 parameter to the function call
 func (contract *ContractFunctionParameters) AddInt152(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -307,6 +329,7 @@ func (contract *ContractFunctionParameters) AddInt152(value []byte) *ContractFun
 	return contract
 }
 
+// AddInt160 adds an int160 parameter to the function call
 func (contract *ContractFunctionParameters) AddInt160(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -318,6 +341,7 @@ func (contract *ContractFunctionParameters) AddInt160(value []byte) *ContractFun
 	return contract
 }
 
+// AddInt168 adds an int168 parameter to the function call
 func (contract *ContractFunctionParameters) AddInt168(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -329,6 +353,7 @@ func (contract *ContractFunctionParameters) AddInt168(value []byte) *ContractFun
 	return contract
 }
 
+// AddInt176 adds an int176 parameter to the function call
 func (contract *ContractFunctionParameters) AddInt176(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -340,6 +365,7 @@ func (contract *ContractFunctionParameters) AddInt176(value []byte) *ContractFun
 	return contract
 }
 
+// AddInt184 adds an int184 parameter to the function call
 func (contract *ContractFunctionParameters) AddInt184(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -351,6 +377,7 @@ func (contract *ContractFunctionParameters) AddInt184(value []byte) *ContractFun
 	return contract
 }
 
+// AddInt192 adds an int192 parameter to the function call
 func (contract *ContractFunctionParameters) AddInt192(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -362,6 +389,7 @@ func (contract *ContractFunctionParameters) AddInt192(value []byte) *ContractFun
 	return contract
 }
 
+// AddInt200 adds an int200 parameter to the function call
 func (contract *ContractFunctionParameters) AddInt200(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -373,6 +401,7 @@ func (contract *ContractFunctionParameters) AddInt200(value []byte) *ContractFun
 	return contract
 }
 
+// AddInt208 adds an int208 parameter to the function call
 func (contract *ContractFunctionParameters) AddInt208(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -384,6 +413,7 @@ func (contract *ContractFunctionParameters) AddInt208(value []byte) *ContractFun
 	return contract
 }
 
+// AddInt216 adds an int216 parameter to the function call
 func (contract *ContractFunctionParameters) AddInt216(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -395,6 +425,7 @@ func (contract *ContractFunctionParameters) AddInt216(value []byte) *ContractFun
 	return contract
 }
 
+// AddInt224 adds an int224 parameter to the function call
 func (contract *ContractFunctionParameters) AddInt224(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -406,6 +437,7 @@ func (contract *ContractFunctionParameters) AddInt224(value []byte) *ContractFun
 	return contract
 }
 
+// AddInt232 adds an int232 parameter to the function call
 func (contract *ContractFunctionParameters) AddInt232(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -417,6 +449,7 @@ func (contract *ContractFunctionParameters) AddInt232(value []byte) *ContractFun
 	return contract
 }
 
+// AddInt240 adds an int240 parameter to the function call
 func (contract *ContractFunctionParameters) AddInt240(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -428,6 +461,7 @@ func (contract *ContractFunctionParameters) AddInt240(value []byte) *ContractFun
 	return contract
 }
 
+// AddInt248 adds an int248 parameter to the function call
 func (contract *ContractFunctionParameters) AddInt248(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -439,6 +473,7 @@ func (contract *ContractFunctionParameters) AddInt248(value []byte) *ContractFun
 	return contract
 }
 
+// AddInt256 adds an int256 parameter to the function call
 func (contract *ContractFunctionParameters) AddInt256(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -450,6 +485,7 @@ func (contract *ContractFunctionParameters) AddInt256(value []byte) *ContractFun
 	return contract
 }
 
+// AddUint8 adds a uint8 parameter to the function call
 func (contract *ContractFunctionParameters) AddUint8(value uint8) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -461,6 +497,7 @@ func (contract *ContractFunctionParameters) AddUint8(value uint8) *ContractFunct
 	return contract
 }
 
+// AddUint16 adds a uint16 parameter to the function call
 func (contract *ContractFunctionParameters) AddUint16(value uint16) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -472,6 +509,7 @@ func (contract *ContractFunctionParameters) AddUint16(value uint16) *ContractFun
 	return contract
 }
 
+// AddUint24 adds a uint24 parameter to the function call
 func (contract *ContractFunctionParameters) AddUint24(value uint32) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -483,6 +521,7 @@ func (contract *ContractFunctionParameters) AddUint24(value uint32) *ContractFun
 	return contract
 }
 
+// AddUint32 adds a uint32 parameter to the function call
 func (contract *ContractFunctionParameters) AddUint32(value uint32) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -494,6 +533,7 @@ func (contract *ContractFunctionParameters) AddUint32(value uint32) *ContractFun
 	return contract
 }
 
+// AddUint40 adds a uint40 parameter to the function call
 func (contract *ContractFunctionParameters) AddUint40(value uint64) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -505,6 +545,7 @@ func (contract *ContractFunctionParameters) AddUint40(value uint64) *ContractFun
 	return contract
 }
 
+// AddUint48 adds a uint48 parameter to the function call
 func (contract *ContractFunctionParameters) AddUint48(value uint64) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -516,6 +557,7 @@ func (contract *ContractFunctionParameters) AddUint48(value uint64) *ContractFun
 	return contract
 }
 
+// AddUint56 adds a uint56 parameter to the function call
 func (contract *ContractFunctionParameters) AddUint56(value uint64) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -527,6 +569,7 @@ func (contract *ContractFunctionParameters) AddUint56(value uint64) *ContractFun
 	return contract
 }
 
+// AddUint64 adds a uint64 parameter to the function call
 func (contract *ContractFunctionParameters) AddUint64(value uint64) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -538,6 +581,7 @@ func (contract *ContractFunctionParameters) AddUint64(value uint64) *ContractFun
 	return contract
 }
 
+// AddUint72 adds a uint72 parameter to the function call
 func (contract *ContractFunctionParameters) AddUint72(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -549,6 +593,7 @@ func (contract *ContractFunctionParameters) AddUint72(value []byte) *ContractFun
 	return contract
 }
 
+// AddUint80 adds a uint80 parameter to the function call
 func (contract *ContractFunctionParameters) AddUint80(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -560,6 +605,7 @@ func (contract *ContractFunctionParameters) AddUint80(value []byte) *ContractFun
 	return contract
 }
 
+// AddUint88 adds a uint88 parameter to the function call
 func (contract *ContractFunctionParameters) AddUint88(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -571,6 +617,7 @@ func (contract *ContractFunctionParameters) AddUint88(value []byte) *ContractFun
 	return contract
 }
 
+// AddUint96 adds a uint96 parameter to the function call
 func (contract *ContractFunctionParameters) AddUint96(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -582,6 +629,7 @@ func (contract *ContractFunctionParameters) AddUint96(value []byte) *ContractFun
 	return contract
 }
 
+// AddUint104 adds a uint104 parameter to the function call
 func (contract *ContractFunctionParameters) AddUint104(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -593,6 +641,7 @@ func (contract *ContractFunctionParameters) AddUint104(value []byte) *ContractFu
 	return contract
 }
 
+// AddUint112 adds a uint112 parameter to the function call
 func (contract *ContractFunctionParameters) AddUint112(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -604,6 +653,7 @@ func (contract *ContractFunctionParameters) AddUint112(value []byte) *ContractFu
 	return contract
 }
 
+// AddUint120 adds a uint120 parameter to the function call
 func (contract *ContractFunctionParameters) AddUint120(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -615,6 +665,7 @@ func (contract *ContractFunctionParameters) AddUint120(value []byte) *ContractFu
 	return contract
 }
 
+// AddUint128 adds a uint128 parameter to the function call
 func (contract *ContractFunctionParameters) AddUint128(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -626,6 +677,7 @@ func (contract *ContractFunctionParameters) AddUint128(value []byte) *ContractFu
 	return contract
 }
 
+// AddUint136 adds a uint136 parameter to the function call
 func (contract *ContractFunctionParameters) AddUint136(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -637,6 +689,7 @@ func (contract *ContractFunctionParameters) AddUint136(value []byte) *ContractFu
 	return contract
 }
 
+// AddUint144 adds a uint144 parameter to the function call
 func (contract *ContractFunctionParameters) AddUint144(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -648,6 +701,7 @@ func (contract *ContractFunctionParameters) AddUint144(value []byte) *ContractFu
 	return contract
 }
 
+// AddUint152 adds a uint152 parameter to the function call
 func (contract *ContractFunctionParameters) AddUint152(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -659,6 +713,7 @@ func (contract *ContractFunctionParameters) AddUint152(value []byte) *ContractFu
 	return contract
 }
 
+// AddUint160 adds a uint160 parameter to the function call
 func (contract *ContractFunctionParameters) AddUint160(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -670,6 +725,7 @@ func (contract *ContractFunctionParameters) AddUint160(value []byte) *ContractFu
 	return contract
 }
 
+// AddUint168 adds a uint168 parameter to the function call
 func (contract *ContractFunctionParameters) AddUint168(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -681,6 +737,7 @@ func (contract *ContractFunctionParameters) AddUint168(value []byte) *ContractFu
 	return contract
 }
 
+// AddUint176 adds a uint176 parameter to the function call
 func (contract *ContractFunctionParameters) AddUint176(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -692,6 +749,7 @@ func (contract *ContractFunctionParameters) AddUint176(value []byte) *ContractFu
 	return contract
 }
 
+// AddUint184 adds a uint184 parameter to the function call
 func (contract *ContractFunctionParameters) AddUint184(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -703,6 +761,7 @@ func (contract *ContractFunctionParameters) AddUint184(value []byte) *ContractFu
 	return contract
 }
 
+// AddUint192 adds a uint192 parameter to the function call
 func (contract *ContractFunctionParameters) AddUint192(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -714,6 +773,7 @@ func (contract *ContractFunctionParameters) AddUint192(value []byte) *ContractFu
 	return contract
 }
 
+// AddUint200 adds a uint200 parameter to the function call
 func (contract *ContractFunctionParameters) AddUint200(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -725,6 +785,7 @@ func (contract *ContractFunctionParameters) AddUint200(value []byte) *ContractFu
 	return contract
 }
 
+// AddUint208 adds a uint208 parameter to the function call
 func (contract *ContractFunctionParameters) AddUint208(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -736,6 +797,7 @@ func (contract *ContractFunctionParameters) AddUint208(value []byte) *ContractFu
 	return contract
 }
 
+// AddUint216 adds a uint216 parameter to the function call
 func (contract *ContractFunctionParameters) AddUint216(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -747,6 +809,7 @@ func (contract *ContractFunctionParameters) AddUint216(value []byte) *ContractFu
 	return contract
 }
 
+// AddUint224 adds a uint224 parameter to the function call
 func (contract *ContractFunctionParameters) AddUint224(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -758,6 +821,7 @@ func (contract *ContractFunctionParameters) AddUint224(value []byte) *ContractFu
 	return contract
 }
 
+// AddUint232 adds a uint232 parameter to the function call
 func (contract *ContractFunctionParameters) AddUint232(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -769,6 +833,7 @@ func (contract *ContractFunctionParameters) AddUint232(value []byte) *ContractFu
 	return contract
 }
 
+// AddUint240 adds a uint240 parameter to the function call
 func (contract *ContractFunctionParameters) AddUint240(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -780,6 +845,7 @@ func (contract *ContractFunctionParameters) AddUint240(value []byte) *ContractFu
 	return contract
 }
 
+// AddUint248 adds a uint248 parameter to the function call
 func (contract *ContractFunctionParameters) AddUint248(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -791,6 +857,7 @@ func (contract *ContractFunctionParameters) AddUint248(value []byte) *ContractFu
 	return contract
 }
 
+// AddUint256 adds a uint256 parameter to the function call
 func (contract *ContractFunctionParameters) AddUint256(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -802,6 +869,7 @@ func (contract *ContractFunctionParameters) AddUint256(value []byte) *ContractFu
 	return contract
 }
 
+// AddInt8Array adds an int8 array parameter to the function call
 func (contract *ContractFunctionParameters) AddInt8Array(value []int8) *ContractFunctionParameters {
 	argument := _NewArgument()
 	argument.dynamic = true
@@ -821,6 +889,7 @@ func (contract *ContractFunctionParameters) AddInt8Array(value []int8) *Contract
 	return contract
 }
 
+// AddInt16Array adds an int16 array parameter to the function call
 func (contract *ContractFunctionParameters) AddInt16Array(value []int16) *ContractFunctionParameters {
 	argument := _NewArgument()
 	argument.dynamic = true
@@ -840,6 +909,7 @@ func (contract *ContractFunctionParameters) AddInt16Array(value []int16) *Contra
 	return contract
 }
 
+// AddInt24Array adds an int24 array parameter to the function call
 func (contract *ContractFunctionParameters) AddInt24Array(value []int32) *ContractFunctionParameters {
 	argument := _NewArgument()
 	argument.dynamic = true
@@ -859,6 +929,7 @@ func (contract *ContractFunctionParameters) AddInt24Array(value []int32) *Contra
 	return contract
 }
 
+// AddInt32Array adds an int32 array parameter to the function call
 func (contract *ContractFunctionParameters) AddInt32Array(value []int32) *ContractFunctionParameters {
 	argument := _NewArgument()
 	argument.dynamic = true
@@ -878,6 +949,7 @@ func (contract *ContractFunctionParameters) AddInt32Array(value []int32) *Contra
 	return contract
 }
 
+// AddInt64Array adds an int64 array parameter to the function call
 func (contract *ContractFunctionParameters) AddInt64Array(value []int64) *ContractFunctionParameters {
 	argument := _NewArgument()
 	argument.dynamic = true
@@ -897,6 +969,7 @@ func (contract *ContractFunctionParameters) AddInt64Array(value []int64) *Contra
 	return contract
 }
 
+// AddInt256Array adds an int256 array parameter to the function call
 func (contract *ContractFunctionParameters) AddInt256Array(value [][32]byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 	argument.dynamic = true
@@ -916,6 +989,7 @@ func (contract *ContractFunctionParameters) AddInt256Array(value [][32]byte) *Co
 	return contract
 }
 
+// AddUint32Array adds a uint32 array parameter to the function call
 func (contract *ContractFunctionParameters) AddUint32Array(value []uint32) *ContractFunctionParameters {
 	argument := _NewArgument()
 	argument.dynamic = true
@@ -935,6 +1009,7 @@ func (contract *ContractFunctionParameters) AddUint32Array(value []uint32) *Cont
 	return contract
 }
 
+// AddUint64Array adds a uint64 array parameter to the function call
 func (contract *ContractFunctionParameters) AddUint64Array(value []uint64) *ContractFunctionParameters {
 	argument := _NewArgument()
 	argument.dynamic = true
@@ -954,6 +1029,7 @@ func (contract *ContractFunctionParameters) AddUint64Array(value []uint64) *Cont
 	return contract
 }
 
+// AddUint256Array adds a uint256 array parameter to the function call
 func (contract *ContractFunctionParameters) AddUint256Array(value [][32]byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 	argument.dynamic = true
@@ -973,6 +1049,7 @@ func (contract *ContractFunctionParameters) AddUint256Array(value [][32]byte) *C
 	return contract
 }
 
+// AddAddressArray adds an address array parameter to the function call
 func (contract *ContractFunctionParameters) AddAddressArray(value []string) (*ContractFunctionParameters, error) {
 	argument := _NewArgument()
 	argument.dynamic = true
@@ -1001,6 +1078,7 @@ func (contract *ContractFunctionParameters) AddAddressArray(value []string) (*Co
 	return contract, nil
 }
 
+// AddString ads a string parameter to the function call
 func (contract *ContractFunctionParameters) AddString(value string) *ContractFunctionParameters {
 	argument := _NewArgument()
 	argument.dynamic = true
@@ -1015,6 +1093,7 @@ func (contract *ContractFunctionParameters) AddString(value string) *ContractFun
 	return contract
 }
 
+// AddBytes adds a bytes parameter to the function call
 func (contract *ContractFunctionParameters) AddBytes(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 	argument.dynamic = true
@@ -1028,6 +1107,7 @@ func (contract *ContractFunctionParameters) AddBytes(value []byte) *ContractFunc
 	return contract
 }
 
+// AddBytes32 adds a bytes32 parameter to the function call
 func (contract *ContractFunctionParameters) AddBytes32(value [32]byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -1039,6 +1119,7 @@ func (contract *ContractFunctionParameters) AddBytes32(value [32]byte) *Contract
 	return contract
 }
 
+// AddAddress adds an address parameter to the function call
 func (contract *ContractFunctionParameters) AddAddress(value string) (*ContractFunctionParameters, error) {
 	if len(value) != 40 {
 		return contract, errors.Unwrap(fmt.Errorf("address is required to be 40 characters"))
@@ -1062,6 +1143,7 @@ func (contract *ContractFunctionParameters) AddAddress(value string) (*ContractF
 	return contract, nil
 }
 
+// AddBytesArray adds a bytes array parameter to the function call
 func (contract *ContractFunctionParameters) AddBytesArray(value [][]byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
@@ -1073,6 +1155,7 @@ func (contract *ContractFunctionParameters) AddBytesArray(value [][]byte) *Contr
 	return contract
 }
 
+// AddBytes32Array adds a bytes32 array parameter to the function call
 func (contract *ContractFunctionParameters) AddBytes32Array(value [][]byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 	argument.dynamic = true
@@ -1092,6 +1175,7 @@ func (contract *ContractFunctionParameters) AddBytes32Array(value [][]byte) *Con
 	return contract
 }
 
+// AddStringArray adds a string array parameter to the function call
 func (contract *ContractFunctionParameters) AddStringArray(value []string) *ContractFunctionParameters {
 	argument := _NewArgument()
 	argument.dynamic = true

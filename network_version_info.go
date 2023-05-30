@@ -25,6 +25,7 @@ import (
 	protobuf "google.golang.org/protobuf/proto"
 )
 
+// NetworkVersionInfo is the version info for the Hedera network protobuf and services
 type NetworkVersionInfo struct {
 	ProtobufVersion SemanticVersion
 	ServicesVersion SemanticVersion

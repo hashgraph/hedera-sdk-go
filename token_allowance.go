@@ -26,6 +26,7 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
+// An approved allowance of token transfers for a spender.
 type TokenAllowance struct {
 	TokenID          *TokenID
 	SpenderAccountID *AccountID
@@ -33,6 +34,7 @@ type TokenAllowance struct {
 	Amount           int64
 }
 
+// NewTokenAllowance creates a TokenAllowance with the given tokenID, owner, spender, and amount
 func NewTokenAllowance(tokenID TokenID, owner AccountID, spender AccountID, amount int64) TokenAllowance { //nolint
 	return TokenAllowance{
 		TokenID:          &tokenID,

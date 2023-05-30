@@ -38,6 +38,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// _Node represents a node on the network
 type _Node struct {
 	*_ManagedNode
 	accountID         AccountID

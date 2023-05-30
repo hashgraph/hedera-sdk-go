@@ -25,6 +25,7 @@ import (
 	protobuf "google.golang.org/protobuf/proto"
 )
 
+// A token - account association
 type TokenAssociation struct {
 	TokenID   *TokenID
 	AccountID *AccountID

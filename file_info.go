@@ -27,6 +27,7 @@ import (
 	protobuf "google.golang.org/protobuf/proto"
 )
 
+// FileInfo contains the details about a file stored on Hedera
 type FileInfo struct {
 	FileID         FileID
 	Size           int64

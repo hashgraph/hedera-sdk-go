@@ -30,6 +30,7 @@ import (
 	protobuf "google.golang.org/protobuf/proto"
 )
 
+// NftID is the ID for a non-fungible token
 type NftID struct {
 	TokenID      TokenID
 	SerialNumber int64

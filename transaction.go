@@ -41,6 +41,7 @@ type ITransaction interface {
 	_ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error)
 }
 
+// Transaction is base struct for all transactions that may be built and submitted to Hedera.
 type Transaction struct {
 	maxRetry int
 

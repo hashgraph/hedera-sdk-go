@@ -25,6 +25,7 @@ import (
 	protobuf "google.golang.org/protobuf/proto"
 )
 
+// NodeAddressBook is the address book for the nodes on the Hedera network
 type NodeAddressBook struct {
 	NodeAddresses []NodeAddress
 }

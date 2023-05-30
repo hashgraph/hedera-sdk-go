@@ -25,6 +25,7 @@ import (
 	protobuf "google.golang.org/protobuf/proto"
 )
 
+// Base struct for all custom fees
 type CustomFee struct {
 	FeeCollectorAccountID  *AccountID
 	AllCollectorsAreExempt bool

@@ -237,10 +237,12 @@ func (result ContractFunctionResult) GetUint8(index uint64) uint8 {
 	return result.ContractCallResult[index*32+31]
 }
 
+// GetUint16 gets a _Solidity uint16 from the result at the given index
 func (result ContractFunctionResult) GetUint16(index uint64) uint16 {
 	return binary.BigEndian.Uint16(result.ContractCallResult[index*32+30 : (index+1)*32])
 }
 
+// GetUint24 gets a _Solidity uint24 from the result at the given index
 func (result ContractFunctionResult) GetUint24(index uint64) uint32 {
 	return binary.BigEndian.Uint32(result.ContractCallResult[index*32+28 : (index+1)*32])
 }

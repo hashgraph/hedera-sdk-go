@@ -28,12 +28,16 @@ import (
 	"time"
 )
 
+// Undelete a file or smart contract that was deleted by AdminDelete.
+// Can only be done with a Hedera admin.
 type SystemUndeleteTransaction struct {
 	Transaction
 	contractID *ContractID
 	fileID     *FileID
 }
 
+// NewSystemUndeleteTransaction creates a SystemUndeleteTransaction transaction which can be
+// used to construct and execute a System Undelete Transaction.
 func NewSystemUndeleteTransaction() *SystemUndeleteTransaction {
 	transaction := SystemUndeleteTransaction{
 		Transaction: _NewTransaction(),

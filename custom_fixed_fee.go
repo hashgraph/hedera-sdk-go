@@ -32,12 +32,18 @@ type Fee interface {
 	_ValidateNetworkOnIDs(client *Client) error
 }
 
+// A fixed fee transfers a specified amount of the token, to the specified collection account(s),
+// each time a token transfer is initiated. The custom token fee does not depend on the amount of the
+// token that is being transferred.
 type CustomFixedFee struct {
 	CustomFee
 	Amount              int64
 	DenominationTokenID *TokenID
 }
 
+// A fixed fee transfers a specified amount of the token, to the specified collection account(s),
+// each time a token transfer is initiated. The custom token fee does not depend on the amount of the
+// token that is being transferred.
 func NewCustomFixedFee() *CustomFixedFee {
 	return &CustomFixedFee{
 		CustomFee:           CustomFee{},

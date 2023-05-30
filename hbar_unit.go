@@ -22,6 +22,7 @@ package hedera
 
 type HbarUnit string
 
+// HbarUnits is a set of HbarUnit
 var HbarUnits = struct {
 	Tinybar  HbarUnit
 	Microbar HbarUnit

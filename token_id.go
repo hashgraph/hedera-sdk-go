@@ -29,6 +29,7 @@ import (
 	protobuf "google.golang.org/protobuf/proto"
 )
 
+// TokenID is the ID for a Hedera token
 type TokenID struct {
 	Shard    uint64
 	Realm    uint64

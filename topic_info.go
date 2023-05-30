@@ -27,6 +27,7 @@ import (
 	protobuf "google.golang.org/protobuf/proto"
 )
 
+// TopicInfo is the information about a topic
 type TopicInfo struct {
 	TopicMemo          string
 	RunningHash        []byte

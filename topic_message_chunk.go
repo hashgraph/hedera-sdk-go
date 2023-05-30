@@ -26,6 +26,7 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/mirror"
 )
 
+// TopicMessageChunk is a chunk of a topic message
 type TopicMessageChunk struct {
 	ConsensusTimestamp time.Time
 	ContentSize        uint64

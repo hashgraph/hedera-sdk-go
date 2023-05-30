@@ -25,6 +25,7 @@ import (
 	protobuf "google.golang.org/protobuf/proto"
 )
 
+// The consensus result for a transaction, which might not be currently known, or may succeed or fail.
 type TransactionReceipt struct {
 	Status                  Status
 	ExchangeRate            *ExchangeRate

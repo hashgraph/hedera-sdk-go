@@ -24,6 +24,7 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
+// A selector for a function with a given name.
 type ContractFunctionSelector struct {
 	function   *string
 	params     string
@@ -110,6 +111,7 @@ const (
 	aAddress  argument = "address"
 )
 
+// NewContractFunctionSelector starts building a selector for a function with a given name.
 func NewContractFunctionSelector(name string) ContractFunctionSelector {
 	var function *string
 
@@ -126,6 +128,7 @@ func NewContractFunctionSelector(name string) ContractFunctionSelector {
 	}
 }
 
+// AddParam adds a parameter to the selector.
 func (selector *ContractFunctionSelector) _AddParam(ty _Solidity) *ContractFunctionSelector {
 	if len(selector.paramTypes) > 0 {
 		selector.params += ","
@@ -140,6 +143,7 @@ func (selector *ContractFunctionSelector) _AddParam(ty _Solidity) *ContractFunct
 	return selector
 }
 
+// AddFunction adds a function parameter to the selector.
 func (selector *ContractFunctionSelector) AddFunction() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aFunction,
@@ -147,6 +151,7 @@ func (selector *ContractFunctionSelector) AddFunction() *ContractFunctionSelecto
 	})
 }
 
+// AddAddress adds an address parameter to the selector.
 func (selector *ContractFunctionSelector) AddAddress() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aAddress,
@@ -154,6 +159,7 @@ func (selector *ContractFunctionSelector) AddAddress() *ContractFunctionSelector
 	})
 }
 
+// AddBool adds a bool parameter to the selector.
 func (selector *ContractFunctionSelector) AddBool() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aBool,
@@ -161,6 +167,7 @@ func (selector *ContractFunctionSelector) AddBool() *ContractFunctionSelector {
 	})
 }
 
+// AddString adds a string parameter to the selector.
 func (selector *ContractFunctionSelector) AddString() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aString,
@@ -168,6 +175,7 @@ func (selector *ContractFunctionSelector) AddString() *ContractFunctionSelector 
 	})
 }
 
+// AddInt8 adds an int8 parameter to the selector.
 func (selector *ContractFunctionSelector) AddInt8() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aInt8,
@@ -175,6 +183,7 @@ func (selector *ContractFunctionSelector) AddInt8() *ContractFunctionSelector {
 	})
 }
 
+// AddInt16 adds an int16 parameter to the selector.
 func (selector *ContractFunctionSelector) AddInt16() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aInt16,
@@ -182,6 +191,7 @@ func (selector *ContractFunctionSelector) AddInt16() *ContractFunctionSelector {
 	})
 }
 
+// AddInt24 adds an int24 parameter to the selector.
 func (selector *ContractFunctionSelector) AddInt24() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aInt24,
@@ -189,6 +199,7 @@ func (selector *ContractFunctionSelector) AddInt24() *ContractFunctionSelector {
 	})
 }
 
+// AddInt32 adds an int32 parameter to the selector.
 func (selector *ContractFunctionSelector) AddInt32() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aInt32,
@@ -196,6 +207,7 @@ func (selector *ContractFunctionSelector) AddInt32() *ContractFunctionSelector {
 	})
 }
 
+// AddInt40 adds an int40 parameter to the selector.
 func (selector *ContractFunctionSelector) AddInt40() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aInt40,
@@ -203,6 +215,7 @@ func (selector *ContractFunctionSelector) AddInt40() *ContractFunctionSelector {
 	})
 }
 
+// AddInt48 adds an int48 parameter to the selector.
 func (selector *ContractFunctionSelector) AddInt48() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aInt48,
@@ -210,6 +223,7 @@ func (selector *ContractFunctionSelector) AddInt48() *ContractFunctionSelector {
 	})
 }
 
+// AddInt56 adds an int56 parameter to the selector.
 func (selector *ContractFunctionSelector) AddInt56() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aInt56,
@@ -217,6 +231,7 @@ func (selector *ContractFunctionSelector) AddInt56() *ContractFunctionSelector {
 	})
 }
 
+// AddInt64 adds an int64 parameter to the selector.
 func (selector *ContractFunctionSelector) AddInt64() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aInt64,
@@ -224,6 +239,7 @@ func (selector *ContractFunctionSelector) AddInt64() *ContractFunctionSelector {
 	})
 }
 
+// AddInt72 adds an int72 parameter to the selector.
 func (selector *ContractFunctionSelector) AddInt72() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aInt72,
@@ -231,6 +247,7 @@ func (selector *ContractFunctionSelector) AddInt72() *ContractFunctionSelector {
 	})
 }
 
+// AddInt80 adds an int80 parameter to the selector.
 func (selector *ContractFunctionSelector) AddInt80() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aInt80,
@@ -238,66 +255,87 @@ func (selector *ContractFunctionSelector) AddInt80() *ContractFunctionSelector {
 	})
 }
 
+// AddInt88 adds an int88 parameter to the selector.
 func (selector *ContractFunctionSelector) AddInt88() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aInt88,
 		array: false,
 	})
 }
+
+// AddInt96 adds an int96 parameter to the selector.
 func (selector *ContractFunctionSelector) AddInt96() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aInt96,
 		array: false,
 	})
 }
+
+// AddInt104 adds an int104 parameter to the selector.
 func (selector *ContractFunctionSelector) AddInt104() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aInt104,
 		array: false,
 	})
 }
+
+// AddInt112 adds an int112 parameter to the selector.
 func (selector *ContractFunctionSelector) AddInt112() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aInt112,
 		array: false,
 	})
 }
+
+// AddInt120 adds an int120 parameter to the selector.
 func (selector *ContractFunctionSelector) AddInt120() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aInt120,
 		array: false,
 	})
 }
+
+// AddInt128 adds an int128 parameter to the selector.
 func (selector *ContractFunctionSelector) AddInt128() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aInt128,
 		array: false,
 	})
 }
+
+// AddInt136 adds an int136 parameter to the selector.
 func (selector *ContractFunctionSelector) AddInt136() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aInt136,
 		array: false,
 	})
 }
+
+// AddInt144 adds an int144 parameter to the selector.
 func (selector *ContractFunctionSelector) AddInt144() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aInt144,
 		array: false,
 	})
 }
+
+// AddInt152 adds an int152 parameter to the selector.
 func (selector *ContractFunctionSelector) AddInt152() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aInt152,
 		array: false,
 	})
 }
+
+// AddInt160 adds an int160 parameter to the selector.
 func (selector *ContractFunctionSelector) AddInt160() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aInt160,
 		array: false,
 	})
 }
+
+// AddInt168 adds an int168 parameter to the selector.
 func (selector *ContractFunctionSelector) AddInt168() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aInt168,
@@ -305,6 +343,7 @@ func (selector *ContractFunctionSelector) AddInt168() *ContractFunctionSelector 
 	})
 }
 
+// AddInt176 adds an int176 parameter to the selector.
 func (selector *ContractFunctionSelector) AddInt176() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aInt176,
@@ -312,6 +351,7 @@ func (selector *ContractFunctionSelector) AddInt176() *ContractFunctionSelector 
 	})
 }
 
+// AddInt184 adds an int184 parameter to the selector.
 func (selector *ContractFunctionSelector) AddInt184() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aInt184,
@@ -319,6 +359,7 @@ func (selector *ContractFunctionSelector) AddInt184() *ContractFunctionSelector 
 	})
 }
 
+// AddInt192 adds an int192 parameter to the selector.
 func (selector *ContractFunctionSelector) AddInt192() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aInt192,
@@ -326,6 +367,7 @@ func (selector *ContractFunctionSelector) AddInt192() *ContractFunctionSelector 
 	})
 }
 
+// AddInt200 adds an int200 parameter to the selector.
 func (selector *ContractFunctionSelector) AddInt200() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aInt200,
@@ -333,6 +375,7 @@ func (selector *ContractFunctionSelector) AddInt200() *ContractFunctionSelector 
 	})
 }
 
+// AddInt208 adds an int208 parameter to the selector.
 func (selector *ContractFunctionSelector) AddInt208() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aInt208,
@@ -340,6 +383,7 @@ func (selector *ContractFunctionSelector) AddInt208() *ContractFunctionSelector 
 	})
 }
 
+// AddInt216 adds an int216 parameter to the selector.
 func (selector *ContractFunctionSelector) AddInt216() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aInt216,
@@ -347,6 +391,7 @@ func (selector *ContractFunctionSelector) AddInt216() *ContractFunctionSelector 
 	})
 }
 
+// AddInt224 adds an int224 parameter to the selector.
 func (selector *ContractFunctionSelector) AddInt224() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aInt224,
@@ -354,6 +399,7 @@ func (selector *ContractFunctionSelector) AddInt224() *ContractFunctionSelector 
 	})
 }
 
+// AddInt232 adds an int232 parameter to the selector.
 func (selector *ContractFunctionSelector) AddInt232() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aInt232,
@@ -361,6 +407,7 @@ func (selector *ContractFunctionSelector) AddInt232() *ContractFunctionSelector 
 	})
 }
 
+// AddInt240 adds an int240 parameter to the selector.
 func (selector *ContractFunctionSelector) AddInt240() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aInt240,
@@ -368,6 +415,7 @@ func (selector *ContractFunctionSelector) AddInt240() *ContractFunctionSelector 
 	})
 }
 
+// AddInt248 adds an int248 parameter to the selector.
 func (selector *ContractFunctionSelector) AddInt248() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aInt248,
@@ -375,6 +423,7 @@ func (selector *ContractFunctionSelector) AddInt248() *ContractFunctionSelector 
 	})
 }
 
+// AddInt256 adds an int256 parameter to the selector.
 func (selector *ContractFunctionSelector) AddInt256() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aInt256,
@@ -382,6 +431,7 @@ func (selector *ContractFunctionSelector) AddInt256() *ContractFunctionSelector 
 	})
 }
 
+// AddUint8 adds a uint8 parameter to the selector.
 func (selector *ContractFunctionSelector) AddUint8() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aUint8,
@@ -389,6 +439,7 @@ func (selector *ContractFunctionSelector) AddUint8() *ContractFunctionSelector {
 	})
 }
 
+// AddUint16 adds a uint16 parameter to the selector.
 func (selector *ContractFunctionSelector) AddUint16() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aUint16,
@@ -396,6 +447,7 @@ func (selector *ContractFunctionSelector) AddUint16() *ContractFunctionSelector 
 	})
 }
 
+// AddUint24 adds a uint24 parameter to the selector.
 func (selector *ContractFunctionSelector) AddUint24() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aUint24,
@@ -403,6 +455,7 @@ func (selector *ContractFunctionSelector) AddUint24() *ContractFunctionSelector 
 	})
 }
 
+// AddUint32 adds a uint32 parameter to the selector.
 func (selector *ContractFunctionSelector) AddUint32() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aUint32,
@@ -410,6 +463,7 @@ func (selector *ContractFunctionSelector) AddUint32() *ContractFunctionSelector 
 	})
 }
 
+// AddUint40 adds a uint40 parameter to the selector.
 func (selector *ContractFunctionSelector) AddUint40() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aUint40,
@@ -417,6 +471,7 @@ func (selector *ContractFunctionSelector) AddUint40() *ContractFunctionSelector 
 	})
 }
 
+// AddUint48 adds a uint48 parameter to the selector.
 func (selector *ContractFunctionSelector) AddUint48() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aUint48,
@@ -424,6 +479,7 @@ func (selector *ContractFunctionSelector) AddUint48() *ContractFunctionSelector 
 	})
 }
 
+// AddUint56 adds a uint56 parameter to the selector.
 func (selector *ContractFunctionSelector) AddUint56() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aUint56,
@@ -431,6 +487,7 @@ func (selector *ContractFunctionSelector) AddUint56() *ContractFunctionSelector 
 	})
 }
 
+// AddUint64 adds a uint64 parameter to the selector.
 func (selector *ContractFunctionSelector) AddUint64() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aUint64,
@@ -438,6 +495,7 @@ func (selector *ContractFunctionSelector) AddUint64() *ContractFunctionSelector 
 	})
 }
 
+// AddUint72 adds a uint72 parameter to the selector.
 func (selector *ContractFunctionSelector) AddUint72() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aUint72,
@@ -445,6 +503,7 @@ func (selector *ContractFunctionSelector) AddUint72() *ContractFunctionSelector 
 	})
 }
 
+// AddUint80 adds a uint80 parameter to the selector.
 func (selector *ContractFunctionSelector) AddUint80() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aUint80,
@@ -452,66 +511,87 @@ func (selector *ContractFunctionSelector) AddUint80() *ContractFunctionSelector 
 	})
 }
 
+// AddUint88 adds a uint88 parameter to the selector.
 func (selector *ContractFunctionSelector) AddUint88() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aUint88,
 		array: false,
 	})
 }
+
+// AddUint96 adds a uint96 parameter to the selector.
 func (selector *ContractFunctionSelector) AddUint96() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aUint96,
 		array: false,
 	})
 }
+
+// AddUint104 adds a uint104 parameter to the selector.
 func (selector *ContractFunctionSelector) AddUint104() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aUint104,
 		array: false,
 	})
 }
+
+// AddUint112 adds a uint112 parameter to the selector.
 func (selector *ContractFunctionSelector) AddUint112() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aUint112,
 		array: false,
 	})
 }
+
+// AddUint120 adds a uint120 parameter to the selector.
 func (selector *ContractFunctionSelector) AddUint120() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aUint120,
 		array: false,
 	})
 }
+
+// AddUint128 adds a uint128 parameter to the selector.
 func (selector *ContractFunctionSelector) AddUint128() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aUint128,
 		array: false,
 	})
 }
+
+// AddUint136 adds a uint136 parameter to the selector.
 func (selector *ContractFunctionSelector) AddUint136() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aUint136,
 		array: false,
 	})
 }
+
+// AddUint144 adds a uint144 parameter to the selector.
 func (selector *ContractFunctionSelector) AddUint144() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aUint144,
 		array: false,
 	})
 }
+
+// AddUint152 adds a uint152 parameter to the selector.
 func (selector *ContractFunctionSelector) AddUint152() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aUint152,
 		array: false,
 	})
 }
+
+// AddUint160 adds a uint160 parameter to the selector.
 func (selector *ContractFunctionSelector) AddUint160() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aUint160,
 		array: false,
 	})
 }
+
+// AddUint168 adds a uint168 parameter to the selector.
 func (selector *ContractFunctionSelector) AddUint168() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aUint168,
@@ -519,6 +599,7 @@ func (selector *ContractFunctionSelector) AddUint168() *ContractFunctionSelector
 	})
 }
 
+// AddUint176 adds a uint176 parameter to the selector.
 func (selector *ContractFunctionSelector) AddUint176() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aUint176,
@@ -526,6 +607,7 @@ func (selector *ContractFunctionSelector) AddUint176() *ContractFunctionSelector
 	})
 }
 
+// AddUint184 adds a uint184 parameter to the selector.
 func (selector *ContractFunctionSelector) AddUint184() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aUint184,
@@ -533,6 +615,7 @@ func (selector *ContractFunctionSelector) AddUint184() *ContractFunctionSelector
 	})
 }
 
+// AddUint192 adds a uint192 parameter to the selector.
 func (selector *ContractFunctionSelector) AddUint192() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aUint192,
@@ -540,6 +623,7 @@ func (selector *ContractFunctionSelector) AddUint192() *ContractFunctionSelector
 	})
 }
 
+// AddUint200 adds a uint200 parameter to the selector.
 func (selector *ContractFunctionSelector) AddUint200() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aUint200,
@@ -547,6 +631,7 @@ func (selector *ContractFunctionSelector) AddUint200() *ContractFunctionSelector
 	})
 }
 
+// AddUint208 adds a uint208 parameter to the selector.
 func (selector *ContractFunctionSelector) AddUint208() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aUint208,
@@ -554,6 +639,7 @@ func (selector *ContractFunctionSelector) AddUint208() *ContractFunctionSelector
 	})
 }
 
+// AddUint216 adds a uint216 parameter to the selector.
 func (selector *ContractFunctionSelector) AddUint216() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aUint216,
@@ -561,6 +647,7 @@ func (selector *ContractFunctionSelector) AddUint216() *ContractFunctionSelector
 	})
 }
 
+// AddUint224 adds a uint224 parameter to the selector.
 func (selector *ContractFunctionSelector) AddUint224() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aUint224,
@@ -568,6 +655,7 @@ func (selector *ContractFunctionSelector) AddUint224() *ContractFunctionSelector
 	})
 }
 
+// AddUint232 adds a uint232 parameter to the selector.
 func (selector *ContractFunctionSelector) AddUint232() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aUint232,
@@ -575,6 +663,7 @@ func (selector *ContractFunctionSelector) AddUint232() *ContractFunctionSelector
 	})
 }
 
+// AddUint240 adds a uint240 parameter to the selector.
 func (selector *ContractFunctionSelector) AddUint240() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aUint240,
@@ -582,6 +671,7 @@ func (selector *ContractFunctionSelector) AddUint240() *ContractFunctionSelector
 	})
 }
 
+// AddUint248 adds a uint248 parameter to the selector.
 func (selector *ContractFunctionSelector) AddUint248() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aUint248,
@@ -589,6 +679,7 @@ func (selector *ContractFunctionSelector) AddUint248() *ContractFunctionSelector
 	})
 }
 
+// AddUint256 adds a uint256 parameter to the selector.
 func (selector *ContractFunctionSelector) AddUint256() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aUint256,
@@ -596,6 +687,7 @@ func (selector *ContractFunctionSelector) AddUint256() *ContractFunctionSelector
 	})
 }
 
+// AddBytes adds a bytes parameter to the selector.
 func (selector *ContractFunctionSelector) AddBytes() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aBytes,
@@ -603,6 +695,7 @@ func (selector *ContractFunctionSelector) AddBytes() *ContractFunctionSelector {
 	})
 }
 
+// AddBytes32 adds a bytes32 parameter to the selector.
 func (selector *ContractFunctionSelector) AddBytes32() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aBytes32,
@@ -610,6 +703,7 @@ func (selector *ContractFunctionSelector) AddBytes32() *ContractFunctionSelector
 	})
 }
 
+// AddAddressArray adds an address[] parameter to the selector.
 func (selector *ContractFunctionSelector) AddAddressArray() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aAddress,
@@ -617,6 +711,7 @@ func (selector *ContractFunctionSelector) AddAddressArray() *ContractFunctionSel
 	})
 }
 
+// AddBoolArray adds a bool[] parameter to the selector.
 func (selector *ContractFunctionSelector) AddBoolArray() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aBool,
@@ -624,6 +719,7 @@ func (selector *ContractFunctionSelector) AddBoolArray() *ContractFunctionSelect
 	})
 }
 
+// AddStringArray adds a string[] parameter to the selector.
 func (selector *ContractFunctionSelector) AddStringArray() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aString,
@@ -631,6 +727,7 @@ func (selector *ContractFunctionSelector) AddStringArray() *ContractFunctionSele
 	})
 }
 
+// AddInt8Array adds an int8[] parameter to the selector.
 func (selector *ContractFunctionSelector) AddInt8Array() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aInt8,
@@ -638,6 +735,7 @@ func (selector *ContractFunctionSelector) AddInt8Array() *ContractFunctionSelect
 	})
 }
 
+// AddInt32Array adds an int32[] parameter to the selector.
 func (selector *ContractFunctionSelector) AddInt32Array() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aInt32,
@@ -645,6 +743,7 @@ func (selector *ContractFunctionSelector) AddInt32Array() *ContractFunctionSelec
 	})
 }
 
+// AddInt64Array adds an int64[] parameter to the selector.
 func (selector *ContractFunctionSelector) AddInt64Array() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aInt64,
@@ -652,6 +751,7 @@ func (selector *ContractFunctionSelector) AddInt64Array() *ContractFunctionSelec
 	})
 }
 
+// AddInt256Array adds an int256[] parameter to the selector.
 func (selector *ContractFunctionSelector) AddInt256Array() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aInt256,
@@ -659,6 +759,7 @@ func (selector *ContractFunctionSelector) AddInt256Array() *ContractFunctionSele
 	})
 }
 
+// AddUint8Array adds a uint8[] parameter to the selector.
 func (selector *ContractFunctionSelector) AddUint8Array() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aUint8,
@@ -666,6 +767,7 @@ func (selector *ContractFunctionSelector) AddUint8Array() *ContractFunctionSelec
 	})
 }
 
+// AddUint32Array adds a uint32[] parameter to the selector.
 func (selector *ContractFunctionSelector) AddUint32Array() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aUint32,
@@ -673,6 +775,7 @@ func (selector *ContractFunctionSelector) AddUint32Array() *ContractFunctionSele
 	})
 }
 
+// AddUint64Array adds a uint64[] parameter to the selector.
 func (selector *ContractFunctionSelector) AddUint64Array() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aUint64,
@@ -680,6 +783,7 @@ func (selector *ContractFunctionSelector) AddUint64Array() *ContractFunctionSele
 	})
 }
 
+// AddUint256Array adds a uint256[] parameter to the selector.
 func (selector *ContractFunctionSelector) AddUint256Array() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aUint256,
@@ -687,6 +791,7 @@ func (selector *ContractFunctionSelector) AddUint256Array() *ContractFunctionSel
 	})
 }
 
+// AddBytesArray adds a bytes[] parameter to the selector.
 func (selector *ContractFunctionSelector) AddBytesArray() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aBytes,
@@ -694,6 +799,7 @@ func (selector *ContractFunctionSelector) AddBytesArray() *ContractFunctionSelec
 	})
 }
 
+// AddBytes32Array adds a bytes32[] parameter to the selector.
 func (selector *ContractFunctionSelector) AddBytes32Array() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aBytes32,
@@ -701,6 +807,7 @@ func (selector *ContractFunctionSelector) AddBytes32Array() *ContractFunctionSel
 	})
 }
 
+// String returns the string representation of the selector.
 func (selector *ContractFunctionSelector) String() string {
 	function := ""
 	if selector.function != nil {

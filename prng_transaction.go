@@ -27,11 +27,14 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
+// PrngTransaction is used to generate a random number in a given range
 type PrngTransaction struct {
 	Transaction
 	rang uint32
 }
 
+// NewPrngTransaction creates a PrngTransaction transaction which can be used to construct and execute
+// a Prng Transaction.
 func NewPrngTransaction() *PrngTransaction {
 	transaction := PrngTransaction{
 		Transaction: _NewTransaction(),

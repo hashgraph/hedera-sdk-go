@@ -26,6 +26,7 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
+// KeyList is a list of keys
 type KeyList struct {
 	keys      []Key
 	threshold int

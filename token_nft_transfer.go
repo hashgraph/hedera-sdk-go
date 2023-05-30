@@ -25,6 +25,7 @@ import (
 	protobuf "google.golang.org/protobuf/proto"
 )
 
+// TokenNftTransfer is the information about a NFT transfer
 type TokenNftTransfer struct {
 	SenderAccountID   AccountID
 	ReceiverAccountID AccountID

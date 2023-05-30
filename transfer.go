@@ -24,6 +24,7 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
+// Transfer is a transfer of hbars or tokens from one account to another
 type Transfer struct {
 	AccountID AccountID
 	Amount    Hbar

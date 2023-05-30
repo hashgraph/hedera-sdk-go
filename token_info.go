@@ -27,6 +27,7 @@ import (
 	protobuf "google.golang.org/protobuf/proto"
 )
 
+// TokenInfo is the information about a token
 type TokenInfo struct {
 	TokenID             TokenID
 	Name                string

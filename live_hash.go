@@ -27,6 +27,7 @@ import (
 	"time"
 )
 
+// LiveHash is a hash that is live on the Hedera network
 type LiveHash struct {
 	AccountID AccountID
 	Hash      []byte

@@ -27,10 +27,13 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
+// NetworkVersionInfoQuery is the query to be executed that would return the current version of the network's protobuf and services.
 type NetworkVersionInfoQuery struct {
 	Query
 }
 
+// NewNetworkVersionQuery creates a NetworkVersionInfoQuery builder which can be used to construct and execute a
+// Network Get Version Info Query containing the current version of the network's protobuf and services.
 func NewNetworkVersionQuery() *NetworkVersionInfoQuery {
 	header := services.QueryHeader{}
 	return &NetworkVersionInfoQuery{

@@ -26,12 +26,14 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
+// An approved allowance of hbar transfers for a spender.
 type HbarAllowance struct {
 	OwnerAccountID   *AccountID
 	SpenderAccountID *AccountID
 	Amount           int64
 }
 
+// NewHbarAllowance creates a new HbarAllowance with the given owner, spender, and amount.
 func NewHbarAllowance(ownerAccountID AccountID, spenderAccountID AccountID, amount int64) HbarAllowance { //nolint
 	return HbarAllowance{
 		OwnerAccountID:   &ownerAccountID,

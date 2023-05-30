@@ -31,6 +31,8 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
+// The complete record for a transaction on Hedera that has reached consensus.
+// This is not-free to request and is available for 1 hour after a transaction reaches consensus.
 type TransactionRecord struct {
 	Receipt                    TransactionReceipt
 	TransactionHash            []byte

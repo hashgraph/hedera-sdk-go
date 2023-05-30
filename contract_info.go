@@ -27,6 +27,7 @@ import (
 	protobuf "google.golang.org/protobuf/proto"
 )
 
+// Current information on the smart contract instance, including its balance.
 type ContractInfo struct {
 	AccountID                     AccountID
 	ContractID                    ContractID
