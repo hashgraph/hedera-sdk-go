@@ -24,6 +24,7 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
+// NodeAddress is the address of a node on the Hedera network
 type NodeAddress struct {
 	PublicKey   string
 	AccountID   *AccountID

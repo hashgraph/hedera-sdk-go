@@ -27,6 +27,7 @@ import (
 	protobuf "google.golang.org/protobuf/proto"
 )
 
+// TokenNftInfo is the information about a NFT
 type TokenNftInfo struct {
 	NftID        NftID
 	AccountID    AccountID

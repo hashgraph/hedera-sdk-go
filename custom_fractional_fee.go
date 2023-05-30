@@ -27,6 +27,8 @@ import (
 	protobuf "google.golang.org/protobuf/proto"
 )
 
+// A fractional fee transfers the specified fraction of the total value of the tokens that are being transferred
+// to the specified fee-collecting account. Along with setting a custom fractional fee, you can
 type CustomFractionalFee struct {
 	CustomFee
 	Numerator        int64
@@ -36,6 +38,8 @@ type CustomFractionalFee struct {
 	AssessmentMethod FeeAssessmentMethod
 }
 
+// A fractional fee transfers the specified fraction of the total value of the tokens that are being transferred
+// to the specified fee-collecting account. Along with setting a custom fractional fee, you can
 func NewCustomFractionalFee() *CustomFractionalFee {
 	return &CustomFractionalFee{
 		CustomFee:        CustomFee{},

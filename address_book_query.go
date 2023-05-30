@@ -40,6 +40,7 @@ type AddressBookQuery struct {
 	limit       int32
 }
 
+// Query the mirror node for the address book.
 func NewAddressBookQuery() *AddressBookQuery {
 	return &AddressBookQuery{
 		fileID: nil,

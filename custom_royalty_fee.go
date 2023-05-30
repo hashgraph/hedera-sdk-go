@@ -24,6 +24,9 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
+// A royalty fee is a fractional fee that is assessed each time the ownership of an NFT is transferred from
+// person A to person B. The fee collector account ID defined in the royalty fee schedule will receive the
+// royalty fee each time. The royalty fee charged is a fraction of the value exchanged for the NFT.
 type CustomRoyaltyFee struct {
 	CustomFee
 	Numerator   int64
@@ -31,6 +34,9 @@ type CustomRoyaltyFee struct {
 	FallbackFee *CustomFixedFee
 }
 
+// A royalty fee is a fractional fee that is assessed each time the ownership of an NFT is transferred from
+// person A to person B. The fee collector account ID defined in the royalty fee schedule will receive the
+// royalty fee each time. The royalty fee charged is a fraction of the value exchanged for the NFT.
 func NewCustomRoyaltyFee() *CustomRoyaltyFee {
 	return &CustomRoyaltyFee{
 		CustomFee:   CustomFee{},

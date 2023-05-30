@@ -27,11 +27,17 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
+// FileInfoQuery is a query which can be used to get all of the information about a file, except for its contents.
+// When a file expires, it no longer exists, and there will be no info about it, and the fileInfo field will be blank.
+// If a transaction or smart contract deletes the file, but it has not yet expired, then the
+// fileInfo field will be non-empty, the deleted field will be true, its size will be 0,
+// and its contents will be empty. Note that each file has a FileID, but does not have a filename.
 type FileInfoQuery struct {
 	Query
 	fileID *FileID
 }
 
+// NewFileInfoQuery creates a FileInfoQuery which can be used to get all of the information about a file, except for its contents.
 func NewFileInfoQuery() *FileInfoQuery {
 	header := services.QueryHeader{}
 	return &FileInfoQuery{

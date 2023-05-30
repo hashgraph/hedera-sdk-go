@@ -101,6 +101,7 @@ func AssessedCustomFeeFromBytes(data []byte) (AssessedCustomFee, error) {
 	return _AssessedCustomFeeFromProtobuf(&pb), nil
 }
 
+// String returns a string representation of a AssessedCustomFee
 func (fee AssessedCustomFee) String() string {
 	accountIDs := ""
 	for _, s := range fee.PayerAccountIDs {

@@ -26,6 +26,7 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/mirror"
 )
 
+// TopicMessage is a message from a topic}
 type TopicMessage struct {
 	ConsensusTimestamp time.Time
 	Contents           []byte

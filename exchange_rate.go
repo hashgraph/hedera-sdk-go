@@ -27,6 +27,7 @@ import (
 	protobuf "google.golang.org/protobuf/proto"
 )
 
+// ExchangeRate is the exchange rate between HBAR and USD
 type ExchangeRate struct {
 	Hbars          int32
 	cents          int32

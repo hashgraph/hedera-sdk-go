@@ -27,6 +27,7 @@ import (
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
+// TokenNftAllowance is a struct to encapsulate the nft methods for token allowance's.
 type TokenNftAllowance struct {
 	TokenID           *TokenID
 	SpenderAccountID  *AccountID
@@ -36,6 +37,7 @@ type TokenNftAllowance struct {
 	DelegatingSpender *AccountID
 }
 
+// NewTokenNftAllowance creates a TokenNftAllowance delegate for the given tokenID, owner, spender, serialNumbers, approvedForAll, and delegatingSpender
 func NewTokenNftAllowance(tokenID TokenID, owner AccountID, spender AccountID, serialNumbers []int64, approvedForAll bool, delegatingSpender AccountID) TokenNftAllowance {
 	return TokenNftAllowance{
 		TokenID:           &tokenID,

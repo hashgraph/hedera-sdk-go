@@ -9,6 +9,8 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
+// EthereumTransaction is used to create a EthereumTransaction transaction which can be used to construct and execute
+// a Ethereum Transaction.
 type EthereumTransaction struct {
 	Transaction
 	ethereumData  []byte
@@ -16,6 +18,8 @@ type EthereumTransaction struct {
 	MaxGasAllowed int64
 }
 
+// NewEthereumTransaction creates a EthereumTransaction transaction which can be used to construct and execute
+// a Ethereum Transaction.
 func NewEthereumTransaction() *EthereumTransaction {
 	transaction := EthereumTransaction{
 		Transaction: _NewTransaction(),
@@ -50,6 +54,7 @@ func (transaction *EthereumTransaction) SetEthereumData(data []byte) *EthereumTr
 	return transaction
 }
 
+// GetEthereumData returns the raw Ethereum transaction (RLP encoded type 0, 1, and 2).
 func (transaction *EthereumTransaction) GetEthereumData() []byte {
 	return transaction.ethereumData
 }
@@ -61,6 +66,7 @@ func (transaction *EthereumTransaction) SetCallData(file FileID) *EthereumTransa
 	return transaction
 }
 
+// SetCallDataFileID sets the file ID containing the call data.
 func (transaction *EthereumTransaction) SetCallDataFileID(file FileID) *EthereumTransaction {
 	transaction._RequireNotFrozen()
 	transaction.callData = &file
@@ -90,12 +96,16 @@ func (transaction *EthereumTransaction) SetMaxGasAllowed(gas int64) *EthereumTra
 	return transaction
 }
 
+// SetMaxGasAllowanceHbar sets the maximum amount, that the payer of the hedera transaction
+// is willing to pay to complete the transaction.
 func (transaction *EthereumTransaction) SetMaxGasAllowanceHbar(gas Hbar) *EthereumTransaction {
 	transaction._RequireNotFrozen()
 	transaction.MaxGasAllowed = gas.AsTinybar()
 	return transaction
 }
 
+// GetMaxGasAllowed returns the maximum amount, that the payer of the hedera transaction
+// is willing to pay to complete the transaction.
 func (transaction *EthereumTransaction) GetMaxGasAllowed() int64 {
 	return transaction.MaxGasAllowed
 }

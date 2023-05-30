@@ -2,6 +2,7 @@ package hedera
 
 import "github.com/pkg/errors"
 
+// Execute an Ethereum transaction on Hedera
 type EthereumFlow struct {
 	Transaction
 	ethereumData    *EthereumTransactionData
@@ -10,6 +11,7 @@ type EthereumFlow struct {
 	nodeAccountIDs  []AccountID
 }
 
+// Execute an Ethereum transaction on Hedera
 func NewEthereumFlow() *EthereumFlow {
 	transaction := EthereumFlow{
 		Transaction: _NewTransaction(),
@@ -20,12 +22,14 @@ func NewEthereumFlow() *EthereumFlow {
 	return &transaction
 }
 
+// SetEthereumData sets the raw Ethereum transaction.
 func (transaction *EthereumFlow) SetEthereumData(data *EthereumTransactionData) *EthereumFlow {
 	transaction._RequireNotFrozen()
 	transaction.ethereumData = data
 	return transaction
 }
 
+// SetEthereumDataBytes sets the raw Ethereum transaction.
 func (transaction *EthereumFlow) SetEthereumDataBytes(data []byte) *EthereumFlow {
 	transaction._RequireNotFrozen()
 	temp, err := EthereumTransactionDataFromBytes(data)
@@ -36,16 +40,19 @@ func (transaction *EthereumFlow) SetEthereumDataBytes(data []byte) *EthereumFlow
 	return transaction
 }
 
+// GetEthreumData  returns the data of the Ethereum transaction
 func (transaction *EthereumFlow) GetEthereumData() *EthereumTransactionData {
 	return transaction.ethereumData
 }
 
+// SetCallDataFileID sets the file ID containing the call data.
 func (transaction *EthereumFlow) SetCallDataFileID(callData FileID) *EthereumFlow {
 	transaction._RequireNotFrozen()
 	transaction.callDataFileID = &callData
 	return transaction
 }
 
+// GetCallDataFileID returns the file ID containing the call data.
 func (transaction *EthereumFlow) GetCallDataFileID() FileID {
 	if transaction.callDataFileID == nil {
 		return FileID{}
@@ -54,12 +61,14 @@ func (transaction *EthereumFlow) GetCallDataFileID() FileID {
 	return *transaction.callDataFileID
 }
 
+// SetMaxGasAllowance sets the maximum gas allowance for the transaction.
 func (transaction *EthereumFlow) SetMaxGasAllowance(max Hbar) *EthereumFlow {
 	transaction._RequireNotFrozen()
 	transaction.maxGasAllowance = &max
 	return transaction
 }
 
+// GetMaxGasAllowance returns the maximum gas allowance for the transaction.
 func (transaction *EthereumFlow) GetMaxGasAllowance() Hbar {
 	if transaction.maxGasAllowance == nil {
 		return Hbar{}
@@ -68,12 +77,14 @@ func (transaction *EthereumFlow) GetMaxGasAllowance() Hbar {
 	return *transaction.maxGasAllowance
 }
 
+// SetNodeAccountIDs sets the node account IDs for this Ethereum transaction.
 func (transaction *EthereumFlow) SetNodeAccountIDs(nodes []AccountID) *EthereumFlow {
 	transaction._RequireNotFrozen()
 	transaction.nodeAccountIDs = nodes
 	return transaction
 }
 
+// GetNodeAccountIDs returns the node account IDs for this Ethereum transaction.
 func (transaction *EthereumFlow) GetNodeAccountIDs() []AccountID {
 	return transaction.nodeAccountIDs
 }

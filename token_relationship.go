@@ -20,6 +20,7 @@ package hedera
  *
  */
 
+// TokenRelationship is the information about a token relationship
 type TokenRelationship struct {
 	TokenID              TokenID
 	Symbol               string

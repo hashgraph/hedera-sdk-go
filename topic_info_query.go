@@ -27,6 +27,7 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
+// TopicInfo is the Query for retrieving information about a topic stored on the Hedera network.
 type TopicInfoQuery struct {
 	Query
 	topicID *TopicID
