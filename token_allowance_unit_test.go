@@ -28,7 +28,7 @@ import (
 	"testing"
 )
 
-func TestNewTokenAllowance(t *testing.T) {
+func TestUnitNewTokenAllowance(t *testing.T) {
 	tokID := TokenID{Token: 3}
 	owner := AccountID{Account: 5}
 	spender := AccountID{Account: 6}
@@ -46,7 +46,7 @@ func TestNewTokenAllowance(t *testing.T) {
 	assert.Equal(t, newAllowance, allowance)
 }
 
-func TestTokenAllowanceFromProtobuf(t *testing.T) {
+func TestUnitTokenAllowanceFromProtobuf(t *testing.T) {
 	tokID := TokenID{Token: 3}
 	owner := AccountID{Account: 5}
 	spender := AccountID{Account: 6}
@@ -61,7 +61,7 @@ func TestTokenAllowanceFromProtobuf(t *testing.T) {
 	assert.Equal(t, allowance, allowance2)
 }
 
-func TestTokenAllowance_String(t *testing.T) {
+func TestUnitTokenAllowance_String(t *testing.T) {
 	tokID := TokenID{Token: 3}
 	owner := AccountID{Account: 5}
 	spender := AccountID{Account: 6}

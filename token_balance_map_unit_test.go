@@ -29,7 +29,7 @@ import (
 	"testing"
 )
 
-func TestTokenBalanceMapGet(t *testing.T) {
+func TestUnitTokenBalanceMapGet(t *testing.T) {
 	var tokenBalances TokenBalanceMap
 	tokenBalances.balances = make(map[string]uint64)
 	tokenBalances.balances["0.0.123"] = 100
@@ -37,7 +37,7 @@ func TestTokenBalanceMapGet(t *testing.T) {
 	assert.Equal(t, uint64(100), tokenBalances.Get(TokenID{Shard: 0, Realm: 0, Token: 123}))
 }
 
-func TestTokenBalanceMapProtobuf(t *testing.T) {
+func TestUnitTokenBalanceMapProtobuf(t *testing.T) {
 	var tokenBalances TokenBalanceMap
 	tokenBalances.balances = make(map[string]uint64)
 	tokenBalances.balances["0.0.123"] = 100
@@ -48,7 +48,7 @@ func TestTokenBalanceMapProtobuf(t *testing.T) {
 	assert.Equal(t, tokenBalances.balances, tokenBalances2.balances)
 }
 
-func TestTokenBalanceMapEmpty(t *testing.T) {
+func TestUnitTokenBalanceMapEmpty(t *testing.T) {
 	var tokenBalances TokenBalanceMap
 	tokenBalances.balances = make(map[string]uint64)
 

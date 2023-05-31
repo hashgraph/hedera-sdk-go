@@ -29,7 +29,7 @@ import (
 	"testing"
 )
 
-func TestTokenDecimalMapGet(t *testing.T) {
+func TestUnitTokenDecimalMapGet(t *testing.T) {
 	tokenDecimals := TokenDecimalMap{
 		decimals: map[string]uint64{
 			"0.0.123": 9,
@@ -41,7 +41,7 @@ func TestTokenDecimalMapGet(t *testing.T) {
 	assert.Equal(t, uint64(10), tokenDecimals.Get(TokenID{Shard: 0, Realm: 0, Token: 124}))
 }
 
-func TestTokenDecimalMapToProtobuf(t *testing.T) {
+func TestUnitTokenDecimalMapToProtobuf(t *testing.T) {
 	tokenDecimals := TokenDecimalMap{
 		decimals: map[string]uint64{
 			"0.0.123": 9,
@@ -56,7 +56,7 @@ func TestTokenDecimalMapToProtobuf(t *testing.T) {
 	assert.Equal(t, uint32(10), decimals[1].Decimals)
 }
 
-func TestTokenDecimalMapFromProtobuf(t *testing.T) {
+func TestUnitTokenDecimalMapFromProtobuf(t *testing.T) {
 	decimals := make([]*services.TokenBalance, 0)
 	decimals = append(decimals, &services.TokenBalance{
 		TokenId:  &services.TokenID{ShardNum: 0, RealmNum: 0, TokenNum: 123},
@@ -73,7 +73,7 @@ func TestTokenDecimalMapFromProtobuf(t *testing.T) {
 	assert.Equal(t, uint64(10), tokenDecimals.Get(TokenID{Shard: 0, Realm: 0, Token: 124}))
 }
 
-func TestTokenDecimalMapFromProtobufEmpty(t *testing.T) {
+func TestUnitTokenDecimalMapFromProtobufEmpty(t *testing.T) {
 	tokenDecimals := TokenDecimalMap{
 		decimals: map[string]uint64{
 			"0.123":   9, // invalid token
