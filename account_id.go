@@ -126,7 +126,7 @@ func (id *AccountID) ValidateChecksum(client *Client) error {
 	if id.AliasKey != nil {
 		return errors.New("Account ID contains alias key, unable to validate")
 	}
-	if !id._IsZero() && client != nil && client.network.ledgerID != nil {
+	if !id._IsZero() && client != nil {
 		var tempChecksum _ParseAddressResult
 		var err error
 		tempChecksum, err = _ChecksumParseAddress(client.GetLedgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Account))
@@ -141,38 +141,23 @@ func (id *AccountID) ValidateChecksum(client *Client) error {
 			return errChecksumMissing
 		}
 		if tempChecksum.correctChecksum != *id.checksum {
-			temp, _ := client.network.ledgerID.ToNetworkName()
+			networkName := NetworkNameOther
+			if client.network.ledgerID != nil {
+				networkName, _ = client.network.ledgerID.ToNetworkName()
+			}
 			return errors.New(fmt.Sprintf("network mismatch or wrong checksum given, given checksum: %s, correct checksum %s, network: %s",
 				*id.checksum,
 				tempChecksum.correctChecksum,
-				temp))
+				networkName))
 		}
 	}
 
 	return nil
 }
 
-// Deprecated
+// Deprecated - use ValidateChecksum instead
 func (id *AccountID) Validate(client *Client) error {
-	if id.AliasKey != nil {
-		return errors.New("Account ID contains alias key, unable to validate")
-	}
-	if !id._IsZero() && client != nil && client.network.ledgerID != nil {
-		tempChecksum, err := _ChecksumParseAddress(client.GetLedgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Account))
-		if err != nil {
-			return err
-		}
-		err = _ChecksumVerify(tempChecksum.status)
-		if err != nil {
-			return err
-		}
-
-		if tempChecksum.correctChecksum != *id.checksum {
-			return errNetworkMismatch
-		}
-	}
-
-	return nil
+	return id.ValidateChecksum(client)
 }
 
 // String returns the string representation of an AccountID in

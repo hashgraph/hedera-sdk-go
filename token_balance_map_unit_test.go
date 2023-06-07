@@ -24,9 +24,10 @@ package hedera
  */
 
 import (
+	"testing"
+
 	"github.com/hashgraph/hedera-protobufs-go/services"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestUnitTokenBalanceMapGet(t *testing.T) {

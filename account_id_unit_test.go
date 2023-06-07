@@ -33,13 +33,14 @@ import (
 
 func TestUnitAccountIDChecksumFromString(t *testing.T) {
 	id, err := AccountIDFromString("0.0.123-rmkyk")
-
+	require.NoError(t, err)
 	client := ClientForTestnet()
 	id.ToStringWithChecksum(client)
 	id.GetChecksum()
 	sol := id.ToSolidityAddress()
 	AccountIDFromSolidityAddress(sol)
-	id.Validate(client)
+	err = id.Validate(client)
+	require.Error(t, err)
 	evmID, err := AccountIDFromEvmAddress(0, 0, "ace082947b949651c703ff0f02bc1541")
 	require.NoError(t, err)
 	pb := evmID._ToProtobuf()

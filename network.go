@@ -88,15 +88,6 @@ func (network *_Network) _GetNode() *_Node {
 	return network._ManagedNetwork._GetNode().(*_Node)
 }
 
-func (network *_Network) _GetNetworkName() *NetworkName {
-	if network._ManagedNetwork._GetLedgerID() != nil {
-		temp, _ := network._ManagedNetwork._GetLedgerID().ToNetworkName()
-		return &temp
-	}
-
-	return nil
-}
-
 func (network *_Network) _GetLedgerID() *LedgerID {
 	if network._ManagedNetwork._GetLedgerID() != nil {
 		return network._ManagedNetwork._GetLedgerID()
@@ -135,15 +126,6 @@ func (network *_Network) _SetLedgerID(id LedgerID) {
 			}
 		}
 	}
-}
-
-func (network *_Network) _SetNetworkName(net NetworkName) {
-	ledger, err := LedgerIDFromNetworkName(net)
-	if err != nil {
-		panic(err)
-	}
-
-	network._SetLedgerID(*ledger)
 }
 
 func (network *_Network) _GetNodeAccountIDsForExecute() []AccountID { //nolint

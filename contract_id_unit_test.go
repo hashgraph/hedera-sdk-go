@@ -38,10 +38,11 @@ func TestUnitContractIDChecksumFromString(t *testing.T) {
 	require.NoError(t, err)
 
 	client := ClientForTestnet()
-	id.ToStringWithChecksum(*client)
+	fmt.Println(id.ToStringWithChecksum(*client))
 	sol := id.ToSolidityAddress()
 	ContractIDFromSolidityAddress(sol)
-	id.Validate(client)
+	err = id.Validate(client)
+	require.Error(t, err)
 	evmID, err := ContractIDFromEvmAddress(0, 0, "ace082947b949651c703ff0f02bc1541")
 	require.NoError(t, err)
 	pb := evmID._ToProtobuf()

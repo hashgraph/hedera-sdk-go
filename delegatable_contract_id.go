@@ -59,14 +59,14 @@ func DelegatableContractIDFromString(data string) (DelegatableContractID, error)
 		Shard:      uint64(shard),
 		Realm:      uint64(realm),
 		Contract:   uint64(num),
-		EvmAddress: []byte{},
+		EvmAddress: nil,
 		checksum:   checksum,
 	}, nil
 }
 
 // Verify that the client has a valid checksum.
 func (id *DelegatableContractID) ValidateChecksum(client *Client) error {
-	if !id._IsZero() && client != nil && client.network.ledgerID != nil {
+	if !id._IsZero() && client != nil {
 		var tempChecksum _ParseAddressResult
 		var err error
 		if client.network.ledgerID != nil {
@@ -83,18 +83,21 @@ func (id *DelegatableContractID) ValidateChecksum(client *Client) error {
 			return errChecksumMissing
 		}
 		if tempChecksum.correctChecksum != *id.checksum {
-			temp, _ := client.network.ledgerID.ToNetworkName()
+			networkName := NetworkNameOther
+			if client.network.ledgerID != nil {
+				networkName, _ = client.network.ledgerID.ToNetworkName()
+			}
 			return errors.New(fmt.Sprintf("network mismatch or wrong checksum given, given checksum: %s, correct checksum %s, network: %s",
 				*id.checksum,
 				tempChecksum.correctChecksum,
-				temp))
+				networkName))
 		}
 	}
 
 	return nil
 }
 
-// DelegatableContractIDFromSolidityAddress constructs a DelegatableContractID from a string representation of a _Solidity address
+// DelegatableContractIDFromEvmAddress constructs a DelegatableContractID from a string representation of a _Solidity address
 func DelegatableContractIDFromEvmAddress(shard uint64, realm uint64, evmAddress string) (DelegatableContractID, error) {
 	temp, err := hex.DecodeString(evmAddress)
 	if err != nil {

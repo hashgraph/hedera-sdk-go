@@ -83,7 +83,7 @@ var previewnetMirror = []string{"previewnet.mirrornode.hedera.com:443"}
 // ClientForNetwork constructs a client given a set of nodes.
 func ClientForNetwork(network map[string]AccountID) *Client {
 	net := _NewNetwork()
-	client := _NewClient(net, []string{}, "mainnet")
+	client := _NewClient(net, []string{}, nil)
 	_ = client.SetNetwork(network)
 	net._SetLedgerID(*NewLedgerIDMainnet())
 	return client
@@ -94,7 +94,7 @@ func ClientForNetwork(network map[string]AccountID) *Client {
 // Most users will want to set an _Operator account with .SetOperator so
 // transactions can be automatically given TransactionIDs and signed.
 func ClientForMainnet() *Client {
-	return _NewClient(*_NetworkForMainnet(mainnetNodes._ToMap()), mainnetMirror, NetworkNameMainnet)
+	return _NewClient(*_NetworkForMainnet(mainnetNodes._ToMap()), mainnetMirror, NewLedgerIDMainnet())
 }
 
 // ClientForTestnet returns a preconfigured client for use with the standard
@@ -102,7 +102,7 @@ func ClientForMainnet() *Client {
 // Most users will want to set an _Operator account with .SetOperator so
 // transactions can be automatically given TransactionIDs and signed.
 func ClientForTestnet() *Client {
-	return _NewClient(*_NetworkForTestnet(testnetNodes._ToMap()), testnetMirror, NetworkNameTestnet)
+	return _NewClient(*_NetworkForTestnet(testnetNodes._ToMap()), testnetMirror, NewLedgerIDTestnet())
 }
 
 // ClientForPreviewnet returns a preconfigured client for use with the standard
@@ -110,12 +110,12 @@ func ClientForTestnet() *Client {
 // Most users will want to set an _Operator account with .SetOperator so
 // transactions can be automatically given TransactionIDs and signed.
 func ClientForPreviewnet() *Client {
-	return _NewClient(*_NetworkForPreviewnet(previewnetNodes._ToMap()), previewnetMirror, NetworkNamePreviewnet)
+	return _NewClient(*_NetworkForPreviewnet(previewnetNodes._ToMap()), previewnetMirror, NewLedgerIDPreviewnet())
 }
 
 // newClient takes in a map of _Node addresses to their respective IDS (_Network)
 // and returns a Client instance which can be used to
-func _NewClient(network _Network, mirrorNetwork []string, name NetworkName) *Client {
+func _NewClient(network _Network, mirrorNetwork []string, ledgerId *LedgerID) *Client {
 	ctx, cancel := context.WithCancel(context.Background())
 	client := Client{
 		defaultMaxQueryPayment:          NewHbar(1),
@@ -132,7 +132,9 @@ func _NewClient(network _Network, mirrorNetwork []string, name NetworkName) *Cli
 	}
 
 	client.SetMirrorNetwork(mirrorNetwork)
-	client.network._SetNetworkName(name)
+	if ledgerId != nil {
+		client.SetLedgerID(*ledgerId)
+	}
 
 	// We can't ask for AddressBook from non existent Mirror node
 	if len(mirrorNetwork) > 0 {
@@ -267,16 +269,16 @@ func ClientFromConfig(jsonBytes []byte) (*Client, error) {
 				return client, errors.New("mirrorNetwork is expected to be either string or an array of strings")
 			}
 		}
-		client = _NewClient(network, arr, NetworkNameMainnet)
+		client = _NewClient(network, arr, nil)
 	case string:
 		if len(mirror) > 0 {
 			switch mirror {
 			case string(NetworkNameMainnet):
-				client = _NewClient(network, mainnetMirror, NetworkNameMainnet)
-			case string(NetworkNamePreviewnet):
-				client = _NewClient(network, previewnetMirror, NetworkNamePreviewnet)
+				client = _NewClient(network, mainnetMirror, NewLedgerIDMainnet())
 			case string(NetworkNameTestnet):
-				client = _NewClient(network, testnetMirror, NetworkNameTestnet)
+				client = _NewClient(network, testnetMirror, NewLedgerIDTestnet())
+			case string(NetworkNamePreviewnet):
+				client = _NewClient(network, previewnetMirror, NewLedgerIDPreviewnet())
 			}
 		}
 	default:
@@ -507,12 +509,14 @@ func (client *Client) GetCertificateVerification() bool {
 
 // Deprecated: Use SetLedgerID instead
 func (client *Client) SetNetworkName(name NetworkName) {
-	client.network._SetNetworkName(name)
+	ledgerID, _ := LedgerIDFromNetworkName(name)
+	client.SetLedgerID(*ledgerID)
 }
 
 // Deprecated: Use GetLedgerID instead
 func (client *Client) GetNetworkName() *NetworkName {
-	return client.network._GetNetworkName()
+	name, _ := client.GetLedgerID().ToNetworkName()
+	return &name
 }
 
 // SetLedgerID sets the ledger ID for the Client.
