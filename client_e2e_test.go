@@ -37,7 +37,7 @@ func DisabledTestIntegrationClientPingAllBadNetwork(t *testing.T) { // nolint
 	netwrk := _NewNetwork()
 	netwrk.SetNetwork(env.Client.GetNetwork())
 
-	tempClient := _NewClient(netwrk, env.Client.GetMirrorNetwork(), *env.Client.GetNetworkName())
+	tempClient := _NewClient(netwrk, env.Client.GetMirrorNetwork(), env.Client.GetLedgerID())
 	tempClient.SetOperator(env.OperatorID, env.OperatorKey)
 
 	tempClient.SetMaxNodeAttempts(1)

@@ -132,7 +132,7 @@ func TokenIDFromString(data string) (TokenID, error) {
 
 // Verify that the client has a valid checksum.
 func (id *TokenID) ValidateChecksum(client *Client) error {
-	if !id._IsZero() && client != nil && client.network.ledgerID != nil {
+	if !id._IsZero() && client != nil {
 		var tempChecksum _ParseAddressResult
 		var err error
 		tempChecksum, err = _ChecksumParseAddress(client.GetLedgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Token))
@@ -147,15 +147,23 @@ func (id *TokenID) ValidateChecksum(client *Client) error {
 			return errChecksumMissing
 		}
 		if tempChecksum.correctChecksum != *id.checksum {
-			temp, _ := client.network.ledgerID.ToNetworkName()
+			networkName := NetworkNameOther
+			if client.network.ledgerID != nil {
+				networkName, _ = client.network.ledgerID.ToNetworkName()
+			}
 			return errors.New(fmt.Sprintf("network mismatch or wrong checksum given, given checksum: %s, correct checksum %s, network: %s",
 				*id.checksum,
 				tempChecksum.correctChecksum,
-				temp))
+				networkName))
 		}
 	}
 
 	return nil
+}
+
+// Deprecated - use ValidateChecksum instead
+func (id *TokenID) Validate(client *Client) error {
+	return id.ValidateChecksum(client)
 }
 
 // TokenIDFromSolidityAddress constructs a TokenID from a string
@@ -178,32 +186,6 @@ func TokenIDFromSolidityAddress(s string) (TokenID, error) {
 // _Solidity address.
 func (id TokenID) ToSolidityAddress() string {
 	return _IdToSolidityAddress(id.Shard, id.Realm, id.Token)
-}
-
-// Deprecated
-func (id *TokenID) Validate(client *Client) error {
-	if !id._IsZero() && client != nil && client.GetNetworkName() != nil {
-		tempChecksum, err := _ChecksumParseAddress(client.GetLedgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Token))
-		if err != nil {
-			return err
-		}
-		err = _ChecksumVerify(tempChecksum.status)
-		if err != nil {
-			return err
-		}
-		if id.checksum == nil {
-			return errChecksumMissing
-		}
-		if tempChecksum.correctChecksum != *id.checksum {
-			temp, _ := client.network.ledgerID.ToNetworkName()
-			return errors.New(fmt.Sprintf("network mismatch or wrong checksum given, given checksum: %s, correct checksum %s, network: %s",
-				*id.checksum,
-				tempChecksum.correctChecksum,
-				temp))
-		}
-	}
-
-	return nil
 }
 
 func (id TokenID) _IsZero() bool {

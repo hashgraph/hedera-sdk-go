@@ -54,7 +54,7 @@ func TopicIDFromString(data string) (TopicID, error) {
 
 // Verify that the client has a valid checksum.
 func (id *TopicID) ValidateChecksum(client *Client) error {
-	if !id._IsZero() && client != nil && client.network.ledgerID != nil {
+	if !id._IsZero() && client != nil {
 		tempChecksum, err := _ChecksumParseAddress(client.GetLedgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Topic))
 		if err != nil {
 			return err
@@ -67,43 +67,23 @@ func (id *TopicID) ValidateChecksum(client *Client) error {
 			return errChecksumMissing
 		}
 		if tempChecksum.correctChecksum != *id.checksum {
-			temp, _ := client.network.ledgerID.ToNetworkName()
+			networkName := NetworkNameOther
+			if client.network.ledgerID != nil {
+				networkName, _ = client.network.ledgerID.ToNetworkName()
+			}
 			return errors.New(fmt.Sprintf("network mismatch or wrong checksum given, given checksum: %s, correct checksum %s, network: %s",
 				*id.checksum,
 				tempChecksum.correctChecksum,
-				temp))
+				networkName))
 		}
 	}
 
 	return nil
 }
 
-// Deprecated
+// Deprecated - use ValidateChecksum instead
 func (id *TopicID) Validate(client *Client) error {
-	if !id._IsZero() && client != nil && client.network.ledgerID != nil {
-		var tempChecksum _ParseAddressResult
-		var err error
-		tempChecksum, err = _ChecksumParseAddress(client.GetLedgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Topic))
-		if err != nil {
-			return err
-		}
-		err = _ChecksumVerify(tempChecksum.status)
-		if err != nil {
-			return err
-		}
-		if id.checksum == nil {
-			return errChecksumMissing
-		}
-		if tempChecksum.correctChecksum != *id.checksum {
-			temp, _ := client.network.ledgerID.ToNetworkName()
-			return errors.New(fmt.Sprintf("network mismatch or wrong checksum given, given checksum: %s, correct checksum %s, network: %s",
-				*id.checksum,
-				tempChecksum.correctChecksum,
-				temp))
-		}
-	}
-
-	return nil
+	return id.ValidateChecksum(client)
 }
 
 func (id TopicID) _IsZero() bool {

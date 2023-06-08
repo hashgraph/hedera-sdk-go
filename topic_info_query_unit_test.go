@@ -38,7 +38,8 @@ func TestUnitTopicInfoQueryValidate(t *testing.T) {
 	client.SetAutoValidateChecksums(true)
 	topicID, err := TopicIDFromString("0.0.123-esxsf")
 	require.NoError(t, err)
-
+	err = topicID.Validate(client)
+	require.NoError(t, err)
 	topicInfo := NewTopicInfoQuery().
 		SetTopicID(topicID)
 
@@ -51,7 +52,8 @@ func TestUnitTopicInfoQueryValidateWrong(t *testing.T) {
 	client.SetAutoValidateChecksums(true)
 	topicID, err := TopicIDFromString("0.0.123-rmkykd")
 	require.NoError(t, err)
-
+	err = topicID.Validate(client)
+	require.Error(t, err)
 	topicInfo := NewTopicInfoQuery().
 		SetTopicID(topicID)
 

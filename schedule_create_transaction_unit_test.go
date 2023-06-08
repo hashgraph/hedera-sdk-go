@@ -69,7 +69,8 @@ func TestUnitScheduleSignTransactionValidate(t *testing.T) {
 	client.SetAutoValidateChecksums(true)
 	scheduleID, err := ScheduleIDFromString("0.0.123-esxsf")
 	require.NoError(t, err)
-
+	err = scheduleID.Validate(client)
+	require.NoError(t, err)
 	scheduleSign := NewScheduleSignTransaction().
 		SetScheduleID(scheduleID)
 
@@ -82,7 +83,8 @@ func TestUnitScheduleSignTransactionValidateWrong(t *testing.T) {
 	client.SetAutoValidateChecksums(true)
 	scheduleID, err := ScheduleIDFromString("0.0.123-rmkykd")
 	require.NoError(t, err)
-
+	err = scheduleID.Validate(client)
+	require.Error(t, err)
 	scheduleSign := NewScheduleSignTransaction().
 		SetScheduleID(scheduleID)
 
