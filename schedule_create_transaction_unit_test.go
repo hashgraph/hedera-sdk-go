@@ -231,7 +231,6 @@ func TestUnitScheduleDeleteTransactionGet(t *testing.T) {
 }
 
 func TestUnitScheduleDeleteTransactionSetNothing(t *testing.T) {
-
 	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
 	transactionID := TransactionIDGenerate(AccountID{Account: 324})
 
