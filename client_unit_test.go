@@ -55,18 +55,52 @@ func TestUnitClientFromConfigWithOperator(t *testing.T) {
 	assert.Equal(t, AccountID{Account: 3}.Account, client.operator.accountID.Account)
 }
 
-func TestUnitClientFromConfigWrongType(t *testing.T) {
+func TestUnitClientFromConfigWithoutMirrorNetwork(t *testing.T) {
+	client, err := ClientFromConfig([]byte(testClientJSONWithoutMirrorNetwork))
+	require.NoError(t, err)
+	assert.NotNil(t, client)
+
+	assert.True(t, len(client.network.network) > 0)
+	assert.True(t, len(client.GetMirrorNetwork()) == 0)
+}
+
+func TestUnitClientFromConfigWrongMirrorNetworkType(t *testing.T) {
 	_, err := ClientFromConfig([]byte(testClientJSONWrongTypeMirror))
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, "mirrorNetwork is expected to be either string or an array of strings", err.Error())
+		assert.Equal(t, "mirrorNetwork is expected to be a string, an array of strings or nil", err.Error())
 	}
+}
 
-	_, err = ClientFromConfig([]byte(testClientJSONWrongTypeNetwork))
+func TestUnitClientFromConfigWrongNetworkType(t *testing.T) {
+	_, err := ClientFromConfig([]byte(testClientJSONWrongTypeNetwork))
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "network is expected to be map of string to string, or string", err.Error())
 	}
+}
+
+func TestUnitClientFromConfigWrongAccountIDNetworkType(t *testing.T) {
+	_, err := ClientFromConfig([]byte(testClientJSONWrongAccountIDNetwork))
+	assert.Error(t, err)
+	if err != nil {
+		assert.Equal(t, "expected {shard}.{realm}.{num}", err.Error())
+	}
+}
+
+func TestUnitClientFromCorrectConfigFile(t *testing.T) {
+	client, err := ClientFromConfigFile("client-config-with-operator.json")
+	assert.NoError(t, err)
+	assert.NotNil(t, client)
+	assert.NotNil(t, client.operator)
+	assert.Equal(t, AccountID{Account: 3}.Account, client.operator.accountID.Account)
+	assert.Equal(t, "a608e2130a0a3cb34f86e757303c862bee353d9ab77ba4387ec084f881d420d4", client.operator.privateKey.StringRaw())
+}
+
+func TestUnitClientFromMissingConfigFile(t *testing.T) {
+	client, err := ClientFromConfigFile("missing.json")
+	assert.Error(t, err)
+	assert.Nil(t, client)
 }
 
 func TestUnitClientSetNetworkExtensive(t *testing.T) {
