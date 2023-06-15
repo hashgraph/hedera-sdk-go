@@ -281,8 +281,10 @@ func ClientFromConfig(jsonBytes []byte) (*Client, error) {
 				client = _NewClient(network, previewnetMirror, NewLedgerIDPreviewnet())
 			}
 		}
+	case nil:
+		client = _NewClient(network, []string{}, nil)
 	default:
-		return client, errors.New("mirrorNetwork is expected to be either string or an array of strings")
+		return client, errors.New("mirrorNetwork is expected to be a string, an array of strings or nil")
 	}
 
 	// if the _Operator is not provided, finish here
