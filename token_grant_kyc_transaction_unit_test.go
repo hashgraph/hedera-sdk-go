@@ -36,7 +36,11 @@ import (
 )
 
 func TestUnitTokenGrantKycTransactionValidate(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	accountID, err := AccountIDFromString("0.0.123-esxsf")
 	require.NoError(t, err)
@@ -52,7 +56,11 @@ func TestUnitTokenGrantKycTransactionValidate(t *testing.T) {
 }
 
 func TestUnitTokenGrantKycTransactionValidateWrong(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	accountID, err := AccountIDFromString("0.0.123-rmkykd")
 	require.NoError(t, err)
@@ -71,6 +79,8 @@ func TestUnitTokenGrantKycTransactionValidateWrong(t *testing.T) {
 }
 
 func TestUnitTokenGrantKycTransactionGet(t *testing.T) {
+	t.Parallel()
+
 	tokenID := TokenID{Token: 7}
 
 	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
@@ -107,6 +117,8 @@ func TestUnitTokenGrantKycTransactionGet(t *testing.T) {
 }
 
 func TestUnitTokenGrantKycTransactionNothingSet(t *testing.T) {
+	t.Parallel()
+
 	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
 	transactionID := TransactionIDGenerate(AccountID{Account: 324})
 
@@ -135,6 +147,8 @@ func TestUnitTokenGrantKycTransactionNothingSet(t *testing.T) {
 }
 
 func TestUnitTokenGrantKycTransactionProtoCheck(t *testing.T) {
+	t.Parallel()
+
 	tokenID := TokenID{Token: 7}
 	accountID := AccountID{Account: 7}
 	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
@@ -161,6 +175,8 @@ func TestUnitTokenGrantKycTransactionProtoCheck(t *testing.T) {
 }
 
 func TestUnitTokenGrantKycTransactionCoverage(t *testing.T) {
+	t.Parallel()
+
 	checksum := "dmqui"
 	grpc := time.Second * 30
 	token := TokenID{Token: 3, checksum: &checksum}
@@ -171,7 +187,9 @@ func TestUnitTokenGrantKycTransactionCoverage(t *testing.T) {
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
-	client := ClientForTestnet()
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 
 	transaction, err := NewTokenGrantKycTransaction().
@@ -225,6 +243,8 @@ func TestUnitTokenGrantKycTransactionCoverage(t *testing.T) {
 }
 
 func TestUnitTokenGrantKycTransactionMock(t *testing.T) {
+	t.Parallel()
+
 	newKey, err := PrivateKeyFromStringEd25519("302e020100300506032b657004220420a869f4c6191b9c8c99933e7f6b6611711737e4b1a1a5a4cb5370e719a1f6df98")
 	require.NoError(t, err)
 

@@ -35,6 +35,7 @@ import (
 )
 
 func TestIntegrationLiveHashQueryCanExecute(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	_hash, _ := hex.DecodeString("100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002")
@@ -106,6 +107,7 @@ func TestIntegrationLiveHashQueryCanExecute(t *testing.T) {
 }
 
 func TestIntegrationLiveHashQueryGetCost(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	_hash, _ := hex.DecodeString("100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002")

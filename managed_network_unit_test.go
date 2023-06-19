@@ -152,6 +152,8 @@ func (m *mockManagedNode) _InUse() {
 }
 
 func TestUnitManagedNetworkSetGet(t *testing.T) {
+	t.Parallel()
+
 	mn := _NewManagedNetwork()
 	mockNodes := newMockNodes()
 	err := mn._SetNetwork(mockNodes)
@@ -206,6 +208,8 @@ func TestUnitManagedNetworkSetGet(t *testing.T) {
 }
 
 func TestUnitNewManagedNetwork(t *testing.T) {
+	t.Parallel()
+
 	mn := _NewManagedNetwork()
 
 	require.NotNil(t, mn.network)
@@ -223,6 +227,8 @@ func TestUnitNewManagedNetwork(t *testing.T) {
 }
 
 func TestUnitSetNetwork(t *testing.T) {
+	t.Parallel()
+
 	mn := _NewManagedNetwork()
 	mockNodes := newMockNodes()
 	err := mn._SetNetwork(mockNodes)
@@ -257,6 +263,8 @@ func TestUnitSetNetwork(t *testing.T) {
 }
 
 func TestUnitSetNetworkWithErorr(t *testing.T) {
+	t.Parallel()
+
 	mn := _NewManagedNetwork()
 	mockNodes := newMockNodes()
 	address4, _ := _ManagedNodeAddressFromString("node1:50213")
@@ -274,6 +282,8 @@ func TestUnitSetNetworkWithErorr(t *testing.T) {
 }
 
 func TestUnitManagedNetworkCloseWithError(t *testing.T) {
+	t.Parallel()
+
 	mn := _NewManagedNetwork()
 	mockNode := &mockManagedNode{}
 	mockNodeWithError := &mockManagedNodeWithError{
@@ -289,6 +299,8 @@ func TestUnitManagedNetworkCloseWithError(t *testing.T) {
 }
 
 func TestUnitManagedNetworkSetTransportSecurityWithError(t *testing.T) {
+	t.Parallel()
+
 	mn := _NewManagedNetwork()
 	mockNode := &mockManagedNode{}
 	mockNodeWithError := &mockManagedNodeWithError{
@@ -305,6 +317,8 @@ func TestUnitManagedNetworkSetTransportSecurityWithError(t *testing.T) {
 }
 
 func TestUnitSetNetwork_NodeRemoved(t *testing.T) {
+	t.Parallel()
+
 	mn := _NewManagedNetwork()
 	mockNodes := newMockNodes()
 	err := mn._SetNetwork(mockNodes)
@@ -326,6 +340,8 @@ func TestUnitSetNetwork_NodeRemoved(t *testing.T) {
 }
 
 func TestUnitSetNetwork_NodeAdded(t *testing.T) {
+	t.Parallel()
+
 	mn := _NewManagedNetwork()
 	mockNodes := newMockNodes()
 	err := mn._SetNetwork(mockNodes)
@@ -352,6 +368,8 @@ func TestUnitSetNetwork_NodeAdded(t *testing.T) {
 }
 
 func TestUnitSetNetworkRemoveAllNodes(t *testing.T) {
+	t.Parallel()
+
 	mn := _NewManagedNetwork()
 	mockNodes := newMockNodes()
 	err := mn._SetNetwork(mockNodes)
@@ -371,6 +389,8 @@ func TestUnitSetNetworkRemoveAllNodes(t *testing.T) {
 }
 
 func TestUnitReadmitNodes_NodeReadmitted(t *testing.T) {
+	t.Parallel()
+
 	mn := _NewManagedNetwork()
 	mockNodes := newMockNodes()
 	err := mn._SetNetwork(mockNodes)
@@ -400,6 +420,8 @@ func TestUnitReadmitNodes_NodeReadmitted(t *testing.T) {
 }
 
 func TestUnitReadmitNodes_NodeNotReadmitted(t *testing.T) {
+	t.Parallel()
+
 	mn := _NewManagedNetwork()
 	mockNodes := newMockNodes()
 	err := mn._SetNetwork(mockNodes)
@@ -429,6 +451,8 @@ func TestUnitReadmitNodes_NodeNotReadmitted(t *testing.T) {
 }
 
 func TestUnitReadmitNodes_UpdateEarliestReadmitTime(t *testing.T) {
+	t.Parallel()
+
 	mn := _NewManagedNetwork()
 	mockNodes := newMockNodes()
 	err := mn._SetNetwork(mockNodes)
@@ -461,6 +485,8 @@ func TestUnitReadmitNodes_UpdateEarliestReadmitTime(t *testing.T) {
 }
 
 func TestUnitGetNumberOfNodesForTransaction_Default(t *testing.T) {
+	t.Parallel()
+
 	mn := _NewManagedNetwork()
 	mockNodes := newMockNodes()
 	err := mn._SetNetwork(mockNodes)
@@ -474,6 +500,8 @@ func TestUnitGetNumberOfNodesForTransaction_Default(t *testing.T) {
 }
 
 func TestUnitGetNumberOfNodesForTransaction_MaxNodesPerTransaction(t *testing.T) {
+	t.Parallel()
+
 	mn := _NewManagedNetwork()
 	mockNodes := newMockNodes()
 	err := mn._SetNetwork(mockNodes)
@@ -490,6 +518,8 @@ func TestUnitGetNumberOfNodesForTransaction_MaxNodesPerTransaction(t *testing.T)
 }
 
 func TestUnitGetNumberOfNodesForTransaction_MaxNodesGreaterThanNetworkSize(t *testing.T) {
+	t.Parallel()
+
 	mn := _NewManagedNetwork()
 	mockNodes := newMockNodes()
 	err := mn._SetNetwork(mockNodes)
@@ -505,6 +535,8 @@ func TestUnitGetNumberOfNodesForTransaction_MaxNodesGreaterThanNetworkSize(t *te
 }
 
 func TestUnitGetNumberOfNodesForTransaction_MaxNodesNotSet(t *testing.T) {
+	t.Parallel()
+
 	mn := _NewManagedNetwork()
 	mockNodes := newMockNodes()
 	err := mn._SetNetwork(mockNodes)
@@ -516,6 +548,8 @@ func TestUnitGetNumberOfNodesForTransaction_MaxNodesNotSet(t *testing.T) {
 }
 
 func TestUnitGetNode(t *testing.T) {
+	t.Parallel()
+
 	mn := _NewManagedNetwork()
 	mockNodes := newMockNodes()
 	err := mn._SetNetwork(mockNodes)
@@ -542,6 +576,8 @@ func TestUnitGetNode(t *testing.T) {
 }
 
 func TestUnitGetNodePanicNoHealthyNodes(t *testing.T) {
+	t.Parallel()
+
 	mn := _NewManagedNetwork()
 	mockNodes := newMockNodes()
 	err := mn._SetNetwork(mockNodes)

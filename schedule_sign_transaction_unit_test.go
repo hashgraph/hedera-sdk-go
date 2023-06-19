@@ -33,6 +33,8 @@ import (
 )
 
 func TestUnitScheduleSignTransactionCoverage(t *testing.T) {
+	t.Parallel()
+
 	checksum := "dmqui"
 	grpc := time.Second * 30
 	schedule := ScheduleID{Schedule: 3, checksum: &checksum}
@@ -42,7 +44,9 @@ func TestUnitScheduleSignTransactionCoverage(t *testing.T) {
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
-	client := ClientForTestnet()
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 
 	transaction, err := NewScheduleSignTransaction().
@@ -94,6 +98,8 @@ func TestUnitScheduleSignTransactionCoverage(t *testing.T) {
 }
 
 func TestUnitScheduleSignTransactionMock(t *testing.T) {
+	t.Parallel()
+
 	call := func(request *services.Transaction) *services.TransactionResponse {
 		require.NotEmpty(t, request.SignedTransactionBytes)
 		signedTransaction := services.SignedTransaction{}

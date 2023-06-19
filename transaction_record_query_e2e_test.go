@@ -32,6 +32,7 @@ import (
 )
 
 func TestIntegrationTransactionRecordQueryCanExecute(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -94,6 +95,7 @@ func TestIntegrationTransactionRecordQueryCanExecute(t *testing.T) {
 }
 
 func TestIntegrationTransactionRecordQueryReceiptPaymentZero(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -152,6 +154,7 @@ func TestIntegrationTransactionRecordQueryReceiptPaymentZero(t *testing.T) {
 }
 
 func TestIntegrationTransactionRecordQueryInsufficientFee(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -214,6 +217,7 @@ func TestIntegrationTransactionRecordQueryInsufficientFee(t *testing.T) {
 }
 
 func DisabledTestIntegrationTokenTransferRecordsQuery(t *testing.T) { // nolint
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -333,6 +337,7 @@ func DisabledTestIntegrationTokenTransferRecordsQuery(t *testing.T) { // nolint
 }
 
 func DisabledTestIntegrationTokenNftTransferRecordQuery(t *testing.T) { // nolint
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()

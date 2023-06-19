@@ -38,6 +38,8 @@ import (
 )
 
 func TestUnitTransactionSerializationDeserialization(t *testing.T) {
+	t.Parallel()
+
 	transaction, err := _NewMockTransaction()
 	require.NoError(t, err)
 
@@ -74,6 +76,8 @@ func TestUnitTransactionSerializationDeserialization(t *testing.T) {
 }
 
 func TestUnitTransactionValidateBodiesEqual(t *testing.T) {
+	t.Parallel()
+
 	key, err := PrivateKeyFromString(mockPrivateKey)
 	require.NoError(t, err)
 	transaction := services.TransactionBody{
@@ -137,6 +141,8 @@ func TestUnitTransactionValidateBodiesEqual(t *testing.T) {
 }
 
 func DisabledTestUnitTransactionValidateBodiesNotEqual(t *testing.T) {
+	t.Parallel()
+
 	key, err := PrivateKeyFromString(mockPrivateKey)
 	require.NoError(t, err)
 	transaction := services.TransactionBody{
@@ -226,6 +232,8 @@ func DisabledTestUnitTransactionValidateBodiesNotEqual(t *testing.T) {
 }
 
 func TestUnitTransactionToFromBytes(t *testing.T) {
+	t.Parallel()
+
 	duration := time.Second * 10
 	operatorID := AccountID{Account: 5}
 	recepientID := AccountID{Account: 4}
@@ -297,10 +305,14 @@ func TestUnitTransactionToFromBytes(t *testing.T) {
 }
 
 func TestUnitTransactionToFromBytesWithClient(t *testing.T) {
+	t.Parallel()
+
 	duration := time.Second * 10
 	operatorID := AccountID{Account: 5}
 	recepientID := AccountID{Account: 4}
-	client := ClientForTestnet()
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	privateKey, err := PrivateKeyFromString(mockPrivateKey)
 	client.SetOperator(AccountID{Account: 2}, privateKey)
 
@@ -367,9 +379,13 @@ func TestUnitTransactionToFromBytesWithClient(t *testing.T) {
 }
 
 func TestUnitQueryRegression(t *testing.T) {
+	t.Parallel()
+
 	accountID := AccountID{Account: 5}
 	node := []AccountID{{Account: 3}}
-	client := ClientForTestnet()
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	privateKey, err := PrivateKeyFromString(mockPrivateKey)
 	client.SetOperator(AccountID{Account: 2}, privateKey)
 
@@ -410,9 +426,12 @@ func TestUnitQueryRegression(t *testing.T) {
 	})
 }
 func TestUnitTransactionInitFeeMaxTransactionWithouthSettingFee(t *testing.T) {
+	t.Parallel()
+
 	//Default Max Fee for TransferTransaction
 	fee := NewHbar(1)
 	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
 	require.NoError(t, err)
 	transaction, err := NewTransferTransaction().
 		AddHbarTransfer(AccountID{Account: 2}, HbarFromTinybar(-100)).
@@ -423,9 +442,12 @@ func TestUnitTransactionInitFeeMaxTransactionWithouthSettingFee(t *testing.T) {
 }
 
 func TestUnitTransactionInitFeeMaxTransactionFeeSetExplicitly(t *testing.T) {
+	t.Parallel()
+
 	clientMaxFee := NewHbar(14)
 	explicitMaxFee := NewHbar(15)
 	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
 	client.SetDefaultMaxTransactionFee(clientMaxFee)
 	require.NoError(t, err)
 	transaction, err := NewTransferTransaction().
@@ -438,8 +460,11 @@ func TestUnitTransactionInitFeeMaxTransactionFeeSetExplicitly(t *testing.T) {
 }
 
 func TestUnitTransactionInitFeeMaxTransactionFromClientDefault(t *testing.T) {
+	t.Parallel()
+
 	fee := NewHbar(14)
 	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
 	client.SetDefaultMaxTransactionFee(fee)
 	require.NoError(t, err)
 	transaction, err := NewTransferTransaction().

@@ -32,6 +32,7 @@ import (
 )
 
 func TestIntegrationTokenFeeScheduleUpdateTransactionCanExecute(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenCreateTransaction().
@@ -95,6 +96,7 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionCanExecute(t *testing.T) {
 }
 
 func TestIntegrationTokenFeeScheduleUpdateTransactionWithFractional(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenCreateTransaction().
@@ -161,6 +163,7 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionWithFractional(t *testing.T
 }
 
 func TestIntegrationTokenFeeScheduleUpdateTransactionNoFeeScheduleKey(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenCreateTransaction().
@@ -219,6 +222,7 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionNoFeeScheduleKey(t *testing
 }
 
 func DisabledTestIntegrationTokenFeeScheduleUpdateTransactionWrongScheduleKey(t *testing.T) { // nolint
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -288,6 +292,7 @@ func DisabledTestIntegrationTokenFeeScheduleUpdateTransactionWrongScheduleKey(t 
 }
 
 func TestIntegrationTokenFeeScheduleUpdateTransactionScheduleAlreadyHasNoFees(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenCreateTransaction().
@@ -335,6 +340,7 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionScheduleAlreadyHasNoFees(t 
 }
 
 func TestIntegrationTokenFeeScheduleUpdateTransactionFractionalFeeOnlyForFungibleCommon(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenCreateTransaction().
@@ -398,6 +404,7 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionFractionalFeeOnlyForFungibl
 }
 
 func TestIntegrationTokenFeeScheduleUpdateTransactionDenominationMustBeFungibleCommon(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenCreateTransaction().
@@ -477,6 +484,7 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionDenominationMustBeFungibleC
 }
 
 func TestIntegrationTokenFeeScheduleUpdateTransactionCustomFeeListTooLong(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenCreateTransaction().

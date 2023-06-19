@@ -30,6 +30,8 @@ import (
 )
 
 func TestUnitNetworkAddressBookGetsSet(t *testing.T) {
+	t.Parallel()
+
 	network := _NewNetwork()
 	network._SetTransportSecurity(true)
 

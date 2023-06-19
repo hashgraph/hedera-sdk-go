@@ -33,6 +33,7 @@ import (
 )
 
 func TestIntegrationTokenAssociateTransactionCanExecute(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -112,6 +113,7 @@ func TestIntegrationTokenAssociateTransactionCanExecute(t *testing.T) {
 }
 
 func TestIntegrationTokenAssociateTransactionNoAccountID(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenAssociateTransaction().
@@ -127,6 +129,7 @@ func TestIntegrationTokenAssociateTransactionNoAccountID(t *testing.T) {
 }
 
 func TestIntegrationTokenAssociateTransactionNoTokenID(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -205,6 +208,7 @@ func TestIntegrationTokenAssociateTransactionNoTokenID(t *testing.T) {
 }
 
 func TestIntegrationTokenAssociateTransactionAutoAssociate(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()

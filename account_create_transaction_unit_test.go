@@ -38,7 +38,11 @@ import (
 )
 
 func TestUnitAccountCreateTransactionValidate(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	accountID, err := AccountIDFromString("0.0.123-esxsf")
 	require.NoError(t, err)
@@ -51,7 +55,11 @@ func TestUnitAccountCreateTransactionValidate(t *testing.T) {
 }
 
 func TestUnitAccountCreateTransactionValidateWrong(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	accountID, err := AccountIDFromString("0.0.123-rmkykd")
 	require.NoError(t, err)
@@ -67,6 +75,8 @@ func TestUnitAccountCreateTransactionValidateWrong(t *testing.T) {
 }
 
 func TestUnitAccountCreateTransactionMock(t *testing.T) {
+	t.Parallel()
+
 	responses := [][]interface{}{{
 		status.New(codes.Unavailable, "node is UNAVAILABLE").Err(),
 		status.New(codes.Internal, "Received RST_STREAM with code 0").Err(),
@@ -142,6 +152,8 @@ func TestUnitAccountCreateTransactionMock(t *testing.T) {
 }
 
 func TestUnitAccountCreateTransactionGet(t *testing.T) {
+	t.Parallel()
+
 	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
 
 	key, err := PrivateKeyGenerateEd25519()
@@ -184,6 +196,8 @@ func TestUnitAccountCreateTransactionGet(t *testing.T) {
 }
 
 func TestUnitAccountCreateTransactionSetNothing(t *testing.T) {
+	t.Parallel()
+
 	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
 	transactionID := TransactionIDGenerate(AccountID{Account: 324})
 
@@ -217,6 +231,8 @@ func TestUnitAccountCreateTransactionSetNothing(t *testing.T) {
 }
 
 func TestUnitAccountCreateTransactionProtoCheck(t *testing.T) {
+	t.Parallel()
+
 	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
 	stackedAccountID := AccountID{Account: 5}
 
@@ -261,6 +277,8 @@ func TestUnitAccountCreateTransactionProtoCheck(t *testing.T) {
 }
 
 func TestUnitAccountCreateTransactionCoverage(t *testing.T) {
+	t.Parallel()
+
 	checksum := "dmqui"
 	account := AccountID{Account: 3, checksum: &checksum}
 	nodeAccountID := []AccountID{{Account: 10}}
@@ -271,7 +289,9 @@ func TestUnitAccountCreateTransactionCoverage(t *testing.T) {
 
 	alias := "5c562e90feaf0eebd33ea75d21024f249d451417"
 
-	client := ClientForTestnet()
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 
 	transaction, err := NewAccountCreateTransaction().

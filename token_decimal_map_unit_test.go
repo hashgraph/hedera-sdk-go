@@ -31,6 +31,8 @@ import (
 )
 
 func TestUnitTokenDecimalMapGet(t *testing.T) {
+	t.Parallel()
+
 	tokenDecimals := TokenDecimalMap{
 		decimals: map[string]uint64{
 			"0.0.123": 9,
@@ -43,6 +45,8 @@ func TestUnitTokenDecimalMapGet(t *testing.T) {
 }
 
 func TestUnitTokenDecimalMapToProtobuf(t *testing.T) {
+	t.Parallel()
+
 	tokenDecimals := TokenDecimalMap{
 		decimals: map[string]uint64{
 			"0.0.123": 9,
@@ -58,6 +62,8 @@ func TestUnitTokenDecimalMapToProtobuf(t *testing.T) {
 }
 
 func TestUnitTokenDecimalMapFromProtobuf(t *testing.T) {
+	t.Parallel()
+
 	decimals := make([]*services.TokenBalance, 0)
 	decimals = append(decimals, &services.TokenBalance{
 		TokenId:  &services.TokenID{ShardNum: 0, RealmNum: 0, TokenNum: 123},
@@ -75,6 +81,8 @@ func TestUnitTokenDecimalMapFromProtobuf(t *testing.T) {
 }
 
 func TestUnitTokenDecimalMapFromProtobufEmpty(t *testing.T) {
+	t.Parallel()
+
 	tokenDecimals := TokenDecimalMap{
 		decimals: map[string]uint64{
 			"0.123":   9, // invalid token

@@ -31,6 +31,7 @@ import (
 )
 
 func TestSetKeyUsesAnyKey(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -67,6 +68,7 @@ func TestSetKeyUsesAnyKey(t *testing.T) {
 }
 
 func DisabledTestECDSAPrivateKey(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEcdsa()

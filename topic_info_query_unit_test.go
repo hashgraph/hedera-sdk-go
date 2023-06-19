@@ -34,7 +34,11 @@ import (
 )
 
 func TestUnitTopicInfoQueryValidate(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	topicID, err := TopicIDFromString("0.0.123-esxsf")
 	require.NoError(t, err)
@@ -48,7 +52,11 @@ func TestUnitTopicInfoQueryValidate(t *testing.T) {
 }
 
 func TestUnitTopicInfoQueryValidateWrong(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	topicID, err := TopicIDFromString("0.0.123-rmkykd")
 	require.NoError(t, err)
@@ -65,6 +73,8 @@ func TestUnitTopicInfoQueryValidateWrong(t *testing.T) {
 }
 
 func TestUnitTopicInfoQueryGet(t *testing.T) {
+	t.Parallel()
+
 	checksum := "dmqui"
 	topicID := TopicID{Topic: 3, checksum: &checksum}
 	deadline := time.Duration(time.Minute)
@@ -82,9 +92,11 @@ func TestUnitTopicInfoQueryGet(t *testing.T) {
 		SetPaymentTransactionID(transactionID).
 		SetMaxQueryPayment(NewHbar(500)).
 		SetGrpcDeadline(&deadline)
-	client := ClientForTestnet()
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
-	err := query._ValidateNetworkOnIDs(client)
+	err = query._ValidateNetworkOnIDs(client)
 	require.NoError(t, err)
 	require.Equal(t, topicID, query.GetTopicID())
 	require.Equal(t, []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}, query.GetNodeAccountIDs())
@@ -99,6 +111,8 @@ func TestUnitTopicInfoQueryGet(t *testing.T) {
 }
 
 func TestUnitTopicInfoQueryNothingSet(t *testing.T) {
+	t.Parallel()
+
 	query := NewTopicInfoQuery()
 
 	require.Equal(t, TopicID{}, query.GetTopicID())
@@ -112,6 +126,8 @@ func TestUnitTopicInfoQueryNothingSet(t *testing.T) {
 }
 
 func TestUnitTopicInfoQueryMock(t *testing.T) {
+	t.Parallel()
+
 	responses := [][]interface{}{{
 		&services.Response{
 			Response: &services.Response_ConsensusGetTopicInfo{

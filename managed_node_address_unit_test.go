@@ -30,6 +30,8 @@ import (
 )
 
 func TestUnitManagedNodeAddressTest(t *testing.T) {
+	t.Parallel()
+
 	ipAddress, err := _ManagedNodeAddressFromString("35.237.200.180:50211")
 	require.NoError(t, err)
 	require.True(t, *ipAddress.address == "35.237.200.180")

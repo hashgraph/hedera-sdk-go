@@ -38,7 +38,11 @@ import (
 )
 
 func TestUnitFileUpdateTransactionValidate(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	fileID, err := FileIDFromString("0.0.123-esxsf")
 	require.NoError(t, err)
@@ -51,7 +55,11 @@ func TestUnitFileUpdateTransactionValidate(t *testing.T) {
 }
 
 func TestUnitFileUpdateTransactionValidateWrong(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	fileID, err := FileIDFromString("0.0.123-rmkykd")
 	require.NoError(t, err)
@@ -67,6 +75,8 @@ func TestUnitFileUpdateTransactionValidateWrong(t *testing.T) {
 }
 
 func TestUnitFileUpdateTransactionMock(t *testing.T) {
+	t.Parallel()
+
 	newKey, err := PrivateKeyFromStringEd25519("302e020100300506032b657004220420a869f4c6191b9c8c99933e7f6b6611711737e4b1a1a5a4cb5370e719a1f6df98")
 	require.NoError(t, err)
 
@@ -135,6 +145,8 @@ func TestUnitFileUpdateTransactionMock(t *testing.T) {
 }
 
 func TestUnitFileUpdateTransactionGet(t *testing.T) {
+	t.Parallel()
+
 	fileID := FileID{File: 7}
 
 	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
@@ -177,6 +189,8 @@ func TestUnitFileUpdateTransactionGet(t *testing.T) {
 }
 
 func TestUnitFileUpdateTransactionSetNothing(t *testing.T) {
+	t.Parallel()
+
 	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
 	transactionID := TransactionIDGenerate(AccountID{Account: 324})
 
@@ -207,6 +221,8 @@ func TestUnitFileUpdateTransactionSetNothing(t *testing.T) {
 }
 
 func TestUnitFileUpdateTransactionProtoCheck(t *testing.T) {
+	t.Parallel()
+
 	fileID := FileID{File: 7}
 	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
 	transactionID := TransactionIDGenerate(AccountID{Account: 324})
@@ -238,6 +254,8 @@ func TestUnitFileUpdateTransactionProtoCheck(t *testing.T) {
 }
 
 func TestUnitFileUpdateTransactionCoverage(t *testing.T) {
+	t.Parallel()
+
 	checksum := "dmqui"
 	grpc := time.Second * 30
 	file := FileID{File: 3, checksum: &checksum}
@@ -247,7 +265,9 @@ func TestUnitFileUpdateTransactionCoverage(t *testing.T) {
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
-	client := ClientForTestnet()
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 
 	transaction, err := NewFileUpdateTransaction().

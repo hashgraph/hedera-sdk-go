@@ -35,7 +35,11 @@ import (
 )
 
 func TestUnitScheduleInfoQueryValidate(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	scheduleID, err := ScheduleIDFromString("0.0.123-esxsf")
 	require.NoError(t, err)
@@ -48,7 +52,11 @@ func TestUnitScheduleInfoQueryValidate(t *testing.T) {
 }
 
 func TestUnitScheduleInfoQueryValidateWrong(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	scheduleID, err := ScheduleIDFromString("0.0.123-rmkykd")
 	require.NoError(t, err)
@@ -64,6 +72,8 @@ func TestUnitScheduleInfoQueryValidateWrong(t *testing.T) {
 }
 
 func TestUnitScheduleInfoQueryGet(t *testing.T) {
+	t.Parallel()
+
 	checksum := "dmqui"
 	accountId := AccountID{Account: 123}
 	deadline := time.Duration(time.Minute)
@@ -82,9 +92,11 @@ func TestUnitScheduleInfoQueryGet(t *testing.T) {
 		SetPaymentTransactionID(TransactionID{AccountID: &accountId, ValidStart: &validStart}).
 		SetMaxQueryPayment(NewHbar(500)).
 		SetGrpcDeadline(&deadline)
-	client := ClientForTestnet()
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
-	err := query._ValidateNetworkOnIDs(client)
+	err = query._ValidateNetworkOnIDs(client)
 	require.NoError(t, err)
 	require.Equal(t, scheduleID, query.GetScheduleID())
 	require.Equal(t, []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}, query.GetNodeAccountIDs())
@@ -98,6 +110,8 @@ func TestUnitScheduleInfoQueryGet(t *testing.T) {
 }
 
 func TestUnitScheduleInfoQuerySetNothing(t *testing.T) {
+	t.Parallel()
+
 	info := NewScheduleInfoQuery()
 
 	require.Equal(t, ScheduleID{}, info.GetScheduleID())
@@ -111,13 +125,17 @@ func TestUnitScheduleInfoQuerySetNothing(t *testing.T) {
 }
 
 func TestUnitScheduleInfoQueryCoverage(t *testing.T) {
+	t.Parallel()
+
 	checksum := "dmqui"
 	deadline := time.Second * 3
 	schedule := ScheduleID{Schedule: 3, checksum: &checksum}
 	nodeAccountID := []AccountID{{Account: 10}}
 	transactionID := TransactionIDGenerate(AccountID{Account: 324})
 
-	client := ClientForTestnet()
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 
 	query := NewScheduleInfoQuery().
@@ -131,7 +149,7 @@ func TestUnitScheduleInfoQueryCoverage(t *testing.T) {
 		SetQueryPayment(NewHbar(3)).
 		SetGrpcDeadline(&deadline)
 
-	err := query._ValidateNetworkOnIDs(client)
+	err = query._ValidateNetworkOnIDs(client)
 	require.NoError(t, err)
 
 	require.Equal(t, nodeAccountID, query.GetNodeAccountIDs())
@@ -146,6 +164,8 @@ func TestUnitScheduleInfoQueryCoverage(t *testing.T) {
 }
 
 func TestUnitScheduleInfoQueryMock(t *testing.T) {
+	t.Parallel()
+
 	responses := [][]interface{}{{
 		&services.Response{
 			Response: &services.Response_ScheduleGetInfo{

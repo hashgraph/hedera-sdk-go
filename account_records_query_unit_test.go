@@ -35,7 +35,11 @@ import (
 )
 
 func TestUnitAccountRecordQueryValidate(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	accountID, err := AccountIDFromString("0.0.123-esxsf")
 	require.NoError(t, err)
@@ -48,7 +52,11 @@ func TestUnitAccountRecordQueryValidate(t *testing.T) {
 }
 
 func TestUnitAccountRecordQueryValidateWrong(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	accountID, err := AccountIDFromString("0.0.123-rmkykd")
 	require.NoError(t, err)
@@ -64,6 +72,8 @@ func TestUnitAccountRecordQueryValidateWrong(t *testing.T) {
 }
 
 func TestUnitAccountRecordsQueryMock(t *testing.T) {
+	t.Parallel()
+
 	responses := [][]interface{}{{
 		&services.Response{
 			Response: &services.Response_CryptoGetAccountRecords{
@@ -123,6 +133,8 @@ func TestUnitAccountRecordsQueryMock(t *testing.T) {
 }
 
 func TestUnitAccountRecordsQueryGet(t *testing.T) {
+	t.Parallel()
+
 	spenderAccountID1 := AccountID{Account: 7}
 
 	balance := NewAccountRecordsQuery().
@@ -142,6 +154,8 @@ func TestUnitAccountRecordsQueryGet(t *testing.T) {
 }
 
 func TestUnitAccountRecordsQuerySetNothing(t *testing.T) {
+	t.Parallel()
+
 	balance := NewAccountRecordsQuery()
 
 	balance.GetAccountID()
@@ -155,13 +169,17 @@ func TestUnitAccountRecordsQuerySetNothing(t *testing.T) {
 }
 
 func TestUnitAccountRecordsQueryCoverage(t *testing.T) {
+	t.Parallel()
+
 	checksum := "dmqui"
 	grpc := time.Second * 3
 	account := AccountID{Account: 3, checksum: &checksum}
 	nodeAccountID := []AccountID{{Account: 10}}
 	transactionID := TransactionIDGenerate(AccountID{Account: 324})
 
-	client := ClientForTestnet()
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 
 	query := NewAccountRecordsQuery().
@@ -175,7 +193,7 @@ func TestUnitAccountRecordsQueryCoverage(t *testing.T) {
 		SetQueryPayment(NewHbar(3)).
 		SetGrpcDeadline(&grpc)
 
-	err := query._ValidateNetworkOnIDs(client)
+	err = query._ValidateNetworkOnIDs(client)
 
 	require.NoError(t, err)
 	query.GetNodeAccountIDs()

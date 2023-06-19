@@ -40,6 +40,7 @@ func fnc() {
 }
 
 func TestIntegrationOneSignature(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	client := ClientForNetwork(env.Client.GetNetwork()).SetOperatorWith(env.OriginalOperatorID, env.OriginalOperatorKey, signingServiceTwo)

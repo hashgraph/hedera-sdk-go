@@ -36,7 +36,11 @@ import (
 )
 
 func TestUnitTokenUpdateTransactionValidate(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	accountID, err := AccountIDFromString("0.0.123-esxsf")
 	require.NoError(t, err)
@@ -53,7 +57,11 @@ func TestUnitTokenUpdateTransactionValidate(t *testing.T) {
 }
 
 func TestUnitTokenUpdateTransactionValidateWrong(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	accountID, err := AccountIDFromString("0.0.123-rmkykd")
 	require.NoError(t, err)
@@ -73,6 +81,8 @@ func TestUnitTokenUpdateTransactionValidateWrong(t *testing.T) {
 }
 
 func TestUnitTokenUpdateTransactionGet(t *testing.T) {
+	t.Parallel()
+
 	checksum := "dmqui"
 	grpc := time.Second * 30
 	accountID := AccountID{Account: 3, checksum: &checksum}
@@ -84,7 +94,9 @@ func TestUnitTokenUpdateTransactionGet(t *testing.T) {
 	nodeAccountID := []AccountID{{Account: 10}}
 	transactionID := TransactionIDGenerate(AccountID{Account: 324})
 
-	client := ClientForTestnet()
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 
 	transaction, err := NewTokenUpdateTransaction().
@@ -160,6 +172,8 @@ func TestUnitTokenUpdateTransactionGet(t *testing.T) {
 }
 
 func TestUnitTokenUpdateTransactionNothingSet(t *testing.T) {
+	t.Parallel()
+
 	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
 	transactionID := TransactionIDGenerate(AccountID{Account: 324})
 
@@ -208,6 +222,8 @@ func TestUnitTokenUpdateTransactionNothingSet(t *testing.T) {
 }
 
 func TestUnitTokenUpdateTransactionKeyCheck(t *testing.T) {
+	t.Parallel()
+
 	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
 	transactionID := TransactionIDGenerate(AccountID{Account: 324})
 
@@ -246,6 +262,8 @@ func TestUnitTokenUpdateTransactionKeyCheck(t *testing.T) {
 }
 
 func TestUnitTokenUpdateTransactionMock(t *testing.T) {
+	t.Parallel()
+
 	newKey, err := PrivateKeyFromStringEd25519("302e020100300506032b657004220420a869f4c6191b9c8c99933e7f6b6611711737e4b1a1a5a4cb5370e719a1f6df98")
 	require.NoError(t, err)
 

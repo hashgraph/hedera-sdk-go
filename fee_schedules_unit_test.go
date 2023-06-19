@@ -31,7 +31,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestUnitFeeSchedulesFromBytes(t *testing.T) { // nolint
+func TestUnitFeeSchedulesFromBytes(t *testing.T) {
+	t.Parallel()
+	// nolint
 	dat, err := os.ReadFile("./fee_schedule/fee_schedule.pb")
 	require.NoError(t, err)
 	feeSchedules, err := FeeSchedulesFromBytes(dat)

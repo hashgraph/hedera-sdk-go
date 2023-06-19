@@ -32,6 +32,7 @@ import (
 )
 
 func TestIntegrationTokenNftGetInfoByNftIDCanExecute(t *testing.T) { // nolint
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newBalance := NewHbar(2)

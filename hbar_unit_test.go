@@ -32,6 +32,8 @@ import (
 )
 
 func TestUnitHbarFromTinybar(t *testing.T) {
+	t.Parallel()
+
 	tinybar := HbarUnits.Hbar._NumberOfTinybar()
 
 	hbar := HbarFromTinybar(tinybar)
@@ -52,6 +54,8 @@ func TestUnitHbarFromTinybar(t *testing.T) {
 }
 
 func TestUnitHbarUnit(t *testing.T) {
+	t.Parallel()
+
 	tinybar := HbarUnits.Kilobar._NumberOfTinybar()
 
 	hbar := HbarFromTinybar(tinybar)

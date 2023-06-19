@@ -37,7 +37,11 @@ import (
 )
 
 func TestUnitContractUpdateTransactionValidate(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	contractID, err := ContractIDFromString("0.0.123-esxsf")
 	require.NoError(t, err)
@@ -56,7 +60,11 @@ func TestUnitContractUpdateTransactionValidate(t *testing.T) {
 }
 
 func TestUnitContractUpdateTransactionValidateWrong(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	contractID, err := ContractIDFromString("0.0.123-rmkykd")
 	require.NoError(t, err)
@@ -78,6 +86,8 @@ func TestUnitContractUpdateTransactionValidateWrong(t *testing.T) {
 }
 
 func TestUnitContractUpdateTransactionMock(t *testing.T) {
+	t.Parallel()
+
 	call := func(request *services.Transaction) *services.TransactionResponse {
 		require.NotEmpty(t, request.SignedTransactionBytes)
 		signedTransaction := services.SignedTransaction{}
@@ -143,6 +153,8 @@ func TestUnitContractUpdateTransactionMock(t *testing.T) {
 }
 
 func TestUnitContractUpdateTransactionGet(t *testing.T) {
+	t.Parallel()
+
 	contractID := ContractID{Contract: 7}
 
 	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
@@ -183,6 +195,8 @@ func TestUnitContractUpdateTransactionGet(t *testing.T) {
 }
 
 func TestUnitContractUpdateTransactionSetNothing(t *testing.T) {
+	t.Parallel()
+
 	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
 	transactionID := TransactionIDGenerate(AccountID{Account: 324})
 
@@ -212,6 +226,8 @@ func TestUnitContractUpdateTransactionSetNothing(t *testing.T) {
 }
 
 func TestUnitContractUpdateTransactionProtoCheck(t *testing.T) {
+	t.Parallel()
+
 	contractID := ContractID{Contract: 7}
 	accountID := AccountID{Account: 7}
 	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
@@ -253,6 +269,8 @@ func TestUnitContractUpdateTransactionProtoCheck(t *testing.T) {
 }
 
 func TestUnitContractUpdateTransactionCoverage(t *testing.T) {
+	t.Parallel()
+
 	checksum := "dmqui"
 	grpc := time.Second * 30
 	file := FileID{File: 3, checksum: &checksum}
@@ -264,7 +282,9 @@ func TestUnitContractUpdateTransactionCoverage(t *testing.T) {
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
-	client := ClientForTestnet()
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 
 	transaction, err := NewContractUpdateTransaction().

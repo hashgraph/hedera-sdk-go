@@ -35,7 +35,11 @@ import (
 )
 
 func TestUnitContractInfoQueryValidate(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	contractID, err := ContractIDFromString("0.0.123-esxsf")
 	require.NoError(t, err)
@@ -48,7 +52,11 @@ func TestUnitContractInfoQueryValidate(t *testing.T) {
 }
 
 func TestUnitContractInfoQueryValidateWrong(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	contractID, err := ContractIDFromString("0.0.123-rmkykd")
 	require.NoError(t, err)
@@ -64,6 +72,8 @@ func TestUnitContractInfoQueryValidateWrong(t *testing.T) {
 }
 
 func TestUnitContractInfoQueryMock(t *testing.T) {
+	t.Parallel()
+
 	responses := [][]interface{}{{
 		&services.Response{
 			Response: &services.Response_ContractGetInfo{
@@ -123,6 +133,8 @@ func TestUnitContractInfoQueryMock(t *testing.T) {
 }
 
 func TestUnitContractInfoQueryGetTransactionIDMock(t *testing.T) {
+	t.Parallel()
+
 	transactionID := TransactionIDGenerate(AccountID{Account: 123})
 	call := func(request *services.Query) *services.Response {
 		if query, ok := request.Query.(*services.Query_ContractGetInfo); ok {
@@ -182,6 +194,8 @@ func TestUnitContractInfoQueryGetTransactionIDMock(t *testing.T) {
 }
 
 func TestUnitContractInfoQueryGet(t *testing.T) {
+	t.Parallel()
+
 	spenderContractID := ContractID{Contract: 7}
 
 	balance := NewContractInfoQuery().
@@ -203,13 +217,17 @@ func TestUnitContractInfoQueryGet(t *testing.T) {
 }
 
 func TestUnitContractInfoQueryCoverage(t *testing.T) {
+	t.Parallel()
+
 	checksum := "dmqui"
 	deadline := time.Second * 3
 	contract := ContractID{Contract: 3, checksum: &checksum}
 	nodeAccountID := []AccountID{{Account: 10}}
 	transactionID := TransactionIDGenerate(AccountID{Account: 324})
 
-	client := ClientForTestnet()
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 
 	query := NewContractInfoQuery().
@@ -223,7 +241,7 @@ func TestUnitContractInfoQueryCoverage(t *testing.T) {
 		SetQueryPayment(NewHbar(3)).
 		SetGrpcDeadline(&deadline)
 
-	err := query._ValidateNetworkOnIDs(client)
+	err = query._ValidateNetworkOnIDs(client)
 	require.NoError(t, err)
 
 	require.Equal(t, nodeAccountID, query.GetNodeAccountIDs())

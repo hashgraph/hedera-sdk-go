@@ -33,6 +33,7 @@ import (
 )
 
 func TestIntegrationTokenBurnTransactionCanExecute(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -112,6 +113,7 @@ func TestIntegrationTokenBurnTransactionCanExecute(t *testing.T) {
 }
 
 func TestIntegrationTokenBurnTransactionNoAmount(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -183,6 +185,7 @@ func TestIntegrationTokenBurnTransactionNoAmount(t *testing.T) {
 }
 
 func TestIntegrationTokenBurnTransactionNoTokenID(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -253,6 +256,7 @@ func TestIntegrationTokenBurnTransactionNoTokenID(t *testing.T) {
 }
 
 func DisabledTestIntegrationTokenBurnTransactionTreasuryMustOwnBurnedNft(t *testing.T) { // nolint
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newBalance := NewHbar(2)
@@ -331,6 +335,7 @@ func DisabledTestIntegrationTokenBurnTransactionTreasuryMustOwnBurnedNft(t *test
 }
 
 func DisabledTestIntegrationTokenBurnTransactionInvalidMetadata(t *testing.T) { // nolint
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newBalance := NewHbar(2)

@@ -30,6 +30,8 @@ import (
 )
 
 func TestUnitNewTokenAllowance(t *testing.T) {
+	t.Parallel()
+
 	tokID := TokenID{Token: 3}
 	owner := AccountID{Account: 5}
 	spender := AccountID{Account: 6}
@@ -48,6 +50,8 @@ func TestUnitNewTokenAllowance(t *testing.T) {
 }
 
 func TestUnitTokenAllowanceFromProtobuf(t *testing.T) {
+	t.Parallel()
+
 	tokID := TokenID{Token: 3}
 	owner := AccountID{Account: 5}
 	spender := AccountID{Account: 6}
@@ -63,6 +67,8 @@ func TestUnitTokenAllowanceFromProtobuf(t *testing.T) {
 }
 
 func TestUnitTokenAllowance_String(t *testing.T) {
+	t.Parallel()
+
 	tokID := TokenID{Token: 3}
 	owner := AccountID{Account: 5}
 	spender := AccountID{Account: 6}

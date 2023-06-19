@@ -61,6 +61,8 @@ Etiam ut sodales ex. Nulla luctus, magna eu scelerisque sagittis, nibh quam cons
 `
 
 func TestUnitTopicMessageSubmitTransactionMock(t *testing.T) {
+	t.Parallel()
+
 	var previousTransactionID string
 	var previousContent []byte
 
@@ -129,6 +131,8 @@ func TestUnitTopicMessageSubmitTransactionMock(t *testing.T) {
 }
 
 func TestUnitTopicMessageSubmitTransactionFreezeMock(t *testing.T) {
+	t.Parallel()
+
 	var previousTransactionID string
 	var previousContent []byte
 
@@ -200,6 +204,8 @@ func TestUnitTopicMessageSubmitTransactionFreezeMock(t *testing.T) {
 }
 
 func TestUnitTopicMessageSubmitTransactionCoverage(t *testing.T) {
+	t.Parallel()
+
 	checksum := "dmqui"
 	grpc := time.Second * 30
 	topic := TopicID{Topic: 3, checksum: &checksum}
@@ -209,7 +215,9 @@ func TestUnitTopicMessageSubmitTransactionCoverage(t *testing.T) {
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
-	client := ClientForTestnet()
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 
 	transaction, err := NewTopicMessageSubmitTransaction().

@@ -31,6 +31,8 @@ import (
 )
 
 func TestUnitTokenBalanceMapGet(t *testing.T) {
+	t.Parallel()
+
 	var tokenBalances TokenBalanceMap
 	tokenBalances.balances = make(map[string]uint64)
 	tokenBalances.balances["0.0.123"] = 100
@@ -39,6 +41,8 @@ func TestUnitTokenBalanceMapGet(t *testing.T) {
 }
 
 func TestUnitTokenBalanceMapProtobuf(t *testing.T) {
+	t.Parallel()
+
 	var tokenBalances TokenBalanceMap
 	tokenBalances.balances = make(map[string]uint64)
 	tokenBalances.balances["0.0.123"] = 100
@@ -50,6 +54,8 @@ func TestUnitTokenBalanceMapProtobuf(t *testing.T) {
 }
 
 func TestUnitTokenBalanceMapEmpty(t *testing.T) {
+	t.Parallel()
+
 	var tokenBalances TokenBalanceMap
 	tokenBalances.balances = make(map[string]uint64)
 

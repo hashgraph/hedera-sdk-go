@@ -35,6 +35,8 @@ import (
 )
 
 func TestUnitEthereumTransactionMock(t *testing.T) {
+	t.Parallel()
+
 	call := func(request *services.Transaction) *services.TransactionResponse {
 		require.NotEmpty(t, request.SignedTransactionBytes)
 		signedTransaction := services.SignedTransaction{}
@@ -78,6 +80,8 @@ func TestUnitEthereumTransactionMock(t *testing.T) {
 }
 
 func TestUnitEthereumTransactionCoverage(t *testing.T) {
+	t.Parallel()
+
 	checksum := "dmqui"
 	grpc := time.Second * 30
 	file := FileID{File: 3, checksum: &checksum}
@@ -90,7 +94,9 @@ func TestUnitEthereumTransactionCoverage(t *testing.T) {
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
-	client := ClientForTestnet()
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 
 	transaction, err := NewEthereumTransaction().

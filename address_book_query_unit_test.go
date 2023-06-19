@@ -30,10 +30,14 @@ import (
  */
 
 func TestUnitAddressBookQueryCoverage(t *testing.T) {
+	t.Parallel()
+
 	checksum := "dmqui"
 	file := FileID{File: 3, checksum: &checksum}
 
-	client := ClientForTestnet()
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 
 	query := NewAddressBookQuery().
@@ -41,7 +45,7 @@ func TestUnitAddressBookQueryCoverage(t *testing.T) {
 		SetLimit(3).
 		SetMaxAttempts(4)
 
-	err := query._ValidateNetworkOnIDs(client)
+	err = query._ValidateNetworkOnIDs(client)
 
 	require.NoError(t, err)
 	query.GetFileID()

@@ -32,7 +32,11 @@ import (
 )
 
 func TestUnitAccountInfoQueryValidate(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	accountID, err := AccountIDFromString("0.0.123-esxsf")
 	require.NoError(t, err)
@@ -44,6 +48,8 @@ func TestUnitAccountInfoQueryValidate(t *testing.T) {
 	require.NoError(t, err)
 }
 func TestAccountInfoQuery_Get(t *testing.T) {
+	t.Parallel()
+
 	checksum := "dmqui"
 	deadline := time.Duration(time.Minute)
 	accountId := AccountID{Account: 3, checksum: &checksum}
@@ -58,9 +64,11 @@ func TestAccountInfoQuery_Get(t *testing.T) {
 		SetMinBackoff(1 * time.Second).
 		SetPaymentTransactionID(transactionID).
 		SetGrpcDeadline(&deadline)
-	client := ClientForTestnet()
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
-	err := query._ValidateNetworkOnIDs(client)
+	err = query._ValidateNetworkOnIDs(client)
 	require.NoError(t, err)
 	require.Equal(t, accountId, query.GetAccountID())
 	require.Equal(t, NewHbar(2), query.GetQueryPayment())
@@ -74,7 +82,11 @@ func TestAccountInfoQuery_Get(t *testing.T) {
 }
 
 func TestUnitAccountInfoQueryValidateWrong(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	accountID, err := AccountIDFromString("0.0.123-rmkykd")
 	require.NoError(t, err)
@@ -90,6 +102,8 @@ func TestUnitAccountInfoQueryValidateWrong(t *testing.T) {
 }
 
 func TestUnitAccountInfoQuerySetNothing(t *testing.T) {
+	t.Parallel()
+
 	balance := NewAccountInfoQuery()
 
 	require.Equal(t, AccountID{}, balance.GetAccountID())
@@ -103,6 +117,8 @@ func TestUnitAccountInfoQuerySetNothing(t *testing.T) {
 }
 
 func Test_AccountInfoQueryMapStatusError(t *testing.T) {
+	t.Parallel()
+
 	response := services.Response{
 		Response: &services.Response_CryptoGetInfo{
 			CryptoGetInfo: &services.CryptoGetInfoResponse{
@@ -124,6 +140,8 @@ func Test_AccountInfoQueryMapStatusError(t *testing.T) {
 }
 
 func TestUnitAccountInfoQueryMock(t *testing.T) {
+	t.Parallel()
+
 	responses := [][]interface{}{{
 		&services.Response{
 			Response: &services.Response_CryptoGetInfo{

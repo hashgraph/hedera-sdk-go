@@ -32,6 +32,7 @@ import (
 )
 
 func TestIntegrationFileContentsQueryCanExecute(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	var contents = []byte("Hellow world!")
@@ -78,6 +79,7 @@ func TestIntegrationFileContentsQueryCanExecute(t *testing.T) {
 }
 
 func TestIntegrationFileContentsQueryGetCost(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	var contents = []byte("Hellow world!")
@@ -127,6 +129,7 @@ func TestIntegrationFileContentsQueryGetCost(t *testing.T) {
 }
 
 func TestIntegrationFileContentsQuerySetBigMaxPayment(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	var contents = []byte("Hellow world!")
@@ -176,6 +179,7 @@ func TestIntegrationFileContentsQuerySetBigMaxPayment(t *testing.T) {
 }
 
 func TestIntegrationFileContentsQuerySetSmallMaxPayment(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	var contents = []byte("Hellow world!")
@@ -226,6 +230,7 @@ func TestIntegrationFileContentsQuerySetSmallMaxPayment(t *testing.T) {
 }
 
 func TestIntegrationFileContentsQueryInsufficientFee(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	var contents = []byte("Hellow world!")
@@ -276,6 +281,7 @@ func TestIntegrationFileContentsQueryInsufficientFee(t *testing.T) {
 }
 
 func TestIntegrationFileContentsQueryNoFileID(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	_, err := NewFileContentsQuery().

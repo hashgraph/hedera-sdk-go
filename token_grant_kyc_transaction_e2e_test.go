@@ -33,6 +33,7 @@ import (
 )
 
 func TestIntegrationTokenGrantKycTransactionCanExecute(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -119,6 +120,7 @@ func TestIntegrationTokenGrantKycTransactionCanExecute(t *testing.T) {
 }
 
 func TestIntegrationTokenGrantKycTransactionNoTokenID(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -201,6 +203,7 @@ func TestIntegrationTokenGrantKycTransactionNoTokenID(t *testing.T) {
 }
 
 func TestIntegrationTokenGrantKycTransactionNoAccountID(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -286,6 +289,7 @@ func TestIntegrationTokenGrantKycTransactionNoAccountID(t *testing.T) {
 }
 
 func TestIntegrationTokenGrantKycTransactionNoKycSet(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()

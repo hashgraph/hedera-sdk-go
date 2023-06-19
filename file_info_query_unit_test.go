@@ -36,7 +36,11 @@ import (
 )
 
 func TestUnitFileInfoQueryValidate(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	fileID, err := FileIDFromString("0.0.123-esxsf")
 	require.NoError(t, err)
@@ -49,7 +53,11 @@ func TestUnitFileInfoQueryValidate(t *testing.T) {
 }
 
 func TestUnitFileInfoQueryValidateWrong(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	fileID, err := FileIDFromString("0.0.123-rmkykd")
 	require.NoError(t, err)
@@ -65,6 +73,8 @@ func TestUnitFileInfoQueryValidateWrong(t *testing.T) {
 }
 
 func TestUnitFileInfoQueryMock(t *testing.T) {
+	t.Parallel()
+
 	newKey, err := PrivateKeyFromStringEd25519("302e020100300506032b657004220420a869f4c6191b9c8c99933e7f6b6611711737e4b1a1a5a4cb5370e719a1f6df98")
 	require.NoError(t, err)
 	key := newKey.PublicKey().BytesRaw()
@@ -132,6 +142,8 @@ func TestUnitFileInfoQueryMock(t *testing.T) {
 }
 
 func TestUnitFileInfoQueryGet(t *testing.T) {
+	t.Parallel()
+
 	checksum := "dmqui"
 	fileID := FileID{File: 3, checksum: &checksum}
 	deadline := time.Duration(time.Minute)
@@ -149,9 +161,11 @@ func TestUnitFileInfoQueryGet(t *testing.T) {
 		SetMaxRetry(5).
 		SetPaymentTransactionID(transactionID).
 		SetMaxQueryPayment(NewHbar(500))
-	client := ClientForTestnet()
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
-	err := query._ValidateNetworkOnIDs(client)
+	err = query._ValidateNetworkOnIDs(client)
 	require.NoError(t, err)
 	require.Equal(t, fileID, query.GetFileID())
 	require.Equal(t, []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}, query.GetNodeAccountIDs())
@@ -166,6 +180,8 @@ func TestUnitFileInfoQueryGet(t *testing.T) {
 }
 
 func TestUnitFileInfoQuerySetNothing(t *testing.T) {
+	t.Parallel()
+
 	balance := NewFileInfoQuery()
 
 	require.Equal(t, FileID{}, balance.GetFileID())

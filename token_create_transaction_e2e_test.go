@@ -33,6 +33,7 @@ import (
 )
 
 func TestIntegrationTokenCreateTransactionCanExecute(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenCreateTransaction().
@@ -60,6 +61,7 @@ func TestIntegrationTokenCreateTransactionCanExecute(t *testing.T) {
 }
 
 func TestIntegrationTokenCreateTransactionMultipleKeys(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	keys := make([]PrivateKey, 5)
@@ -111,6 +113,7 @@ func TestIntegrationTokenCreateTransactionMultipleKeys(t *testing.T) {
 }
 
 func TestIntegrationTokenCreateTransactionNoKeys(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	keys := make([]PrivateKey, 6)
@@ -177,6 +180,7 @@ func TestIntegrationTokenCreateTransactionNoKeys(t *testing.T) {
 }
 
 func TestIntegrationTokenCreateTransactionAdminSign(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	keys := make([]PrivateKey, 6)
@@ -236,6 +240,7 @@ func TestIntegrationTokenCreateTransactionAdminSign(t *testing.T) {
 }
 
 func DisabledTestIntegrationTokenNftCreateTransaction(t *testing.T) { // nolint
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenCreateTransaction().
@@ -264,6 +269,7 @@ func DisabledTestIntegrationTokenNftCreateTransaction(t *testing.T) { // nolint
 }
 
 func TestIntegrationTokenCreateTransactionWithCustomFees(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenCreateTransaction().
@@ -303,6 +309,7 @@ func TestIntegrationTokenCreateTransactionWithCustomFees(t *testing.T) {
 }
 
 func TestIntegrationTokenCreateTransactionWithCustomFeesDenominatorZero(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenCreateTransaction().
@@ -347,6 +354,7 @@ func TestIntegrationTokenCreateTransactionWithCustomFeesDenominatorZero(t *testi
 }
 
 func TestIntegrationTokenCreateTransactionWithInvalidFeeCollectorAccountID(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenCreateTransaction().
@@ -385,6 +393,7 @@ func TestIntegrationTokenCreateTransactionWithInvalidFeeCollectorAccountID(t *te
 }
 
 func TestIntegrationTokenCreateTransactionWithMaxLessThanMin(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenCreateTransaction().
@@ -426,6 +435,7 @@ func TestIntegrationTokenCreateTransactionWithMaxLessThanMin(t *testing.T) {
 }
 
 func TestIntegrationTokenCreateTransactionWithRoyaltyCustomFee(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenCreateTransaction().
@@ -463,6 +473,7 @@ func TestIntegrationTokenCreateTransactionWithRoyaltyCustomFee(t *testing.T) {
 }
 
 func TestIntegrationTokenCreateTransactionWithRoyaltyCannotExceedOne(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenCreateTransaction().
@@ -498,6 +509,7 @@ func TestIntegrationTokenCreateTransactionWithRoyaltyCannotExceedOne(t *testing.
 }
 
 func TestIntegrationTokenCreateTransactionFeeCollectorMissing(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenCreateTransaction().
@@ -532,6 +544,7 @@ func TestIntegrationTokenCreateTransactionFeeCollectorMissing(t *testing.T) {
 }
 
 func TestIntegrationTokenCreateTransactionRoyaltyFeeOnlyAllowedForNonFungibleUnique(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenCreateTransaction().
@@ -567,6 +580,7 @@ func TestIntegrationTokenCreateTransactionRoyaltyFeeOnlyAllowedForNonFungibleUni
 }
 
 func TestIntegrationTokenAccountStillOwnsNfts(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()

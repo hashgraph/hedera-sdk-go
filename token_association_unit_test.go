@@ -31,6 +31,8 @@ import (
 )
 
 func TestTokenAssociationFromProtobuf(t *testing.T) {
+	t.Parallel()
+
 	var pbAssociation *services.TokenAssociation
 	var association TokenAssociation
 
@@ -54,6 +56,8 @@ func TestTokenAssociationFromProtobuf(t *testing.T) {
 }
 
 func TestTokenAssociationToProtobuf(t *testing.T) {
+	t.Parallel()
+
 	var association TokenAssociation
 	var pbAssociation *services.TokenAssociation
 
@@ -74,6 +78,8 @@ func TestTokenAssociationToProtobuf(t *testing.T) {
 }
 
 func TestTokenAssociationToAndFromBytes(t *testing.T) {
+	t.Parallel()
+
 	association := TokenAssociation{
 		TokenID:   &TokenID{Shard: 0, Realm: 0, Token: 3},
 		AccountID: &AccountID{Shard: 0, Realm: 0, Account: 6},

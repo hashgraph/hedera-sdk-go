@@ -33,7 +33,11 @@ import (
 )
 
 func TestUnitTransactionReceiptQueryValidate(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	accountID, err := AccountIDFromString("0.0.123-esxsf")
 	transactionID := TransactionIDGenerate(accountID)
@@ -47,7 +51,11 @@ func TestUnitTransactionReceiptQueryValidate(t *testing.T) {
 }
 
 func TestUnitTransactionReceiptQueryValidateWrong(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	accountID, err := AccountIDFromString("0.0.123-rmkykd")
 	transactionID := TransactionIDGenerate(accountID)
@@ -64,6 +72,8 @@ func TestUnitTransactionReceiptQueryValidateWrong(t *testing.T) {
 }
 
 func TestUnitTransactionReceiptQueryGet(t *testing.T) {
+	t.Parallel()
+
 	txID := TransactionIDGenerate(AccountID{Account: 7})
 
 	balance := NewTransactionReceiptQuery().
@@ -88,6 +98,8 @@ func TestUnitTransactionReceiptQueryGet(t *testing.T) {
 }
 
 func TestUnitTransactionReceiptQueryNothingSet(t *testing.T) {
+	t.Parallel()
+
 	balance := NewTransactionReceiptQuery()
 
 	balance.GetTransactionID()
@@ -102,6 +114,8 @@ func TestUnitTransactionReceiptQueryNothingSet(t *testing.T) {
 	balance.GetMaxQueryPayment()
 }
 func TestUnitTransactionReceiptNotFound(t *testing.T) {
+	t.Parallel()
+
 	responses := [][]interface{}{{
 		&services.TransactionResponse{
 			NodeTransactionPrecheckCode: services.ResponseCodeEnum_OK,

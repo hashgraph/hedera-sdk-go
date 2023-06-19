@@ -34,6 +34,8 @@ import (
 )
 
 func TestUnitTokenIDFromString(t *testing.T) {
+	t.Parallel()
+
 	tokID := TokenID{
 		Shard: 1,
 		Realm: 2,
@@ -46,10 +48,14 @@ func TestUnitTokenIDFromString(t *testing.T) {
 }
 
 func TestUnitTokenIDChecksumFromString(t *testing.T) {
+	t.Parallel()
+
 	id, err := TokenIDFromString("0.0.123-rmkyk")
 	require.NoError(t, err)
 
-	client := ClientForTestnet()
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	id.ToStringWithChecksum(*client)
 	sol := id.ToSolidityAddress()
 	TokenIDFromSolidityAddress(sol)
@@ -66,6 +72,8 @@ func TestUnitTokenIDChecksumFromString(t *testing.T) {
 }
 
 func TestUnitTokenIDChecksumToString(t *testing.T) {
+	t.Parallel()
+
 	id := AccountID{
 		Shard:   50,
 		Realm:   150,
@@ -75,6 +83,8 @@ func TestUnitTokenIDChecksumToString(t *testing.T) {
 }
 
 func TestUnitTokenIDFromStringEVM(t *testing.T) {
+	t.Parallel()
+
 	id, err := TokenIDFromString("0.0.434")
 	require.NoError(t, err)
 
@@ -82,6 +92,8 @@ func TestUnitTokenIDFromStringEVM(t *testing.T) {
 }
 
 func TestUnitTokenIDProtobuf(t *testing.T) {
+	t.Parallel()
+
 	id, err := TokenIDFromString("0.0.434")
 	require.NoError(t, err)
 

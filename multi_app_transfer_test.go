@@ -30,6 +30,7 @@ import (
 )
 
 func TestIntegrationMultiAppTransfer(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	txID := TransactionIDGenerate(env.OperatorID)

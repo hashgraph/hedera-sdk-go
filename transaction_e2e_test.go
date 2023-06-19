@@ -35,6 +35,7 @@ import (
 )
 
 func TestIntegrationTransactionAddSignature(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -78,6 +79,7 @@ func TestIntegrationTransactionAddSignature(t *testing.T) {
 }
 
 func TestIntegrationTransactionSignTransaction(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -113,6 +115,7 @@ func TestIntegrationTransactionSignTransaction(t *testing.T) {
 }
 
 func TestIntegrationTransactionGetHash(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -258,6 +261,7 @@ func DisabledTestTransactionFromBytes(t *testing.T) { // nolint
 	transaction, err := TransactionFromBytes(bytes)
 	require.NoError(t, err)
 
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	switch tx := transaction.(type) {

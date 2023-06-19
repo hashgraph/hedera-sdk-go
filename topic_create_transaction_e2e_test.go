@@ -32,6 +32,7 @@ import (
 )
 
 func TestIntegrationTopicCreateTransactionCanExecute(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTopicCreateTransaction().
@@ -74,6 +75,7 @@ func TestIntegrationTopicCreateTransactionCanExecute(t *testing.T) {
 }
 
 func TestIntegrationTopicCreateTransactionDifferentKeys(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	keys := make([]PrivateKey, 2)
@@ -137,6 +139,7 @@ func TestIntegrationTopicCreateTransactionDifferentKeys(t *testing.T) {
 }
 
 func TestIntegrationTopicCreateTransactionJustSetMemo(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTopicCreateTransaction().

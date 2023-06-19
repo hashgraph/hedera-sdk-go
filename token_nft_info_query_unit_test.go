@@ -34,7 +34,11 @@ import (
 )
 
 func TestUnitTokenNftGetInfoByNftIDValidate(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	nftID, err := NftIDFromString("2@0.0.123-esxsf")
 	require.NoError(t, err)
@@ -47,7 +51,11 @@ func TestUnitTokenNftGetInfoByNftIDValidate(t *testing.T) {
 }
 
 func TestUnitTokenNftGetInfoByNftIDValidateWrong(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	nftID, err := NftIDFromString("2@0.0.123-rmkykd")
 	require.NoError(t, err)
@@ -63,6 +71,8 @@ func TestUnitTokenNftGetInfoByNftIDValidateWrong(t *testing.T) {
 }
 
 func TestUnitTokenNftInfoQueryNothingSet(t *testing.T) {
+	t.Parallel()
+
 	query := NewTokenNftInfoQuery()
 
 	require.Equal(t, NftID{TokenID: TokenID{Shard: 0x0, Realm: 0x0, Token: 0x0, checksum: (*string)(nil)}, SerialNumber: 0}, query.GetNftID())
@@ -76,6 +86,8 @@ func TestUnitTokenNftInfoQueryNothingSet(t *testing.T) {
 }
 
 func TestUnitTokenNftInfoQueryGet(t *testing.T) {
+	t.Parallel()
+
 	checksum := "dmqui"
 	deadline := time.Second * 3
 	token := TokenID{Token: 3, checksum: &checksum}
@@ -83,7 +95,9 @@ func TestUnitTokenNftInfoQueryGet(t *testing.T) {
 	nodeAccountID := []AccountID{{Account: 10}}
 	transactionID := TransactionIDGenerate(account)
 
-	client := ClientForTestnet()
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 
 	query := NewTokenNftInfoQuery().
@@ -104,7 +118,7 @@ func TestUnitTokenNftInfoQueryGet(t *testing.T) {
 		SetQueryPayment(NewHbar(3)).
 		SetGrpcDeadline(&deadline)
 
-	err := query._ValidateNetworkOnIDs(client)
+	err = query._ValidateNetworkOnIDs(client)
 	require.NoError(t, err)
 
 	// Some assertions like SetStart, SetEnd, etc. are missing, because those fucntions are deprecated and empty
@@ -120,6 +134,8 @@ func TestUnitTokenNftInfoQueryGet(t *testing.T) {
 }
 
 func TestUnitTokenNftInfoQueryMock(t *testing.T) {
+	t.Parallel()
+
 	responses := [][]interface{}{{
 		&services.Response{
 			Response: &services.Response_TokenGetNftInfo{

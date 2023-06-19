@@ -35,6 +35,8 @@ import (
 )
 
 func TestUnitFileCreateTransactionMock(t *testing.T) {
+	t.Parallel()
+
 	call := func(request *services.Transaction) *services.TransactionResponse {
 		require.NotEmpty(t, request.SignedTransactionBytes)
 		signedTransaction := services.SignedTransaction{}
@@ -94,6 +96,8 @@ func TestUnitFileCreateTransactionMock(t *testing.T) {
 }
 
 func TestUnitFileCreateTransactionGet(t *testing.T) {
+	t.Parallel()
+
 	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
 	transactionID := TransactionIDGenerate(AccountID{Account: 324})
 
@@ -132,6 +136,8 @@ func TestUnitFileCreateTransactionGet(t *testing.T) {
 }
 
 func TestUnitFileCreateTransactionSetNothing(t *testing.T) {
+	t.Parallel()
+
 	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
 	transactionID := TransactionIDGenerate(AccountID{Account: 324})
 
@@ -161,6 +167,8 @@ func TestUnitFileCreateTransactionSetNothing(t *testing.T) {
 }
 
 func TestUnitFileCreateTransactionProtoCheck(t *testing.T) {
+	t.Parallel()
+
 	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
 	transactionID := TransactionIDGenerate(AccountID{Account: 324})
 
@@ -192,6 +200,8 @@ func TestUnitFileCreateTransactionProtoCheck(t *testing.T) {
 }
 
 func TestUnitFileCreateTransactionCoverage(t *testing.T) {
+	t.Parallel()
+
 	grpc := time.Second * 30
 	nodeAccountID := []AccountID{{Account: 10}}
 	transactionID := TransactionIDGenerate(AccountID{Account: 324})
@@ -199,7 +209,9 @@ func TestUnitFileCreateTransactionCoverage(t *testing.T) {
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
-	client := ClientForTestnet()
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 
 	transaction, err := NewFileCreateTransaction().

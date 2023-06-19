@@ -36,7 +36,11 @@ import (
 )
 
 func TestUnitLiveHashAddTransactionValidate(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	accountID, err := AccountIDFromString("0.0.123-esxsf")
 	require.NoError(t, err)
@@ -49,7 +53,11 @@ func TestUnitLiveHashAddTransactionValidate(t *testing.T) {
 }
 
 func TestUnitLiveHashAddTransactionValidateWrong(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	accountID, err := AccountIDFromString("0.0.123-rmkykd")
 	require.NoError(t, err)
@@ -65,6 +73,8 @@ func TestUnitLiveHashAddTransactionValidateWrong(t *testing.T) {
 }
 
 func TestUnitLiveHashAddTransactionGet(t *testing.T) {
+	t.Parallel()
+
 	accountID := AccountID{Account: 7}
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -105,6 +115,8 @@ func TestUnitLiveHashAddTransactionGet(t *testing.T) {
 }
 
 func TestUnitLiveHashAddTransactionSetNothing(t *testing.T) {
+	t.Parallel()
+
 	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
 	transactionID := TransactionIDGenerate(AccountID{Account: 324})
 
@@ -134,6 +146,8 @@ func TestUnitLiveHashAddTransactionSetNothing(t *testing.T) {
 }
 
 func TestUnitLiveHashFromBytes(t *testing.T) {
+	t.Parallel()
+
 	liveHash := LiveHash{
 		AccountID: AccountID{Account: 3},
 		Hash:      []byte{1},
@@ -146,6 +160,8 @@ func TestUnitLiveHashFromBytes(t *testing.T) {
 }
 
 func TestUnitLiveHashAddTransactionCoverage(t *testing.T) {
+	t.Parallel()
+
 	checksum := "dmqui"
 	grpc := time.Second * 30
 	account := AccountID{Account: 3, checksum: &checksum}
@@ -155,7 +171,9 @@ func TestUnitLiveHashAddTransactionCoverage(t *testing.T) {
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
-	client := ClientForTestnet()
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 
 	transaction, err := NewLiveHashAddTransaction().
@@ -212,6 +230,8 @@ func TestUnitLiveHashAddTransactionCoverage(t *testing.T) {
 }
 
 func TestUnitLiveHashAddTransactionMock(t *testing.T) {
+	t.Parallel()
+
 	newKey, err := PrivateKeyFromStringEd25519("302e020100300506032b657004220420a869f4c6191b9c8c99933e7f6b6611711737e4b1a1a5a4cb5370e719a1f6df98")
 	require.NoError(t, err)
 
