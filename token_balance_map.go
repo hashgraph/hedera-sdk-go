@@ -29,11 +29,7 @@ type TokenBalanceMap struct {
 
 // Get returns the balance of the given tokenID
 func (tokenBalances *TokenBalanceMap) Get(tokenID TokenID) uint64 {
-	return tokenBalances.balances[TokenID{
-		Shard: tokenID.Shard,
-		Realm: tokenID.Realm,
-		Token: tokenID.Token,
-	}.String()]
+	return tokenBalances.balances[tokenID.String()]
 }
 func _TokenBalanceMapFromProtobuf(pb []*services.TokenBalance) TokenBalanceMap {
 	balances := make(map[string]uint64)

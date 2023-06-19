@@ -87,4 +87,7 @@ func TestIntegrationTokenNftGetInfoByNftIDCanExecute(t *testing.T) { // nolint
 	assert.Equal(t, len(info), 1)
 	assert.Equal(t, info[0].NftID, nftID)
 	assert.Equal(t, info[0].Metadata[0], byte(50))
+	parsedInfo, err := TokenNftInfoFromBytes(info[0].ToBytes())
+	assert.NoError(t, err)
+	assert.Equal(t, parsedInfo, info[0])
 }
