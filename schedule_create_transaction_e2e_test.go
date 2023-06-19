@@ -31,6 +31,7 @@ import (
  */
 
 func TestIntegrationScheduleCreateTransactionCanExecute(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	keys := make([]PrivateKey, 2)
@@ -123,7 +124,7 @@ func TestIntegrationScheduleCreateTransactionCanExecute(t *testing.T) {
 
 //
 // func DisabledTestIntegrationScheduleCreateTransactionMultiSign(t *testing.T) {
-//	env := NewIntegrationTestEnv(t)
+// env := NewIntegrationTestEnv(t)
 //
 //	keys := make([]PrivateKey, 3)
 //	pubKeys := make([]PublicKey, 3)
@@ -204,7 +205,7 @@ func TestIntegrationScheduleCreateTransactionCanExecute(t *testing.T) {
 //}
 //
 // func DisabledTestIntegrationScheduleDeleteTransactionCanExecute(t *testing.T) {
-//	env := NewIntegrationTestEnv(t)
+// env := NewIntegrationTestEnv(t)
 //
 //	key, err := GeneratePrivateKey()
 //	key2, err := GeneratePrivateKey()

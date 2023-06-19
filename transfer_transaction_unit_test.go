@@ -32,6 +32,8 @@ import (
 )
 
 func TestUnitTransferTransactionSetTokenTransferWithDecimals(t *testing.T) {
+	t.Parallel()
+
 	tokenID := TokenID{Token: 1}
 	senderAccountID := AccountID{Account: 2}
 	amount := int64(10)
@@ -44,7 +46,11 @@ func TestUnitTransferTransactionSetTokenTransferWithDecimals(t *testing.T) {
 }
 
 func TestUnitTransferTransactionValidate(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	accountID, err := AccountIDFromString("0.0.123-esxsf")
 	require.NoError(t, err)
@@ -57,7 +63,11 @@ func TestUnitTransferTransactionValidate(t *testing.T) {
 }
 
 func TestUnitTransferTransactionValidateWrong(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	accountID, err := AccountIDFromString("0.0.123-rmkykd")
 	require.NoError(t, err)
@@ -70,6 +80,8 @@ func TestUnitTransferTransactionValidateWrong(t *testing.T) {
 }
 
 func TestUnitTransferTransactionOrdered(t *testing.T) {
+	t.Parallel()
+
 	tokenID1, err := TokenIDFromString("1.1.1")
 	require.NoError(t, err)
 	tokenID2, err := TokenIDFromString("2.2.2")

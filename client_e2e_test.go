@@ -32,6 +32,7 @@ import (
 )
 
 func DisabledTestIntegrationClientPingAllBadNetwork(t *testing.T) { // nolint
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	netwrk := _NewNetwork()

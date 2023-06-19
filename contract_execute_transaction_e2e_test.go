@@ -32,6 +32,7 @@ import (
 )
 
 func TestIntegrationContractExecuteTransactionCanExecute(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	// Note: this is the bytecode for the contract found in the example for ./examples/_Create_simpleContract
@@ -102,6 +103,7 @@ func TestIntegrationContractExecuteTransactionCanExecute(t *testing.T) {
 }
 
 func TestIntegrationContractExecuteTransactionNoContractID(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	_, err := NewContractExecuteTransaction().
@@ -116,6 +118,7 @@ func TestIntegrationContractExecuteTransactionNoContractID(t *testing.T) {
 }
 
 func TestIntegrationContractExecuteTransactionNoGas(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	// Note: this is the bytecode for the contract found in the example for ./examples/_Create_simpleContract
@@ -188,6 +191,7 @@ func TestIntegrationContractExecuteTransactionNoGas(t *testing.T) {
 }
 
 func TestIntegrationContractExecuteTransactionNoFunction(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	// Note: this is the bytecode for the contract found in the example for ./examples/_Create_simpleContract
@@ -260,6 +264,7 @@ func TestIntegrationContractExecuteTransactionNoFunction(t *testing.T) {
 }
 
 func DisabledTestIntegrationContractExecuteTransactionID(t *testing.T) { // nolint
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	// Note: this is the bytecode for the contract found in the example for ./examples/_Create_simpleContract

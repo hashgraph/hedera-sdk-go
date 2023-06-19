@@ -35,7 +35,11 @@ import (
 )
 
 func TestUnitLiveHashQueryValidate(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	accountID, err := AccountIDFromString("0.0.123-esxsf")
 	require.NoError(t, err)
@@ -48,7 +52,11 @@ func TestUnitLiveHashQueryValidate(t *testing.T) {
 }
 
 func TestUnitLiveHashQueryValidateWrong(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	accountID, err := AccountIDFromString("0.0.123-rmkykd")
 	require.NoError(t, err)
@@ -64,6 +72,8 @@ func TestUnitLiveHashQueryValidateWrong(t *testing.T) {
 }
 
 func TestUnitLiveHashQueryGet(t *testing.T) {
+	t.Parallel()
+
 	accountID := AccountID{Account: 7}
 
 	balance := NewLiveHashQuery().
@@ -86,6 +96,8 @@ func TestUnitLiveHashQueryGet(t *testing.T) {
 }
 
 func TestUnitLiveHashQuerySetNothing(t *testing.T) {
+	t.Parallel()
+
 	balance := NewLiveHashQuery()
 
 	balance.GetAccountID()
@@ -100,13 +112,17 @@ func TestUnitLiveHashQuerySetNothing(t *testing.T) {
 }
 
 func TestUnitLiveHashQueryCoverage(t *testing.T) {
+	t.Parallel()
+
 	checksum := "dmqui"
 	grpc := time.Second * 3
 	account := AccountID{Account: 3, checksum: &checksum}
 	nodeAccountID := []AccountID{{Account: 10}}
 	transactionID := TransactionIDGenerate(AccountID{Account: 324})
 
-	client := ClientForTestnet()
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 
 	query := NewLiveHashQuery().
@@ -121,7 +137,7 @@ func TestUnitLiveHashQueryCoverage(t *testing.T) {
 		SetQueryPayment(NewHbar(3)).
 		SetGrpcDeadline(&grpc)
 
-	err := query._ValidateNetworkOnIDs(client)
+	err = query._ValidateNetworkOnIDs(client)
 	require.NoError(t, err)
 	query.GetNodeAccountIDs()
 	query.GetMaxBackoff()
@@ -134,6 +150,8 @@ func TestUnitLiveHashQueryCoverage(t *testing.T) {
 }
 
 func TestUnitLiveHashQueryMock(t *testing.T) {
+	t.Parallel()
+
 	responses := [][]interface{}{{
 		&services.Response{
 			Response: &services.Response_CryptoGetLiveHash{

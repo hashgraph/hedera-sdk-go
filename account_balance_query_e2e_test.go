@@ -32,6 +32,7 @@ import (
 )
 
 func TestIntegrationAccountBalanceQueryCanExecute(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	_, err := NewAccountBalanceQuery().
@@ -51,6 +52,7 @@ func TestIntegrationAccountBalanceQueryCanExecute(t *testing.T) {
 }
 
 func TestIntegrationAccountBalanceQueryCanGetTokenBalance(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenCreateTransaction().
@@ -88,6 +90,7 @@ func TestIntegrationAccountBalanceQueryCanGetTokenBalance(t *testing.T) {
 }
 
 func TestIntegrationAccountBalanceQueryGetCost(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	balance := NewAccountBalanceQuery().
@@ -106,6 +109,7 @@ func TestIntegrationAccountBalanceQueryGetCost(t *testing.T) {
 }
 
 func TestIntegrationAccountBalanceQuerySetBigMaxPayment(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	balance := NewAccountBalanceQuery().
@@ -124,6 +128,7 @@ func TestIntegrationAccountBalanceQuerySetBigMaxPayment(t *testing.T) {
 }
 
 func TestIntegrationAccountBalanceQuerySetSmallMaxPayment(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	balance := NewAccountBalanceQuery().
@@ -142,6 +147,7 @@ func TestIntegrationAccountBalanceQuerySetSmallMaxPayment(t *testing.T) {
 }
 
 func TestIntegrationAccountBalanceQueryCanSetQueryPayment(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	balance := NewAccountBalanceQuery().
@@ -161,6 +167,7 @@ func TestIntegrationAccountBalanceQueryCanSetQueryPayment(t *testing.T) {
 }
 
 func TestIntegrationAccountBalanceQueryCostCanSetPaymentOneTinybar(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	balance := NewAccountBalanceQuery().
@@ -180,6 +187,7 @@ func TestIntegrationAccountBalanceQueryCostCanSetPaymentOneTinybar(t *testing.T)
 }
 
 func TestIntegrationAccountBalanceQueryNoAccountIDError(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	_, err := NewAccountBalanceQuery().

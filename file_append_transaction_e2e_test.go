@@ -32,6 +32,7 @@ import (
 )
 
 func TestIntegrationFileAppendTransactionCanExecute(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewFileCreateTransaction().
@@ -81,6 +82,7 @@ func TestIntegrationFileAppendTransactionCanExecute(t *testing.T) {
 }
 
 func TestIntegrationFileAppendTransactionNoFileID(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewFileCreateTransaction().
@@ -123,6 +125,7 @@ func TestIntegrationFileAppendTransactionNoFileID(t *testing.T) {
 }
 
 func TestIntegrationFileAppendTransactionNothingSet(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewFileAppendTransaction().

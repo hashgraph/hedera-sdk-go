@@ -32,6 +32,7 @@ import (
 )
 
 func TestIntegrationTokenTransferTransactionCanExecute(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -147,6 +148,7 @@ func TestIntegrationTokenTransferTransactionCanExecute(t *testing.T) {
 }
 
 func TestIntegrationTokenTransferTransactionNotZeroSum(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -255,6 +257,7 @@ func TestIntegrationTokenTransferTransactionNotZeroSum(t *testing.T) {
 }
 
 func DisabledTestIntegrationNftTransferTransaction(t *testing.T) { // nolint
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -387,6 +390,7 @@ func DisabledTestIntegrationNftTransferTransaction(t *testing.T) { // nolint
 }
 
 func DisabledTestIntegrationTokenFeeScheduleUpdateRecursionDepthTransaction(t *testing.T) { // nolint
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -493,6 +497,7 @@ func DisabledTestIntegrationTokenFeeScheduleUpdateRecursionDepthTransaction(t *t
 }
 
 func TestIntegrationTokenFeeScheduleUpdateHugeAmountTransaction(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -594,6 +599,7 @@ func TestIntegrationTokenFeeScheduleUpdateHugeAmountTransaction(t *testing.T) {
 }
 
 func DisabledTestIntegrationTokenFeeScheduleUpdateHugeAmountOneTransaction(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -707,6 +713,7 @@ func DisabledTestIntegrationTokenFeeScheduleUpdateHugeAmountOneTransaction(t *te
 }
 
 func TestIntegrationNftTransferTransactionAccountAmountTransfersOnlyForFungibleCommon(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -821,6 +828,7 @@ func TestIntegrationNftTransferTransactionAccountAmountTransfersOnlyForFungibleC
 }
 
 func DisabledTestIntegrationNftAccountStillOwnsNfts(t *testing.T) { // nolint
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -941,6 +949,7 @@ func DisabledTestIntegrationNftAccountStillOwnsNfts(t *testing.T) { // nolint
 }
 
 func TestIntegrationTokenFeeScheduleUpdateTokenNotAssociatedToFeeCollector(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -1002,6 +1011,7 @@ func TestIntegrationTokenFeeScheduleUpdateTokenNotAssociatedToFeeCollector(t *te
 }
 
 func DisabledTestIntegrationTokenFeeScheduleUpdateCustomFeeChargingExceededMax(t *testing.T) { // nolint
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()

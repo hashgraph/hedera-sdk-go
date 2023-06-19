@@ -33,6 +33,7 @@ import (
 )
 
 func TestIntegrationAccountCreateTransactionCanExecute(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -76,6 +77,7 @@ func TestIntegrationAccountCreateTransactionCanExecute(t *testing.T) {
 }
 
 func TestIntegrationAccountCreateTransactionCanFreezeModify(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -123,6 +125,7 @@ func TestIntegrationAccountCreateTransactionCanFreezeModify(t *testing.T) {
 }
 
 func TestIntegrationAccountCreateTransactionNoKey(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewAccountCreateTransaction().
@@ -138,6 +141,7 @@ func TestIntegrationAccountCreateTransactionNoKey(t *testing.T) {
 }
 
 func TestIntegrationAccountCreateTransactionAddSignature(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -180,6 +184,7 @@ func TestIntegrationAccountCreateTransactionAddSignature(t *testing.T) {
 }
 
 func DisabledTestIntegrationAccountCreateTransactionSetProxyAccountID(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -245,6 +250,7 @@ func DisabledTestIntegrationAccountCreateTransactionSetProxyAccountID(t *testing
 }
 
 func TestIntegrationAccountCreateTransactionNetwork(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -290,6 +296,7 @@ func TestIntegrationAccountCreateTransactionNetwork(t *testing.T) {
 func TestIntegrationAccountCreateTransactionWithAliasFromAdminKey(t *testing.T) {
 	// Tests the third row of this table
 	// https://github.com/hashgraph/hedera-improvement-proposal/blob/d39f740021d7da592524cffeaf1d749803798e9a/HIP/hip-583.md#signatures
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	adminKey, err := PrivateKeyGenerateEcdsa()
@@ -330,6 +337,7 @@ func TestIntegrationAccountCreateTransactionWithAliasFromAdminKey(t *testing.T) 
 func TestIntegrationAccountCreateTransactionWithAliasFromAdminKeyWithReceiverSigRequired(t *testing.T) {
 	// Tests the fourth row of this table
 	// https://github.com/hashgraph/hedera-improvement-proposal/blob/d39f740021d7da592524cffeaf1d749803798e9a/HIP/hip-583.md#signatures
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	adminKey, err := PrivateKeyGenerateEcdsa()
@@ -372,6 +380,7 @@ func TestIntegrationAccountCreateTransactionWithAliasFromAdminKeyWithReceiverSig
 func TestIntegrationAccountCreateTransactionWithAliasFromAdminKeyWithReceiverSigRequiredWithoutSignature(t *testing.T) {
 	// Tests the fourth row of this table
 	// https://github.com/hashgraph/hedera-improvement-proposal/blob/d39f740021d7da592524cffeaf1d749803798e9a/HIP/hip-583.md#signatures
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	adminKey, err := PrivateKeyGenerateEcdsa()
@@ -405,6 +414,7 @@ func TestIntegrationAccountCreateTransactionWithAliasFromAdminKeyWithReceiverSig
 func TestIntegrationAccountCreateTransactionWithAlias(t *testing.T) {
 	// Tests the fifth row of this table
 	// https://github.com/hashgraph/hedera-improvement-proposal/blob/d39f740021d7da592524cffeaf1d749803798e9a/HIP/hip-583.md#signatures
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	adminKey, err := PrivateKeyGenerateEd25519()
@@ -445,6 +455,7 @@ func TestIntegrationAccountCreateTransactionWithAlias(t *testing.T) {
 }
 
 func TestIntegrationAccountCreateTransactionWithAliasWithoutSignature(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	adminKey, err := PrivateKeyGenerateEd25519()
@@ -478,6 +489,7 @@ func TestIntegrationAccountCreateTransactionWithAliasWithoutSignature(t *testing
 func TestIntegrationAccountCreateTransactionWithAliasWithReceiverSigRequired(t *testing.T) {
 	// Tests the sixth row of this table
 	// https://github.com/hashgraph/hedera-improvement-proposal/blob/d39f740021d7da592524cffeaf1d749803798e9a/HIP/hip-583.md#signatures
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	adminKey, err := PrivateKeyGenerateEd25519()
@@ -520,6 +532,7 @@ func TestIntegrationAccountCreateTransactionWithAliasWithReceiverSigRequired(t *
 }
 
 func TestIntegrationAccountCreateTransactionWithAliasWithReceiverSigRequiredWithoutSignature(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	adminKey, err := PrivateKeyGenerateEd25519()

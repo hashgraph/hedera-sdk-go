@@ -10,6 +10,7 @@ import (
 )
 
 func TestIntegrationCantTransferOnBehalfOfSpenderWithoutAllowanceApproval(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 	spenderKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -54,6 +55,7 @@ func TestIntegrationCantTransferOnBehalfOfSpenderWithoutAllowanceApproval(t *tes
 }
 
 func TestIntegrationCantTransferOnBehalfOfSpenderAfterRemovingTheAllowanceApproval(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 	spenderKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -127,6 +129,7 @@ func TestIntegrationCantTransferOnBehalfOfSpenderAfterRemovingTheAllowanceApprov
 }
 
 func TestIntegrationCantRemoveSingleSerialNumberAllowanceWhenAllowanceIsForAllSerials(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 	spenderKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -200,6 +203,7 @@ func TestIntegrationCantRemoveSingleSerialNumberAllowanceWhenAllowanceIsForAllSe
 }
 
 func TestIntegrationAfterGivenAllowanceForAllSerialsCanGiveSingleSerialToOtherAccounts(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 	spenderKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)

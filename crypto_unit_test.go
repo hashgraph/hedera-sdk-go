@@ -81,6 +81,8 @@ R88hIXcWDOECttPTNlMXWJt7Wufm1YwBibrxmCq1QykIyTYhy1TZMyxyPxlYW6aV
 const pemPassphrase = "this is a passphrase"
 
 func TestUnitPrivateKeyGenerate(t *testing.T) {
+	t.Parallel()
+
 	key, err := GeneratePrivateKey()
 
 	require.NoError(t, err)
@@ -88,6 +90,8 @@ func TestUnitPrivateKeyGenerate(t *testing.T) {
 }
 
 func TestUnitPrivateKeyExternalSerialization(t *testing.T) {
+	t.Parallel()
+
 	key, err := PrivateKeyFromString(testPrivateKeyStr)
 
 	require.NoError(t, err)
@@ -95,6 +99,8 @@ func TestUnitPrivateKeyExternalSerialization(t *testing.T) {
 }
 
 func TestUnitPrivateKeyExternalSerializationForConcatenatedHex(t *testing.T) {
+	t.Parallel()
+
 	keyStr := "db484b828e64b2d8f12ce3c0a0e93a0b8cce7af1bb8f39c97732394482538e10e0c8ec2758a5879ffac226a13c0c516b799e72e35141a0dd828f94d37988a4b7"
 	key, err := PrivateKeyFromStringEd25519(keyStr)
 
@@ -103,6 +109,8 @@ func TestUnitPrivateKeyExternalSerializationForConcatenatedHex(t *testing.T) {
 }
 
 func TestUnitShouldMatchHbarWalletV1(t *testing.T) {
+	t.Parallel()
+
 	mnemonic, err := MnemonicFromString("jolly kidnap tom lawn drunk chick optic lust mutter mole bride galley dense member sage neural widow decide curb aboard margin manure")
 	require.NoError(t, err)
 
@@ -116,6 +124,8 @@ func TestUnitShouldMatchHbarWalletV1(t *testing.T) {
 }
 
 func TestUnitLegacyPrivateKeyFromMnemonicDerive(t *testing.T) {
+	t.Parallel()
+
 	mnemonic, err := MnemonicFromString("jolly kidnap tom lawn drunk chick optic lust mutter mole bride galley dense member sage neural widow decide curb aboard margin manure")
 	require.NoError(t, err)
 
@@ -132,6 +142,8 @@ func TestUnitLegacyPrivateKeyFromMnemonicDerive(t *testing.T) {
 }
 
 func TestUnitPrivateKeyExternalSerializationForRawHex(t *testing.T) {
+	t.Parallel()
+
 	keyStr := "db484b828e64b2d8f12ce3c0a0e93a0b8cce7af1bb8f39c97732394482538e10"
 	key, err := PrivateKeyFromStringEd25519(keyStr)
 
@@ -140,6 +152,8 @@ func TestUnitPrivateKeyExternalSerializationForRawHex(t *testing.T) {
 }
 
 func TestUnitPublicKeyExternalSerializationForDerEncodedHex(t *testing.T) {
+	t.Parallel()
+
 	key, err := PublicKeyFromString(testPublicKeyStr)
 
 	require.NoError(t, err)
@@ -147,6 +161,8 @@ func TestUnitPublicKeyExternalSerializationForDerEncodedHex(t *testing.T) {
 }
 
 func TestUnitPublicKeyExternalSerializationForRawHex(t *testing.T) {
+	t.Parallel()
+
 	keyStr := "e0c8ec2758a5879ffac226a13c0c516b799e72e35141a0dd828f94d37988a4b7"
 	key, err := PublicKeyFromStringEd25519(keyStr)
 
@@ -155,6 +171,8 @@ func TestUnitPublicKeyExternalSerializationForRawHex(t *testing.T) {
 }
 
 func TestUnitMnemonicToPrivateKey(t *testing.T) {
+	t.Parallel()
+
 	mnemonic, err := MnemonicFromString(testMnemonic)
 	require.NoError(t, err)
 
@@ -165,6 +183,8 @@ func TestUnitMnemonicToPrivateKey(t *testing.T) {
 }
 
 func TestUnitIOSPrivateKeyFromMnemonic(t *testing.T) {
+	t.Parallel()
+
 	mnemonic, err := MnemonicFromString(iosMnemonicString)
 	require.NoError(t, err)
 
@@ -181,6 +201,8 @@ func TestUnitIOSPrivateKeyFromMnemonic(t *testing.T) {
 }
 
 func TestUnitAndroidPrivateKeyFromMnemonic(t *testing.T) {
+	t.Parallel()
+
 	mnemonic, err := MnemonicFromString(androidMnemonicString)
 	require.NoError(t, err)
 
@@ -197,6 +219,8 @@ func TestUnitAndroidPrivateKeyFromMnemonic(t *testing.T) {
 }
 
 func TestUnitMnemonic3(t *testing.T) {
+	t.Parallel()
+
 	mnemonic, err := MnemonicFromString(testMnemonic3)
 	require.NoError(t, err)
 
@@ -213,6 +237,8 @@ func TestUnitMnemonic3(t *testing.T) {
 }
 
 func TestUnitSigning(t *testing.T) {
+	t.Parallel()
+
 	priKey, err := PrivateKeyFromString(testPrivateKeyStr)
 	require.NoError(t, err)
 
@@ -226,6 +252,8 @@ func TestUnitSigning(t *testing.T) {
 }
 
 func TestUnitGenerated24MnemonicToWorkingPrivateKey(t *testing.T) {
+	t.Parallel()
+
 	mnemonic, err := GenerateMnemonic24()
 
 	require.NoError(t, err)
@@ -242,6 +270,8 @@ func TestUnitGenerated24MnemonicToWorkingPrivateKey(t *testing.T) {
 }
 
 func TestUnitGenerated12MnemonicToWorkingPrivateKey(t *testing.T) {
+	t.Parallel()
+
 	mnemonic, err := GenerateMnemonic12()
 
 	require.NoError(t, err)
@@ -258,6 +288,8 @@ func TestUnitGenerated12MnemonicToWorkingPrivateKey(t *testing.T) {
 }
 
 func TestUnitPrivateKeyFromKeystore(t *testing.T) {
+	t.Parallel()
+
 	privatekey, err := PrivateKeyFromKeystore([]byte(testKeystore), passphrase)
 	require.NoError(t, err)
 
@@ -268,6 +300,8 @@ func TestUnitPrivateKeyFromKeystore(t *testing.T) {
 }
 
 func TestUnitPrivateKeyKeystore(t *testing.T) {
+	t.Parallel()
+
 	privateKey, err := PrivateKeyFromString(testPrivateKeyStr)
 	require.NoError(t, err)
 
@@ -281,6 +315,8 @@ func TestUnitPrivateKeyKeystore(t *testing.T) {
 }
 
 func TestUnitPrivateKeyReadKeystore(t *testing.T) {
+	t.Parallel()
+
 	actualPrivateKey, err := PrivateKeyFromStringEd25519(testKeystoreKeyString)
 	require.NoError(t, err)
 
@@ -293,6 +329,8 @@ func TestUnitPrivateKeyReadKeystore(t *testing.T) {
 }
 
 func TestUnitPrivateKeyFromPem(t *testing.T) {
+	t.Parallel()
+
 	actualPrivateKey, err := PrivateKeyFromString(testPrivateKeyStr)
 	require.NoError(t, err)
 
@@ -303,11 +341,15 @@ func TestUnitPrivateKeyFromPem(t *testing.T) {
 }
 
 func TestUnitPrivateKeyFromPemInvalid(t *testing.T) {
+	t.Parallel()
+
 	_, err := PrivateKeyFromPem([]byte("invalid"), "")
 	assert.Error(t, err)
 }
 
 func TestUnitPrivateKeyFromPemWithPassphrase(t *testing.T) {
+	t.Parallel()
+
 	actualPrivateKey, err := PrivateKeyFromString(testPrivateKeyStr)
 	require.NoError(t, err)
 
@@ -318,6 +360,8 @@ func TestUnitPrivateKeyFromPemWithPassphrase(t *testing.T) {
 }
 
 func TestUnitPrivateKeyECDSASign(t *testing.T) {
+	t.Parallel()
+
 	key, err := PrivateKeyGenerateEcdsa()
 	require.NoError(t, err)
 
@@ -328,6 +372,8 @@ func TestUnitPrivateKeyECDSASign(t *testing.T) {
 }
 
 func DisabledTestUnitPrivateKeyECDSASign(t *testing.T) {
+	t.Parallel()
+
 	message := []byte("hello world")
 	key, err := PrivateKeyFromStringECDSA("8776c6b831a1b61ac10dac0304a2843de4716f54b1919bb91a2685d0fe3f3048")
 	require.NoError(t, err)
@@ -339,6 +385,8 @@ func DisabledTestUnitPrivateKeyECDSASign(t *testing.T) {
 }
 
 func TestUnitPrivateKeyECDSAFromString(t *testing.T) {
+	t.Parallel()
+
 	key, err := PrivateKeyGenerateEcdsa()
 	require.NoError(t, err)
 	key2, err := PrivateKeyFromString(key.String())
@@ -348,6 +396,8 @@ func TestUnitPrivateKeyECDSAFromString(t *testing.T) {
 }
 
 func TestUnitPrivateKeyECDSAFromStringRaw(t *testing.T) {
+	t.Parallel()
+
 	key, err := PrivateKeyGenerateEcdsa()
 	require.NoError(t, err)
 	key2, err := PrivateKeyFromStringECDSA(key.StringRaw())
@@ -357,6 +407,8 @@ func TestUnitPrivateKeyECDSAFromStringRaw(t *testing.T) {
 }
 
 func TestUnitPublicKeyECDSAFromString(t *testing.T) {
+	t.Parallel()
+
 	key, err := PrivateKeyGenerateEcdsa()
 	require.NoError(t, err)
 	publicKey := key.PublicKey()
@@ -367,6 +419,8 @@ func TestUnitPublicKeyECDSAFromString(t *testing.T) {
 }
 
 func TestUnitPublicKeyECDSAFromStringRaw(t *testing.T) {
+	t.Parallel()
+
 	key, err := PrivateKeyGenerateEcdsa()
 	require.NoError(t, err)
 	publicKey := key.PublicKey()
@@ -377,6 +431,8 @@ func TestUnitPublicKeyECDSAFromStringRaw(t *testing.T) {
 }
 
 func TestUnitPrivateKeyECDSASignTransaction(t *testing.T) {
+	t.Parallel()
+
 	newKey, err := PrivateKeyGenerateEcdsa()
 	require.NoError(t, err)
 
@@ -398,12 +454,16 @@ func TestUnitPrivateKeyECDSASignTransaction(t *testing.T) {
 }
 
 func TestUnitPublicKeyFromPrivateKeyString(t *testing.T) {
+	t.Parallel()
+
 	key, err := PrivateKeyFromStringECDSA("3030020100300706052b8104000a04220420d790c27a81d745ad3340e27dacedc982d1f9252c0d7a4582da9847e2094603d4")
 	require.NoError(t, err)
 	require.Equal(t, "302f300706052b8104000a032400042102b46925b64940f5d7d3f394aba914c05f1607fa42e9e721afee0770cb55797d99", key.PublicKey().String())
 }
 
 func TestUnitPublicKeyToEthereumAddress(t *testing.T) {
+	t.Parallel()
+
 	byt, err := hex.DecodeString("03af80b90d25145da28c583359beb47b21796b2fe1a23c1511e443e7a64dfdb27d")
 	require.NoError(t, err)
 	key, err := PublicKeyFromBytesECDSA(byt)
@@ -412,6 +472,8 @@ func TestUnitPublicKeyToEthereumAddress(t *testing.T) {
 }
 
 func TestSlip10Ed25519Vector1(t *testing.T) {
+	t.Parallel()
+
 	// https://github.com/satoshilabs/slips/blob/master/slip-0010.md#test-vector-1-for-ed25519
 	test1PrivateKey := "2b4be7f19ee27bbf30c667b642d5f4aa69fd169872f8fc3059c08ebae2eb19e7"
 	test1PublicKey := "a4b2856bfec510abab89753fac1ac0e1112364e7d250545963f135f2a33188ed"
@@ -481,6 +543,8 @@ func TestSlip10Ed25519Vector1(t *testing.T) {
 }
 
 func TestSlip10Ed25519Vector2(t *testing.T) {
+	t.Parallel()
+
 	// https://github.com/satoshilabs/slips/blob/master/slip-0010.md#test-vector-2-for-ed25519
 	test1PrivateKey := "171cb88b1b3c1db25add599712e36245d75bc65a1a5c9e18d76f9f2b1eab4012"
 	test1PublicKey := "8fe9693f8fa62a4305a140b9764c5ee01e455963744fe18204b4fb948249308a"
@@ -550,6 +614,8 @@ func TestSlip10Ed25519Vector2(t *testing.T) {
 }
 
 func TestSlip10ECDSAVector1(t *testing.T) {
+	t.Parallel()
+
 	// https://github.com/satoshilabs/slips/blob/master/slip-0010.md#test-vector-1-for-secp256k1
 	test1PrivateKey := "e8f32e723decf4051aefac8e2c93c9c5b214313817cdb01a1494b917c8436b35"
 	test1PublicKey := "0339a36013301597daef41fbe593a02cc513d0b55527ec2df1050e2e8ff49c85c2"
@@ -619,6 +685,8 @@ func TestSlip10ECDSAVector1(t *testing.T) {
 }
 
 func TestSlip10ECDSAVector2(t *testing.T) {
+	t.Parallel()
+
 	// https://github.com/satoshilabs/slips/blob/master/slip-0010.md#test-vector-2-for-secp256k1
 	test1PrivateKey := "4b03d6fc340455b363f51020ad3ecca4f0850280cf436c70c727923f6db46c3e"
 	test1PublicKey := "03cbcaa9c98c877a26977d00825c956a238e8dddfbd322cce4f74b0b5bd6ace4a7"

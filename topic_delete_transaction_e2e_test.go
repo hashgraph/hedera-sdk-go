@@ -32,6 +32,7 @@ import (
 )
 
 func TestIntegrationTopicDeleteTransactionCanExecute(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	topicMemo := "go-sdk::TestConsensusTopicDeleteTransaction_Execute"
@@ -81,6 +82,7 @@ func TestIntegrationTopicDeleteTransactionCanExecute(t *testing.T) {
 }
 
 func TestIntegrationTopicDeleteTransactionNoTopicID(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	topicMemo := "go-sdk::TestConsensusTopicDeleteTransaction_Execute"

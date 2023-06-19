@@ -13,6 +13,8 @@ import (
 )
 
 func TestUnitEthereumFlowMock(t *testing.T) {
+	t.Parallel()
+
 	call := func(request *services.Transaction) *services.TransactionResponse {
 		require.NotEmpty(t, request.SignedTransactionBytes)
 		signedTransaction := services.SignedTransaction{}
@@ -81,6 +83,8 @@ func TestUnitEthereumFlowMock(t *testing.T) {
 }
 
 func TestUnitEthereumFlowMockEthereumDateBytes(t *testing.T) {
+	t.Parallel()
+
 	call := func(request *services.Transaction) *services.TransactionResponse {
 		require.NotEmpty(t, request.SignedTransactionBytes)
 		signedTransaction := services.SignedTransaction{}
@@ -147,6 +151,8 @@ func TestUnitEthereumFlowMockEthereumDateBytes(t *testing.T) {
 }
 
 func TestUnitEthereumFlowCoverage(t *testing.T) {
+	t.Parallel()
+
 	checksum := "dmqui"
 	file := FileID{File: 3, checksum: &checksum}
 	nodeAccountID := []AccountID{{Account: 10}}

@@ -31,6 +31,7 @@ import (
 )
 
 func TestIntegrationNetworkVersionInfoQueryCanExecute(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	q, err := NewNetworkVersionQuery().
@@ -44,6 +45,7 @@ func TestIntegrationNetworkVersionInfoQueryCanExecute(t *testing.T) {
 }
 
 func TestIntegrationNetworkVersionInfoQueryGetCost(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	query := NewNetworkVersionQuery().SetNodeAccountIDs(env.NodeAccountIDs)

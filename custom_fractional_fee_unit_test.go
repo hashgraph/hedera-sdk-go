@@ -12,6 +12,8 @@ import (
 )
 
 func TestCustomFractionalFee_SettersAndGetters(t *testing.T) {
+	t.Parallel()
+
 	fee := NewCustomFractionalFee()
 	const FeeAssessmentMethod_TRUE FeeAssessmentMethod = true
 
@@ -33,6 +35,8 @@ func TestCustomFractionalFee_SettersAndGetters(t *testing.T) {
 }
 
 func TestCustomFractionalFee_ToBytes(t *testing.T) {
+	t.Parallel()
+
 	fee := NewCustomFractionalFee()
 	const FeeAssessmentMethod_TRUE FeeAssessmentMethod = true
 
@@ -61,6 +65,8 @@ func TestCustomFractionalFee_ToBytes(t *testing.T) {
 }
 
 func TestCustomFractionalFee_ToProtobuf(t *testing.T) {
+	t.Parallel()
+
 	fee := NewCustomFractionalFee()
 	const FeeAssessmentMethod_TRUE FeeAssessmentMethod = true
 

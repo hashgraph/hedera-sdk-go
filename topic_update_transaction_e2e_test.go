@@ -34,6 +34,7 @@ import (
 const oldTopicMemo = "go-sdk::TestConsensusTopicUpdateTransaction_Execute::initial"
 
 func TestIntegrationTopicUpdateTransactionCanExecute(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTopicCreateTransaction().
@@ -100,6 +101,7 @@ func TestIntegrationTopicUpdateTransactionCanExecute(t *testing.T) {
 }
 
 func TestIntegrationTopicUpdateTransactionNoMemo(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTopicCreateTransaction().
@@ -151,6 +153,7 @@ func TestIntegrationTopicUpdateTransactionNoMemo(t *testing.T) {
 }
 
 func TestIntegrationTopicUpdateTransactionNoTopicID(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTopicCreateTransaction().

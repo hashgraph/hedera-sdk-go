@@ -33,10 +33,14 @@ import (
 )
 
 func TestUnitDelegatableContractIDChecksumFromString(t *testing.T) {
+	t.Parallel()
+
 	id, err := DelegatableContractIDFromString("0.0.123-rmkyk")
 	require.NoError(t, err)
 
-	client := ClientForTestnet()
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	err = id.ValidateChecksum(client)
 	require.Error(t, err)
 	require.Equal(t, id.Contract, uint64(123))
@@ -47,6 +51,8 @@ func TestUnitDelegatableContractIDChecksumFromString(t *testing.T) {
 }
 
 func TestUnitDelegatableContractIDChecksumToString(t *testing.T) {
+	t.Parallel()
+
 	id := DelegatableContractID{
 		Shard:    50,
 		Realm:    150,
@@ -56,6 +62,8 @@ func TestUnitDelegatableContractIDChecksumToString(t *testing.T) {
 }
 
 func TestUnitDelegatableContractIDFromStringEVM(t *testing.T) {
+	t.Parallel()
+
 	id, err := DelegatableContractIDFromString("0.0.0011223344556677889900112233445577889900")
 	require.NoError(t, err)
 
@@ -63,6 +71,8 @@ func TestUnitDelegatableContractIDFromStringEVM(t *testing.T) {
 }
 
 func TestUnitDelegatableContractIDProtobuf(t *testing.T) {
+	t.Parallel()
+
 	id, err := DelegatableContractIDFromString("0.0.0011223344556677889900112233445577889900")
 	require.NoError(t, err)
 
@@ -83,6 +93,8 @@ func TestUnitDelegatableContractIDProtobuf(t *testing.T) {
 }
 
 func TestUnitDelegatableContractIDEvm(t *testing.T) {
+	t.Parallel()
+
 	hexString, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 	id, err := DelegatableContractIDFromString(fmt.Sprintf("0.0.%s", hexString.PublicKey().String()))
@@ -110,6 +122,8 @@ func TestUnitDelegatableContractIDEvm(t *testing.T) {
 }
 
 func TestUnitDelegatableContractIDToFromBytes(t *testing.T) {
+	t.Parallel()
+
 	id, err := DelegatableContractIDFromString("0.0.123")
 	require.NoError(t, err)
 	require.Equal(t, id.Contract, uint64(123))
@@ -122,6 +136,8 @@ func TestUnitDelegatableContractIDToFromBytes(t *testing.T) {
 }
 
 func TestUnitDelegatableContractIDFromEvmAddress(t *testing.T) {
+	t.Parallel()
+
 	id, err := DelegatableContractIDFromEvmAddress(0, 0, "0011223344556677889900112233445566778899")
 	require.NoError(t, err)
 	require.Equal(t, id.Contract, uint64(0))
@@ -129,6 +145,8 @@ func TestUnitDelegatableContractIDFromEvmAddress(t *testing.T) {
 }
 
 func TestUnitDelegatableContractIDFromSolidityAddress(t *testing.T) {
+	t.Parallel()
+
 	id, err := DelegatableContractIDFromString("0.0.123-rmkyk")
 	require.NoError(t, err)
 	sol := id.ToSolidityAddress()
@@ -138,6 +156,8 @@ func TestUnitDelegatableContractIDFromSolidityAddress(t *testing.T) {
 }
 
 func TestUnitDelegatableContractIDToProtoKey(t *testing.T) {
+	t.Parallel()
+
 	id, err := DelegatableContractIDFromString("0.0.123-rmkyk")
 	require.NoError(t, err)
 	pb := id._ToProtoKey()

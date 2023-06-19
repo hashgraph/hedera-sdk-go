@@ -31,10 +31,14 @@ import (
 )
 
 func TestUnitFileIDChecksumFromString(t *testing.T) {
+	t.Parallel()
+
 	id, err := FileIDFromString("0.0.123-rmkyk")
 	require.NoError(t, err)
 
-	client := ClientForTestnet()
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	id.ToStringWithChecksum(*client)
 	sol := id.ToSolidityAddress()
 	FileIDFromSolidityAddress(sol)
@@ -54,6 +58,8 @@ func TestUnitFileIDChecksumFromString(t *testing.T) {
 }
 
 func TestUnitFileIDChecksumToString(t *testing.T) {
+	t.Parallel()
+
 	id := AccountID{
 		Shard:   50,
 		Realm:   150,

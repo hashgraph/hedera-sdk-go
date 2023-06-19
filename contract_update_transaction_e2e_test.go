@@ -33,6 +33,7 @@ import (
 )
 
 func TestIntegrationContractUpdateTransactionCanExecute(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	// Note: this is the bytecode for the contract found in the example for ./examples/_Create_simpleContract
@@ -137,6 +138,7 @@ func TestIntegrationContractUpdateTransactionCanExecute(t *testing.T) {
 }
 
 func TestIntegrationContractUpdateTransactionNoContractID(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewContractUpdateTransaction().

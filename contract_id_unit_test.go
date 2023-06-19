@@ -34,10 +34,14 @@ import (
 )
 
 func TestUnitContractIDChecksumFromString(t *testing.T) {
+	t.Parallel()
+
 	id, err := ContractIDFromString("0.0.123-rmkyk")
 	require.NoError(t, err)
 
-	client := ClientForTestnet()
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	sol := id.ToSolidityAddress()
 	ContractIDFromSolidityAddress(sol)
 	err = id.Validate(client)
@@ -56,6 +60,8 @@ func TestUnitContractIDChecksumFromString(t *testing.T) {
 }
 
 func TestUnitContractIDChecksumToString(t *testing.T) {
+	t.Parallel()
+
 	id := AccountID{
 		Shard:   50,
 		Realm:   150,
@@ -65,6 +71,8 @@ func TestUnitContractIDChecksumToString(t *testing.T) {
 }
 
 func TestUnitContractIDFromStringEVM(t *testing.T) {
+	t.Parallel()
+
 	id, err := ContractIDFromString("0.0.0011223344556677889900112233445577889900")
 	require.NoError(t, err)
 
@@ -72,6 +80,8 @@ func TestUnitContractIDFromStringEVM(t *testing.T) {
 }
 
 func TestUnitContractIDProtobuf(t *testing.T) {
+	t.Parallel()
+
 	id, err := ContractIDFromString("0.0.0011223344556677889900112233445577889900")
 	require.NoError(t, err)
 
@@ -92,6 +102,8 @@ func TestUnitContractIDProtobuf(t *testing.T) {
 }
 
 func TestUnitContractIDEvm(t *testing.T) {
+	t.Parallel()
+
 	hexString, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 	id, err := ContractIDFromString(fmt.Sprintf("0.0.%s", hexString.PublicKey().String()))

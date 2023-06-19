@@ -34,6 +34,8 @@ import (
 )
 
 func TestUnitTokenPause(t *testing.T) {
+	t.Parallel()
+
 	accountID, err := AccountIDFromString("0.0.5005")
 	require.NoError(t, err)
 	tokenID, err := TokenIDFromString("0.0.5005")
@@ -51,6 +53,8 @@ func TestUnitTokenPause(t *testing.T) {
 }
 
 func TestUnitTokenUnpause(t *testing.T) {
+	t.Parallel()
+
 	accountID, err := AccountIDFromString("0.0.5005")
 	require.NoError(t, err)
 	tokenID, err := TokenIDFromString("0.0.5005")
@@ -84,6 +88,8 @@ func TestUnitTokenPauseSchedule(t *testing.T) {
 }
 
 func TestUnitTokenPauseTransactionGet(t *testing.T) {
+	t.Parallel()
+
 	tokenID := TokenID{Token: 7}
 
 	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
@@ -118,6 +124,8 @@ func TestUnitTokenPauseTransactionGet(t *testing.T) {
 }
 
 func TestUnitTokenPauseTransactionNothingSet(t *testing.T) {
+	t.Parallel()
+
 	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
 	transactionID := TransactionIDGenerate(AccountID{Account: 324})
 
@@ -145,6 +153,8 @@ func TestUnitTokenPauseTransactionNothingSet(t *testing.T) {
 }
 
 func TestUnitTokenUnpauseTransactionGet(t *testing.T) {
+	t.Parallel()
+
 	tokenID := TokenID{Token: 7}
 
 	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
@@ -179,6 +189,8 @@ func TestUnitTokenUnpauseTransactionGet(t *testing.T) {
 }
 
 func TestUnitTokenUnpauseTransactionNothingSet(t *testing.T) {
+	t.Parallel()
+
 	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
 	transactionID := TransactionIDGenerate(AccountID{Account: 324})
 
@@ -206,6 +218,8 @@ func TestUnitTokenUnpauseTransactionNothingSet(t *testing.T) {
 }
 
 func TestUnitTokenUnpauseTransactionCoverage(t *testing.T) {
+	t.Parallel()
+
 	checksum := "dmqui"
 	grpc := time.Second * 30
 	token := TokenID{Token: 3, checksum: &checksum}
@@ -215,7 +229,9 @@ func TestUnitTokenUnpauseTransactionCoverage(t *testing.T) {
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
-	client := ClientForTestnet()
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 
 	transaction, err := NewTokenUnpauseTransaction().
@@ -267,6 +283,8 @@ func TestUnitTokenUnpauseTransactionCoverage(t *testing.T) {
 }
 
 func TestUnitTokenUnpauseTransactionMock(t *testing.T) {
+	t.Parallel()
+
 	newKey, err := PrivateKeyFromStringEd25519("302e020100300506032b657004220420a869f4c6191b9c8c99933e7f6b6611711737e4b1a1a5a4cb5370e719a1f6df98")
 	require.NoError(t, err)
 

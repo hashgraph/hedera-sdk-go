@@ -33,6 +33,7 @@ import (
 )
 
 func TestIntegrationTokenDeleteTransactionCanExecute(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenCreateTransaction().
@@ -59,6 +60,7 @@ func TestIntegrationTokenDeleteTransactionCanExecute(t *testing.T) {
 }
 
 func TestIntegrationTokenDeleteTransactionNoKeys(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -93,6 +95,7 @@ func TestIntegrationTokenDeleteTransactionNoKeys(t *testing.T) {
 }
 
 func TestIntegrationTokenDeleteTransactionNoTokenID(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenDeleteTransaction().

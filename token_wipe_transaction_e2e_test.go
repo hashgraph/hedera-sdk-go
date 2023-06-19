@@ -33,6 +33,7 @@ import (
 )
 
 func TestIntegrationTokenWipeTransactionCanExecute(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -169,6 +170,7 @@ func TestIntegrationTokenWipeTransactionCanExecute(t *testing.T) {
 }
 
 func TestIntegrationTokenWipeTransactionNoAmount(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -280,6 +282,7 @@ func TestIntegrationTokenWipeTransactionNoAmount(t *testing.T) {
 }
 
 func TestIntegrationTokenWipeTransactionNoTokenID(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -389,6 +392,7 @@ func TestIntegrationTokenWipeTransactionNoTokenID(t *testing.T) {
 }
 
 func TestIntegrationTokenWipeTransactionNoAccountID(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -500,6 +504,7 @@ func TestIntegrationTokenWipeTransactionNoAccountID(t *testing.T) {
 }
 
 func TestIntegrationTokenWipeTransactionNotZeroTokensAtDelete(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -639,6 +644,7 @@ func TestIntegrationTokenWipeTransactionNotZeroTokensAtDelete(t *testing.T) {
 }
 
 func DisabledTestIntegrationTokenWipeTransactionNftsIfNotOwned(t *testing.T) { // nolint
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newBalance := NewHbar(2)

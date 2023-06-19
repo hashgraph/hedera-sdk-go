@@ -32,6 +32,7 @@ import (
 )
 
 func TestIntegrationTokenInfoQueryCanExecute(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenCreateTransaction().
@@ -86,6 +87,7 @@ func TestIntegrationTokenInfoQueryCanExecute(t *testing.T) {
 }
 
 func TestIntegrationTokenInfoQueryGetCost(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenCreateTransaction().
@@ -125,6 +127,7 @@ func TestIntegrationTokenInfoQueryGetCost(t *testing.T) {
 }
 
 func TestIntegrationTokenInfoQuerySetBigMaxPayment(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenCreateTransaction().
@@ -164,6 +167,7 @@ func TestIntegrationTokenInfoQuerySetBigMaxPayment(t *testing.T) {
 }
 
 func TestIntegrationTokenInfoQuerySetSmallMaxPayment(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenCreateTransaction().
@@ -206,6 +210,7 @@ func TestIntegrationTokenInfoQuerySetSmallMaxPayment(t *testing.T) {
 }
 
 func TestIntegrationTokenInfoQueryInsufficientCost(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenCreateTransaction().
@@ -248,6 +253,7 @@ func TestIntegrationTokenInfoQueryInsufficientCost(t *testing.T) {
 }
 
 func TestIntegrationTokenInfoQueryNoPayment(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenCreateTransaction().
@@ -289,6 +295,7 @@ func TestIntegrationTokenInfoQueryNoPayment(t *testing.T) {
 }
 
 func TestIntegrationTokenInfoQueryNoTokenID(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	_, err := NewTokenInfoQuery().

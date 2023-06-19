@@ -33,6 +33,7 @@ import (
 )
 
 func TestIntegrationTokenUpdateTransactionCanExecute(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenCreateTransaction().
@@ -78,6 +79,7 @@ func TestIntegrationTokenUpdateTransactionCanExecute(t *testing.T) {
 }
 
 func TestIntegrationTokenUpdateTransactionDifferentKeys(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	keys := make([]PrivateKey, 5)
@@ -160,6 +162,7 @@ func TestIntegrationTokenUpdateTransactionDifferentKeys(t *testing.T) {
 }
 
 func TestIntegrationTokenUpdateTransactionNoTokenID(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenCreateTransaction().
@@ -193,6 +196,7 @@ func TestIntegrationTokenUpdateTransactionNoTokenID(t *testing.T) {
 }
 
 func DisabledTestIntegrationTokenUpdateTransactionTreasury(t *testing.T) { // nolint
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()

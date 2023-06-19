@@ -1,3 +1,6 @@
+//go:build all || unit
+// +build all unit
+
 package hedera
 
 import (
@@ -10,7 +13,11 @@ import (
 )
 
 func TestUnitTopicMessageQueryValidate(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	topicID, err := TopicIDFromString("0.0.123-esxsf")
 	require.NoError(t, err)
@@ -23,7 +30,11 @@ func TestUnitTopicMessageQueryValidate(t *testing.T) {
 }
 
 func TestUnitTopicMessageQueryValidateWrong(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	topicID, err := TopicIDFromString("0.0.123-rmkykd")
 	require.NoError(t, err)
@@ -39,6 +50,8 @@ func TestUnitTopicMessageQueryValidateWrong(t *testing.T) {
 }
 
 func TestUnitTopicMessageQueryGet(t *testing.T) {
+	t.Parallel()
+
 	topicID := TopicID{Topic: 7}
 
 	balance := NewTopicMessageQuery().
@@ -59,6 +72,8 @@ func TestUnitTopicMessageQueryGet(t *testing.T) {
 }
 
 func TestUnitTopicMessageQueryNothingSet(t *testing.T) {
+	t.Parallel()
+
 	balance := NewTopicMessageQuery()
 
 	balance.GetTopicID()

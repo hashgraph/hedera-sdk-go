@@ -32,6 +32,8 @@ import (
 )
 
 func TestUnitClientFromConfig(t *testing.T) {
+	t.Parallel()
+
 	client, err := ClientFromConfig([]byte(testClientJSON))
 	require.NoError(t, err)
 
@@ -41,6 +43,8 @@ func TestUnitClientFromConfig(t *testing.T) {
 }
 
 func TestUnitClientFromConfigWithOperator(t *testing.T) {
+	t.Parallel()
+
 	client, err := ClientFromConfig([]byte(testClientJSONWithOperator))
 	require.NoError(t, err)
 
@@ -56,6 +60,8 @@ func TestUnitClientFromConfigWithOperator(t *testing.T) {
 }
 
 func TestUnitClientFromConfigWithoutMirrorNetwork(t *testing.T) {
+	t.Parallel()
+	
 	client, err := ClientFromConfig([]byte(testClientJSONWithoutMirrorNetwork))
 	require.NoError(t, err)
 	assert.NotNil(t, client)
@@ -65,6 +71,8 @@ func TestUnitClientFromConfigWithoutMirrorNetwork(t *testing.T) {
 }
 
 func TestUnitClientFromConfigWrongMirrorNetworkType(t *testing.T) {
+	t.Parallel()
+
 	_, err := ClientFromConfig([]byte(testClientJSONWrongTypeMirror))
 	assert.Error(t, err)
 	if err != nil {
@@ -73,6 +81,8 @@ func TestUnitClientFromConfigWrongMirrorNetworkType(t *testing.T) {
 }
 
 func TestUnitClientFromConfigWrongNetworkType(t *testing.T) {
+	t.Parallel()
+
 	_, err := ClientFromConfig([]byte(testClientJSONWrongTypeNetwork))
 	assert.Error(t, err)
 	if err != nil {
@@ -89,6 +99,8 @@ func TestUnitClientFromConfigWrongAccountIDNetworkType(t *testing.T) {
 }
 
 func TestUnitClientFromCorrectConfigFile(t *testing.T) {
+	t.Parallel()
+
 	client, err := ClientFromConfigFile("client-config-with-operator.json")
 	assert.NoError(t, err)
 	assert.NotNil(t, client)
@@ -98,18 +110,23 @@ func TestUnitClientFromCorrectConfigFile(t *testing.T) {
 }
 
 func TestUnitClientFromMissingConfigFile(t *testing.T) {
+	t.Parallel()
+
 	client, err := ClientFromConfigFile("missing.json")
 	assert.Error(t, err)
 	assert.Nil(t, client)
 }
 
 func TestUnitClientSetNetworkExtensive(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	require.NoError(t, err)
 	nodes := make(map[string]AccountID, 2)
 	nodes["0.testnet.hedera.com:50211"] = AccountID{0, 0, 3, nil, nil, nil}
 	nodes["1.testnet.hedera.com:50211"] = AccountID{0, 0, 4, nil, nil, nil}
 
-	err := client.SetNetwork(nodes)
+	err = client.SetNetwork(nodes)
 	require.NoError(t, err)
 	network := client.GetNetwork()
 	assert.Equal(t, 2, len(network))
@@ -139,23 +156,26 @@ func TestUnitClientSetNetworkExtensive(t *testing.T) {
 	assert.Equal(t, 1, len(network))
 	assert.Equal(t, network["2.testnet.hedera.com:50211"], AccountID{0, 0, 5, nil, nil, nil})
 	// There is only one mirror address, no matter the transport security
-	assert.Equal(t, networkMirror[0], "testnet.mirrornode.hedera.com:443")
+	assert.Equal(t, "nonexistent-mirror-testnet:443", networkMirror[0])
 
 	client.SetTransportSecurity(true)
 	client.SetCertificateVerification(true)
 	network = client.GetNetwork()
 	networkMirror = client.GetMirrorNetwork()
 	assert.Equal(t, network["2.testnet.hedera.com:50212"], AccountID{0, 0, 5, nil, nil, nil})
-	assert.Equal(t, networkMirror[0], "testnet.mirrornode.hedera.com:443")
+	assert.Equal(t, "nonexistent-mirror-testnet:443", networkMirror[0])
 
 	err = client.Close()
 	require.NoError(t, err)
 }
 
 func TestUnitClientSetMirrorNetwork(t *testing.T) {
+	t.Parallel()
+
 	defaultNetwork := make([]string, 0)
 	defaultNetwork = append(defaultNetwork, "hcs.testnet.mirrornode.hedera.com:5600")
-	client := ClientForTestnet()
+	client, err := _NewMockClient()
+	require.NoError(t, err)
 	client.SetMirrorNetwork(defaultNetwork)
 
 	mirrorNetwork := client.GetMirrorNetwork()
@@ -193,7 +213,7 @@ func TestUnitClientSetMirrorNetwork(t *testing.T) {
 	// SetTransportSecurity is deprecated, so the mirror node should not be updated
 	assert.Equal(t, "hcs.testnet.mirrornode.hedera.com:5600", mirrorNetwork[0])
 
-	err := client.Close()
+	err = client.Close()
 	require.NoError(t, err)
 }
 
@@ -207,7 +227,11 @@ func contains(s []string, e string) bool {
 }
 
 func TestUnitClientSetMultipleNetwork(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	nodes := make(map[string]AccountID, 8)
 	nodes["0.testnet.hedera.com:50211"] = AccountID{0, 0, 3, nil, nil, nil}
 	nodes["34.94.106.61:50211"] = AccountID{0, 0, 3, nil, nil, nil}
@@ -219,7 +243,7 @@ func TestUnitClientSetMultipleNetwork(t *testing.T) {
 	nodes["3.212.6.13:50211"] = AccountID{0, 0, 4, nil, nil, nil}
 	nodes["52.168.76.241:50211"] = AccountID{0, 0, 4, nil, nil, nil}
 
-	err := client.SetNetwork(nodes)
+	err = client.SetNetwork(nodes)
 	require.NoError(t, err)
 	net := client.GetNetwork()
 

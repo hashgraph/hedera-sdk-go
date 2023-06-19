@@ -32,6 +32,7 @@ import (
 )
 
 func TestIntegrationTransactionReceiptQueryCanExecute(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -66,6 +67,7 @@ func TestIntegrationTransactionReceiptQueryCanExecute(t *testing.T) {
 
 // what is this
 func DisabledTestIntegrationTransactionReceiptQueryInvalidTransactionID(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	key, err := GeneratePrivateKey()

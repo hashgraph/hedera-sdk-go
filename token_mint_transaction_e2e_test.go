@@ -33,6 +33,7 @@ import (
 )
 
 func TestIntegrationTokenMintTransactionCanExecute(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -112,6 +113,7 @@ func TestIntegrationTokenMintTransactionCanExecute(t *testing.T) {
 }
 
 func TestIntegrationTokenMintTransactionNoAmount(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -180,6 +182,7 @@ func TestIntegrationTokenMintTransactionNoAmount(t *testing.T) {
 }
 
 func TestIntegrationTokenMintTransactionNoTokenID(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -250,6 +253,7 @@ func TestIntegrationTokenMintTransactionNoTokenID(t *testing.T) {
 }
 
 func TestIntegrationTokenMintTransactionMaxReached(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -326,6 +330,7 @@ func TestIntegrationTokenMintTransactionMaxReached(t *testing.T) {
 }
 
 func DisabledTestIntegrationTokenMintTransactionMetadataTooLong(t *testing.T) { // nolint
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newBalance := NewHbar(2)
@@ -377,6 +382,7 @@ func DisabledTestIntegrationTokenMintTransactionMetadataTooLong(t *testing.T) { 
 }
 
 func DisabledTestIntegrationTokenMintTransactionInvalidMetadata(t *testing.T) { // nolint
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newBalance := NewHbar(2)

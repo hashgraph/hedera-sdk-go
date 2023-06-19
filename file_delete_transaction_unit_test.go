@@ -36,7 +36,11 @@ import (
 )
 
 func TestUnitFileDeleteTransactionValidate(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	fileID, err := FileIDFromString("0.0.123-esxsf")
 	require.NoError(t, err)
@@ -49,7 +53,11 @@ func TestUnitFileDeleteTransactionValidate(t *testing.T) {
 }
 
 func TestUnitFileDeleteTransactionValidateWrong(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	fileID, err := FileIDFromString("0.0.123-rmkykd")
 	require.NoError(t, err)
@@ -65,6 +73,8 @@ func TestUnitFileDeleteTransactionValidateWrong(t *testing.T) {
 }
 
 func TestUnitFileDeleteTransactionMock(t *testing.T) {
+	t.Parallel()
+
 	call := func(request *services.Transaction) *services.TransactionResponse {
 		require.NotEmpty(t, request.SignedTransactionBytes)
 		signedTransaction := services.SignedTransaction{}
@@ -120,6 +130,8 @@ func TestUnitFileDeleteTransactionMock(t *testing.T) {
 }
 
 func TestUnitFileDeleteTransactionGet(t *testing.T) {
+	t.Parallel()
+
 	fileID := FileID{File: 7}
 
 	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
@@ -154,6 +166,8 @@ func TestUnitFileDeleteTransactionGet(t *testing.T) {
 }
 
 func TestUnitFileDeleteTransactionNothingSet(t *testing.T) {
+	t.Parallel()
+
 	fileID := FileID{File: 7}
 
 	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
@@ -188,6 +202,8 @@ func TestUnitFileDeleteTransactionNothingSet(t *testing.T) {
 }
 
 func TestUnitFileDeleteTransactionCoverage(t *testing.T) {
+	t.Parallel()
+
 	checksum := "dmqui"
 	grpc := time.Second * 30
 	file := FileID{File: 3, checksum: &checksum}
@@ -197,7 +213,9 @@ func TestUnitFileDeleteTransactionCoverage(t *testing.T) {
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
-	client := ClientForTestnet()
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 
 	transaction, err := NewFileDeleteTransaction().

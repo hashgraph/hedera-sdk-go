@@ -33,6 +33,7 @@ import (
 )
 
 func TestIntegrationTokenUnfreezeTransactionCanExecute(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -129,6 +130,7 @@ func TestIntegrationTokenUnfreezeTransactionCanExecute(t *testing.T) {
 }
 
 func TestIntegrationTokenUnfreezeTransactionNoTokenID(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -224,6 +226,7 @@ func TestIntegrationTokenUnfreezeTransactionNoTokenID(t *testing.T) {
 }
 
 func TestIntegrationTokenUnfreezeTransactionNoAccountID(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()

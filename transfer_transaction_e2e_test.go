@@ -31,6 +31,7 @@ import (
 )
 
 func TestIntegrationTransferTransactionCanTransferHbar(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTransferTransaction().
@@ -48,6 +49,7 @@ func TestIntegrationTransferTransactionCanTransferHbar(t *testing.T) {
 }
 
 func TestIntegrationTransferTransactionTransferHbarNothingSet(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTransferTransaction().
@@ -63,6 +65,7 @@ func TestIntegrationTransferTransactionTransferHbarNothingSet(t *testing.T) {
 }
 
 func TestIntegrationTransferTransactionTransferHbarPositiveFlippedAmount(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -103,6 +106,7 @@ func TestIntegrationTransferTransactionTransferHbarPositiveFlippedAmount(t *test
 }
 
 func DisabledTestIntegrationTransferTransactionTransferHbarLoadOf1000(t *testing.T) { // nolint
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 	var err error
 	tx := make([]*TransferTransaction, 500)
@@ -138,6 +142,7 @@ func DisabledTestIntegrationTransferTransactionTransferHbarLoadOf1000(t *testing
 }
 
 func TestIntegrationTransferTransactionCanTransferFromBytes(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -183,6 +188,7 @@ func TestIntegrationTransferTransactionCanTransferFromBytes(t *testing.T) {
 }
 
 func TestIntegrationTransferTransactionCanTransferFromBytesAfter(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -229,6 +235,7 @@ func TestIntegrationTransferTransactionCanTransferFromBytesAfter(t *testing.T) {
 }
 
 func TestIntegrationTransferTransactionCanTransferSignature(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -277,6 +284,7 @@ func TestIntegrationTransferTransactionCanTransferSignature(t *testing.T) {
 }
 
 func TestIntegrationTransferTransactionCanTransferHbarWithAliasID(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	key, err := GeneratePrivateKey()

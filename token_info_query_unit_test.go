@@ -37,7 +37,11 @@ import (
 )
 
 func TestUnitTokenInfoQueryValidate(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	tokenID, err := TokenIDFromString("0.0.123-esxsf")
 	require.NoError(t, err)
@@ -50,7 +54,11 @@ func TestUnitTokenInfoQueryValidate(t *testing.T) {
 }
 
 func TestUnitTokenInfoQueryValidateWrong(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	tokenID, err := TokenIDFromString("0.0.123-rmkykd")
 	require.NoError(t, err)
@@ -66,6 +74,8 @@ func TestUnitTokenInfoQueryValidateWrong(t *testing.T) {
 }
 
 func TestUnitTokenInfoFromBytesBadBytes(t *testing.T) {
+	t.Parallel()
+
 	bytes, err := base64.StdEncoding.DecodeString("tfhyY++/Q4BycortAgD4cmMKACB/")
 	require.NoError(t, err)
 
@@ -74,11 +84,15 @@ func TestUnitTokenInfoFromBytesBadBytes(t *testing.T) {
 }
 
 func TestUnitTokenInfoFromBytesEmptyBytes(t *testing.T) {
+	t.Parallel()
+
 	_, err := TokenInfoFromBytes([]byte{})
 	require.NoError(t, err)
 }
 
 func TestUnitTokenInfoQueryGet(t *testing.T) {
+	t.Parallel()
+
 	tokenID := TokenID{Token: 7}
 	deadline := time.Duration(time.Minute)
 	accountId := AccountID{Account: 123}
@@ -107,6 +121,8 @@ func TestUnitTokenInfoQueryGet(t *testing.T) {
 }
 
 func TestUnitTokenInfoQueryNothingSet(t *testing.T) {
+	t.Parallel()
+
 	balance := NewTokenInfoQuery()
 
 	require.Equal(t, TokenID{}, balance.GetTokenID())
@@ -120,13 +136,17 @@ func TestUnitTokenInfoQueryNothingSet(t *testing.T) {
 }
 
 func TestUnitTokenInfoQueryCoverage(t *testing.T) {
+	t.Parallel()
+
 	checksum := "dmqui"
 	deadline := time.Second * 3
 	token := TokenID{Token: 3, checksum: &checksum}
 	nodeAccountID := []AccountID{{Account: 10}}
 	transactionID := TransactionIDGenerate(AccountID{Account: 324})
 
-	client := ClientForTestnet()
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 
 	query := NewTokenInfoQuery().
@@ -140,7 +160,7 @@ func TestUnitTokenInfoQueryCoverage(t *testing.T) {
 		SetQueryPayment(NewHbar(3)).
 		SetGrpcDeadline(&deadline)
 
-	err := query._ValidateNetworkOnIDs(client)
+	err = query._ValidateNetworkOnIDs(client)
 	require.NoError(t, err)
 
 	require.Equal(t, nodeAccountID, query.GetNodeAccountIDs())
@@ -154,6 +174,8 @@ func TestUnitTokenInfoQueryCoverage(t *testing.T) {
 }
 
 func TestUnitTokenInfoQueryMock(t *testing.T) {
+	t.Parallel()
+
 	responses := [][]interface{}{{
 		&services.Response{
 			Response: &services.Response_TokenGetInfo{

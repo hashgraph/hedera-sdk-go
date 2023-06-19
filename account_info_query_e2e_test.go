@@ -32,6 +32,7 @@ import (
 )
 
 func TestIntegrationAccountInfoQueryCanExecute(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -86,6 +87,7 @@ func TestIntegrationAccountInfoQueryCanExecute(t *testing.T) {
 }
 
 func TestIntegrationAccountInfoQueryGetCost(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -144,6 +146,7 @@ func TestIntegrationAccountInfoQueryGetCost(t *testing.T) {
 }
 
 func TestIntegrationAccountInfoQueryInsufficientFee(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -197,6 +200,7 @@ func TestIntegrationAccountInfoQueryInsufficientFee(t *testing.T) {
 }
 
 func TestIntegrationAccountInfoQuerySetBigMaxPayment(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -255,6 +259,7 @@ func TestIntegrationAccountInfoQuerySetBigMaxPayment(t *testing.T) {
 }
 
 func TestIntegrationAccountInfoQuerySetSmallMaxPayment(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -311,6 +316,7 @@ func TestIntegrationAccountInfoQuerySetSmallMaxPayment(t *testing.T) {
 }
 
 func TestIntegrationAccountInfoQueryNoAccountID(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	_, err := NewAccountInfoQuery().

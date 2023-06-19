@@ -32,6 +32,7 @@ import (
 )
 
 func TestIntegrationVerifySignatureFlowCanExecute(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -79,6 +80,7 @@ func TestIntegrationVerifySignatureFlowCanExecute(t *testing.T) {
 }
 
 func TestIntegrationVerifySignatureFlowKeyList(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	keys := make([]PrivateKey, 3)

@@ -33,6 +33,8 @@ import (
 )
 
 func TestUnitLiveHashDeleteTransactionCoverage(t *testing.T) {
+	t.Parallel()
+
 	checksum := "dmqui"
 	grpc := time.Second * 30
 	account := AccountID{Account: 3, checksum: &checksum}
@@ -42,7 +44,9 @@ func TestUnitLiveHashDeleteTransactionCoverage(t *testing.T) {
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
-	client := ClientForTestnet()
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 
 	transaction, err := NewLiveHashDeleteTransaction().
@@ -94,6 +98,8 @@ func TestUnitLiveHashDeleteTransactionCoverage(t *testing.T) {
 }
 
 func TestUnitLiveHashDeleteTransactionMock(t *testing.T) {
+	t.Parallel()
+
 	newKey, err := PrivateKeyFromStringEd25519("302e020100300506032b657004220420a869f4c6191b9c8c99933e7f6b6611711737e4b1a1a5a4cb5370e719a1f6df98")
 	require.NoError(t, err)
 

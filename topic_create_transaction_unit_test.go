@@ -36,7 +36,11 @@ import (
 )
 
 func TestUnitTopicCreateTransactionValidate(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	accountID, err := AccountIDFromString("0.0.123-esxsf")
 	require.NoError(t, err)
@@ -49,7 +53,11 @@ func TestUnitTopicCreateTransactionValidate(t *testing.T) {
 }
 
 func TestUnitTopicCreateTransactionValidateWrong(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	accountID, err := AccountIDFromString("0.0.123-rmkykd")
 	require.NoError(t, err)
@@ -65,6 +73,8 @@ func TestUnitTopicCreateTransactionValidateWrong(t *testing.T) {
 }
 
 func TestUnitTopicCreateTransactionGet(t *testing.T) {
+	t.Parallel()
+
 	accountID := AccountID{Account: 3}
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -110,6 +120,8 @@ func TestUnitTopicCreateTransactionGet(t *testing.T) {
 }
 
 func TestUnitTopicCreateTransactionNothingSet(t *testing.T) {
+	t.Parallel()
+
 	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
 	transactionID := TransactionIDGenerate(AccountID{Account: 324})
 
@@ -141,6 +153,8 @@ func TestUnitTopicCreateTransactionNothingSet(t *testing.T) {
 }
 
 func TestUnitTopicCreateTransactionProtoCheck(t *testing.T) {
+	t.Parallel()
+
 	accountID := AccountID{Account: 23}
 	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
 	transactionID := TransactionIDGenerate(AccountID{Account: 324})
@@ -173,6 +187,8 @@ func TestUnitTopicCreateTransactionProtoCheck(t *testing.T) {
 }
 
 func TestUnitTopicCreateTransactionCoverage(t *testing.T) {
+	t.Parallel()
+
 	checksum := "dmqui"
 	grpc := time.Second * 30
 	account := AccountID{Account: 3, checksum: &checksum}
@@ -182,7 +198,9 @@ func TestUnitTopicCreateTransactionCoverage(t *testing.T) {
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
-	client := ClientForTestnet()
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 
 	transaction, err := NewTopicCreateTransaction().
@@ -242,6 +260,8 @@ func TestUnitTopicCreateTransactionCoverage(t *testing.T) {
 }
 
 func TestUnitTopicCreateTransactionMock(t *testing.T) {
+	t.Parallel()
+
 	newKey, err := PrivateKeyFromStringEd25519("302e020100300506032b657004220420a869f4c6191b9c8c99933e7f6b6611711737e4b1a1a5a4cb5370e719a1f6df98")
 	require.NoError(t, err)
 

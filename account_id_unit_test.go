@@ -32,9 +32,13 @@ import (
 )
 
 func TestUnitAccountIDChecksumFromString(t *testing.T) {
+	t.Parallel()
+
 	id, err := AccountIDFromString("0.0.123-rmkyk")
 	require.NoError(t, err)
-	client := ClientForTestnet()
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	id.ToStringWithChecksum(client)
 	id.GetChecksum()
 	sol := id.ToSolidityAddress()
@@ -61,6 +65,8 @@ func TestUnitAccountIDChecksumFromString(t *testing.T) {
 }
 
 func TestUnitAccountIDChecksumToString(t *testing.T) {
+	t.Parallel()
+
 	id := AccountID{
 		Shard:   50,
 		Realm:   150,
@@ -70,6 +76,8 @@ func TestUnitAccountIDChecksumToString(t *testing.T) {
 }
 
 func TestUnitAccountIDFromStringAlias(t *testing.T) {
+	t.Parallel()
+
 	key, err := GeneratePrivateKey()
 	require.NoError(t, err)
 	id, err := AccountIDFromString("0.0." + key.PublicKey().String())
@@ -80,6 +88,8 @@ func TestUnitAccountIDFromStringAlias(t *testing.T) {
 }
 
 func TestUnitChecksum(t *testing.T) {
+	t.Parallel()
+
 	id, err := LedgerIDFromString("01")
 	require.NoError(t, err)
 	ad1, err := _ChecksumParseAddress(id, "0.0.3")
@@ -93,6 +103,8 @@ func TestUnitChecksum(t *testing.T) {
 }
 
 func TestUnitAccountIDEvm(t *testing.T) {
+	t.Parallel()
+
 	id, err := AccountIDFromString("0.0.0011223344556677889900112233445566778899")
 	require.NoError(t, err)
 

@@ -35,7 +35,11 @@ import (
 )
 
 func TestUnitAccountBalanceQueryValidate(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	accountID, err := AccountIDFromString("0.0.123-esxsf")
 	require.NoError(t, err)
@@ -48,7 +52,11 @@ func TestUnitAccountBalanceQueryValidate(t *testing.T) {
 }
 
 func TestUnitAccountBalanceQueryValidateWrong(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	accountID, err := AccountIDFromString("0.0.123-rmkykd")
 	require.NoError(t, err)
@@ -64,6 +72,8 @@ func TestUnitAccountBalanceQueryValidateWrong(t *testing.T) {
 }
 
 func TestUnitAccountBalanceQueryGet(t *testing.T) {
+	t.Parallel()
+
 	spenderAccountID1 := AccountID{Account: 7}
 
 	balance := NewAccountBalanceQuery().
@@ -76,6 +86,8 @@ func TestUnitAccountBalanceQueryGet(t *testing.T) {
 }
 
 func TestUnitAccountBalanceQuerySetNothing(t *testing.T) {
+	t.Parallel()
+
 	balance := NewAccountBalanceQuery()
 
 	balance.GetAccountID()
@@ -84,13 +96,17 @@ func TestUnitAccountBalanceQuerySetNothing(t *testing.T) {
 }
 
 func TestUnitAccountBalanceQueryCoverage(t *testing.T) {
+	t.Parallel()
+
 	checksum := "dmqui"
 	contract := ContractID{Contract: 3, checksum: &checksum}
 	account := AccountID{Account: 3, checksum: &checksum}
 	nodeAccountID := []AccountID{{Account: 10}}
 	transactionID := TransactionIDGenerate(AccountID{Account: 324})
 
-	client := ClientForTestnet()
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 
 	query := NewAccountBalanceQuery().
@@ -104,7 +120,7 @@ func TestUnitAccountBalanceQueryCoverage(t *testing.T) {
 		SetMaxQueryPayment(NewHbar(23)).
 		SetQueryPayment(NewHbar(3))
 
-	err := query._ValidateNetworkOnIDs(client)
+	err = query._ValidateNetworkOnIDs(client)
 
 	require.NoError(t, err)
 	query.GetNodeAccountIDs()
@@ -120,6 +136,8 @@ func TestUnitAccountBalanceQueryCoverage(t *testing.T) {
 }
 
 func TestUnitAccountBalanceQueryMock(t *testing.T) {
+	t.Parallel()
+
 	responses := [][]interface{}{
 		{
 			&services.Response{

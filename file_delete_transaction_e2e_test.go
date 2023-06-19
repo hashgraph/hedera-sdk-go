@@ -32,6 +32,7 @@ import (
 )
 
 func TestIntegrationFileDeleteTransactionCanExecute(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewFileCreateTransaction().
@@ -63,6 +64,7 @@ func TestIntegrationFileDeleteTransactionCanExecute(t *testing.T) {
 }
 
 func TestIntegrationFileDeleteTransactionNothingSet(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewFileCreateTransaction().

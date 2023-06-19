@@ -32,6 +32,7 @@ import (
 )
 
 func TestIntegrationAccountStakersQueryCanExecute(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	_, err := NewAccountStakersQuery().
@@ -47,6 +48,7 @@ func TestIntegrationAccountStakersQueryCanExecute(t *testing.T) {
 }
 
 func TestIntegrationAccountStakersQueryGetCost(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	accountStakers := NewAccountStakersQuery().
@@ -65,6 +67,7 @@ func TestIntegrationAccountStakersQueryGetCost(t *testing.T) {
 }
 
 func TestIntegrationAccountStakersQuerySetBigMaxPayment(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	accountStakers := NewAccountStakersQuery().
@@ -83,6 +86,7 @@ func TestIntegrationAccountStakersQuerySetBigMaxPayment(t *testing.T) {
 }
 
 func TestIntegrationAccountStakersQuerySetSmallMaxPayment(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	accountStakers := NewAccountStakersQuery().
@@ -101,6 +105,7 @@ func TestIntegrationAccountStakersQuerySetSmallMaxPayment(t *testing.T) {
 }
 
 func TestIntegrationAccountStakersQueryInsufficientFee(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	accountStakers := NewAccountStakersQuery().
@@ -122,6 +127,7 @@ func TestIntegrationAccountStakersQueryInsufficientFee(t *testing.T) {
 }
 
 func TestIntegrationAccountStakersQueryNoAccountID(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	_, err := NewAccountStakersQuery().

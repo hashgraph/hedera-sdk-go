@@ -35,7 +35,11 @@ import (
 )
 
 func TestUnitAccountDeleteTransactionValidate(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	accountID, err := AccountIDFromString("0.0.123-esxsf")
 	require.NoError(t, err)
@@ -49,7 +53,11 @@ func TestUnitAccountDeleteTransactionValidate(t *testing.T) {
 }
 
 func TestUnitAccountDeleteTransactionValidateWrong(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	accountID, err := AccountIDFromString("0.0.123-rmkykd")
 	require.NoError(t, err)
@@ -66,6 +74,8 @@ func TestUnitAccountDeleteTransactionValidateWrong(t *testing.T) {
 }
 
 func TestUnitAccountDeleteTransactionGet(t *testing.T) {
+	t.Parallel()
+
 	spenderAccountID1 := AccountID{Account: 7}
 	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
 
@@ -98,6 +108,8 @@ func TestUnitAccountDeleteTransactionGet(t *testing.T) {
 }
 
 func TestUnitAccountDeleteTransactionSetNothing(t *testing.T) {
+	t.Parallel()
+
 	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
 	transactionID := TransactionIDGenerate(AccountID{Account: 324})
 
@@ -126,6 +138,8 @@ func TestUnitAccountDeleteTransactionSetNothing(t *testing.T) {
 }
 
 func TestUnitAccountDeleteTransactionProtoCheck(t *testing.T) {
+	t.Parallel()
+
 	spenderAccountID1 := AccountID{Account: 7}
 	transferAccountID := AccountID{Account: 8}
 	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
@@ -149,6 +163,8 @@ func TestUnitAccountDeleteTransactionProtoCheck(t *testing.T) {
 }
 
 func TestUnitAccountDeleteTransactionTransactionCoverage(t *testing.T) {
+	t.Parallel()
+
 	checksum := "dmqui"
 	grpc := time.Second * 3
 	account := AccountID{Account: 3, checksum: &checksum}
@@ -158,7 +174,9 @@ func TestUnitAccountDeleteTransactionTransactionCoverage(t *testing.T) {
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
-	client := ClientForTestnet()
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 
 	transaction, err := NewAccountDeleteTransaction().
@@ -212,6 +230,8 @@ func TestUnitAccountDeleteTransactionTransactionCoverage(t *testing.T) {
 }
 
 func TestUnitAccountDeleteTransactionTransactionMock(t *testing.T) {
+	t.Parallel()
+
 	nodeAccountID := []AccountID{{Account: 3}}
 	transactionID := TransactionIDGenerate(AccountID{Account: 3})
 

@@ -32,6 +32,7 @@ import (
 )
 
 func DisabledTestIntegrationNodeAddressBookFromBytes(t *testing.T) { // nolint
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	nodeAddressBookBytes, err := NewFileContentsQuery().

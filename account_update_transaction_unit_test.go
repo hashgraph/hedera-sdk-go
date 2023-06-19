@@ -36,7 +36,11 @@ import (
 )
 
 func TestUnitAccountUpdateTransactionValidate(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	accountID, err := AccountIDFromString("0.0.123-esxsf")
 	require.NoError(t, err)
@@ -49,7 +53,11 @@ func TestUnitAccountUpdateTransactionValidate(t *testing.T) {
 }
 
 func TestUnitAccountUpdateTransactionValidateWrong(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	accountID, err := AccountIDFromString("0.0.123-rmkykd")
 	require.NoError(t, err)
@@ -65,6 +73,8 @@ func TestUnitAccountUpdateTransactionValidateWrong(t *testing.T) {
 }
 
 func TestUnitAccountUpdateTransactionMock(t *testing.T) {
+	t.Parallel()
+
 	call := func(request *services.Transaction) *services.TransactionResponse {
 		require.NotEmpty(t, request.SignedTransactionBytes)
 		signedTransaction := services.SignedTransaction{}
@@ -130,6 +140,8 @@ func TestUnitAccountUpdateTransactionMock(t *testing.T) {
 }
 
 func TestUnitAccountUpdateTransactionGet(t *testing.T) {
+	t.Parallel()
+
 	spenderAccountID1 := AccountID{Account: 7}
 	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
 
@@ -175,6 +187,8 @@ func TestUnitAccountUpdateTransactionGet(t *testing.T) {
 }
 
 func TestUnitAccountUpdateTransactionSetNothing(t *testing.T) {
+	t.Parallel()
+
 	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
 	transactionID := TransactionIDGenerate(AccountID{Account: 324})
 
@@ -207,6 +221,8 @@ func TestUnitAccountUpdateTransactionSetNothing(t *testing.T) {
 }
 
 func TestUnitAccountUpdateTransactionProtoCheck(t *testing.T) {
+	t.Parallel()
+
 	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
 	stackedAccountID := AccountID{Account: 5}
 	accountID := AccountID{Account: 6}
@@ -250,6 +266,8 @@ func TestUnitAccountUpdateTransactionProtoCheck(t *testing.T) {
 }
 
 func TestUnitAccountUpdateTransactionCoverage(t *testing.T) {
+	t.Parallel()
+
 	checksum := "dmqui"
 	grpc := time.Second * 30
 	account := AccountID{Account: 3, checksum: &checksum}
@@ -259,7 +277,9 @@ func TestUnitAccountUpdateTransactionCoverage(t *testing.T) {
 	key, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
-	client := ClientForTestnet()
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 
 	transaction, err := NewAccountUpdateTransaction().

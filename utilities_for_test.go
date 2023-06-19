@@ -116,7 +116,8 @@ func NewIntegrationTestEnv(t *testing.T) IntegrationTestEnv {
 	env.Client.SetNodeMinReadmitPeriod(5 * time.Second)
 	env.Client.SetNodeMaxReadmitPeriod(1 * time.Hour)
 	env.Client.SetMaxAttempts(100)
-	env.Client.PingAll()
+	env.Client.SetDefaultMaxTransactionFee(NewHbar(50))
+	env.Client.SetDefaultMaxQueryPayment(NewHbar(50))
 
 	network := make(map[string]AccountID)
 
@@ -233,6 +234,8 @@ func _NewMockClient() (*Client, error) {
 	net["nonexistent-testnet:56747"] = AccountID{Account: 3}
 
 	client := ClientForNetwork(net)
+	defaultNetwork := []string{"nonexistent-mirror-testnet:443"}
+	client.SetMirrorNetwork(defaultNetwork)
 	client.SetOperator(AccountID{Account: 2}, privateKey)
 
 	return client, nil

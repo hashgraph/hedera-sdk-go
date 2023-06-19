@@ -33,6 +33,7 @@ import (
 )
 
 func TestIntegrationAccountDeleteTransactionCanExecute(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -79,6 +80,7 @@ func TestIntegrationAccountDeleteTransactionCanExecute(t *testing.T) {
 }
 
 func TestIntegrationAccountDeleteTransactionNoTransferAccountID(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -118,6 +120,7 @@ func TestIntegrationAccountDeleteTransactionNoTransferAccountID(t *testing.T) {
 }
 
 func TestIntegrationAccountDeleteTransactionNoAccountID(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -154,6 +157,7 @@ func TestIntegrationAccountDeleteTransactionNoAccountID(t *testing.T) {
 }
 
 func TestIntegrationAccountDeleteTransactionNoSigning(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()

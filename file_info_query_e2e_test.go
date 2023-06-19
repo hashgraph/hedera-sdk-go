@@ -32,6 +32,7 @@ import (
 )
 
 func TestIntegrationFileInfoQueryCanExecute(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewFileCreateTransaction().
@@ -76,6 +77,7 @@ func TestIntegrationFileInfoQueryCanExecute(t *testing.T) {
 }
 
 func TestIntegrationFileInfoQueryGetCost(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewFileCreateTransaction().
@@ -122,6 +124,7 @@ func TestIntegrationFileInfoQueryGetCost(t *testing.T) {
 }
 
 func TestIntegrationFileInfoQuerySetBigMaxPayment(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewFileCreateTransaction().
@@ -168,6 +171,7 @@ func TestIntegrationFileInfoQuerySetBigMaxPayment(t *testing.T) {
 }
 
 func TestIntegrationFileInfoQuerySetSmallMaxPayment(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewFileCreateTransaction().
@@ -213,6 +217,7 @@ func TestIntegrationFileInfoQuerySetSmallMaxPayment(t *testing.T) {
 }
 
 func TestIntegrationFileInfoQueryInsufficientFee(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewFileCreateTransaction().
@@ -257,6 +262,7 @@ func TestIntegrationFileInfoQueryInsufficientFee(t *testing.T) {
 }
 
 func TestIntegrationFileInfoQueryNoFileID(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	_, err := NewFileInfoQuery().

@@ -13,6 +13,8 @@ import (
 )
 
 func TestUnitNetworkVersionInfoQuerySetNothing(t *testing.T) {
+	t.Parallel()
+
 	query := NewNetworkVersionQuery()
 
 	require.Equal(t, []AccountID{}, query.GetNodeAccountIDs())
@@ -25,6 +27,8 @@ func TestUnitNetworkVersionInfoQuerySetNothing(t *testing.T) {
 }
 
 func TestNetworkVersionInfoQuery_Get(t *testing.T) {
+	t.Parallel()
+
 	deadline := time.Duration(time.Minute)
 	transactionID := TransactionIDGenerate(AccountID{Account: 324})
 	query := NewNetworkVersionQuery().
@@ -49,6 +53,8 @@ func TestNetworkVersionInfoQuery_Get(t *testing.T) {
 }
 
 func TestUnitNetworkVersionInfoQueryMock(t *testing.T) {
+	t.Parallel()
+
 	responses := [][]interface{}{{
 		&services.Response{
 			Response: &services.Response_NetworkGetVersionInfo{

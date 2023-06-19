@@ -37,7 +37,11 @@ import (
 )
 
 func TestUnitFileAppendTransactionValidate(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	fileID, err := FileIDFromString("0.0.123-esxsf")
 	require.NoError(t, err)
@@ -50,7 +54,11 @@ func TestUnitFileAppendTransactionValidate(t *testing.T) {
 }
 
 func TestUnitFileAppendTransactionValidateWrong(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	fileID, err := FileIDFromString("0.0.123-rmkykd")
 	require.NoError(t, err)
@@ -66,6 +74,8 @@ func TestUnitFileAppendTransactionValidateWrong(t *testing.T) {
 }
 
 func TestUnitFileAppendTransactionMock(t *testing.T) {
+	t.Parallel()
+
 	fil := []byte(" world!")
 	call := func(request *services.Transaction) *services.TransactionResponse {
 		require.NotEmpty(t, request.SignedTransactionBytes)
@@ -137,6 +147,8 @@ func TestUnitFileAppendTransactionMock(t *testing.T) {
 }
 
 func TestUnitFileAppendTransactionGet(t *testing.T) {
+	t.Parallel()
+
 	fileID := FileID{File: 7}
 
 	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
@@ -204,6 +216,8 @@ func TestUnitFileAppendTransactionGet(t *testing.T) {
 //}
 
 func TestUnitFileAppendTransactionBigContentsMock(t *testing.T) {
+	t.Parallel()
+
 	var previousTransactionID string
 
 	receipt := &services.Response{
@@ -283,6 +297,8 @@ func TestUnitFileAppendTransactionBigContentsMock(t *testing.T) {
 }
 
 func TestUnitFileAppendTransactionCoverage(t *testing.T) {
+	t.Parallel()
+
 	checksum := "dmqui"
 	grpc := time.Second * 30
 	file := FileID{File: 3, checksum: &checksum}
@@ -292,7 +308,9 @@ func TestUnitFileAppendTransactionCoverage(t *testing.T) {
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
-	client := ClientForTestnet()
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 
 	transaction, err := NewFileAppendTransaction().

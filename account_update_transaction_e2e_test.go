@@ -33,6 +33,7 @@ import (
 )
 
 func TestIntegrationAccountUpdateTransactionCanExecute(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -107,6 +108,7 @@ func TestIntegrationAccountUpdateTransactionCanExecute(t *testing.T) {
 }
 
 func TestIntegrationAccountUpdateTransactionNoSigning(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -173,6 +175,7 @@ func TestIntegrationAccountUpdateTransactionNoSigning(t *testing.T) {
 }
 
 func TestIntegrationAccountUpdateTransactionAccountIDNotSet(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewAccountUpdateTransaction().

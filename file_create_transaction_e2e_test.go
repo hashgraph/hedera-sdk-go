@@ -32,6 +32,7 @@ import (
 )
 
 func TestIntegrationFileCreateTransactionCanExecute(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 	resp, err := NewFileCreateTransaction().
 		SetKeys(env.Client.GetOperatorPublicKey()).
@@ -62,6 +63,7 @@ func TestIntegrationFileCreateTransactionCanExecute(t *testing.T) {
 }
 
 func TestIntegrationFileCreateTransactionNoKey(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewFileCreateTransaction().

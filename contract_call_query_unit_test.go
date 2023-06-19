@@ -35,7 +35,11 @@ import (
 )
 
 func TestUnitContractCallQueryValidate(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	contractID, err := ContractIDFromString("0.0.123-esxsf")
 	require.NoError(t, err)
@@ -48,7 +52,11 @@ func TestUnitContractCallQueryValidate(t *testing.T) {
 }
 
 func TestUnitContractCallQueryValidateWrong(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	contractID, err := ContractIDFromString("0.0.123-rmkykd")
 	require.NoError(t, err)
@@ -64,6 +72,8 @@ func TestUnitContractCallQueryValidateWrong(t *testing.T) {
 }
 
 func TestUnitMockContractCallQuery(t *testing.T) {
+	t.Parallel()
+
 	message := "getMessage"
 	params := NewContractFunctionParameters()
 	params._Build(&message)
@@ -109,6 +119,8 @@ func TestUnitMockContractCallQuery(t *testing.T) {
 }
 
 func TestUnitContractCallQueryGet(t *testing.T) {
+	t.Parallel()
+
 	spenderContractID := ContractID{Contract: 7}
 
 	balance := NewContractCallQuery().
@@ -132,6 +144,8 @@ func TestUnitContractCallQueryGet(t *testing.T) {
 }
 
 func TestUnitContractCallQuerySetNothing(t *testing.T) {
+	t.Parallel()
+
 	balance := NewContractCallQuery()
 
 	balance.GetContractID()

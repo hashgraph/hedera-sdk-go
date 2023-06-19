@@ -36,7 +36,11 @@ import (
 )
 
 func TestUnitScheduleCreateTransactionValidate(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	accountID, err := AccountIDFromString("0.0.123-esxsf")
 	require.NoError(t, err)
@@ -49,7 +53,11 @@ func TestUnitScheduleCreateTransactionValidate(t *testing.T) {
 }
 
 func TestUnitScheduleCreateTransactionValidateWrong(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	accountID, err := AccountIDFromString("0.0.123-rmkykd")
 	require.NoError(t, err)
@@ -65,7 +73,11 @@ func TestUnitScheduleCreateTransactionValidateWrong(t *testing.T) {
 }
 
 func TestUnitScheduleSignTransactionValidate(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	scheduleID, err := ScheduleIDFromString("0.0.123-esxsf")
 	require.NoError(t, err)
@@ -79,7 +91,11 @@ func TestUnitScheduleSignTransactionValidate(t *testing.T) {
 }
 
 func TestUnitScheduleSignTransactionValidateWrong(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	scheduleID, err := ScheduleIDFromString("0.0.123-rmkykd")
 	require.NoError(t, err)
@@ -96,7 +112,11 @@ func TestUnitScheduleSignTransactionValidateWrong(t *testing.T) {
 }
 
 func TestUnitScheduleDeleteTransactionValidate(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	scheduleID, err := ScheduleIDFromString("0.0.123-esxsf")
 	require.NoError(t, err)
@@ -109,7 +129,11 @@ func TestUnitScheduleDeleteTransactionValidate(t *testing.T) {
 }
 
 func TestUnitScheduleDeleteTransactionValidateWrong(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	scheduleID, err := ScheduleIDFromString("0.0.123-rmkykd")
 	require.NoError(t, err)
@@ -125,6 +149,8 @@ func TestUnitScheduleDeleteTransactionValidateWrong(t *testing.T) {
 }
 
 func TestUnitScheduleCreateTransactionGet(t *testing.T) {
+	t.Parallel()
+
 	accountID := AccountID{Account: 7}
 
 	newKey, err := PrivateKeyGenerateEd25519()
@@ -168,6 +194,8 @@ func TestUnitScheduleCreateTransactionGet(t *testing.T) {
 }
 
 func TestUnitScheduleCreateTransactionSetNothing(t *testing.T) {
+	t.Parallel()
+
 	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
 	transactionID := TransactionIDGenerate(AccountID{Account: 324})
 
@@ -197,6 +225,8 @@ func TestUnitScheduleCreateTransactionSetNothing(t *testing.T) {
 }
 
 func TestUnitScheduleDeleteTransactionGet(t *testing.T) {
+	t.Parallel()
+
 	scheduleID := ScheduleID{Schedule: 7}
 
 	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
@@ -231,6 +261,8 @@ func TestUnitScheduleDeleteTransactionGet(t *testing.T) {
 }
 
 func TestUnitScheduleDeleteTransactionSetNothing(t *testing.T) {
+	t.Parallel()
+
 	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
 	transactionID := TransactionIDGenerate(AccountID{Account: 324})
 
@@ -258,6 +290,8 @@ func TestUnitScheduleDeleteTransactionSetNothing(t *testing.T) {
 }
 
 func TestUnitScheduleCreateTransactionCoverage(t *testing.T) {
+	t.Parallel()
+
 	checksum := "dmqui"
 	grpc := time.Second * 30
 	account := AccountID{Account: 3, checksum: &checksum}
@@ -267,7 +301,9 @@ func TestUnitScheduleCreateTransactionCoverage(t *testing.T) {
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
-	client := ClientForTestnet()
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 
 	accountCreate, err := NewAccountCreateTransaction().
@@ -335,6 +371,8 @@ func TestUnitScheduleCreateTransactionCoverage(t *testing.T) {
 }
 
 func TestUnitScheduleCreateTransactionMock(t *testing.T) {
+	t.Parallel()
+
 	newKey, err := PrivateKeyFromStringEd25519("302e020100300506032b657004220420a869f4c6191b9c8c99933e7f6b6611711737e4b1a1a5a4cb5370e719a1f6df98")
 	require.NoError(t, err)
 
@@ -388,6 +426,8 @@ func TestUnitScheduleCreateTransactionMock(t *testing.T) {
 }
 
 func TestUnitScheduleDeleteTransactionCoverage(t *testing.T) {
+	t.Parallel()
+
 	checksum := "dmqui"
 	grpc := time.Second * 30
 	schedule := ScheduleID{Schedule: 3, checksum: &checksum}
@@ -397,7 +437,9 @@ func TestUnitScheduleDeleteTransactionCoverage(t *testing.T) {
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
-	client := ClientForTestnet()
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 
 	transaction, err := NewScheduleDeleteTransaction().
@@ -449,6 +491,8 @@ func TestUnitScheduleDeleteTransactionCoverage(t *testing.T) {
 }
 
 func TestUnitScheduleDeleteTransactionMock(t *testing.T) {
+	t.Parallel()
+
 	newKey, err := PrivateKeyFromStringEd25519("302e020100300506032b657004220420a869f4c6191b9c8c99933e7f6b6611711737e4b1a1a5a4cb5370e719a1f6df98")
 	require.NoError(t, err)
 

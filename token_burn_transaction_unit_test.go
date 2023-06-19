@@ -36,7 +36,11 @@ import (
 )
 
 func TestUnitTokenBurnTransactionValidate(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	tokenID, err := TokenIDFromString("0.0.123-esxsf")
 	require.NoError(t, err)
@@ -49,7 +53,11 @@ func TestUnitTokenBurnTransactionValidate(t *testing.T) {
 }
 
 func TestUnitTokenBurnTransactionValidateWrong(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	tokenID, err := TokenIDFromString("0.0.123-rmkykd")
 	require.NoError(t, err)
@@ -65,6 +73,8 @@ func TestUnitTokenBurnTransactionValidateWrong(t *testing.T) {
 }
 
 func TestUnitTokenBurnTransactionGet(t *testing.T) {
+	t.Parallel()
+
 	tokenID := TokenID{Token: 7}
 
 	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
@@ -104,6 +114,8 @@ func TestUnitTokenBurnTransactionGet(t *testing.T) {
 }
 
 func TestUnitTokenBurnTransactionNothingSet(t *testing.T) {
+	t.Parallel()
+
 	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
 	transactionID := TransactionIDGenerate(AccountID{Account: 324})
 
@@ -133,6 +145,8 @@ func TestUnitTokenBurnTransactionNothingSet(t *testing.T) {
 }
 
 func TestUnitTokenBurnTransactionProtoCheck(t *testing.T) {
+	t.Parallel()
+
 	tokenID := TokenID{Token: 7}
 	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
 	transactionID := TransactionIDGenerate(AccountID{Account: 324})
@@ -160,6 +174,8 @@ func TestUnitTokenBurnTransactionProtoCheck(t *testing.T) {
 }
 
 func TestUnitTokenBurnTransactionCoverage(t *testing.T) {
+	t.Parallel()
+
 	grpc := time.Second * 30
 	nodeAccountID := []AccountID{{Account: 10}}
 	transactionID := TransactionIDGenerate(AccountID{Account: 324})
@@ -167,7 +183,9 @@ func TestUnitTokenBurnTransactionCoverage(t *testing.T) {
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
-	client := ClientForTestnet()
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 
 	transaction, err := NewTokenBurnTransaction().
@@ -222,6 +240,8 @@ func TestUnitTokenBurnTransactionCoverage(t *testing.T) {
 }
 
 func TestUnitTokenBurnTransactionMock(t *testing.T) {
+	t.Parallel()
+
 	newKey, err := PrivateKeyFromStringEd25519("302e020100300506032b657004220420a869f4c6191b9c8c99933e7f6b6611711737e4b1a1a5a4cb5370e719a1f6df98")
 	require.NoError(t, err)
 

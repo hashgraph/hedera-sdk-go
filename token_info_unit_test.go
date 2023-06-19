@@ -31,6 +31,8 @@ import (
 )
 
 func TestUnitTokenInfo_Protobuf(t *testing.T) {
+	t.Parallel()
+
 	tokenInfo := setupTokenInfo()
 	pb := tokenInfo._ToProtobuf()
 	actual := _TokenInfoFromProtobuf(pb)
@@ -39,6 +41,8 @@ func TestUnitTokenInfo_Protobuf(t *testing.T) {
 }
 
 func TestUnitTokenInfo_Bytes(t *testing.T) {
+	t.Parallel()
+
 	tokenInfo := setupTokenInfo()
 	pb := tokenInfo.ToBytes()
 	actual, _ := TokenInfoFromBytes(pb)
@@ -47,6 +51,8 @@ func TestUnitTokenInfo_Bytes(t *testing.T) {
 }
 
 func TestUnitTokenInfo_ProtobufCoverage(t *testing.T) {
+	t.Parallel()
+
 	tokenInfo := setupTokenInfo()
 
 	_true := true

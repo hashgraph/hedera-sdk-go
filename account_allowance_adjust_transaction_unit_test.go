@@ -32,6 +32,8 @@ import (
  */
 
 func TestUnitAccountAllowanceAdjustTransactionGet(t *testing.T) {
+	t.Parallel()
+
 	key, err := PrivateKeyGenerate()
 	require.NoError(t, err)
 	key2, err := PrivateKeyGenerate()
@@ -99,6 +101,8 @@ func TestUnitAccountAllowanceAdjustTransactionGet(t *testing.T) {
 }
 
 func TestUnitAccountAllowanceAdjustTransactionGrantHbarAllowance(t *testing.T) {
+	t.Parallel()
+
 	tx := NewAccountAllowanceAdjustTransaction().
 		GrantHbarAllowance(AccountID{Account: 3}, AccountID{Account: 4}, HbarFromTinybar(1))
 	expectedHbarAllowances := []*HbarAllowance{
@@ -111,6 +115,8 @@ func TestUnitAccountAllowanceAdjustTransactionGrantHbarAllowance(t *testing.T) {
 	require.Equal(t, expectedHbarAllowances, tx.GetHbarAllowances())
 }
 func TestUnitAccountAllowanceAdjustTransactionRevokeHbarAllowance(t *testing.T) {
+	t.Parallel()
+
 	tx := NewAccountAllowanceAdjustTransaction().
 		RevokeHbarAllowance(AccountID{Account: 3}, AccountID{Account: 4}, HbarFromTinybar(1))
 	expectedHbarAllowances := []*HbarAllowance{
@@ -124,6 +130,8 @@ func TestUnitAccountAllowanceAdjustTransactionRevokeHbarAllowance(t *testing.T) 
 }
 
 func TestUnitAccountAllowanceAdjustTransactionGrantTokenAllowance(t *testing.T) {
+	t.Parallel()
+
 	tokenID := TokenID{Token: 3}
 	tx := NewAccountAllowanceAdjustTransaction().
 		GrantTokenAllowance(tokenID, AccountID{Account: 3}, AccountID{Account: 4}, 1)
@@ -139,6 +147,8 @@ func TestUnitAccountAllowanceAdjustTransactionGrantTokenAllowance(t *testing.T) 
 }
 
 func TestUnitAccountAllowanceAdjustTransactionRevokeTokenAllowance(t *testing.T) {
+	t.Parallel()
+
 	tokenID := TokenID{Token: 3}
 	tx := NewAccountAllowanceAdjustTransaction().
 		RevokeTokenAllowance(tokenID, AccountID{Account: 3}, AccountID{Account: 4}, 1)
@@ -154,6 +164,8 @@ func TestUnitAccountAllowanceAdjustTransactionRevokeTokenAllowance(t *testing.T)
 }
 
 func TestUnitAccountAllowanceAdjustTransactionGrantTokenNftAllowance(t *testing.T) {
+	t.Parallel()
+
 	tokenID := TokenID{Token: 3}
 	NftID := NftID{tokenID, 1}
 	tx := NewAccountAllowanceAdjustTransaction().
@@ -172,6 +184,8 @@ func TestUnitAccountAllowanceAdjustTransactionGrantTokenNftAllowance(t *testing.
 }
 
 func TestUnitAccountAllowanceAdjustTransactionRevokeTokenNftAllowance(t *testing.T) {
+	t.Parallel()
+
 	tokenID := TokenID{Token: 3}
 	NftID := NftID{tokenID, 1}
 	tx := NewAccountAllowanceAdjustTransaction().
@@ -190,6 +204,8 @@ func TestUnitAccountAllowanceAdjustTransactionRevokeTokenNftAllowance(t *testing
 }
 
 func TestUnitAccountAllowanceAdjustTransactionAddAllTokenNftAllowance(t *testing.T) {
+	t.Parallel()
+
 	tokenID := TokenID{Token: 3}
 	tx := NewAccountAllowanceAdjustTransaction().
 		AddAllTokenNftAllowance(tokenID, AccountID{Account: 3})

@@ -36,7 +36,11 @@ import (
 )
 
 func TestUnitTokenUnfreezeTransactionValidate(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	accountID, err := AccountIDFromString("0.0.123-esxsf")
 	require.NoError(t, err)
@@ -52,7 +56,11 @@ func TestUnitTokenUnfreezeTransactionValidate(t *testing.T) {
 }
 
 func TestUnitTokenUnfreezeTransactionValidateWrong(t *testing.T) {
-	client := ClientForTestnet()
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 	accountID, err := AccountIDFromString("0.0.123-rmkykd")
 	require.NoError(t, err)
@@ -71,6 +79,8 @@ func TestUnitTokenUnfreezeTransactionValidateWrong(t *testing.T) {
 }
 
 func TestUnitTokenUnfreezeTransactionGet(t *testing.T) {
+	t.Parallel()
+
 	tokenID := TokenID{Token: 7}
 
 	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
@@ -107,6 +117,8 @@ func TestUnitTokenUnfreezeTransactionGet(t *testing.T) {
 }
 
 func TestUnitTokenUnfreezeTransactionNothingSet(t *testing.T) {
+	t.Parallel()
+
 	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
 	transactionID := TransactionIDGenerate(AccountID{Account: 324})
 
@@ -135,6 +147,8 @@ func TestUnitTokenUnfreezeTransactionNothingSet(t *testing.T) {
 }
 
 func TestUnitTokenUnfreezeTransactionCoverage(t *testing.T) {
+	t.Parallel()
+
 	checksum := "dmqui"
 	grpc := time.Second * 30
 	token := TokenID{Token: 3, checksum: &checksum}
@@ -145,7 +159,9 @@ func TestUnitTokenUnfreezeTransactionCoverage(t *testing.T) {
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
-	client := ClientForTestnet()
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 
 	transaction, err := NewTokenUnfreezeTransaction().
@@ -199,6 +215,8 @@ func TestUnitTokenUnfreezeTransactionCoverage(t *testing.T) {
 }
 
 func TestUnitTokenUnfreezeTransactionMock(t *testing.T) {
+	t.Parallel()
+
 	newKey, err := PrivateKeyFromStringEd25519("302e020100300506032b657004220420a869f4c6191b9c8c99933e7f6b6611711737e4b1a1a5a4cb5370e719a1f6df98")
 	require.NoError(t, err)
 

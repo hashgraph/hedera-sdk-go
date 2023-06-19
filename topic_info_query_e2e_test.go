@@ -34,6 +34,7 @@ import (
 const topicMemo = "go-sdk::topic memo"
 
 func TestIntegrationTopicInfoQueryCanExecute(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	txID, err := NewTopicCreateTransaction().
@@ -72,6 +73,7 @@ func TestIntegrationTopicInfoQueryCanExecute(t *testing.T) {
 }
 
 func TestIntegrationTopicInfoQueryGetCost(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTopicCreateTransaction().
@@ -109,6 +111,7 @@ func TestIntegrationTopicInfoQueryGetCost(t *testing.T) {
 }
 
 func TestIntegrationTopicInfoQuerySetBigMaxPayment(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTopicCreateTransaction().
@@ -145,6 +148,7 @@ func TestIntegrationTopicInfoQuerySetBigMaxPayment(t *testing.T) {
 }
 
 func TestIntegrationTopicInfoQuerySetSmallMaxPayment(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTopicCreateTransaction().
@@ -185,6 +189,7 @@ func TestIntegrationTopicInfoQuerySetSmallMaxPayment(t *testing.T) {
 }
 
 func TestIntegrationTopicInfoQueryInsufficientFee(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTopicCreateTransaction().
@@ -224,6 +229,7 @@ func TestIntegrationTopicInfoQueryInsufficientFee(t *testing.T) {
 }
 
 func TestIntegrationTopicInfoQueryThreshold(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	keys := make([]PrivateKey, 3)
@@ -280,6 +286,7 @@ func TestIntegrationTopicInfoQueryThreshold(t *testing.T) {
 }
 
 func TestIntegrationTopicInfoQueryNoTopicID(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	_, err := NewTopicInfoQuery().

@@ -83,6 +83,7 @@ Etiam ut sodales ex. Nulla luctus, magna eu scelerisque sagittis, nibh quam cons
 `
 
 func TestIntegrationTopicMessageQueryCanExecute(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTopicCreateTransaction().
@@ -150,6 +151,7 @@ func TestIntegrationTopicMessageQueryCanExecute(t *testing.T) {
 }
 
 func TestIntegrationTopicMessageQueryNoTopicID(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTopicCreateTransaction().
@@ -216,6 +218,7 @@ func TestIntegrationTopicMessageQueryNoTopicID(t *testing.T) {
 }
 
 func TestIntegrationTopicMessageQueryNoMessage(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTopicCreateTransaction().
@@ -280,6 +283,7 @@ func TestIntegrationTopicMessageQueryNoMessage(t *testing.T) {
 }
 
 func TestIntegrationTopicMessageQueryNoStartTime(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTopicCreateTransaction().

@@ -35,6 +35,8 @@ import (
 )
 
 func TestUnitAccountAllowanceApproveTransaction(t *testing.T) {
+	t.Parallel()
+
 	tokenID1 := TokenID{Token: 1}
 	tokenID2 := TokenID{Token: 141}
 	serialNumber1 := int64(3)
@@ -111,6 +113,8 @@ func TestUnitAccountAllowanceApproveTransaction(t *testing.T) {
 }
 
 func TestUnitAccountAllowanceApproveTransactionGet(t *testing.T) {
+	t.Parallel()
+
 	tokenID1 := TokenID{Token: 1}
 	tokenID2 := TokenID{Token: 141}
 	serialNumber1 := int64(3)
@@ -154,6 +158,8 @@ func TestUnitAccountAllowanceApproveTransactionGet(t *testing.T) {
 }
 
 func TestUnitAccountAllowanceApproveTransactionSetNothing(t *testing.T) {
+	t.Parallel()
+
 	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
 	transactionID := TransactionIDGenerate(AccountID{Account: 324})
 
@@ -179,6 +185,8 @@ func TestUnitAccountAllowanceApproveTransactionSetNothing(t *testing.T) {
 }
 
 func TestUnitAccountAllowanceDeleteTransactionSetNothing(t *testing.T) {
+	t.Parallel()
+
 	token := TokenID{Token: 3}
 	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
 	transactionID := TransactionIDGenerate(AccountID{Account: 324})
@@ -204,6 +212,8 @@ func TestUnitAccountAllowanceDeleteTransactionSetNothing(t *testing.T) {
 }
 
 func TestUnitAccountAllowanceApproveTransactionFromProtobuf(t *testing.T) {
+	t.Parallel()
+
 	tokenID1 := TokenID{Token: 1}
 	tokenID2 := TokenID{Token: 141}
 	serialNumber1 := int64(3)
@@ -235,6 +245,8 @@ func TestUnitAccountAllowanceApproveTransactionFromProtobuf(t *testing.T) {
 }
 
 func TestUnitAccountAllowanceApproveTransactionScheduleProtobuf(t *testing.T) {
+	t.Parallel()
+
 	tokenID1 := TokenID{Token: 1}
 	tokenID2 := TokenID{Token: 141}
 	serialNumber1 := int64(3)
@@ -307,6 +319,8 @@ func TestUnitAccountAllowanceApproveTransactionScheduleProtobuf(t *testing.T) {
 }
 
 func TestUnitAccountAllowanceDeleteTransactionCoverage(t *testing.T) {
+	t.Parallel()
+
 	checksum := "dmqui"
 	token := TokenID{Token: 3, checksum: &checksum}
 	account := AccountID{Account: 3, checksum: &checksum}
@@ -316,7 +330,9 @@ func TestUnitAccountAllowanceDeleteTransactionCoverage(t *testing.T) {
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
-	client := ClientForTestnet()
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 
 	transaction, err := NewAccountAllowanceDeleteTransaction().
@@ -369,6 +385,8 @@ func TestUnitAccountAllowanceDeleteTransactionCoverage(t *testing.T) {
 }
 
 func TestUnitAccountAllowanceDeleteTransactionMock(t *testing.T) {
+	t.Parallel()
+
 	checksum := "dmqui"
 	token := TokenID{Token: 3, checksum: &checksum}
 	nodeAccountID := []AccountID{{Account: 3}}
