@@ -1,3 +1,10 @@
+## v2.24.4
+
+### Added
+
+* Option to create a client from config file without mirror network
+* Finished LegderID implementation 
+
 ## v2.24.3
 
 ### Added
