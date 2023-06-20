@@ -57,8 +57,18 @@ func TestUnitTokenDecimalMapToProtobuf(t *testing.T) {
 	decimals := tokenDecimals._ToProtobuf()
 
 	assert.Equal(t, 2, len(decimals))
-	assert.Equal(t, uint32(9), decimals[0].Decimals)
-	assert.Equal(t, uint32(10), decimals[1].Decimals)
+
+	// The order of the decimals is not guaranteed
+	for _, dec := range decimals {
+        switch dec.TokenId.TokenNum {
+        case 123:
+            assert.Equal(t, uint32(9), dec.Decimals)
+        case 124:
+            assert.Equal(t, uint32(10), dec.Decimals)
+        default:
+            t.Errorf("Unexpected TokenID: %v", dec.TokenId.String())
+        }
+    }
 }
 
 func TestUnitTokenDecimalMapFromProtobuf(t *testing.T) {
