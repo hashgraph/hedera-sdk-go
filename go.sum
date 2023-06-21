@@ -1174,6 +1174,8 @@ github.com/grpc-ecosystem/grpc-gateway/v2 v2.7.0/go.mod h1:hgWBS7lorOAVIJEQMi4Zs
 github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.3/go.mod h1:o//XUCC/F+yRGJoPO/VU0GSB0f8Nhgmxx0VIRUvaC0w=
 github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20230222133122-6549ac627de9 h1:FcrKvjugTHGz5wZxdx6R/43EJwBDyal4paS+el+BXxc=
 github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20230222133122-6549ac627de9/go.mod h1:av0VF39ClcbPoUcDfMWnocYdjyPXKJJYB30h51fuuyg=
+github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20230620121835-2f2656b1f434 h1:zrc6tknD5Ry2lmED1mScl2THVMuLOAcRiUzl5v0qx+k=
+github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20230620121835-2f2656b1f434/go.mod h1:av0VF39ClcbPoUcDfMWnocYdjyPXKJJYB30h51fuuyg=
 github.com/hashicorp/consul/api v1.1.0/go.mod h1:VmuI/Lkw1nC05EYQWNKwWGbkg+FbDBtguAZLlVdkD9Q=
 github.com/hashicorp/consul/sdk v0.1.1/go.mod h1:VKf9jXwCTEY1QZP2MOLRhb5i/I/ssyNV1vwHyQBF0x8=
 github.com/hashicorp/errwrap v1.0.0/go.mod h1:YH+1FKiLXxHSkmPseP+kNlulaMuP3n2brvKWEqk/Jc4=
