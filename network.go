@@ -64,9 +64,11 @@ func (network *_Network) _GetNetwork() map[string]AccountID {
 }
 
 func (network *_Network) _IncreaseBackoff(node *_Node) {
+	network.healthyNodesMutex.Lock()
+	defer network.healthyNodesMutex.Unlock()
 	node._IncreaseBackoff()
 
-	index := 0
+	index := -1
 	for i, healthyNode := range network.healthyNodes {
 		if node == healthyNode {
 			index = i
@@ -130,8 +132,11 @@ func (network *_Network) _SetLedgerID(id LedgerID) {
 
 func (network *_Network) _GetNodeAccountIDsForExecute() []AccountID { //nolint
 	nodes := make([]AccountID, 0)
+	nodesForTransaction := network._GetNumberOfNodesForTransaction()
 
-	for i := 0; i < network._GetNumberOfNodesForTransaction(); i++ {
+	network.healthyNodesMutex.RLock()
+	defer network.healthyNodesMutex.RUnlock()
+	for i := 0; i < nodesForTransaction; i++ {
 		nodes = append(nodes, network.healthyNodes[i].(*_Node).accountID)
 	}
 
