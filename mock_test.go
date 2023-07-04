@@ -458,6 +458,10 @@ func NewMockClientAndServer(allNodeResponses [][]interface{}) (*Client, *MockSer
 	mirrorNetwork := make([]string, len(allNodeResponses))
 	servers := make([]*MockServer, len(allNodeResponses))
 	ctx, cancel := context.WithCancel(context.Background())
+
+	logger := NewLogger("hedera client mock", LoggerLevelDisabled)
+	var defaultLogger Logger = logger
+
 	client := &Client{
 		defaultMaxQueryPayment:          NewHbar(1),
 		network:                         _NewNetwork(),
@@ -470,6 +474,7 @@ func NewMockClientAndServer(allNodeResponses [][]interface{}) (*Client, *MockSer
 		defaultNetworkUpdatePeriod:      24 * time.Hour,
 		networkUpdateContext:            ctx,
 		cancelNetworkUpdate:             cancel,
+		logger:                          defaultLogger,
 	}
 
 	for i, responses := range allNodeResponses {

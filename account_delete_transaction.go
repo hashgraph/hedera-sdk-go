@@ -64,7 +64,7 @@ func NewAccountDeleteTransaction() *AccountDeleteTransaction {
 	return &transaction
 }
 
-// SetNodeAccountID sets the _Node AccountID for this AccountCreateTransaction.
+// SetNodeAccountID sets the _Node AccountID for this AccountDeleteTransaction.
 func (transaction *AccountDeleteTransaction) SetAccountID(accountID AccountID) *AccountDeleteTransaction {
 	transaction._RequireNotFrozen()
 	transaction.deleteAccountID = &accountID
@@ -453,4 +453,9 @@ func (transaction *AccountDeleteTransaction) GetMinBackoff() time.Duration {
 func (transaction *AccountDeleteTransaction) _GetLogID() string {
 	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
 	return fmt.Sprintf("AccountDeleteTransaction:%d", timestamp.UnixNano())
+}
+
+func (transaction *AccountDeleteTransaction) SetLogLevel(level LogLevel) *AccountDeleteTransaction {
+	transaction.Transaction.SetLogLevel(level)
+	return transaction
 }

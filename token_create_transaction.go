@@ -946,3 +946,8 @@ func (transaction *TokenCreateTransaction) _GetLogID() string {
 	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
 	return fmt.Sprintf("TokenCreateTransaction:%d", timestamp.UnixNano())
 }
+
+func (transaction *TokenCreateTransaction) SetLogLevel(level LogLevel) *TokenCreateTransaction {
+	transaction.Transaction.SetLogLevel(level)
+	return transaction
+}

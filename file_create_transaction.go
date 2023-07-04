@@ -133,7 +133,7 @@ func (transaction *FileCreateTransaction) GetExpirationTime() time.Time {
 }
 
 // SetContents sets the bytes that are the contents of the file (which can be empty). If the size of the file and other
-// fields in the transaction exceed the max transaction size then FileAppendTransaction can be used to continue
+// fields in the transaction exceed the max transaction size then FileCreateTransaction can be used to continue
 // uploading the file.
 func (transaction *FileCreateTransaction) SetContents(contents []byte) *FileCreateTransaction {
 	transaction._RequireNotFrozen()
@@ -503,4 +503,9 @@ func (transaction *FileCreateTransaction) GetMinBackoff() time.Duration {
 func (transaction *FileCreateTransaction) _GetLogID() string {
 	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
 	return fmt.Sprintf("FileCreateTransaction:%d", timestamp.UnixNano())
+}
+
+func (transaction *FileCreateTransaction) SetLogLevel(level LogLevel) *FileCreateTransaction {
+	transaction.Transaction.SetLogLevel(level)
+	return transaction
 }

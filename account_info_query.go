@@ -94,8 +94,8 @@ func (query *AccountInfoQuery) _Build() *services.Query_CryptoGetInfo {
 	return &pb
 }
 
-func _AccountInfoQueryShouldRetry(logID string, _ interface{}, response interface{}) _ExecutionState {
-	return _QueryShouldRetry(logID, Status(response.(*services.Response).GetCryptoGetInfo().Header.NodeTransactionPrecheckCode))
+func _AccountInfoQueryShouldRetry(_ interface{}, response interface{}) _ExecutionState {
+	return _QueryShouldRetry(Status(response.(*services.Response).GetCryptoGetInfo().Header.NodeTransactionPrecheckCode))
 }
 
 func _AccountInfoQueryMapStatusError(_ interface{}, response interface{}) error {
@@ -334,5 +334,10 @@ func (query *AccountInfoQuery) _GetLogID() string {
 // SetPaymentTransactionID assigns the payment transaction id.
 func (query *AccountInfoQuery) SetPaymentTransactionID(transactionID TransactionID) *AccountInfoQuery {
 	query.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
+	return query
+}
+
+func (query *AccountInfoQuery) SetLogLevel(level LogLevel) *AccountInfoQuery {
+	query.Query.SetLogLevel(level)
 	return query
 }

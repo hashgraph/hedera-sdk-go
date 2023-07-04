@@ -147,8 +147,8 @@ func (query *ContractInfoQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func _ContractInfoQueryShouldRetry(logID string, _ interface{}, response interface{}) _ExecutionState {
-	return _QueryShouldRetry(logID, Status(response.(*services.Response).GetContractGetInfo().Header.NodeTransactionPrecheckCode))
+func _ContractInfoQueryShouldRetry(_ interface{}, response interface{}) _ExecutionState {
+	return _QueryShouldRetry(Status(response.(*services.Response).GetContractGetInfo().Header.NodeTransactionPrecheckCode))
 }
 
 func _ContractInfoQueryMapStatusError(_ interface{}, response interface{}) error {
@@ -335,5 +335,10 @@ func (query *ContractInfoQuery) _GetLogID() string {
 
 func (query *ContractInfoQuery) SetPaymentTransactionID(transactionID TransactionID) *ContractInfoQuery {
 	query.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
+	return query
+}
+
+func (query *ContractInfoQuery) SetLogLevel(level LogLevel) *ContractInfoQuery {
+	query.Query.SetLogLevel(level)
 	return query
 }

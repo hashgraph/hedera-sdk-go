@@ -64,6 +64,7 @@ type Client struct {
 	defaultNetworkUpdatePeriod time.Duration
 	networkUpdateContext       context.Context
 	cancelNetworkUpdate        context.CancelFunc
+	logger                     Logger
 }
 
 // TransactionSigner is a closure or function that defines how transactions will be signed
@@ -117,6 +118,9 @@ func ClientForPreviewnet() *Client {
 // and returns a Client instance which can be used to
 func _NewClient(network _Network, mirrorNetwork []string, ledgerId *LedgerID) *Client {
 	ctx, cancel := context.WithCancel(context.Background())
+	logger := NewLogger("hedera-sdk-go", LogLevel(os.Getenv("HEDERA_SDK_GO_LOG_LEVEL")))
+	var defaultLogger Logger = logger
+
 	client := Client{
 		defaultMaxQueryPayment:          NewHbar(1),
 		network:                         network,
@@ -129,6 +133,7 @@ func _NewClient(network _Network, mirrorNetwork []string, ledgerId *LedgerID) *C
 		defaultNetworkUpdatePeriod:      24 * time.Hour,
 		networkUpdateContext:            ctx,
 		cancelNetworkUpdate:             cancel,
+		logger:                          defaultLogger,
 	}
 
 	client.SetMirrorNetwork(mirrorNetwork)
@@ -683,4 +688,18 @@ func (client *Client) SetDefaultMaxTransactionFee(defaultMaxTransactionFee Hbar)
 // GetDefaultMaxTransactionFee returns the default maximum fee allowed for transactions.
 func (client *Client) GetDefaultMaxTransactionFee() Hbar {
 	return client.defaultMaxTransactionFee
+}
+
+func (client *Client) SetLogger(logger Logger) *Client {
+	client.logger = logger
+	return client
+}
+
+func (client *Client) GetLogger() Logger {
+	return client.logger
+}
+
+func (client *Client) SetLogLevel(level LogLevel) *Client {
+	client.logger.SetLevel(level)
+	return client
 }

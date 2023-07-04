@@ -147,8 +147,8 @@ func (query *AccountStakersQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func _AccountStakersQueryShouldRetry(logID string, _ interface{}, response interface{}) _ExecutionState {
-	return _QueryShouldRetry(logID, Status(response.(*services.Response).GetCryptoGetProxyStakers().Header.NodeTransactionPrecheckCode))
+func _AccountStakersQueryShouldRetry(_ interface{}, response interface{}) _ExecutionState {
+	return _QueryShouldRetry(Status(response.(*services.Response).GetCryptoGetProxyStakers().Header.NodeTransactionPrecheckCode))
 }
 
 func _AccountStakersQueryMapStatusError(_ interface{}, response interface{}) error {
@@ -343,5 +343,10 @@ func (query *AccountStakersQuery) _GetLogID() string {
 // SetPaymentTransactionID assigns the payment transaction id.
 func (query *AccountStakersQuery) SetPaymentTransactionID(transactionID TransactionID) *AccountStakersQuery {
 	query.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
+	return query
+}
+
+func (query *AccountStakersQuery) SetLogLevel(level LogLevel) *AccountStakersQuery {
+	query.Query.SetLogLevel(level)
 	return query
 }

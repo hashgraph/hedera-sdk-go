@@ -546,3 +546,8 @@ func (transaction *TopicMessageSubmitTransaction) _GetLogID() string {
 	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
 	return fmt.Sprintf("TopicMessageSubmitTransaction:%d", timestamp.UnixNano())
 }
+
+func (transaction *TopicMessageSubmitTransaction) SetLogLevel(level LogLevel) *TopicMessageSubmitTransaction {
+	transaction.Transaction.SetLogLevel(level)
+	return transaction
+}

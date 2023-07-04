@@ -204,8 +204,8 @@ func (query *TokenNftInfoQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func _TokenNftInfoQueryShouldRetry(logID string, _ interface{}, response interface{}) _ExecutionState {
-	return _QueryShouldRetry(logID, Status(response.(*services.Response).GetTokenGetNftInfo().Header.NodeTransactionPrecheckCode))
+func _TokenNftInfoQueryShouldRetry(_ interface{}, response interface{}) _ExecutionState {
+	return _QueryShouldRetry(Status(response.(*services.Response).GetTokenGetNftInfo().Header.NodeTransactionPrecheckCode))
 }
 
 func _TokenNftInfoQueryMapStatusError(_ interface{}, response interface{}) error {
@@ -387,5 +387,10 @@ func (query *TokenNftInfoQuery) _GetLogID() string {
 // SetPaymentTransactionID assigns the payment transaction id.
 func (query *TokenNftInfoQuery) SetPaymentTransactionID(transactionID TransactionID) *TokenNftInfoQuery {
 	query.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
+	return query
+}
+
+func (query *TokenNftInfoQuery) SetLogLevel(level LogLevel) *TokenNftInfoQuery {
+	query.Query.SetLogLevel(level)
 	return query
 }

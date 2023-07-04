@@ -142,8 +142,8 @@ func (query *TokenInfoQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func _TokenInfoQueryShouldRetry(logID string, _ interface{}, response interface{}) _ExecutionState {
-	return _QueryShouldRetry(logID, Status(response.(*services.Response).GetTokenGetInfo().Header.NodeTransactionPrecheckCode))
+func _TokenInfoQueryShouldRetry(_ interface{}, response interface{}) _ExecutionState {
+	return _QueryShouldRetry(Status(response.(*services.Response).GetTokenGetInfo().Header.NodeTransactionPrecheckCode))
 }
 
 func _TokenInfoQueryMapStatusError(_ interface{}, response interface{}) error {
@@ -324,5 +324,10 @@ func (query *TokenInfoQuery) _GetLogID() string {
 // SetPaymentTransactionID assigns the payment transaction id.
 func (query *TokenInfoQuery) SetPaymentTransactionID(transactionID TransactionID) *TokenInfoQuery {
 	query.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
+	return query
+}
+
+func (query *TokenInfoQuery) SetLogLevel(level LogLevel) *TokenInfoQuery {
+	query.Query.SetLogLevel(level)
 	return query
 }

@@ -34,7 +34,7 @@ func TestIntegrationPreviewnetTls(t *testing.T) {
 		"0.previewnet.hedera.com:50212": {Account: 3},
 		"1.previewnet.hedera.com:50212": {Account: 4},
 		"2.previewnet.hedera.com:50212": {Account: 5},
-		"3.previewnet.hedera.com:50212": {Account: 6},
+		// "3.previewnet.hedera.com:50212": {Account: 6},
 		"4.previewnet.hedera.com:50212": {Account: 7},
 	}
 

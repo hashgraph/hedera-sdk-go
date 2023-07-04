@@ -462,3 +462,8 @@ func (transaction *SystemUndeleteTransaction) _GetLogID() string {
 	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
 	return fmt.Sprintf("SystemUndeleteTransaction:%d", timestamp.UnixNano())
 }
+
+func (transaction *SystemUndeleteTransaction) SetLogLevel(level LogLevel) *SystemUndeleteTransaction {
+	transaction.Transaction.SetLogLevel(level)
+	return transaction
+}

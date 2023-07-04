@@ -508,3 +508,8 @@ func (transaction *TokenAssociateTransaction) _GetLogID() string {
 	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
 	return fmt.Sprintf("TokenAssociateTransaction:%d", timestamp.UnixNano())
 }
+
+func (transaction *TokenAssociateTransaction) SetLogLevel(level LogLevel) *TokenAssociateTransaction {
+	transaction.Transaction.SetLogLevel(level)
+	return transaction
+}

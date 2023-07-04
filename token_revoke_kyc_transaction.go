@@ -466,3 +466,8 @@ func (transaction *TokenRevokeKycTransaction) _GetLogID() string {
 	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
 	return fmt.Sprintf("TokenRevokeKycTransaction:%d", timestamp.UnixNano())
 }
+
+func (transaction *TokenRevokeKycTransaction) SetLogLevel(level LogLevel) *TokenRevokeKycTransaction {
+	transaction.Transaction.SetLogLevel(level)
+	return transaction
+}

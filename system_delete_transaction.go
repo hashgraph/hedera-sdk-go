@@ -513,3 +513,8 @@ func (transaction *SystemDeleteTransaction) _GetLogID() string {
 	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
 	return fmt.Sprintf("SystemDeleteTransaction:%d", timestamp.UnixNano())
 }
+
+func (transaction *SystemDeleteTransaction) SetLogLevel(level LogLevel) *SystemDeleteTransaction {
+	transaction.Transaction.SetLogLevel(level)
+	return transaction
+}

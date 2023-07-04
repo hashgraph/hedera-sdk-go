@@ -175,8 +175,8 @@ func (query *AccountBalanceQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func _AccountBalanceQueryShouldRetry(logID string, _ interface{}, response interface{}) _ExecutionState {
-	return _QueryShouldRetry(logID, Status(response.(*services.Response).GetCryptogetAccountBalance().Header.NodeTransactionPrecheckCode))
+func _AccountBalanceQueryShouldRetry(_ interface{}, response interface{}) _ExecutionState {
+	return _QueryShouldRetry(Status(response.(*services.Response).GetCryptogetAccountBalance().Header.NodeTransactionPrecheckCode))
 }
 
 func _AccountBalanceQueryMapStatusError(_ interface{}, response interface{}) error {
@@ -310,5 +310,10 @@ func (query *AccountBalanceQuery) _GetLogID() string {
 // SetPaymentTransactionID assigns the payment transaction id.
 func (query *AccountBalanceQuery) SetPaymentTransactionID(transactionID TransactionID) *AccountBalanceQuery {
 	query.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
+	return query
+}
+
+func (query *AccountBalanceQuery) SetLogLevel(level LogLevel) *AccountBalanceQuery {
+	query.Query.SetLogLevel(level)
 	return query
 }

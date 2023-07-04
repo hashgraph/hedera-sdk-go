@@ -143,8 +143,8 @@ func (query *FileContentsQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func _FileContentsQueryShouldRetry(logID string, _ interface{}, response interface{}) _ExecutionState {
-	return _QueryShouldRetry(logID, Status(response.(*services.Response).GetFileGetContents().Header.NodeTransactionPrecheckCode))
+func _FileContentsQueryShouldRetry(_ interface{}, response interface{}) _ExecutionState {
+	return _QueryShouldRetry(Status(response.(*services.Response).GetFileGetContents().Header.NodeTransactionPrecheckCode))
 }
 
 func _FileContentsQueryMapStatusError(_ interface{}, response interface{}) error {
@@ -323,5 +323,10 @@ func (query *FileContentsQuery) _GetLogID() string {
 // SetPaymentTransactionID assigns the payment transaction id.
 func (query *FileContentsQuery) SetPaymentTransactionID(transactionID TransactionID) *FileContentsQuery {
 	query.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
+	return query
+}
+
+func (query *FileContentsQuery) SetLogLevel(level LogLevel) *FileContentsQuery {
+	query.Query.SetLogLevel(level)
 	return query
 }

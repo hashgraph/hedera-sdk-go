@@ -428,3 +428,8 @@ func (transaction *TokenPauseTransaction) _GetLogID() string {
 	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
 	return fmt.Sprintf("TokenPauseTransaction:%d", timestamp.UnixNano())
 }
+
+func (transaction *TokenPauseTransaction) SetLogLevel(level LogLevel) *TokenPauseTransaction {
+	transaction.Transaction.SetLogLevel(level)
+	return transaction
+}

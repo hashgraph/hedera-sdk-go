@@ -983,3 +983,8 @@ func (transaction *TransferTransaction) _GetLogID() string {
 	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
 	return fmt.Sprintf("TransferTransaction:%d", timestamp.UnixNano())
 }
+
+func (transaction *TransferTransaction) SetLogLevel(level LogLevel) *TransferTransaction {
+	transaction.Transaction.SetLogLevel(level)
+	return transaction
+}
