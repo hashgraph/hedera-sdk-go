@@ -491,3 +491,8 @@ func (transaction *ScheduleCreateTransaction) _GetLogID() string {
 	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
 	return fmt.Sprintf("ScheduleCreateTransaction:%d", timestamp.UnixNano())
 }
+
+func (transaction *ScheduleCreateTransaction) SetLogLevel(level LogLevel) *ScheduleCreateTransaction {
+	transaction.Transaction.SetLogLevel(level)
+	return transaction
+}

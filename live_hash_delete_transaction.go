@@ -127,7 +127,7 @@ func (transaction *LiveHashDeleteTransaction) _Build() *services.TransactionBody
 }
 
 func (transaction *LiveHashDeleteTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
-	return nil, errors.New("cannot schedule `LiveHashAddTransaction`")
+	return nil, errors.New("cannot schedule `LiveHashDeleteTransaction`")
 }
 
 func _LiveHashDeleteTransactionGetMethod(request interface{}, channel *_Channel) _Method {
@@ -415,4 +415,9 @@ func (transaction *LiveHashDeleteTransaction) GetMinBackoff() time.Duration {
 func (transaction *LiveHashDeleteTransaction) _GetLogID() string {
 	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
 	return fmt.Sprintf("LiveHashDeleteTransaction:%d", timestamp.UnixNano())
+}
+
+func (transaction *LiveHashDeleteTransaction) SetLogLevel(level LogLevel) *LiveHashDeleteTransaction {
+	transaction.Transaction.SetLogLevel(level)
+	return transaction
 }

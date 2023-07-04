@@ -186,9 +186,8 @@ func (query *TransactionReceiptQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func _TransactionReceiptQueryShouldRetry(logID string, request interface{}, response interface{}) _ExecutionState {
+func _TransactionReceiptQueryShouldRetry(request interface{}, response interface{}) _ExecutionState {
 	status := Status(response.(*services.Response).GetTransactionGetReceipt().GetHeader().GetNodeTransactionPrecheckCode())
-	logCtx.Trace().Str("requestId", logID).Str("status", status.String()).Msg("receipt precheck status received")
 
 	switch status {
 	case StatusPlatformTransactionNotCreated, StatusBusy, StatusUnknown, StatusReceiptNotFound, StatusRecordNotFound:
@@ -200,7 +199,6 @@ func _TransactionReceiptQueryShouldRetry(logID string, request interface{}, resp
 	}
 
 	status = Status(response.(*services.Response).GetTransactionGetReceipt().GetReceipt().GetStatus())
-	logCtx.Trace().Str("requestId", logID).Str("status", status.String()).Msg("receipt status received")
 
 	switch status {
 	case StatusBusy, StatusUnknown, StatusOk, StatusReceiptNotFound, StatusRecordNotFound:
@@ -370,5 +368,10 @@ func (query *TransactionReceiptQuery) _GetLogID() string {
 // SetPaymentTransactionID assigns the payment transaction id.
 func (query *TransactionReceiptQuery) SetPaymentTransactionID(transactionID TransactionID) *TransactionReceiptQuery {
 	query.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
+	return query
+}
+
+func (query *TransactionReceiptQuery) SetLogLevel(level LogLevel) *TransactionReceiptQuery {
+	query.Query.SetLogLevel(level)
 	return query
 }

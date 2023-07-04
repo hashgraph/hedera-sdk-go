@@ -86,8 +86,8 @@ func (query *NetworkVersionInfoQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func _NetworkVersionInfoQueryShouldRetry(logID string, _ interface{}, response interface{}) _ExecutionState {
-	return _QueryShouldRetry(logID, Status(response.(*services.Response).GetNetworkGetVersionInfo().Header.NodeTransactionPrecheckCode))
+func _NetworkVersionInfoQueryShouldRetry(_ interface{}, response interface{}) _ExecutionState {
+	return _QueryShouldRetry(Status(response.(*services.Response).GetNetworkGetVersionInfo().Header.NodeTransactionPrecheckCode))
 }
 
 func _NetworkVersionInfoQueryMapStatusError(_ interface{}, response interface{}) error {
@@ -264,5 +264,10 @@ func (query *NetworkVersionInfoQuery) _GetLogID() string {
 // SetPaymentTransactionID assigns the payment transaction id.
 func (query *NetworkVersionInfoQuery) SetPaymentTransactionID(transactionID TransactionID) *NetworkVersionInfoQuery {
 	query.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
+	return query
+}
+
+func (query *NetworkVersionInfoQuery) SetLogLevel(level LogLevel) *NetworkVersionInfoQuery {
+	query.Query.SetLogLevel(level)
 	return query
 }

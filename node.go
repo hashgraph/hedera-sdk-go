@@ -120,7 +120,7 @@ func (node *_Node) _GetReadmitTime() *time.Time {
 	return node._ManagedNode._GetReadmitTime()
 }
 
-func (node *_Node) _GetChannel() (*_Channel, error) {
+func (node *_Node) _GetChannel(logger Logger) (*_Channel, error) {
 	if node.channel != nil {
 		return node.channel, nil
 	}
@@ -142,7 +142,7 @@ func (node *_Node) _GetChannel() (*_Channel, error) {
 			InsecureSkipVerify: true, // nolint
 			VerifyPeerCertificate: func(rawCerts [][]byte, verifiedChains [][]*x509.Certificate) error {
 				if node.addressBook == nil {
-					logCtx.Warn().Msg("skipping certificate check since no cert hash was found")
+					logger.Warn("skipping certificate check since no cert hash was found")
 					return nil
 				}
 

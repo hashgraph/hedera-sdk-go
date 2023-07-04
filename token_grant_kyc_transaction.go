@@ -466,3 +466,8 @@ func (transaction *TokenGrantKycTransaction) _GetLogID() string {
 	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
 	return fmt.Sprintf("TokenGrantKycTransaction:%d", timestamp.UnixNano())
 }
+
+func (transaction *TokenGrantKycTransaction) SetLogLevel(level LogLevel) *TokenGrantKycTransaction {
+	transaction.Transaction.SetLogLevel(level)
+	return transaction
+}

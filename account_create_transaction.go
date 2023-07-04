@@ -654,3 +654,8 @@ func (transaction *AccountCreateTransaction) _GetLogID() string {
 	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
 	return fmt.Sprintf("AccountCreateTransaction:%d", timestamp.UnixNano())
 }
+
+func (transaction *AccountCreateTransaction) SetLogLevel(level LogLevel) *AccountCreateTransaction {
+	transaction.Transaction.SetLogLevel(level)
+	return transaction
+}

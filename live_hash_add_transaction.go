@@ -485,3 +485,8 @@ func (transaction *LiveHashAddTransaction) _GetLogID() string {
 	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
 	return fmt.Sprintf("LiveHashAddTransaction:%d", timestamp.UnixNano())
 }
+
+func (transaction *LiveHashAddTransaction) SetLogLevel(level LogLevel) *LiveHashAddTransaction {
+	transaction.Transaction.SetLogLevel(level)
+	return transaction
+}

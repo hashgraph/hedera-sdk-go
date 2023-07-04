@@ -24,7 +24,11 @@ package hedera
  */
 
 import (
+	"bytes"
 	"testing"
+	"time"
+
+	"github.com/rs/zerolog"
 
 	"github.com/stretchr/testify/assert"
 
@@ -61,7 +65,7 @@ func TestUnitClientFromConfigWithOperator(t *testing.T) {
 
 func TestUnitClientFromConfigWithoutMirrorNetwork(t *testing.T) {
 	t.Parallel()
-	
+
 	client, err := ClientFromConfig([]byte(testClientJSONWithoutMirrorNetwork))
 	require.NoError(t, err)
 	assert.NotNil(t, client)
@@ -263,4 +267,63 @@ func TestUnitClientSetMultipleNetwork(t *testing.T) {
 		require.Equal(t, val.String(), "0.0.4")
 	}
 
+}
+
+func TestUnitClientLogger(t *testing.T) {
+	client := ClientForTestnet()
+
+	var buf bytes.Buffer
+	writer := zerolog.ConsoleWriter{Out: &buf, TimeFormat: time.RFC3339}
+
+	hederaLoger := NewLogger("test", LoggerLevelTrace)
+
+	l := zerolog.New(&writer)
+	hederaLoger.logger = &l
+
+	client.SetLogger(hederaLoger)
+	client.SetLogLevel(LoggerLevelInfo)
+
+	client.logger.Trace("trace message", "traceKey", "traceValue")
+	client.logger.Debug("debug message", "debugKey", "debugValue")
+	client.logger.Info("info message", "infoKey", "infoValue")
+	client.logger.Warn("warn message", "warnKey", "warnValue")
+	client.logger.Error("error message", "errorKey", "errorValue")
+
+	assert.NotContains(t, buf.String(), "trace message")
+	assert.NotContains(t, buf.String(), "debug message")
+	assert.Contains(t, buf.String(), "info message")
+	assert.Contains(t, buf.String(), "warn message")
+	assert.Contains(t, buf.String(), "error message")
+
+	buf.Reset()
+	client.SetLogLevel(LoggerLevelWarn)
+	client.logger.Trace("trace message", "traceKey", "traceValue")
+	client.logger.Debug("debug message", "debugKey", "debugValue")
+	client.logger.Info("info message", "infoKey", "infoValue")
+	client.logger.Warn("warn message", "warnKey", "warnValue")
+	client.logger.Error("error message", "errorKey", "errorValue")
+
+	assert.NotContains(t, buf.String(), "trace message")
+	assert.NotContains(t, buf.String(), "debug message")
+	assert.NotContains(t, buf.String(), "info message")
+	assert.Contains(t, buf.String(), "warn message")
+	assert.Contains(t, buf.String(), "error message")
+
+
+	buf.Reset()
+	client.SetLogLevel(LoggerLevelTrace)
+	client.logger.Trace("trace message", "traceKey", "traceValue")
+	client.logger.Debug("debug message", "debugKey", "debugValue")
+	client.logger.Info("info message", "infoKey", "infoValue")
+	client.logger.Warn("warn message", "warnKey", "warnValue")
+	client.logger.Error("error message", "errorKey", "errorValue")
+
+	assert.Contains(t, buf.String(), "trace message")
+	assert.Contains(t, buf.String(), "debug message")
+	assert.Contains(t, buf.String(), "info message")
+	assert.Contains(t, buf.String(), "warn message")
+	assert.Contains(t, buf.String(), "error message")
+
+	hl := client.GetLogger()
+	assert.Equal(t, hl, hederaLoger)
 }

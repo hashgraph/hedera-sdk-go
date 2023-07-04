@@ -468,3 +468,8 @@ func (transaction *TokenFreezeTransaction) _GetLogID() string {
 	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
 	return fmt.Sprintf("TokenFreezeTransaction:%d", timestamp.UnixNano())
 }
+
+func (transaction *TokenFreezeTransaction) SetLogLevel(level LogLevel) *TokenFreezeTransaction {
+	transaction.Transaction.SetLogLevel(level)
+	return transaction
+}

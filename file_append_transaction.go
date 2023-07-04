@@ -577,3 +577,8 @@ func (transaction *FileAppendTransaction) _GetLogID() string {
 	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
 	return fmt.Sprintf("FileAppendTransaction:%d", timestamp.UnixNano())
 }
+
+func (transaction *FileAppendTransaction) SetLogLevel(level LogLevel) *FileAppendTransaction {
+	transaction.Transaction.SetLogLevel(level)
+	return transaction
+}

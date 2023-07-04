@@ -47,6 +47,7 @@ type Query struct {
 	minBackoff   *time.Duration
 	grpcDeadline *time.Duration
 	timestamp    time.Time
+	logLevel     *LogLevel
 }
 
 func _NewQuery(isPaymentRequired bool, header *services.QueryHeader) Query {
@@ -136,8 +137,7 @@ func (this *Query) SetMaxRetry(count int) *Query {
 	return this
 }
 
-func _QueryShouldRetry(logID string, status Status) _ExecutionState {
-	logCtx.Trace().Str("requestId", logID).Str("status", status.String()).Msg("query precheck status received")
+func _QueryShouldRetry(status Status) _ExecutionState {
 	switch status {
 	case StatusPlatformTransactionNotCreated, StatusPlatformNotActive, StatusBusy:
 		return executionStateRetry
@@ -260,4 +260,13 @@ func (this *Query) GetPaymentTransactionID() TransactionID {
 func (this *Query) SetPaymentTransactionID(transactionID TransactionID) *Query {
 	this.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
 	return this
+}
+
+func (query *Query) SetLogLevel(level LogLevel) *Query {
+	query.logLevel = &level
+	return query
+}
+
+func (query *Query) GetLogLevel() *LogLevel {
+	return query.logLevel
 }

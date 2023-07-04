@@ -396,3 +396,8 @@ func (transaction *TopicDeleteTransaction) _GetLogID() string {
 	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
 	return fmt.Sprintf("TopicDeleteTransaction:%d", timestamp.UnixNano())
 }
+
+func (transaction *TopicDeleteTransaction) SetLogLevel(level LogLevel) *TopicDeleteTransaction {
+	transaction.Transaction.SetLogLevel(level)
+	return transaction
+}

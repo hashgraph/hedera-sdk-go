@@ -65,6 +65,7 @@ type Transaction struct {
 	minBackoff              *time.Duration
 	regenerateTransactionID bool
 	grpcDeadline            *time.Duration
+	logLevel                *LogLevel
 }
 
 func _NewTransaction() Transaction {
@@ -559,9 +560,8 @@ func (this *Transaction) _KeyAlreadySigned(
 	return false
 }
 
-func _TransactionShouldRetry(logID string, _ interface{}, response interface{}) _ExecutionState {
+func _TransactionShouldRetry(_ interface{}, response interface{}) _ExecutionState {
 	status := Status(response.(*services.TransactionResponse).NodeTransactionPrecheckCode)
-	logCtx.Trace().Str("requestId", logID).Str("status", status.String()).Msg("transaction precheck status received")
 	switch status {
 	case StatusPlatformTransactionNotCreated, StatusPlatformNotActive, StatusBusy:
 		return executionStateRetry
@@ -4510,4 +4510,13 @@ func TransactionExecute(transaction interface{}, client *Client) (TransactionRes
 	default:
 		return TransactionResponse{}, errors.New("(BUG) non-exhaustive switch statement")
 	}
+}
+
+func (transaction *Transaction) SetLogLevel(level LogLevel) *Transaction {
+	transaction.logLevel = &level
+	return transaction
+}
+
+func (transaction *Transaction) GetLogLevel() *LogLevel {
+	return transaction.logLevel
 }

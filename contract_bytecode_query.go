@@ -143,8 +143,8 @@ func (query *ContractBytecodeQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func _ContractBytecodeQueryShouldRetry(logID string, _ interface{}, response interface{}) _ExecutionState {
-	return _QueryShouldRetry(logID, Status(response.(*services.Response).GetContractGetBytecodeResponse().Header.NodeTransactionPrecheckCode))
+func _ContractBytecodeQueryShouldRetry(_ interface{}, response interface{}) _ExecutionState {
+	return _QueryShouldRetry(Status(response.(*services.Response).GetContractGetBytecodeResponse().Header.NodeTransactionPrecheckCode))
 }
 
 func _ContractBytecodeQueryMapStatusError(_ interface{}, response interface{}) error {
@@ -325,5 +325,10 @@ func (query *ContractBytecodeQuery) _GetLogID() string {
 // SetPaymentTransactionID assigns the payment transaction id.
 func (query *ContractBytecodeQuery) SetPaymentTransactionID(transactionID TransactionID) *ContractBytecodeQuery {
 	query.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
+	return query
+}
+
+func (query *ContractBytecodeQuery) SetLogLevel(level LogLevel) *ContractBytecodeQuery {
+	query.Query.SetLogLevel(level)
 	return query
 }

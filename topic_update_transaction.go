@@ -607,3 +607,8 @@ func (transaction *TopicUpdateTransaction) _GetLogID() string {
 	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
 	return fmt.Sprintf("TopicUpdateTransaction:%d", timestamp.UnixNano())
 }
+
+func (transaction *TopicUpdateTransaction) SetLogLevel(level LogLevel) *TopicUpdateTransaction {
+	transaction.Transaction.SetLogLevel(level)
+	return transaction
+}

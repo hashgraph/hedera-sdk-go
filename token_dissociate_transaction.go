@@ -504,3 +504,8 @@ func (transaction *TokenDissociateTransaction) _GetLogID() string {
 	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
 	return fmt.Sprintf("TokenDissociateTransaction:%d", timestamp.UnixNano())
 }
+
+func (transaction *TokenDissociateTransaction) SetLogLevel(level LogLevel) *TokenDissociateTransaction {
+	transaction.Transaction.SetLogLevel(level)
+	return transaction
+}
