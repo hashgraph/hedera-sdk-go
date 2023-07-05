@@ -1,3 +1,9 @@
+## v2.25.0
+
+### Added
+
+* Added logging functionality to Client, Transaction and Query
+
 ## v2.24.4
 
 ### Added
