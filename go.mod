@@ -17,8 +17,8 @@ require (
 	github.com/tyler-smith/go-bip39 v1.1.0
 	github.com/youmark/pkcs8 v0.0.0-20201027041543-1326539a0a0a
 	golang.org/x/crypto v0.10.0
-	golang.org/x/text v0.10.0
-	google.golang.org/genproto v0.0.0-20230530153820-e85fd2cbaebc // indirect
-	google.golang.org/grpc v1.56.0
-	google.golang.org/protobuf v1.30.0
+	golang.org/x/text v0.11.0
+	google.golang.org/genproto v0.0.0-20230629202037-9506855d4529 // indirect
+	google.golang.org/grpc v1.56.1
+	google.golang.org/protobuf v1.31.0
 )
