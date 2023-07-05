@@ -4,8 +4,9 @@
 package hedera
 
 import (
-	"github.com/stretchr/testify/require"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestIntegrationTokenPauseTransactionCanExecute(t *testing.T) {

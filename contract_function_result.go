@@ -78,28 +78,28 @@ func (result ContractFunctionResult) GetInt8(index uint64) int8 {
 }
 
 // GetInt16 gets a _Solidity int16 from the result at the given index
-func (result ContractFunctionResult) GetInt16(index uint64) uint16 {
-	return binary.BigEndian.Uint16(result.ContractCallResult[index*32+30 : (index+1)*32])
+func (result ContractFunctionResult) GetInt16(index uint64) int16 {
+	return int16(binary.BigEndian.Uint16(result.ContractCallResult[index*32+30 : (index+1)*32]))
 }
 
 // GetInt24 gets a _Solidity int24 from the result at the given index
-func (result ContractFunctionResult) GetInt24(index uint64) uint32 {
-	return binary.BigEndian.Uint32(result.ContractCallResult[index*32+28 : (index+1)*32])
+func (result ContractFunctionResult) GetInt24(index uint64) int32 {
+	return int32(binary.BigEndian.Uint32(result.ContractCallResult[index*32+28 : (index+1)*32]))
 }
 
 // GetInt40 gets a _Solidity int40 from the result at the given index
-func (result ContractFunctionResult) GetInt40(index uint64) uint64 {
-	return binary.BigEndian.Uint64(result.ContractCallResult[index*32+24 : (index+1)*32])
+func (result ContractFunctionResult) GetInt40(index uint64) int64 {
+	return int64(binary.BigEndian.Uint64(result.ContractCallResult[index*32+24 : (index+1)*32]))
 }
 
 // GetInt48 gets a _Solidity int48 from the result at the given index
-func (result ContractFunctionResult) GetInt48(index uint64) uint64 {
-	return binary.BigEndian.Uint64(result.ContractCallResult[index*32+24 : (index+1)*32])
+func (result ContractFunctionResult) GetInt48(index uint64) int64 {
+	return int64(binary.BigEndian.Uint64(result.ContractCallResult[index*32+24 : (index+1)*32]))
 }
 
 // GetInt56 gets a _Solidity int56 from the result at the given index
-func (result ContractFunctionResult) GetInt56(index uint64) uint64 {
-	return binary.BigEndian.Uint64(result.ContractCallResult[index*32+24 : (index+1)*32])
+func (result ContractFunctionResult) GetInt56(index uint64) int64 {
+	return int64(binary.BigEndian.Uint64(result.ContractCallResult[index*32+24 : (index+1)*32]))
 }
 
 // GetInt32 gets a _Solidity int32 from the result at the given index
