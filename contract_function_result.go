@@ -22,6 +22,7 @@ package hedera
 
 import (
 	"encoding/binary"
+	"math/big"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
 	protobuf "google.golang.org/protobuf/proto"
@@ -230,6 +231,36 @@ func (result ContractFunctionResult) GetInt248(index uint64) []byte {
 // GetInt256 gets a _Solidity int256 from the result at the given index
 func (result ContractFunctionResult) GetInt256(index uint64) []byte {
 	return result.ContractCallResult[index*32 : index*32+32]
+}
+
+// TODO: Delete this, it is just for testing
+func toBigIntFromTwos(data []byte) *big.Int {
+	isNegative := data[0]&0x80 == 0x80
+
+	// If the number is positive, just use SetBytes.
+	if !isNegative {
+		c := big.NewInt(0)
+		c.SetBytes(data)
+		return c
+	}
+
+	// If the number is negative, calculate the two's complement.
+	c := big.NewInt(0)
+	c.SetBytes(data)
+
+	c.Sub(c, big.NewInt(1))
+
+	mask := new(big.Int).Exp(big.NewInt(2), big.NewInt(int64(len(data)*8)), nil)
+	mask.Sub(mask, big.NewInt(1))
+	c.Xor(c, mask)
+	c.Neg(c)
+
+	return c
+}
+
+// TODO: Delete this, it is just for testing
+func (result ContractFunctionResult) GetInt256BigInt(index uint64) *big.Int {
+	return toBigIntFromTwos(result.ContractCallResult[index*32 : index*32+32])
 }
 
 // GetUint8 gets a _Solidity uint8 from the result at the given index

@@ -227,6 +227,13 @@ func intType(t *testing.T, env IntegrationTestEnv, intType string, value string)
 		SetContractID(contractID).
 		SetFunction(data.fnName, data.fnAdd(NewContractFunctionParameters(), toTwosComplementFromBigInt(valueBigInt))).
 		Execute(env.Client)
+	// Due to parallel execution of tests, sometimes the query expires. There is nothing we can do about it.	
+	if err != nil {
+		contractCall, err = NewContractCallQuery().SetGas(15000000).
+			SetContractID(contractID).
+			SetFunction(data.fnName, data.fnAdd(NewContractFunctionParameters(), toTwosComplementFromBigInt(valueBigInt))).
+			Execute(env.Client)
+	}
 	require.NoError(t, err)
 	resultBigInt := new(big.Int)
 	if strings.Contains(intType, "uint") {
@@ -261,7 +268,7 @@ func toBigIntFromTwosComplement(data []byte) *big.Int {
 
 	return c
 }
-func toTwosComplementFromBigInt(value *big.Int) []byte { 
+func toTwosComplementFromBigInt(value *big.Int) []byte {
 	// First, get the bytes of the absolute value of the number.
 	absBytes := value.Bytes()
 
@@ -1611,6 +1618,22 @@ func TestMultipleTypes(t *testing.T) {
 	require.Equal(t, value, contractCal.GetUint32(0))
 	require.Equal(t, uint64(4294967294), contractCal.GetUint64(1))
 	require.Equal(t, "OK", contractCal.GetString(2))
+	err = CloseIntegrationTestEnv(env, nil)
+	require.NoError(t, err)
+}
+
+// TODO: Delete this, it is just for testing
+func TestBigIntInt256(t *testing.T) {
+	t.Parallel()
+	env := NewIntegrationTestEnv(t)
+	deployContract(env)
+	value, ok := new(big.Int).SetString("123", 10)
+	require.True(t, ok)
+
+	contractCal, err := NewContractCallQuery().SetGas(15000000).
+		SetContractID(contractID).SetFunction("returnInt256", NewContractFunctionParameters().AddInt256BigInt(value)).SetQueryPayment(NewHbar(20)).Execute(env.Client)
+	require.NoError(t, err)
+	require.Equal(t, value, contractCal.GetInt256BigInt(0))
 	err = CloseIntegrationTestEnv(env, nil)
 	require.NoError(t, err)
 }

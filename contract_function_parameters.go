@@ -25,6 +25,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"math/big"
 )
 
 // ContractFunctionParameters is a struct which builds a solidity function call
@@ -864,6 +865,49 @@ func (contract *ContractFunctionParameters) AddUint256(value []byte) *ContractFu
 	argument.value = value
 
 	contract.function.AddUint256()
+	contract.arguments = append(contract.arguments, argument)
+
+	return contract
+}
+
+// TODO: Delete this, it is just for testing
+func toTwosComplement(value *big.Int) []byte {
+	// First, get the bytes of the absolute value of the number.
+	absBytes := value.Bytes()
+
+	// If the number is positive or zero, pad the bytes with zeros.
+	if value.Sign() >= 0 {
+		result := make([]byte, 32-len(absBytes))
+		return append(result, absBytes...)
+	}
+
+	// If the number is negative, we need to calculate the two's complement.
+	result := make([]byte, 32)
+	for i := range result {
+		result[i] = 0xff
+	}
+
+	for i, b := range absBytes {
+		result[len(result)-len(absBytes)+i] -= b
+	}
+
+	for i := len(result) - 1; i >= 0; i-- {
+		result[i]++
+		if result[i] != 0 {
+			break
+		}
+	}
+
+	return result
+}
+
+// TODO: Delete this, it is just for testing
+func (contract *ContractFunctionParameters) AddInt256BigInt(value *big.Int) *ContractFunctionParameters {
+	argument := _NewArgument()
+
+	argument.value = toTwosComplement(value)
+
+	contract.function.AddInt256()
 	contract.arguments = append(contract.arguments, argument)
 
 	return contract
