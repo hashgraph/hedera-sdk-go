@@ -233,8 +233,7 @@ func (result ContractFunctionResult) GetInt256(index uint64) []byte {
 	return result.ContractCallResult[index*32 : index*32+32]
 }
 
-// TODO: Delete this, it is just for testing
-func toBigIntFromTwos(data []byte) *big.Int {
+func toBigIntFromTwosComplement(data []byte) *big.Int {
 	isNegative := data[0]&0x80 == 0x80
 
 	// If the number is positive, just use SetBytes.
@@ -258,9 +257,9 @@ func toBigIntFromTwos(data []byte) *big.Int {
 	return c
 }
 
-// TODO: Delete this, it is just for testing
-func (result ContractFunctionResult) GetInt256BigInt(index uint64) *big.Int {
-	return toBigIntFromTwos(result.ContractCallResult[index*32 : index*32+32])
+// GetBigInt gets an _Solidity integer from the result at the given index and returns it as a big.Int
+func (result ContractFunctionResult) GetBigInt(index uint64) *big.Int {
+	return toBigIntFromTwosComplement(result.ContractCallResult[index*32 : index*32+32])
 }
 
 // GetUint8 gets a _Solidity uint8 from the result at the given index
