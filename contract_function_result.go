@@ -22,8 +22,11 @@ package hedera
 
 import (
 	"encoding/binary"
+	"fmt"
 	"math/big"
+	"strings"
 
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/hashgraph/hedera-protobufs-go/services"
 	protobuf "google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/wrapperspb"
@@ -442,6 +445,19 @@ func (result ContractFunctionResult) GetBytes(index uint64) []byte {
 // AsBytes returns the raw bytes of the ContractCallResult
 func (result ContractFunctionResult) AsBytes() []byte {
 	return result.ContractCallResult
+}
+
+func (result ContractFunctionResult) GetResult(types string) (interface{}, error) {
+	def := fmt.Sprintf(`[{ "name" : "method", "type": "function", "outputs": [{ "type": "%s" }]}]`, types)
+	abi, err := abi.JSON(strings.NewReader(def))
+	if err != nil {
+		return nil, err
+	}
+	parsedResult, err := abi.Unpack("method", result.ContractCallResult)
+	if err != nil {
+		return nil, err
+	}
+	return parsedResult, nil
 }
 
 func _ContractFunctionResultFromProtobuf(pb *services.ContractFunctionResult) ContractFunctionResult {

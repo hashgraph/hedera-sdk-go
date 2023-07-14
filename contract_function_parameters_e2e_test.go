@@ -6,10 +6,12 @@ package hedera
 import (
 	"encoding/hex"
 	"math/big"
+	"reflect"
 	"strings"
 	"sync"
 	"testing"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/require"
 )
 
@@ -1627,6 +1629,8 @@ func TestString(t *testing.T) {
 	result, err := contractCal.Execute(env.Client)
 	require.NoError(t, err)
 	require.Equal(t, value, result.GetString(0))
+	err = CloseIntegrationTestEnv(env, nil)
+	require.NoError(t, err)
 }
 
 func TestStringArray(t *testing.T) {
@@ -1639,8 +1643,12 @@ func TestStringArray(t *testing.T) {
 		SetContractID(contractID).SetFunction("returnStringArr", NewContractFunctionParameters().AddStringArray(value)).SetQueryPayment(NewHbar(20))
 	result, err := contractCal.Execute(env.Client)
 	require.NoError(t, err)
-	require.Equal(t, value[0], result.GetString(0))
-	require.Equal(t, value[1], result.GetString(1))
+	parsedResult, _ := result.GetResult("string[]")
+	strArr := parsedResult.([]interface{})[0].([]string)
+	require.Equal(t, value[0], strArr[0])
+	require.Equal(t, value[1], strArr[1])
+	err = CloseIntegrationTestEnv(env, nil)
+	require.NoError(t, err)
 }
 func TestAddress(t *testing.T) {
 	t.Parallel()
@@ -1654,6 +1662,8 @@ func TestAddress(t *testing.T) {
 	result, err := contractCal.Execute(env.Client)
 	require.NoError(t, err)
 	require.Equal(t, value, hex.EncodeToString(result.GetAddress(0)))
+	err = CloseIntegrationTestEnv(env, nil)
+	require.NoError(t, err)
 }
 
 func TestAddressArray(t *testing.T) {
@@ -1667,8 +1677,13 @@ func TestAddressArray(t *testing.T) {
 		SetContractID(contractID).SetFunction("returnAddressArr", params).SetQueryPayment(NewHbar(20))
 	result, err := contractCal.Execute(env.Client)
 	require.NoError(t, err)
-	require.Equal(t, value[0], hex.EncodeToString(result.GetAddress(1)))
-	require.Equal(t, value[1], hex.EncodeToString(result.GetAddress(1)))
+	addArr, err := result.GetResult("address[]")
+	require.NoError(t, err)
+	addresses := addArr.([]interface{})[0].([]common.Address)
+	require.Equal(t, value[0], strings.TrimPrefix(addresses[0].String(), "0x"))
+	require.Equal(t, value[1], strings.TrimPrefix(addresses[1].String(), "0x"))
+	err = CloseIntegrationTestEnv(env, nil)
+	require.NoError(t, err)
 }
 
 func TestBoolean(t *testing.T) {
@@ -1682,6 +1697,8 @@ func TestBoolean(t *testing.T) {
 	result, err := contractCal.Execute(env.Client)
 	require.NoError(t, err)
 	require.Equal(t, value, result.GetBool(0))
+	err = CloseIntegrationTestEnv(env, nil)
+	require.NoError(t, err)
 }
 
 func TestBytes(t *testing.T) {
@@ -1695,6 +1712,8 @@ func TestBytes(t *testing.T) {
 	result, err := contractCal.Execute(env.Client)
 	require.NoError(t, err)
 	require.Equal(t, value, result.GetBytes(0))
+	err = CloseIntegrationTestEnv(env, nil)
+	require.NoError(t, err)
 }
 
 func TestBytesArray(t *testing.T) {
@@ -1707,9 +1726,14 @@ func TestBytesArray(t *testing.T) {
 		SetContractID(contractID).SetFunction("returnBytesArr", NewContractFunctionParameters().AddBytesArray(value)).SetQueryPayment(NewHbar(20))
 	result, err := contractCal.Execute(env.Client)
 	require.NoError(t, err)
-	require.Equal(t, value[0], result.GetBytes(0))
-	require.Equal(t, value[1], result.GetBytes(1))
+	bytesArrInterface, err := result.GetResult("bytes[]")
+	require.NoError(t, err)
+	require.Equal(t, value, bytesArrInterface.([]interface{})[0])
+
+	err = CloseIntegrationTestEnv(env, nil)
+	require.NoError(t, err)
 }
+
 func TestBytes32(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
@@ -1721,19 +1745,35 @@ func TestBytes32(t *testing.T) {
 		SetContractID(contractID).SetFunction("returnBytes32", NewContractFunctionParameters().AddBytes32(value)).SetQueryPayment(NewHbar(20))
 	result, err := contractCal.Execute(env.Client)
 	require.NoError(t, err)
-	require.Equal(t, value, result.GetBytes(0))
+	require.True(t, reflect.DeepEqual(value[:], result.GetBytes32(0)))
+	err = CloseIntegrationTestEnv(env, nil)
+	require.NoError(t, err)
 }
 
 func TestBytes32Array(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 	deployContract(env)
-	value := [][]byte{[]byte("Test1"), []byte("Test2")}
+
+	value := [][]byte{
+		[]byte("Test1"),
+		[]byte("Test2"),
+	}
+
+	expected := [][32]byte{
+		{},
+		{},
+	}
+	copy(expected[0][:], value[0])
+	copy(expected[1][:], value[1])
 
 	contractCal := NewContractCallQuery().SetGas(15000000).
-		SetContractID(contractID).SetFunction("returnBytes32Arr", NewContractFunctionParameters().AddBytesArray(value)).SetQueryPayment(NewHbar(20))
+		SetContractID(contractID).SetFunction("returnBytes32Arr", NewContractFunctionParameters().AddBytes32Array(value)).SetQueryPayment(NewHbar(20))
 	result, err := contractCal.Execute(env.Client)
 	require.NoError(t, err)
-	require.Equal(t, value[0], result.GetBytes(0))
-	require.Equal(t, value[1], result.GetBytes(1))
+	bytes32ArrInterface, err := result.GetResult("bytes32[]")
+	require.NoError(t, err)
+	require.Equal(t, expected, bytes32ArrInterface.([]interface{})[0])
+	err = CloseIntegrationTestEnv(env, nil)
+	require.NoError(t, err)
 }

@@ -1766,13 +1766,19 @@ func (contract *ContractFunctionParameters) AddBytesArray(value [][]byte) *Contr
 func (contract *ContractFunctionParameters) AddBytes32Array(value [][]byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 	argument.dynamic = true
+	// Each item is 32 bytes. The total size should be len(value) * 32
+	result := make([]byte, len(value)*32+32)
 
-	result := make([]byte, len(value)+32)
-
+	// Write the length of the array into the first 32 bytes
 	binary.BigEndian.PutUint64(result[24:32], uint64(len(value)))
 
 	for i, v := range value {
-		copy(result[i*32+32:i*32+32+32], v[0:32])
+		// Ensure that each byte slice is 32 bytes long.
+		var b [32]byte
+		copy(b[:], v)
+
+		// Then copy into the result
+		copy(result[i*32+32:(i+1)*32+32], b[:])
 	}
 
 	argument.value = result
