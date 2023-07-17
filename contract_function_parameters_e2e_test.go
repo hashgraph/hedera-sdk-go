@@ -226,6 +226,7 @@ func intType(t *testing.T, env IntegrationTestEnv, intType string, value string)
 
 	valueBigInt, ok := new(big.Int).SetString(value, 10)
 	require.True(t, ok)
+	valueBigIntCopy := new(big.Int).Set(valueBigInt)
 
 	contractCall, err := NewContractCallQuery().SetGas(15000000).
 		SetContractID(contractID).
@@ -247,7 +248,7 @@ func intType(t *testing.T, env IntegrationTestEnv, intType string, value string)
 		resultBigInt = math.S256(value)
 	}
 
-	require.Equal(t, valueBigInt.String(), resultBigInt.String())
+	require.Equal(t, valueBigIntCopy.String(), resultBigInt.String())
 }
 
 func deployContract(env IntegrationTestEnv) (*ContractID, error) {
