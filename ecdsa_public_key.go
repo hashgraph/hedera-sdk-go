@@ -24,23 +24,31 @@ import (
 	"bytes"
 	"crypto/ecdsa"
 	"crypto/elliptic"
+	"encoding/asn1"
 	"encoding/hex"
+	"math/big"
 	"strings"
 
+	"github.com/btcsuite/btcd/btcec/v2"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/hashgraph/hedera-protobufs-go/services"
+	"github.com/pkg/errors"
 )
 
 type _ECDSAPublicKey struct {
 	*ecdsa.PublicKey
 }
 
+const _LegacyECDSAPubKeyPrefix = "302d300706052b8104000a032200"
+
 func _ECDSAPublicKeyFromBytes(byt []byte) (*_ECDSAPublicKey, error) {
 	length := len(byt)
 	switch length {
 	case 33:
 		return _ECDSAPublicKeyFromBytesRaw(byt)
-	case 49:
+	case 47:
+		return _LegacyECDSAPublicKeyFromBytesDer(byt)
+	case 56:
 		return _ECDSAPublicKeyFromBytesDer(byt)
 	default:
 		return &_ECDSAPublicKey{}, _NewErrBadKeyf("invalid compressed ECDSA public key length: %v bytes", len(byt))
@@ -65,13 +73,13 @@ func _ECDSAPublicKeyFromBytesRaw(byt []byte) (*_ECDSAPublicKey, error) {
 	}, nil
 }
 
-func _ECDSAPublicKeyFromBytesDer(byt []byte) (*_ECDSAPublicKey, error) {
+func _LegacyECDSAPublicKeyFromBytesDer(byt []byte) (*_ECDSAPublicKey, error) {
 	if byt == nil {
 		return &_ECDSAPublicKey{}, errByteArrayNull
 	}
 
 	given := hex.EncodeToString(byt)
-	result := strings.ReplaceAll(given, _ECDSAPubKeyPrefix, "")
+	result := strings.ReplaceAll(given, _LegacyECDSAPubKeyPrefix, "")
 	decoded, err := hex.DecodeString(result)
 	if err != nil {
 		return &_ECDSAPublicKey{}, err
@@ -90,6 +98,74 @@ func _ECDSAPublicKeyFromBytesDer(byt []byte) (*_ECDSAPublicKey, error) {
 		key,
 	}, nil
 }
+func _ECDSAPublicKeyFromBytesDer(byt []byte) (*_ECDSAPublicKey, error) {
+	if byt == nil {
+		return &_ECDSAPublicKey{}, errByteArrayNull
+	}
+
+	type AlgorithmIdentifier struct {
+		Algorithm  asn1.ObjectIdentifier
+		Parameters asn1.ObjectIdentifier
+	}
+
+	type PublicKeyInfo struct {
+		AlgorithmIdentifier AlgorithmIdentifier
+		PublicKey           asn1.BitString
+	}
+
+	key := &PublicKeyInfo{}
+	_, err := asn1.Unmarshal(byt, key)
+	if err != nil {
+		return nil, err
+	}
+
+	// Check if the parsed key uses ECDSA public key algorithm
+	ecdsaPublicKeyAlgorithmOID := asn1.ObjectIdentifier{1, 2, 840, 10045, 2, 1}
+	if !key.AlgorithmIdentifier.Algorithm.Equal(ecdsaPublicKeyAlgorithmOID) {
+		return nil, errors.New("public key is not an ECDSA public key")
+	}
+
+	// Check if the parsed key uses secp256k1 curve
+	secp256k1OID := asn1.ObjectIdentifier{1, 3, 132, 0, 10}
+	if !key.AlgorithmIdentifier.Parameters.Equal(secp256k1OID) {
+		return nil, errors.New("public key is not a secp256k1 public key")
+	}
+
+	// Check if the public key is compressed and decompress it if necessary
+	var pubKeyBytes []byte
+	if key.PublicKey.Bytes[0] == 0x02 || key.PublicKey.Bytes[0] == 0x03 {
+		// Decompress the public key
+		pubKey, err := btcec.ParsePubKey(key.PublicKey.Bytes)
+		if err != nil {
+			return nil, err
+		}
+		pubKeyBytes = pubKey.SerializeUncompressed()
+	} else {
+		pubKeyBytes = key.PublicKey.Bytes
+	}
+
+	if len(pubKeyBytes) != 65 {
+		return nil, errors.New("invalid public key length")
+	}
+
+	x := new(big.Int).SetBytes(pubKeyBytes[1:33])
+	y := new(big.Int).SetBytes(pubKeyBytes[33:])
+
+	pubKey := &ecdsa.PublicKey{
+		Curve: btcec.S256(),
+		X:     x,
+		Y:     y,
+	}
+
+	// Validate the public key
+	if !pubKey.Curve.IsOnCurve(pubKey.X, pubKey.Y) {
+		return nil, errors.New("public key is not on the curve")
+	}
+
+	return &_ECDSAPublicKey{
+		PublicKey: pubKey,
+	}, nil
+}
 
 func _ECDSAPublicKeyFromString(s string) (*_ECDSAPublicKey, error) {
 	byt, err := hex.DecodeString(s)
@@ -105,8 +181,37 @@ func (pk _ECDSAPublicKey) _BytesRaw() []byte {
 }
 
 func (pk _ECDSAPublicKey) _BytesDer() []byte {
-	decoded, _ := hex.DecodeString(_ECDSAPubKeyPrefix)
-	return append(decoded, pk._BytesRaw()...)
+	// Marshal the public key
+	publicKeyBytes := pk._BytesRaw()
+
+	// Define the public key structure
+	publicKeyInfo := struct {
+		Algorithm struct {
+			Algorithm  asn1.ObjectIdentifier
+			Parameters asn1.ObjectIdentifier
+		}
+		PublicKey asn1.BitString
+	}{
+		Algorithm: struct {
+			Algorithm  asn1.ObjectIdentifier
+			Parameters asn1.ObjectIdentifier
+		}{
+			Algorithm:  asn1.ObjectIdentifier{1, 2, 840, 10045, 2, 1}, // id-ecPublicKey
+			Parameters: asn1.ObjectIdentifier{1, 3, 132, 0, 10},       // secp256k1
+		},
+		PublicKey: asn1.BitString{
+			Bytes:     publicKeyBytes,
+			BitLength: 8 * len(publicKeyBytes),
+		},
+	}
+
+	// Marshal the public key info into DER format
+	derBytes, err := asn1.Marshal(publicKeyInfo)
+	if err != nil {
+		return nil
+	}
+
+	return derBytes
 }
 
 func (pk _ECDSAPublicKey) _StringRaw() string {

@@ -27,7 +27,6 @@ import (
 	"encoding/hex"
 	"io"
 	"math/big"
-	"strings"
 
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -35,11 +34,7 @@ import (
 	"golang.org/x/crypto/pbkdf2"
 )
 
-const ed25519PrivateKeyPrefix = "302e020100300506032b657004220420"
-const ed25519PubKeyPrefix = "302a300506032b6570032100"
-
-const _ECDSAPrivateKeyPrefix = "3030020100300706052b8104000a04220420"
-const _ECDSAPubKeyPrefix = "302f300706052b8104000a0324000421"
+const _Ed25519PrivateKeyPrefix = "302e020100300506032b657004220420"
 
 type Key interface {
 	_ToProtoKey() *services.Key
@@ -270,27 +265,17 @@ func PrivateKeyFromString(s string) (PrivateKey, error) {
 
 // PrivateKeyFromStringDer Creates PrivateKey from hex string with a der prefix
 func PrivateKeyFromStringDer(s string) (PrivateKey, error) {
-	if strings.Contains(s, _ECDSAPrivateKeyPrefix) {
-		key, err := _ECDSAPrivateKeyFromString(s)
-		if err != nil {
-			return PrivateKey{}, err
-		}
-
-		return PrivateKey{
-			ecdsaPrivateKey: key,
-		}, nil
-	} else if strings.Contains(s, ed25519PrivateKeyPrefix) {
-		key, err := _Ed25519PrivateKeyFromString(s)
-		if err != nil {
-			return PrivateKey{}, err
-		}
-
-		return PrivateKey{
-			ed25519PrivateKey: key,
-		}, nil
+	KeyEd25519, err := _Ed25519PrivateKeyFromString(s)
+	if err == nil {
+		return PrivateKey{ed25519PrivateKey: KeyEd25519}, nil
 	}
 
-	return PrivateKey{}, nil
+	keyECDSA, err := _ECDSAPrivateKeyFromString(s)
+	if err == nil {
+		return PrivateKey{ecdsaPrivateKey: keyECDSA}, nil
+	}
+
+	return PrivateKey{}, errors.New("invalid private key format")
 }
 
 func PrivateKeyFromStringEd25519(s string) (PrivateKey, error) {
@@ -368,7 +353,13 @@ func PrivateKeyReadKeystore(source io.Reader, passphrase string) (PrivateKey, er
 func PrivateKeyFromPem(bytes []byte, passphrase string) (PrivateKey, error) {
 	key, err := _Ed25519PrivateKeyFromPem(bytes, passphrase)
 	if err != nil {
-		return PrivateKey{}, err
+		key, err := _ECDSAPrivateKeyFromPem(bytes, passphrase)
+		if err != nil {
+			return PrivateKey{}, err
+		}
+		return PrivateKey{
+			ecdsaPrivateKey: key,
+		}, nil
 	}
 
 	return PrivateKey{
@@ -382,7 +373,13 @@ func PrivateKeyReadPem(source io.Reader, passphrase string) (PrivateKey, error) 
 
 	key, err := _Ed25519PrivateKeyReadPem(source, passphrase)
 	if err != nil {
-		return PrivateKey{}, err
+		key, err := _ECDSAPrivateKeyReadPem(source, passphrase)
+		if err != nil {
+			return PrivateKey{}, err
+		}
+		return PrivateKey{
+			ecdsaPrivateKey: key,
+		}, nil
 	}
 
 	return PrivateKey{

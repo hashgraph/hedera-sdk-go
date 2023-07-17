@@ -25,8 +25,12 @@ import (
 	"crypto/hmac"
 	"crypto/rand"
 	"crypto/sha512"
+	"crypto/x509"
+	"encoding/asn1"
 	"encoding/hex"
+	"encoding/pem"
 	"fmt"
+	"io"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/crypto"
@@ -39,6 +43,8 @@ type _ECDSAPrivateKey struct {
 	keyData   *ecdsa.PrivateKey
 	chainCode []byte
 }
+
+const _LegacyECDSAPrivateKeyPrefix = "3030020100300706052b8104000a04220420"
 
 func _GenerateECDSAPrivateKey() (*_ECDSAPrivateKey, error) {
 	key, err := ecdsa.GenerateKey(crypto.S256(), rand.Reader)
@@ -53,10 +59,10 @@ func _GenerateECDSAPrivateKey() (*_ECDSAPrivateKey, error) {
 
 func _ECDSAPrivateKeyFromBytes(byt []byte) (*_ECDSAPrivateKey, error) {
 	length := len(byt)
-	switch length {
-	case 32:
+	switch {
+	case length == 32:
 		return _ECDSAPrivateKeyFromBytesRaw(byt)
-	case 50:
+	case length > 32:
 		return _ECDSAPrivateKeyFromBytesDer(byt)
 	default:
 		return &_ECDSAPrivateKey{}, _NewErrBadKeyf("invalid private key length: %v bytes", len(byt))
@@ -79,10 +85,10 @@ func _ECDSAPrivateKeyFromBytesRaw(byt []byte) (*_ECDSAPrivateKey, error) {
 	}, nil
 }
 
-func _ECDSAPrivateKeyFromBytesDer(byt []byte) (*_ECDSAPrivateKey, error) {
+func _LegacyECDSAPrivateKeyFromBytesDer(byt []byte) (*_ECDSAPrivateKey, error) {
 	given := hex.EncodeToString(byt)
 
-	result := strings.ReplaceAll(given, _ECDSAPrivateKeyPrefix, "")
+	result := strings.ReplaceAll(given, _LegacyECDSAPrivateKeyPrefix, "")
 	decoded, err := hex.DecodeString(result)
 	if err != nil {
 		return &_ECDSAPrivateKey{}, err
@@ -100,6 +106,31 @@ func _ECDSAPrivateKeyFromBytesDer(byt []byte) (*_ECDSAPrivateKey, error) {
 	return &_ECDSAPrivateKey{
 		keyData: key,
 	}, nil
+}
+
+func _ECDSAPrivateKeyFromBytesDer(data []byte) (*_ECDSAPrivateKey, error) {
+	given := hex.EncodeToString(data)
+	if strings.HasPrefix(given, _LegacyECDSAPrivateKeyPrefix) {
+		return _LegacyECDSAPrivateKeyFromBytesDer(data)
+	}
+
+	type ECPrivateKey struct {
+		Version       int
+		PrivateKey    []byte
+		NamedCurveOID asn1.ObjectIdentifier `asn1:"optional,explicit,tag:0"`
+		PublicKey     asn1.BitString        `asn1:"optional,explicit,tag:1"`
+	}
+	var ecKey ECPrivateKey
+	if rest, err := asn1.Unmarshal(data, &ecKey); err != nil {
+		return nil, err
+	} else if len(rest) != 0 {
+		return nil, errors.New("x509: trailing data after ASN.1 of public-key")
+	}
+	key, err := crypto.ToECDSA(ecKey.PrivateKey)
+	if err != nil {
+		return nil, err
+	}
+	return &_ECDSAPrivateKey{keyData: key}, nil
 }
 
 func _ECDSAPrivateKeyFromSeed(seed []byte) (*_ECDSAPrivateKey, error) {
@@ -157,6 +188,40 @@ func (sk *_ECDSAPrivateKey) _PublicKey() *_ECDSAPublicKey {
 	}
 }
 
+func _ECDSAPrivateKeyFromPem(bytes []byte, passphrase string) (*_ECDSAPrivateKey, error) {
+	block, _ := pem.Decode(bytes)
+	if block == nil {
+		return nil, fmt.Errorf("failed to decode PEM block containing private key")
+	}
+
+	if block.Type != "EC PRIVATE KEY" {
+		return nil, fmt.Errorf("unsupported PEM block type: %s", block.Type)
+	}
+	//nolint
+	if x509.IsEncryptedPEMBlock(block) {
+		der, err := x509.DecryptPEMBlock(block, []byte(passphrase))
+		if err != nil {
+			return nil, err
+		}
+		block.Bytes = der
+	}
+
+	key, err := _ECDSAPrivateKeyFromBytes(block.Bytes)
+	if err != nil {
+		return nil, err
+	}
+	return key, nil
+}
+
+func _ECDSAPrivateKeyReadPem(source io.Reader, passphrase string) (*_ECDSAPrivateKey, error) {
+	pemFileBytes, err := io.ReadAll(source)
+	if err != nil {
+		return &_ECDSAPrivateKey{}, err
+	}
+
+	return _ECDSAPrivateKeyFromPem(pemFileBytes, passphrase)
+}
+
 func (sk _ECDSAPrivateKey) _Sign(message []byte) []byte {
 	hash := crypto.Keccak256Hash(message)
 	sig, err := crypto.Sign(hash.Bytes(), sk.keyData)
@@ -207,8 +272,28 @@ func (sk _ECDSAPrivateKey) _BytesRaw() []byte {
 }
 
 func (sk _ECDSAPrivateKey) _BytesDer() []byte {
-	prefix, _ := hex.DecodeString(_ECDSAPrivateKeyPrefix)
-	return append(prefix, sk._BytesRaw()...)
+	type ECPrivateKey struct {
+		Version       int
+		PrivateKey    []byte
+		NamedCurveOID asn1.ObjectIdentifier `asn1:"optional,explicit,tag:0"`
+		PublicKey     asn1.BitString        `asn1:"optional,explicit,tag:1"`
+	}
+
+	secp256k1OID := asn1.ObjectIdentifier{1, 3, 132, 0, 10}
+
+	ecPrivateKey := ECPrivateKey{
+		Version:       1, // EC private keys have a version of 1
+		PrivateKey:    sk._BytesRaw(),
+		NamedCurveOID: secp256k1OID,
+		PublicKey:     asn1.BitString{Bytes: sk._PublicKey()._BytesRaw()},
+	}
+
+	derBytes, err := asn1.Marshal(ecPrivateKey)
+	if err != nil {
+		return nil
+	}
+
+	return derBytes
 }
 
 func (sk _ECDSAPrivateKey) _StringDer() string {

@@ -27,6 +27,7 @@ import (
 	"bytes"
 	"crypto/ed25519"
 	"encoding/hex"
+	"fmt"
 	"strings"
 	"testing"
 
@@ -34,6 +35,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+const _Ed25519PubKeyPrefix = "302a300506032b6570032100"
+const _ECDSAPubKeyPrefix = "3036301006072a8648ce3d020106052b8104000a0322000"
+const _ECDSAPrivatePrefix = "30540201010420"
 
 const testPrivateKeyStr = "302e020100300506032b657004220420db484b828e64b2d8f12ce3c0a0e93a0b8cce7af1bb8f39c97732394482538e10"
 
@@ -77,7 +82,6 @@ R88hIXcWDOECttPTNlMXWJt7Wufm1YwBibrxmCq1QykIyTYhy1TZMyxyPxlYW6aV
 9hlo4YEh3uEaCmfJzWM=
 -----END ENCRYPTED PRIVATE KEY-----
 `
-
 const pemPassphrase = "this is a passphrase"
 
 func TestUnitPrivateKeyGenerate(t *testing.T) {
@@ -86,7 +90,25 @@ func TestUnitPrivateKeyGenerate(t *testing.T) {
 	key, err := GeneratePrivateKey()
 
 	require.NoError(t, err)
-	assert.True(t, strings.HasPrefix(key.String(), ed25519PrivateKeyPrefix))
+	assert.True(t, strings.HasPrefix(key.String(), _Ed25519PrivateKeyPrefix))
+}
+
+func TestUnitPrivateEd25519KeyGenerate(t *testing.T) {
+	t.Parallel()
+	
+	key, err := PrivateKeyGenerateEd25519()
+
+	require.NoError(t, err)
+	assert.True(t, strings.HasPrefix(key.String(), _Ed25519PrivateKeyPrefix))
+}
+
+func TestUnitPrivateECDSAKeyGenerate(t *testing.T) {
+	t.Parallel()
+	
+	key, err := PrivateKeyGenerateEcdsa()
+
+	require.NoError(t, err)
+	assert.True(t, strings.HasPrefix(key.String(), _ECDSAPrivatePrefix))
 }
 
 func TestUnitPrivateKeyExternalSerialization(t *testing.T) {
@@ -359,6 +381,59 @@ func TestUnitPrivateKeyFromPemWithPassphrase(t *testing.T) {
 	assert.Equal(t, actualPrivateKey, privateKey)
 }
 
+func TestUnitECDSAPrivateKeyFromUnencryptedUncompressedPEM(t *testing.T) {
+	unencryptedUncompressed := "-----BEGIN EC PRIVATE KEY-----\n" +
+		"MHQCAQEEIG8I+jKi+iGVa7ttbfnlnML5AdvPugbgBWnseYjrle6qoAcGBSuBBAAK\n" +
+		"oUQDQgAEqf5BmMeBzkU1Ra9UAbZJo3tytVOlb7erTc36LRLP20mOLU7+mFY+3Cfe\n" +
+		"fAZgBtPXRAmDtRvYGODswAalW85GKA==\n" +
+		"-----END EC PRIVATE KEY-----"
+
+	privateKey, err := PrivateKeyFromPem([]byte(unencryptedUncompressed), "")
+	require.NoError(t, err)
+
+	assert.Equal(t, "6f08fa32a2fa21956bbb6d6df9e59cc2f901dbcfba06e00569ec7988eb95eeaa", privateKey.StringRaw())
+}
+func TestUnitECDSAPrivateKeyFromUnencryptedCompressedPEM(t *testing.T) {
+	unencryptedCompressed := "-----BEGIN EC PRIVATE KEY-----\n" +
+		"MFQCAQEEIOHyhclwHbha3f281Kvd884rhBzltxGJxCZyaQCagH9joAcGBSuBBAAK\n" +
+		"oSQDIgACREr6gFZa4K7hBP+bA25VdgQ+0ABFgM+g5RYw/W6T1Og=\n" +
+		"-----END EC PRIVATE KEY-----"
+
+	privateKey, err := PrivateKeyFromPem([]byte(unencryptedCompressed), "")
+	require.NoError(t, err)
+
+	assert.Equal(t, "e1f285c9701db85addfdbcd4abddf3ce2b841ce5b71189c4267269009a807f63", privateKey.StringRaw())
+}
+func TestUnitECDSAPrivateKeyFromEncryptedUncompressedPEM(t *testing.T) {
+	encryptedUncompressed := "-----BEGIN EC PRIVATE KEY-----\n" +
+		"Proc-Type: 4,ENCRYPTED\n" +
+		"DEK-Info: AES-128-CBC,0046A9EED8D16F0CAA66A197CE8BE8BD\n" +
+		"\n" +
+		"9VU9gReUmrn4XywjMx0F0A3oGzpHIksEXma72TCSdcxI7zHy0mtzuGq4Wd25O38s\n" +
+		"H9c6kvhTPS1N/c6iNhx154B0HUoND8jvAvfxbGR/R87vpZJsOoKCmRxGqrxG8HER\n" +
+		"FIHQ1jy16DrAbU95kDyLsiF1dy2vUY/HoqFZwxl/IVc=\n" +
+		"-----END EC PRIVATE KEY-----"
+
+	privateKey, err := PrivateKeyFromPem([]byte(encryptedUncompressed), "asdasd123")
+	require.NoError(t, err)
+
+	assert.Equal(t, "cf49eb5206c1b0468854d6ea7b370590619625514f71ff93608a18465e4012ad", privateKey.StringRaw())
+}
+func TestUnitECDSAPrivateKeyFromEncryptedCompressedPEM(t *testing.T) {
+	encryptedCompressed := "-----BEGIN EC PRIVATE KEY-----\n" +
+		"Proc-Type: 4,ENCRYPTED\n" +
+		"DEK-Info: AES-128-CBC,4A9B3B987EC2EFFA405818327D14FFF7\n" +
+		"\n" +
+		"Wh756RkK5fn1Ke2denR1OYfqE9Kr4BXhgrEMTU/6o0SNhMULUhWGHrCWvmNeEQwp\n" +
+		"ZVZYUxgYoTlJBeREzKAZithcvxIcTbQfLABo1NZbjA6YKqAqlGpM6owwL/f9e2ST\n" +
+		"-----END EC PRIVATE KEY-----"
+
+	privateKey, err := PrivateKeyFromPem([]byte(encryptedCompressed), "asdasd123")
+	require.NoError(t, err)
+
+	assert.Equal(t, "c0d3e16ba5a1abbeac4cd327a3c3c1cc10438431d0bac019054e573e67768bb5", privateKey.StringRaw())
+}
+
 func TestUnitPrivateKeyECDSASign(t *testing.T) {
 	t.Parallel()
 
@@ -384,6 +459,74 @@ func DisabledTestUnitPrivateKeyECDSASign(t *testing.T) {
 	require.True(t, key.PublicKey().Verify(message, sig))
 }
 
+func TestUnitPrivateKeyEd25519FromString(t *testing.T) {
+	t.Parallel()
+	
+	key, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+	key2, err := PrivateKeyFromString(key.String())
+	require.NoError(t, err)
+
+	require.Equal(t, key2.String(), key.String())
+}
+
+func TestUnitPrivateKeyEd25519FromStringRaw(t *testing.T) {
+	t.Parallel()
+	
+	key, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+	key2, err := PrivateKeyFromStringEd25519(key.StringRaw())
+	require.NoError(t, err)
+
+	require.Equal(t, key2.String(), key.String())
+}
+
+func TestUnitPrivateKeyEd25519FromStringDer(t *testing.T) {
+	t.Parallel()
+	
+	key, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+	key2, err := PrivateKeyFromStringEd25519(key.StringDer())
+	require.NoError(t, err)
+
+	require.Equal(t, key2.StringDer(), key.StringDer())
+}
+
+func TestUnitPublicKeyEd25519FromString(t *testing.T) {
+	t.Parallel()
+	
+	key, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+	publicKey := key.PublicKey()
+	publicKey2, err := PublicKeyFromStringEd25519(publicKey.String())
+	require.NoError(t, err)
+	require.Equal(t, publicKey2.String(), publicKey.String())
+}
+
+func TestUnitPublicKeyEd25519FromStringRaw(t *testing.T) {
+	t.Parallel()
+	
+	key, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+	publicKey := key.PublicKey()
+	publicKey2, err := PublicKeyFromStringEd25519(publicKey.StringRaw())
+	require.NoError(t, err)
+
+	require.Equal(t, publicKey2.String(), publicKey.String())
+}
+
+func TestUnitPublicKeyEd25519FromStringDer(t *testing.T) {
+	t.Parallel()
+	
+	key, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+	publicKey := key.PublicKey()
+	publicKey2, err := PublicKeyFromStringEd25519(publicKey.StringDer())
+	require.NoError(t, err)
+
+	require.Equal(t, publicKey2.StringDer(), publicKey.StringDer())
+}
+
 func TestUnitPrivateKeyECDSAFromString(t *testing.T) {
 	t.Parallel()
 
@@ -406,6 +549,40 @@ func TestUnitPrivateKeyECDSAFromStringRaw(t *testing.T) {
 	require.Equal(t, key2.String(), key.String())
 }
 
+func TestUnitPrivateKeyECDSAFromStringDer(t *testing.T) {
+	t.Parallel()
+	
+	key, err := PrivateKeyGenerateEcdsa()
+	require.NoError(t, err)
+	key2, err := PrivateKeyFromStringECDSA(key.StringDer())
+	require.NoError(t, err)
+
+	require.Equal(t, key2.StringDer(), key.StringDer())
+}
+
+func TestUnitPrivateKeyECDSAFromStringLegacyDer(t *testing.T) {
+	key, err := PrivateKeyFromString("3030020100300706052b8104000a04220420c78aa6584228422d2edb027dec01ff374eb0720e32be2da827d51ed0711d4f8c")
+	require.NoError(t, err)
+	key2, err := PrivateKeyFromStringECDSA(key.StringDer())
+	require.NoError(t, err)
+
+	require.Equal(t, key2.StringDer(), key.StringDer())
+}
+
+func TestUnitPrivateKeyECDSAFromStringDerUncompressed(t *testing.T) {
+	key := "3074020101042052DDBE84838D865C18F043489C285C0B62041389569E8A62530" +
+		"56D0FFBEB7F5DA00706052B8104000AA144034200049D7DABF194F47CD5756BCC5231C821" +
+		"B34AFA03046EF7F645A2D026BF38D0332AF958B7840607EE4853DED1D372CF89FF131C788" +
+		"EE22644CF642503DF82EEF652"
+	expectedDerExport := "3054020101042052ddbe84838d865c18f043489c285c0b62041389569e8" +
+		"a6253056d0ffbeb7f5da00706052b8104000aa124032200029d7dabf194f47cd5756bcc5231c821b" +
+		"34afa03046ef7f645a2d026bf38d0332a"
+	key2, err := PrivateKeyFromStringECDSA(key)
+	require.NoError(t, err)
+
+	require.Equal(t, key2.StringDer(), expectedDerExport)
+}
+
 func TestUnitPublicKeyECDSAFromString(t *testing.T) {
 	t.Parallel()
 
@@ -414,7 +591,6 @@ func TestUnitPublicKeyECDSAFromString(t *testing.T) {
 	publicKey := key.PublicKey()
 	publicKey2, err := PublicKeyFromStringECDSA(publicKey.String())
 	require.NoError(t, err)
-
 	require.Equal(t, publicKey2.String(), publicKey.String())
 }
 
@@ -428,6 +604,388 @@ func TestUnitPublicKeyECDSAFromStringRaw(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, publicKey2.String(), publicKey.String())
+}
+
+func TestUnitPublicKeyECDSAFromStringDer(t *testing.T) {
+	t.Parallel()
+	
+	key, err := PrivateKeyGenerateEcdsa()
+	require.NoError(t, err)
+	publicKey := key.PublicKey()
+	publicKey2, err := PublicKeyFromStringECDSA(publicKey.StringDer())
+	require.NoError(t, err)
+
+	require.Equal(t, publicKey2.StringDer(), publicKey.StringDer())
+}
+
+func TestUnitPublicKeyECDSAFromStringLegacyDer(t *testing.T) {
+	publicKey, err := PublicKeyFromStringECDSA("302d300706052b8104000a0322000298c5d6efb814ead640467934b5ef9a02b81d3c483719675cb261cc5fde3edd57")
+	require.NoError(t, err)
+	publicKey2, err := PublicKeyFromStringECDSA(publicKey.StringDer())
+	require.NoError(t, err)
+
+	require.Equal(t, publicKey2.StringDer(), publicKey.StringDer())
+}
+
+func TestUnitPrivateKeyFromBytesDerECDSA(t *testing.T) {
+	t.Parallel()
+	
+	key, err := PrivateKeyGenerateEcdsa()
+	require.NoError(t, err)
+	bytes := key.BytesDer()
+	key2, err := PrivateKeyFromBytesDer(bytes)
+	require.NoError(t, err)
+	require.True(t, strings.HasPrefix(key2.String(), _ECDSAPrivatePrefix))
+}
+
+func TestUnitPrivateKeyFromBytesDerECDSAUncompressed(t *testing.T) {
+	key := "3074020101042052DDBE84838D865C18F043489C285C0B62041389569E8A62530" +
+		"56D0FFBEB7F5DA00706052B8104000AA144034200049D7DABF194F47CD5756BCC5231C821" +
+		"B34AFA03046EF7F645A2D026BF38D0332AF958B7840607EE4853DED1D372CF89FF131C788" +
+		"EE22644CF642503DF82EEF652"
+	bytes, err := hex.DecodeString(key)
+	require.NoError(t, err)
+	key2, err := PrivateKeyFromBytesDer(bytes)
+	require.NoError(t, err)
+	fmt.Printf("key2.String(): %v\n", key2.String())
+	require.True(t, strings.HasPrefix(key2.String(), _ECDSAPrivatePrefix))
+}
+
+func TestUnitPrivateKeyFromBytesDerEd25519(t *testing.T) {
+	t.Parallel()
+	
+	key, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+	bytes := key.BytesDer()
+	key2, err := PrivateKeyFromBytesDer(bytes)
+	require.NoError(t, err)
+	require.True(t, strings.HasPrefix(key2.String(), _Ed25519PrivateKeyPrefix))
+}
+
+func TestUnitPublicKeyFromBytesDerECDSA(t *testing.T) {
+	t.Parallel()
+	
+	key, err := PrivateKeyGenerateEcdsa()
+	require.NoError(t, err)
+	pkey := key.PublicKey()
+	bytes := pkey.BytesDer()
+	pkey2, err := PublicKeyFromBytesDer(bytes)
+	require.NoError(t, err)
+	require.True(t, strings.HasPrefix(pkey2.String(), _ECDSAPubKeyPrefix))
+}
+
+func TestUnitPublicKeyFromBytesDerEd25519(t *testing.T) {
+	t.Parallel()
+	
+	key, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+	pkey := key.PublicKey()
+	bytes := pkey.BytesDer()
+	pkey2, err := PublicKeyFromBytesDer(bytes)
+	require.NoError(t, err)
+	require.True(t, strings.HasPrefix(pkey2.String(), _Ed25519PubKeyPrefix))
+}
+
+func TestUnitPrivateKeyFromStringDerEd25519(t *testing.T) {
+	t.Parallel()
+	
+	key, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+	key2, err := PrivateKeyFromStringDer(key.StringDer())
+	require.NoError(t, err)
+	require.Equal(t, key2.String(), key.String())
+}
+
+func TestUnitPrivateKeyFromStringDerECDSA(t *testing.T) {
+	t.Parallel()
+	
+	key, err := PrivateKeyGenerateEcdsa()
+	require.NoError(t, err)
+	key2, err := PrivateKeyFromStringDer(key.StringDer())
+	require.NoError(t, err)
+	require.Equal(t, key2.String(), key.String())
+}
+
+func TestUnitPrivateKeyECDSAFromBytes(t *testing.T) {
+	t.Parallel()
+	
+	key, err := PrivateKeyGenerateEcdsa()
+	require.NoError(t, err)
+	key2, err := PrivateKeyFromBytes(key.Bytes())
+	require.NoError(t, err)
+	require.Equal(t, key2.String(), key.String())
+}
+
+func TestUnitPrivateKeyEd25519FromBytes(t *testing.T) {
+	t.Parallel()
+	
+	key, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+	key2, err := PrivateKeyFromBytes(key.Bytes())
+	require.NoError(t, err)
+	require.Equal(t, key2.String(), key.String())
+}
+
+func TestUnitPrivateKeyFromBytesECDSA(t *testing.T) {
+	t.Parallel()
+
+	key, err := PrivateKeyGenerateEcdsa()
+	require.NoError(t, err)
+	key2, err := PrivateKeyFromBytesECDSA(key.Bytes())
+	require.NoError(t, err)
+	require.Equal(t, key2.String(), key.String())
+}
+
+func TestUnitPrivateKeyFromBytesEd25519(t *testing.T) {
+	t.Parallel()
+
+	key, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+	key2, err := PrivateKeyFromBytesEd25519(key.Bytes())
+	require.NoError(t, err)
+	require.Equal(t, key2.String(), key.String())
+}
+
+func TestUnitPublicKeyFromBytesECDSA(t *testing.T) {
+	t.Parallel()
+
+	key, err := PrivateKeyGenerateEcdsa()
+	require.NoError(t, err)
+	key2, err := PublicKeyFromBytesECDSA(key.PublicKey().Bytes())
+	require.NoError(t, err)
+	require.Equal(t, key.PublicKey().String(), key2.String())
+}
+
+func TestUnitPublicKeyFromBytesEd25519(t *testing.T) {
+	t.Parallel()
+
+	key, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+	key2, err := PublicKeyFromBytesEd25519(key.PublicKey().Bytes())
+	require.NoError(t, err)
+	require.Equal(t, key.PublicKey().String(), key2.String())
+}
+
+func TestUnitPublicKeyECDSAFromBytes(t *testing.T) {
+	t.Parallel()
+
+	key, err := PrivateKeyGenerateEcdsa()
+	require.NoError(t, err)
+	key2, err := PublicKeyFromBytes(key.PublicKey().Bytes())
+	require.NoError(t, err)
+	require.Equal(t, key.PublicKey().String(), key2.String())
+}
+
+func TestUnitPublicKeyEd25519FromBytes(t *testing.T) {
+	t.Parallel()
+
+	key, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+	key2, err := PublicKeyFromBytes(key.PublicKey().Bytes())
+	require.NoError(t, err)
+	require.Equal(t, key.PublicKey().String(), key2.String())
+}
+
+func TestUnitPrivateKeyBytesRawEd25519(t *testing.T) {
+	t.Parallel()
+
+	key, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+	require.Equal(t, key.ed25519PrivateKey.keyData[0:32], key.BytesRaw())
+}
+
+func TestUnitPrivateKeyBytesRawECDSA(t *testing.T) {
+	t.Parallel()
+
+	key, err := PrivateKeyGenerateEcdsa()
+	require.NoError(t, err)
+	require.Equal(t, key.ecdsaPrivateKey.keyData.D.Bytes(), key.BytesRaw())
+}
+
+func TestUnitPublicKeyBytesRawEd25519(t *testing.T) {
+	t.Parallel()
+
+	key, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+	require.Equal(t, key.PublicKey().ed25519PublicKey.keyData, key.PublicKey().BytesRaw())
+}
+
+func TestUnitPublicKeyBytesRawECDSA(t *testing.T) {
+	t.Parallel()
+
+	key, err := PrivateKeyGenerateEcdsa()
+	require.NoError(t, err)
+	require.Equal(t, crypto.CompressPubkey(&key.ecdsaPrivateKey.keyData.PublicKey), key.PublicKey().BytesRaw())
+}
+
+func TestUnitECDSAPrivateKeyFromBytesInvalidLength(t *testing.T) {
+	invalidPrivateKey := make([]byte, 31)
+	_, err := _ECDSAPrivateKeyFromBytes(invalidPrivateKey)
+	require.Error(t, err)
+	expectedError := fmt.Sprintf("invalid private key length: %v bytes", len(invalidPrivateKey))
+	if err.Error() != expectedError {
+		t.Errorf("expected error message %q, but got %q", expectedError, err.Error())
+	}
+}
+
+func TestUnitECDSAPrivateKeyFromBytesRawInvalidLength(t *testing.T) {
+	invalidPrivateKey := make([]byte, 31)
+	_, err := _ECDSAPrivateKeyFromBytesRaw(invalidPrivateKey)
+	require.Error(t, err)
+	expectedError := fmt.Sprintf("invalid private key length: %v bytes", len(invalidPrivateKey))
+	if err.Error() != expectedError {
+		t.Errorf("expected error message %q, but got %q", expectedError, err.Error())
+	}
+}
+
+func TestUnitECDSAPrivateKeyFromBytesRawInvalidKey(t *testing.T) {
+	invalidPrivateKey := make([]byte, 32)
+	_, err := _ECDSAPrivateKeyFromBytesRaw(invalidPrivateKey)
+	require.Error(t, err)
+	expectedError := "invalid private key, zero or negative"
+	if err.Error() != expectedError {
+		t.Errorf("expected error message %q, but got %q", expectedError, err.Error())
+	}
+}
+
+func TestUnit_ECDSAPrivateKeyFromBytesDerInvalidKey(t *testing.T) {
+	invalidPrivateKey := make([]byte, 32)
+	_, err := _ECDSAPrivateKeyFromBytesDer(invalidPrivateKey)
+	require.Error(t, err)
+}
+
+func Test_EcdsaPrivateKeyFromBytesDer_InvalidData(t *testing.T) {
+	key, err := PrivateKeyGenerateEcdsa()
+	require.NoError(t, err)
+	der := key.BytesDer()
+	trailingBytes := []byte{0x01, 0x02, 0x03}
+	derWithTrailingBytes := append(der, trailingBytes...)
+	_, err = _ECDSAPrivateKeyFromBytesDer(derWithTrailingBytes)
+	require.Error(t, err)
+	expectedError := "x509: trailing data after ASN.1 of public-key"
+	if err == nil || err.Error() != expectedError {
+		t.Fatalf("Expected error %q, got %q", expectedError, err)
+	}
+}
+
+func TestUnitECDSAPublicKeyFromBytesInvalidLength(t *testing.T) {
+	invalidPrivateKey := make([]byte, 31)
+	_, err := _ECDSAPublicKeyFromBytes(invalidPrivateKey)
+	require.Error(t, err)
+	expectedError := fmt.Sprintf("invalid compressed ECDSA public key length: %v bytes", len(invalidPrivateKey))
+	if err.Error() != expectedError {
+		t.Errorf("expected error message %q, but got %q", expectedError, err.Error())
+	}
+}
+
+func TestUnitECDSAPublicKeyFromBytesRawInvalidLength(t *testing.T) {
+	_, err := _ECDSAPublicKeyFromBytesRaw(nil)
+	require.Error(t, err)
+	invalidPrivateKey := make([]byte, 31)
+	_, err = _ECDSAPublicKeyFromBytesRaw(invalidPrivateKey)
+	require.Error(t, err)
+	expectedError := fmt.Sprintf("invalid public key length: %v bytes", len(invalidPrivateKey))
+	if err.Error() != expectedError {
+		t.Errorf("expected error message %q, but got %q", expectedError, err.Error())
+	}
+}
+
+func TestUnitECDSAPublicKeyFromBytesRawInvalidKey(t *testing.T) {
+	invalidPrivateKey := make([]byte, 33)
+	_, err := _ECDSAPublicKeyFromBytesRaw(invalidPrivateKey)
+	require.Error(t, err)
+	expectedError := "invalid public key"
+	if err.Error() != expectedError {
+		t.Errorf("expected error message %q, but got %q", expectedError, err.Error())
+	}
+}
+
+func TestUnitECDSAPublicKeyFromBytesDerInvalidKey(t *testing.T) {
+	_, err := _ECDSAPublicKeyFromBytesDer(nil)
+	require.Error(t, err)
+	invalidPrivateKey := make([]byte, 33)
+	_, err = _ECDSAPublicKeyFromBytesDer(invalidPrivateKey)
+	require.Error(t, err)
+}
+
+func TestUnitECDSAPublicKeyFromBytesDerWrongAlgorithmOID(t *testing.T) {
+	hexStr := "3036301006072a8648ce3d020206052b8104000a032200021ef6d7f710abb6f137f1c0dd87c6fd0200486c0754273d628cde6688e0bc9bf5"
+	bytes, err := hex.DecodeString(hexStr)
+	require.NoError(t, err)
+	_, err = _ECDSAPublicKeyFromBytesDer(bytes)
+	expectedError := "public key is not an ECDSA public key"
+	if err.Error() != expectedError {
+		t.Errorf("expected error message %q, but got %q", expectedError, err.Error())
+	}
+}
+
+func TestUnitECDSAPublicKeyFromBytesDerWrongCurve(t *testing.T) {
+	hexStr := "3036301006072a8648ce3d020106052b8104000b03220002f3c22171a370bd5eba014c4ffa2002c4de4e0d8545ab964cda10467f23cfa2e0"
+	bytes, err := hex.DecodeString(hexStr)
+	require.NoError(t, err)
+	_, err = _ECDSAPublicKeyFromBytesDer(bytes)
+	expectedError := "public key is not a secp256k1 public key"
+	if err.Error() != expectedError {
+		t.Errorf("expected error message %q, but got %q", expectedError, err.Error())
+	}
+}
+
+func TestUnitEd25519PrivateKeyFromBytesDerWrongLength(t *testing.T) {
+	invalidPrivateKey := make([]byte, 33)
+	_, err := _Ed25519PrivateKeyFromBytesDer(invalidPrivateKey)
+	require.Error(t, err)
+	expectedError := fmt.Sprintf("invalid private key length: %v byt", len(invalidPrivateKey))
+	if err.Error() != expectedError {
+		t.Errorf("expected error message %q, but got %q", expectedError, err.Error())
+	}
+}
+
+func TestUnitEd25519PrivateKeyFromBytesDerWrongKey(t *testing.T) {
+	invalidPrivateKey := make([]byte, 32)
+	_, err := _Ed25519PublicKeyFromBytesDer(invalidPrivateKey)
+	require.Error(t, err)
+}
+
+func TestUnitEd25519PublicKeyFromBytesDerWrongAlgorithmOID(t *testing.T) {
+	hexStr := "3036301006072a8648ce3d020206052b8104000a032200021ef6d7f710abb6f137f1c0dd87c6fd0200486c0754273d628cde6688e0bc9bf5"
+	bytes, err := hex.DecodeString(hexStr)
+	require.NoError(t, err)
+	_, err = _Ed25519PublicKeyFromBytesDer(bytes)
+	expectedError := "invalid algorithm identifier, expected Ed25519"
+	if err.Error() != expectedError {
+		t.Errorf("expected error message %q, but got %q", expectedError, err.Error())
+	}
+}
+
+func TestUnitEd25519PublicKeyFromBytesDerWrongCurve(t *testing.T) {
+	bytes, _ := hex.DecodeString("3053300506032b6570032100b6ecf351b0d0d8fce400647f4944621b411e97ae83a249fcadb33cf165f40ca2")
+	modifiedBytes := append(bytes[:14], bytes[15:]...)
+	_Ed25519PublicKeyFromBytesDer(modifiedBytes)
+}
+
+func TestUnitEd25519PublicKeyFromStringWrongLength(t *testing.T) {
+	_, err := _Ed25519PublicKeyFromString("303")
+	require.Error(t, err)
+	expectedError := "encoding/hex: odd length hex string"
+	if err.Error() != expectedError {
+		t.Errorf("expected error message %q, but got %q", expectedError, err.Error())
+	}
+}
+
+func TestUnitEd25519PublicKeyFromBytesRawWrongLength(t *testing.T) {
+	_, err := _Ed25519PublicKeyFromBytesRaw(nil)
+	require.Error(t, err)
+	expectedError := "byte array can't be null"
+	if err.Error() != expectedError {
+		t.Errorf("expected error message %q, but got %q", expectedError, err.Error())
+	}
+	invalidPrivateKey := make([]byte, 33)
+	_, err = _Ed25519PublicKeyFromBytesRaw(invalidPrivateKey)
+	require.Error(t, err)
+	expectedError = fmt.Sprintf("invalid public key length: %v bytes", len(invalidPrivateKey))
+	if err.Error() != expectedError {
+		t.Errorf("expected error message %q, but got %q", expectedError, err.Error())
+	}
 }
 
 func TestUnitPrivateKeyECDSASignTransaction(t *testing.T) {
@@ -456,9 +1014,9 @@ func TestUnitPrivateKeyECDSASignTransaction(t *testing.T) {
 func TestUnitPublicKeyFromPrivateKeyString(t *testing.T) {
 	t.Parallel()
 
-	key, err := PrivateKeyFromStringECDSA("3030020100300706052b8104000a04220420d790c27a81d745ad3340e27dacedc982d1f9252c0d7a4582da9847e2094603d4")
+	key, err := PrivateKeyFromStringECDSA("30540201010420ac318ea8ff8d991ab2f16172b4738e74dc35a56681199cfb1c0cb2e7cb560ffda00706052b8104000aa124032200036843f5cb338bbb4cdb21b0da4ea739d910951d6e8a5f703d313efe31afe788f4")
 	require.NoError(t, err)
-	require.Equal(t, "302f300706052b8104000a032400042102b46925b64940f5d7d3f394aba914c05f1607fa42e9e721afee0770cb55797d99", key.PublicKey().String())
+	require.Equal(t, "3036301006072a8648ce3d020106052b8104000a032200036843f5cb338bbb4cdb21b0da4ea739d910951d6e8a5f703d313efe31afe788f4", key.PublicKey().String())
 }
 
 func TestUnitPublicKeyToEthereumAddress(t *testing.T) {
