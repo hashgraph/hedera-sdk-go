@@ -163,8 +163,8 @@ func (node *_MirrorNode) _GetNetworkServiceClient() (*mirror.NetworkServiceClien
 	}
 
 	var kacp = keepalive.ClientParameters{
-		Time:                10 * time.Second,
-		Timeout:             time.Second,
+		Time:                time.Minute,
+		Timeout:             20 * time.Second,
 		PermitWithoutStream: true,
 	}
 
