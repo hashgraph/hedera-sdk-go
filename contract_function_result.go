@@ -27,6 +27,7 @@ import (
 	"strings"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/common/math"
 	"github.com/hashgraph/hedera-protobufs-go/services"
 	protobuf "google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/wrapperspb"
@@ -236,33 +237,11 @@ func (result ContractFunctionResult) GetInt256(index uint64) []byte {
 	return result.ContractCallResult[index*32 : index*32+32]
 }
 
-func toBigIntFromTwosComplement(data []byte) *big.Int {
-	isNegative := data[0]&0x80 == 0x80
-
-	// If the number is positive, just use SetBytes.
-	if !isNegative {
-		c := big.NewInt(0)
-		c.SetBytes(data)
-		return c
-	}
-
-	// If the number is negative, calculate the two's complement.
-	c := big.NewInt(0)
-	c.SetBytes(data)
-
-	c.Sub(c, big.NewInt(1))
-
-	mask := new(big.Int).Exp(big.NewInt(2), big.NewInt(int64(len(data)*8)), nil)
-	mask.Sub(mask, big.NewInt(1))
-	c.Xor(c, mask)
-	c.Neg(c)
-
-	return c
-}
-
 // GetBigInt gets an _Solidity integer from the result at the given index and returns it as a big.Int
 func (result ContractFunctionResult) GetBigInt(index uint64) *big.Int {
-	return toBigIntFromTwosComplement(result.ContractCallResult[index*32 : index*32+32])
+	value := new(big.Int).SetBytes(result.ContractCallResult[index*32 : index*32+32])
+	fromTwosComplement := math.S256(value)
+	return fromTwosComplement
 }
 
 // GetUint8 gets a _Solidity uint8 from the result at the given index
@@ -447,6 +426,15 @@ func (result ContractFunctionResult) AsBytes() []byte {
 	return result.ContractCallResult
 }
 
+// GetResult parses the result of a contract call based on the given types string and returns the result as an interface.
+// The "types" string should specify the Ethereum Solidity type of the contract call output.
+// This includes types like "uint256", "address", "bool", "string", "string[]", etc.
+// The type provided must match the actual type of the data returned by the contract call,
+// otherwise the function will fail to unpack and return an error.
+// The method returns the parsed result encapsulated in an interface{},
+// allowing flexibility to handle various types of contract call results.
+// For correct usage, the caller should perform a type assertion on the returned interface{}
+// to convert it into the appropriate go type.
 func (result ContractFunctionResult) GetResult(types string) (interface{}, error) {
 	def := fmt.Sprintf(`[{ "name" : "method", "type": "function", "outputs": [{ "type": "%s" }]}]`, types)
 	abi, err := abi.JSON(strings.NewReader(def))

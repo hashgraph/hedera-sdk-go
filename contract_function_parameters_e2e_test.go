@@ -12,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/math"
 	"github.com/stretchr/testify/require"
 )
 
@@ -228,13 +229,13 @@ func intType(t *testing.T, env IntegrationTestEnv, intType string, value string)
 
 	contractCall, err := NewContractCallQuery().SetGas(15000000).
 		SetContractID(contractID).
-		SetFunction(data.fnName, data.fnAdd(NewContractFunctionParameters(), toTwosComplementFromBigInt(valueBigInt))).
+		SetFunction(data.fnName, data.fnAdd(NewContractFunctionParameters(), math.U256Bytes(valueBigInt))).
 		Execute(env.Client)
 	// Due to parallel execution of tests, sometimes the query expires. There is nothing we can do about it.
 	if err != nil {
 		contractCall, err = NewContractCallQuery().SetGas(15000000).
 			SetContractID(contractID).
-			SetFunction(data.fnName, data.fnAdd(NewContractFunctionParameters(), toTwosComplementFromBigInt(valueBigInt))).
+			SetFunction(data.fnName, data.fnAdd(NewContractFunctionParameters(), math.U256Bytes(valueBigInt))).
 			Execute(env.Client)
 	}
 	require.NoError(t, err)
@@ -1550,7 +1551,7 @@ func TestMultipleInt256(t *testing.T) {
 	value, ok := new(big.Int).SetString("-57896044618658097711785492504343953926634992332820282019728792003956564819968", 10)
 	require.True(t, ok)
 	contractCal, err := NewContractCallQuery().SetGas(15000000).
-		SetContractID(contractID).SetFunction("returnMultipleInt256", NewContractFunctionParameters().AddInt256(toTwosComplementFromBigInt(value))).SetQueryPayment(NewHbar(20)).Execute(env.Client)
+		SetContractID(contractID).SetFunction("returnMultipleInt256", NewContractFunctionParameters().AddInt256(math.U256Bytes(value))).SetQueryPayment(NewHbar(20)).Execute(env.Client)
 	require.NoError(t, err)
 	require.Equal(t, value, toBigIntFromTwosComplement(contractCal.GetInt256(0)))
 	require.Equal(t, value.Add(value, big.NewInt(1)), toBigIntFromTwosComplement(contractCal.GetInt256(1)))
@@ -1577,11 +1578,11 @@ func TestBigInt256(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 	deployContract(env)
-	value, ok := new(big.Int).SetString("123", 10)
+	value, ok := new(big.Int).SetString("-123", 10)
 	require.True(t, ok)
 
 	contractCal, err := NewContractCallQuery().SetGas(15000000).
-		SetContractID(contractID).SetFunction("returnInt200", NewContractFunctionParameters().AddInt200BigInt(value)).SetQueryPayment(NewHbar(20)).Execute(env.Client)
+		SetContractID(contractID).SetFunction("returnInt256", NewContractFunctionParameters().AddInt256BigInt(value)).SetQueryPayment(NewHbar(20)).Execute(env.Client)
 	require.NoError(t, err)
 	require.Equal(t, value, contractCal.GetBigInt(0))
 	err = CloseIntegrationTestEnv(env, nil)
@@ -1607,7 +1608,7 @@ func TestMultiplBigInt256(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 	deployContract(env)
-	value, ok := new(big.Int).SetString("123", 10)
+	value, ok := new(big.Int).SetString("-123", 10)
 	require.True(t, ok)
 
 	contractCal, err := NewContractCallQuery().SetGas(15000000).
