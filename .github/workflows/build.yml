@@ -12,7 +12,7 @@ on:
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
-    
+
 jobs:
     build:
         name: Build
@@ -62,12 +62,12 @@ jobs:
 
             - name: Tests Unit
               if: success()
-              run: go test -tags="unit" -timeout 9999s -v -coverprofile=unit.out -covermode=atomic
+              run: go test -tags="unit" -timeout 9999s -v -coverprofile=unit.out -covermode=atomic -race
 
             - name: Tests Integration
               if: success()
               run: go test -tags="e2e" -timeout 9999s -v -coverprofile=e2e.out -covermode=atomic
-            
+
             - name: Tests Testnets
               if: success()
               env:

@@ -24,38 +24,42 @@ package hedera
  */
 
 import (
+	"github.com/stretchr/testify/require"
 	"os"
 	"testing"
-	"time"
-
-	"github.com/stretchr/testify/require"
 )
 
 func TestIntegrationAddressBookQueryUpdateAll(t *testing.T) {
-	client := ClientForPreviewnet()
-	// There are some limitation on requests: unexpected HTTP status code received from server: 429 (Too Many Requests)
-	time.Sleep(time.Second * 5)
+	client, err := ClientFromConfig([]byte(`{"network":"previewnet"}`))
+	require.NoError(t, err)
+	client.SetMirrorNetwork(previewnetMirror)
+
 	previewnet, err := NewAddressBookQuery().
 		SetFileID(FileIDForAddressBook()).
+		SetMaxAttempts(5).
 		Execute(client)
 	require.NoError(t, err)
 	require.Greater(t, len(previewnet.NodeAddresses), 0)
 
-	client = ClientForTestnet()
-	// There are some limitation on requests: unexpected HTTP status code received from server: 429 (Too Many Requests)
-	// Testnet specifically has a more aggresive rate limit
-	time.Sleep(time.Second * 20)
+	client, err = ClientFromConfig([]byte(`{"network":"testnet"}`))
+	require.NoError(t, err)
+	client.SetMirrorNetwork(testnetMirror)
+
 	testnet, err := NewAddressBookQuery().
 		SetFileID(FileIDForAddressBook()).
+		SetMaxAttempts(5).
 		Execute(client)
+
 	require.NoError(t, err)
 	require.Greater(t, len(testnet.NodeAddresses), 0)
 
-	client = ClientForMainnet()
-	// There are some limitation on requests: unexpected HTTP status code received from server: 429 (Too Many Requests)
-	time.Sleep(time.Second * 5)
+	client, err = ClientFromConfig([]byte(`{"network":"mainnet"}`))
+	require.NoError(t, err)
+	client.SetMirrorNetwork(mainnetMirror)
+
 	mainnet, err := NewAddressBookQuery().
 		SetFileID(FileIDForAddressBook()).
+		SetMaxAttempts(5).
 		Execute(client)
 	require.NoError(t, err)
 	require.Greater(t, len(mainnet.NodeAddresses), 0)

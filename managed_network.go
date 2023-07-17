@@ -24,6 +24,7 @@ import (
 	"crypto/rand"
 	"math"
 	"math/big"
+	"sync"
 	"time"
 )
 
@@ -31,6 +32,7 @@ type _ManagedNetwork struct {
 	network                map[string][]_IManagedNode
 	nodes                  []_IManagedNode
 	healthyNodes           []_IManagedNode
+	healthyNodesMutex      *sync.RWMutex
 	maxNodeAttempts        int
 	minBackoff             time.Duration
 	maxBackoff             time.Duration
@@ -48,6 +50,7 @@ func _NewManagedNetwork() _ManagedNetwork {
 		network:                map[string][]_IManagedNode{},
 		nodes:                  []_IManagedNode{},
 		healthyNodes:           []_IManagedNode{},
+		healthyNodesMutex:      &sync.RWMutex{},
 		maxNodeAttempts:        -1,
 		minBackoff:             8 * time.Second,
 		maxBackoff:             1 * time.Hour,
@@ -110,6 +113,9 @@ func (this *_ManagedNetwork) _SetNetwork(network map[string]_IManagedNode) error
 
 func (this *_ManagedNetwork) _ReadmitNodes() {
 	now := time.Now()
+
+	this.healthyNodesMutex.Lock()
+	defer this.healthyNodesMutex.Unlock()
 
 	if this.earliestReadmitTime.Before(now) {
 		nextEarliestReadmitTime := now.Add(this.maxNodeReadmitPeriod)
@@ -189,6 +195,8 @@ func (this *_ManagedNetwork) _SetMinBackoff(minBackoff time.Duration) {
 
 func (this *_ManagedNetwork) _GetNode() _IManagedNode {
 	this._ReadmitNodes()
+	this.healthyNodesMutex.RLock()
+	defer this.healthyNodesMutex.RUnlock()
 
 	if len(this.healthyNodes) == 0 {
 		panic("failed to find a healthy working node")

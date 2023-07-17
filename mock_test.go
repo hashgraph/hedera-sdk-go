@@ -480,13 +480,14 @@ func NewMockClientAndServer(allNodeResponses [][]interface{}) (*Client, *MockSer
 	for i, responses := range allNodeResponses {
 		responses := responses
 
+		serverReady := make(chan bool)
 		nodeAccountID := AccountID{Account: uint64(3 + i)}
 		go func() {
 			servers[i] = NewMockServer(responses)
+			serverReady <- true
 		}()
 
-		for servers[i] == nil {
-		}
+		<-serverReady
 
 		network[servers[i].listener.Addr().String()] = nodeAccountID
 		mirrorNetwork[i] = servers[i].listener.Addr().String()
