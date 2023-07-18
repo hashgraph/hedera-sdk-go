@@ -119,117 +119,117 @@ func (result ContractFunctionResult) GetInt64(index uint64) int64 {
 
 // GetInt72 gets a _Solidity int72 from the result at the given index
 func (result ContractFunctionResult) GetInt72(index uint64) []byte {
-	return result.ContractCallResult[index*32+23 : (index+1)*32]
+	return result.ContractCallResult[index*32 : index*32+32]
 }
 
 // GetInt80 gets a _Solidity int80 from the result at the given index
 func (result ContractFunctionResult) GetInt80(index uint64) []byte {
-	return result.ContractCallResult[index*32+22 : (index+1)*32]
+	return result.ContractCallResult[index*32 : index*32+32]
 }
 
 // GetInt88 gets a _Solidity int88 from the result at the given index
 func (result ContractFunctionResult) GetInt88(index uint64) []byte {
-	return result.ContractCallResult[index*32+21 : (index+1)*32]
+	return result.ContractCallResult[index*32 : index*32+32]
 }
 
 // GetInt96 gets a _Solidity int96 from the result at the given index
 func (result ContractFunctionResult) GetInt96(index uint64) []byte {
-	return result.ContractCallResult[index*32+20 : (index+1)*32]
+	return result.ContractCallResult[index*32 : index*32+32]
 }
 
 // GetInt104 gets a _Solidity int104 from the result at the given index
 func (result ContractFunctionResult) GetInt104(index uint64) []byte {
-	return result.ContractCallResult[index*32+19 : (index+1)*32]
+	return result.ContractCallResult[index*32 : index*32+32]
 }
 
 // GetInt112 gets a _Solidity int112 from the result at the given index
 func (result ContractFunctionResult) GetInt112(index uint64) []byte {
-	return result.ContractCallResult[index*32+18 : (index+1)*32]
+	return result.ContractCallResult[index*32 : index*32+32]
 }
 
 // GetInt120 gets a _Solidity int120 from the result at the given index
 func (result ContractFunctionResult) GetInt120(index uint64) []byte {
-	return result.ContractCallResult[index*32+17 : (index+1)*32]
+	return result.ContractCallResult[index*32 : index*32+32]
 }
 
 // GetInt128 gets a _Solidity int128 from the result at the given index
 func (result ContractFunctionResult) GetInt128(index uint64) []byte {
-	return result.ContractCallResult[index*32+16 : (index+1)*32]
+	return result.ContractCallResult[index*32 : index*32+32]
 }
 
 // GetInt136 gets a _Solidity int136 from the result at the given index
 func (result ContractFunctionResult) GetInt136(index uint64) []byte {
-	return result.ContractCallResult[index*32+15 : (index+1)*32]
+	return result.ContractCallResult[index*32 : index*32+32]
 }
 
 // GetInt144 gets a _Solidity int144 from the result at the given index
 func (result ContractFunctionResult) GetInt144(index uint64) []byte {
-	return result.ContractCallResult[index*32+14 : (index+1)*32]
+	return result.ContractCallResult[index*32 : index*32+32]
 }
 
 // GetInt152 gets a _Solidity int152 from the result at the given index
 func (result ContractFunctionResult) GetInt152(index uint64) []byte {
-	return result.ContractCallResult[index*32+13 : (index+1)*32]
+	return result.ContractCallResult[index*32 : index*32+32]
 }
 
 // GetInt160 gets a _Solidity int160 from the result at the given index
 func (result ContractFunctionResult) GetInt160(index uint64) []byte {
-	return result.ContractCallResult[index*32+12 : (index+1)*32]
+	return result.ContractCallResult[index*32 : index*32+32]
 }
 
 // GetInt168 gets a _Solidity int168 from the result at the given index
 func (result ContractFunctionResult) GetInt168(index uint64) []byte {
-	return result.ContractCallResult[index*32+11 : (index+1)*32]
+	return result.ContractCallResult[index*32 : index*32+32]
 }
 
 // GetInt176 gets a _Solidity int176 from the result at the given index
 func (result ContractFunctionResult) GetInt176(index uint64) []byte {
-	return result.ContractCallResult[index*32+10 : (index+1)*32]
+	return result.ContractCallResult[index*32 : index*32+32]
 }
 
 // GetInt184 gets a _Solidity int184 from the result at the given index
 func (result ContractFunctionResult) GetInt184(index uint64) []byte {
-	return result.ContractCallResult[index*32+9 : (index+1)*32]
+	return result.ContractCallResult[index*32 : index*32+32]
 }
 
 // GetInt192 gets a _Solidity int192 from the result at the given index
 func (result ContractFunctionResult) GetInt192(index uint64) []byte {
-	return result.ContractCallResult[index*32+8 : (index+1)*32]
+	return result.ContractCallResult[index*32 : index*32+32]
 }
 
 // GetInt200 gets a _Solidity int200 from the result at the given index
 func (result ContractFunctionResult) GetInt200(index uint64) []byte {
-	return result.ContractCallResult[index*32+7 : (index+1)*32]
+	return result.ContractCallResult[index*32 : index*32+32]
 }
 
 // GetInt208 gets a _Solidity int208 from the result at the given index
 func (result ContractFunctionResult) GetInt208(index uint64) []byte {
-	return result.ContractCallResult[index*32+6 : (index+1)*32]
+	return result.ContractCallResult[index*32 : index*32+32]
 }
 
 // GetInt216 gets a _Solidity int216 from the result at the given index
 func (result ContractFunctionResult) GetInt216(index uint64) []byte {
-	return result.ContractCallResult[index*32+5 : (index+1)*32]
+	return result.ContractCallResult[index*32 : index*32+32]
 }
 
 // GetInt224 gets a _Solidity int224 from the result at the given index
 func (result ContractFunctionResult) GetInt224(index uint64) []byte {
-	return result.ContractCallResult[index*32+4 : (index+1)*32]
+	return result.ContractCallResult[index*32 : index*32+32]
 }
 
 // GetInt232 gets a _Solidity int232 from the result at the given index
 func (result ContractFunctionResult) GetInt232(index uint64) []byte {
-	return result.ContractCallResult[index*32+3 : (index+1)*32]
+	return result.ContractCallResult[index*32 : index*32+32]
 }
 
 // GetInt240 gets a _Solidity int240 from the result at the given index
 func (result ContractFunctionResult) GetInt240(index uint64) []byte {
-	return result.ContractCallResult[index*32+2 : (index+1)*32]
+	return result.ContractCallResult[index*32 : index*32+32]
 }
 
 // GetInt248 gets a _Solidity int248 from the result at the given index
 func (result ContractFunctionResult) GetInt248(index uint64) []byte {
-	return result.ContractCallResult[index*32+1 : (index+1)*32]
+	return result.ContractCallResult[index*32 : index*32+32]
 }
 
 // GetInt256 gets a _Solidity int256 from the result at the given index

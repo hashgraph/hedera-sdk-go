@@ -1785,7 +1785,7 @@ func (contract *ContractFunctionParameters) AddBytesArray(value [][]byte) *Contr
 func (contract *ContractFunctionParameters) AddBytes32Array(value [][]byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 	argument.dynamic = true
-	// Each item is 32 bytes. The total size should be len(value) * 32
+	// Each item is 32 bytes. The total size should be len(value) * 32 plus 32 bytes for the length header
 	result := make([]byte, len(value)*32+32)
 
 	// Write the length of the array into the first 32 bytes
@@ -1794,7 +1794,7 @@ func (contract *ContractFunctionParameters) AddBytes32Array(value [][]byte) *Con
 	for i, v := range value {
 		// Ensure that each byte slice is 32 bytes long.
 		var b [32]byte
-		copy(b[:], v)
+		copy(b[32-len(v):], v)
 
 		// Then copy into the result
 		from := i*32 + 32

@@ -1765,13 +1765,10 @@ func TestBytes32Array(t *testing.T) {
 		[]byte("Test1"),
 		[]byte("Test2"),
 	}
-
-	expected := [][32]byte{
-		{},
-		{},
-	}
-	copy(expected[0][:], value[0])
-	copy(expected[1][:], value[1])
+	var expected1 [32]byte
+	var expected2 [32]byte
+	copy(expected1[len(expected1)-len(value[0]):], value[0])
+	copy(expected2[len(expected2)-len(value[1]):], value[1])
 
 	contractCal := NewContractCallQuery().SetGas(15000000).
 		SetContractID(contractID).SetFunction("returnBytes32Arr", NewContractFunctionParameters().AddBytes32Array(value)).SetQueryPayment(NewHbar(20))
@@ -1779,7 +1776,8 @@ func TestBytes32Array(t *testing.T) {
 	require.NoError(t, err)
 	bytes32ArrInterface, err := result.GetResult("bytes32[]")
 	require.NoError(t, err)
-	require.Equal(t, expected, bytes32ArrInterface.([]interface{})[0])
+	require.Equal(t, expected1, bytes32ArrInterface.([]interface{})[0].([][32]byte)[0])
+	require.Equal(t, expected2, bytes32ArrInterface.([]interface{})[0].([][32]byte)[1])
 	err = CloseIntegrationTestEnv(env, nil)
 	require.NoError(t, err)
 }
