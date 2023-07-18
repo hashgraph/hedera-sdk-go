@@ -106,7 +106,7 @@ func (contract *ContractFunctionParameters) AddFunction(address string, selector
 
 // AddInt8 adds an int8 parameter to the function call
 func (contract *ContractFunctionParameters) AddInt8(value int8) *ContractFunctionParameters {
-	argument := _NewInt8Argument(value)
+	argument := _NewIntArgument(value)
 
 	argument.value[31] = uint8(value)
 
@@ -118,7 +118,7 @@ func (contract *ContractFunctionParameters) AddInt8(value int8) *ContractFunctio
 
 // AddInt16 adds an int16 parameter to the function call
 func (contract *ContractFunctionParameters) AddInt16(value int16) *ContractFunctionParameters {
-	argument := _NewInt16Argument(value)
+	argument := _NewIntArgument(value)
 
 	binary.BigEndian.PutUint16(argument.value[30:32], uint16(value))
 
@@ -130,7 +130,7 @@ func (contract *ContractFunctionParameters) AddInt16(value int16) *ContractFunct
 
 // AddInt24 adds an int24 parameter to the function call
 func (contract *ContractFunctionParameters) AddInt24(value int32) *ContractFunctionParameters {
-	argument := _NewInt32Argument(value)
+	argument := _NewIntArgument(value)
 
 	binary.BigEndian.PutUint32(argument.value[28:32], uint32(value))
 
@@ -142,7 +142,7 @@ func (contract *ContractFunctionParameters) AddInt24(value int32) *ContractFunct
 
 // AddInt32 adds an int32 parameter to the function call
 func (contract *ContractFunctionParameters) AddInt32(value int32) *ContractFunctionParameters {
-	argument := _NewInt32Argument(value)
+	argument := _NewIntArgument(value)
 
 	binary.BigEndian.PutUint32(argument.value[28:32], uint32(value))
 
@@ -154,7 +154,7 @@ func (contract *ContractFunctionParameters) AddInt32(value int32) *ContractFunct
 
 // AddInt40 adds an int40 parameter to the function call
 func (contract *ContractFunctionParameters) AddInt40(value int64) *ContractFunctionParameters {
-	argument := _NewInt64Argument(value)
+	argument := _NewIntArgument(value)
 
 	binary.BigEndian.PutUint64(argument.value[24:32], uint64(value))
 
@@ -166,7 +166,7 @@ func (contract *ContractFunctionParameters) AddInt40(value int64) *ContractFunct
 
 // AddInt48 adds an int48 parameter to the function call
 func (contract *ContractFunctionParameters) AddInt48(value int64) *ContractFunctionParameters {
-	argument := _NewInt64Argument(value)
+	argument := _NewIntArgument(value)
 
 	binary.BigEndian.PutUint64(argument.value[24:32], uint64(value))
 
@@ -178,7 +178,7 @@ func (contract *ContractFunctionParameters) AddInt48(value int64) *ContractFunct
 
 // AddInt56 adds an int56 parameter to the function call
 func (contract *ContractFunctionParameters) AddInt56(value int64) *ContractFunctionParameters {
-	argument := _NewInt64Argument(value)
+	argument := _NewIntArgument(value)
 
 	binary.BigEndian.PutUint64(argument.value[24:32], uint64(value))
 
@@ -190,7 +190,7 @@ func (contract *ContractFunctionParameters) AddInt56(value int64) *ContractFunct
 
 // AddInt64 adds an int64 parameter to the function call
 func (contract *ContractFunctionParameters) AddInt64(value int64) *ContractFunctionParameters {
-	argument := _NewInt64Argument(value)
+	argument := _NewIntArgument(value)
 
 	binary.BigEndian.PutUint64(argument.value[24:32], uint64(value))
 
@@ -1868,21 +1868,22 @@ func _NewArgument() Argument {
 	}
 }
 
-func _NewInt64Argument(value int64) Argument {
-	if value > 0 {
-		return _NewArgument()
+func _NewIntArgument(value interface{}) Argument {
+	var val int64
+	switch v := value.(type) {
+	case int64:
+		val = v
+	case int32:
+		val = int64(v)
+	case int16:
+		val = int64(v)
+	case int8:
+		val = int64(v)
+	default:
+		panic(fmt.Sprintf("unsupported type %T", value))
 	}
-	argument := make([]byte, 32)
-	for i := range argument {
-		argument[i] = 0xff
-	}
-	return Argument{
-		value:   argument,
-		dynamic: false,
-	}
-}
-func _NewInt32Argument(value int32) Argument {
-	if value > 0 {
+
+	if val > 0 {
 		return _NewArgument()
 	}
 	argument := make([]byte, 32)
@@ -1895,33 +1896,6 @@ func _NewInt32Argument(value int32) Argument {
 	}
 }
 
-func _NewInt16Argument(value int16) Argument {
-	if value > 0 {
-		return _NewArgument()
-	}
-	argument := make([]byte, 32)
-	for i := range argument {
-		argument[i] = 0xff
-	}
-	return Argument{
-		value:   argument,
-		dynamic: false,
-	}
-}
-
-func _NewInt8Argument(value int8) Argument {
-	if value > 0 {
-		return _NewArgument()
-	}
-	argument := make([]byte, 32)
-	for i := range argument {
-		argument[i] = 0xff
-	}
-	return Argument{
-		value:   argument,
-		dynamic: false,
-	}
-}
 func bytesArray(value [][]byte) []byte {
 	// Calculate Length of final result
 	length := uint64(0)
