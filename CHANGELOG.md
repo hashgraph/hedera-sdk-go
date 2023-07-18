@@ -1,3 +1,17 @@
+## v2.26.0
+
+### Added
+
+* `AddInt*BigInt` functions to `ContractFunctionParameters` for sending `big.int`
+* `GetResult` function to `ContractFunctionResult` for parsing result to an interface
+* `GetBigInt` function to `ContractFunctionResult` for parsing result to a `big.int`
+
+### Fixed
+
+* DER and PEM formats for private and public keys
+* Network concurrency issues
+* Some `ContractFunctionParameters` were sent/received as wrong data/data type
+
 ## v2.25.0
 
 ### Added
