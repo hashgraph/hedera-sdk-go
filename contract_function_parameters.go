@@ -25,6 +25,9 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"math/big"
+
+	"github.com/ethereum/go-ethereum/common/math"
 )
 
 // ContractFunctionParameters is a struct which builds a solidity function call
@@ -103,7 +106,7 @@ func (contract *ContractFunctionParameters) AddFunction(address string, selector
 
 // AddInt8 adds an int8 parameter to the function call
 func (contract *ContractFunctionParameters) AddInt8(value int8) *ContractFunctionParameters {
-	argument := _NewArgument()
+	argument := _NewIntArgument(value)
 
 	argument.value[31] = uint8(value)
 
@@ -115,7 +118,7 @@ func (contract *ContractFunctionParameters) AddInt8(value int8) *ContractFunctio
 
 // AddInt16 adds an int16 parameter to the function call
 func (contract *ContractFunctionParameters) AddInt16(value int16) *ContractFunctionParameters {
-	argument := _NewArgument()
+	argument := _NewIntArgument(value)
 
 	binary.BigEndian.PutUint16(argument.value[30:32], uint16(value))
 
@@ -127,7 +130,7 @@ func (contract *ContractFunctionParameters) AddInt16(value int16) *ContractFunct
 
 // AddInt24 adds an int24 parameter to the function call
 func (contract *ContractFunctionParameters) AddInt24(value int32) *ContractFunctionParameters {
-	argument := _NewArgument()
+	argument := _NewIntArgument(value)
 
 	binary.BigEndian.PutUint32(argument.value[28:32], uint32(value))
 
@@ -139,7 +142,7 @@ func (contract *ContractFunctionParameters) AddInt24(value int32) *ContractFunct
 
 // AddInt32 adds an int32 parameter to the function call
 func (contract *ContractFunctionParameters) AddInt32(value int32) *ContractFunctionParameters {
-	argument := _NewArgument()
+	argument := _NewIntArgument(value)
 
 	binary.BigEndian.PutUint32(argument.value[28:32], uint32(value))
 
@@ -151,7 +154,7 @@ func (contract *ContractFunctionParameters) AddInt32(value int32) *ContractFunct
 
 // AddInt40 adds an int40 parameter to the function call
 func (contract *ContractFunctionParameters) AddInt40(value int64) *ContractFunctionParameters {
-	argument := _NewArgument()
+	argument := _NewIntArgument(value)
 
 	binary.BigEndian.PutUint64(argument.value[24:32], uint64(value))
 
@@ -163,7 +166,7 @@ func (contract *ContractFunctionParameters) AddInt40(value int64) *ContractFunct
 
 // AddInt48 adds an int48 parameter to the function call
 func (contract *ContractFunctionParameters) AddInt48(value int64) *ContractFunctionParameters {
-	argument := _NewArgument()
+	argument := _NewIntArgument(value)
 
 	binary.BigEndian.PutUint64(argument.value[24:32], uint64(value))
 
@@ -175,7 +178,7 @@ func (contract *ContractFunctionParameters) AddInt48(value int64) *ContractFunct
 
 // AddInt56 adds an int56 parameter to the function call
 func (contract *ContractFunctionParameters) AddInt56(value int64) *ContractFunctionParameters {
-	argument := _NewArgument()
+	argument := _NewIntArgument(value)
 
 	binary.BigEndian.PutUint64(argument.value[24:32], uint64(value))
 
@@ -187,7 +190,7 @@ func (contract *ContractFunctionParameters) AddInt56(value int64) *ContractFunct
 
 // AddInt64 adds an int64 parameter to the function call
 func (contract *ContractFunctionParameters) AddInt64(value int64) *ContractFunctionParameters {
-	argument := _NewArgument()
+	argument := _NewIntArgument(value)
 
 	binary.BigEndian.PutUint64(argument.value[24:32], uint64(value))
 
@@ -201,7 +204,20 @@ func (contract *ContractFunctionParameters) AddInt64(value int64) *ContractFunct
 func (contract *ContractFunctionParameters) AddInt72(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(argument.value[:23], value...)
+	argument.value = value
+
+	contract.function.AddInt72()
+	contract.arguments = append(contract.arguments, argument)
+
+	return contract
+}
+
+// AddInt72BigInt adds an int72parameter to the function call
+func (contract *ContractFunctionParameters) AddInt72BigInt(value *big.Int) *ContractFunctionParameters {
+	argument := _NewArgument()
+
+	valueCopy := new(big.Int).Set(value)
+	argument.value = math.U256Bytes(valueCopy)
 
 	contract.function.AddInt72()
 	contract.arguments = append(contract.arguments, argument)
@@ -213,7 +229,20 @@ func (contract *ContractFunctionParameters) AddInt72(value []byte) *ContractFunc
 func (contract *ContractFunctionParameters) AddInt80(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(argument.value[:22], value...)
+	argument.value = value
+
+	contract.function.AddInt80()
+	contract.arguments = append(contract.arguments, argument)
+
+	return contract
+}
+
+// AddInt80igInt adds an int80parameter to the function call
+func (contract *ContractFunctionParameters) AddInt80BigInt(value *big.Int) *ContractFunctionParameters {
+	argument := _NewArgument()
+
+	valueCopy := new(big.Int).Set(value)
+	argument.value = math.U256Bytes(valueCopy)
 
 	contract.function.AddInt80()
 	contract.arguments = append(contract.arguments, argument)
@@ -225,7 +254,20 @@ func (contract *ContractFunctionParameters) AddInt80(value []byte) *ContractFunc
 func (contract *ContractFunctionParameters) AddInt88(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(argument.value[:21], value...)
+	argument.value = value
+
+	contract.function.AddInt88()
+	contract.arguments = append(contract.arguments, argument)
+
+	return contract
+}
+
+// AddInt88BigInt adds an int88parameter to the function call
+func (contract *ContractFunctionParameters) AddIn88BigInt(value *big.Int) *ContractFunctionParameters {
+	argument := _NewArgument()
+
+	valueCopy := new(big.Int).Set(value)
+	argument.value = math.U256Bytes(valueCopy)
 
 	contract.function.AddInt88()
 	contract.arguments = append(contract.arguments, argument)
@@ -237,7 +279,20 @@ func (contract *ContractFunctionParameters) AddInt88(value []byte) *ContractFunc
 func (contract *ContractFunctionParameters) AddInt96(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(argument.value[:20], value...)
+	argument.value = value
+
+	contract.function.AddInt96()
+	contract.arguments = append(contract.arguments, argument)
+
+	return contract
+}
+
+// AddInt96BigInt adds an int96parameter to the function call
+func (contract *ContractFunctionParameters) AddInt96BigInt(value *big.Int) *ContractFunctionParameters {
+	argument := _NewArgument()
+
+	valueCopy := new(big.Int).Set(value)
+	argument.value = math.U256Bytes(valueCopy)
 
 	contract.function.AddInt96()
 	contract.arguments = append(contract.arguments, argument)
@@ -249,7 +304,20 @@ func (contract *ContractFunctionParameters) AddInt96(value []byte) *ContractFunc
 func (contract *ContractFunctionParameters) AddInt104(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(argument.value[:19], value...)
+	argument.value = value
+
+	contract.function.AddInt104()
+	contract.arguments = append(contract.arguments, argument)
+
+	return contract
+}
+
+// AddInt104BigInt adds an int104 parameter to the function call
+func (contract *ContractFunctionParameters) AddInt104BigInt(value *big.Int) *ContractFunctionParameters {
+	argument := _NewArgument()
+
+	valueCopy := new(big.Int).Set(value)
+	argument.value = math.U256Bytes(valueCopy)
 
 	contract.function.AddInt104()
 	contract.arguments = append(contract.arguments, argument)
@@ -261,7 +329,20 @@ func (contract *ContractFunctionParameters) AddInt104(value []byte) *ContractFun
 func (contract *ContractFunctionParameters) AddInt112(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(argument.value[:18], value...)
+	argument.value = value
+
+	contract.function.AddInt112()
+	contract.arguments = append(contract.arguments, argument)
+
+	return contract
+}
+
+// AddInt112BigInt adds an int112 parameter to the function call
+func (contract *ContractFunctionParameters) AddInt112BigInt(value *big.Int) *ContractFunctionParameters {
+	argument := _NewArgument()
+
+	valueCopy := new(big.Int).Set(value)
+	argument.value = math.U256Bytes(valueCopy)
 
 	contract.function.AddInt112()
 	contract.arguments = append(contract.arguments, argument)
@@ -273,7 +354,20 @@ func (contract *ContractFunctionParameters) AddInt112(value []byte) *ContractFun
 func (contract *ContractFunctionParameters) AddInt120(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(argument.value[:17], value...)
+	argument.value = value
+
+	contract.function.AddInt120()
+	contract.arguments = append(contract.arguments, argument)
+
+	return contract
+}
+
+// AddInt120BigInt adds an int120parameter to the function call
+func (contract *ContractFunctionParameters) AddInt120BigInt(value *big.Int) *ContractFunctionParameters {
+	argument := _NewArgument()
+
+	valueCopy := new(big.Int).Set(value)
+	argument.value = math.U256Bytes(valueCopy)
 
 	contract.function.AddInt120()
 	contract.arguments = append(contract.arguments, argument)
@@ -285,7 +379,20 @@ func (contract *ContractFunctionParameters) AddInt120(value []byte) *ContractFun
 func (contract *ContractFunctionParameters) AddInt128(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(argument.value[:16], value...)
+	argument.value = value
+
+	contract.function.AddInt128()
+	contract.arguments = append(contract.arguments, argument)
+
+	return contract
+}
+
+// AddInt128BigInt adds an int128parameter to the function call
+func (contract *ContractFunctionParameters) AddInt128BigInt(value *big.Int) *ContractFunctionParameters {
+	argument := _NewArgument()
+
+	valueCopy := new(big.Int).Set(value)
+	argument.value = math.U256Bytes(valueCopy)
 
 	contract.function.AddInt128()
 	contract.arguments = append(contract.arguments, argument)
@@ -297,7 +404,20 @@ func (contract *ContractFunctionParameters) AddInt128(value []byte) *ContractFun
 func (contract *ContractFunctionParameters) AddInt136(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(argument.value[:15], value...)
+	argument.value = value
+
+	contract.function.AddInt136()
+	contract.arguments = append(contract.arguments, argument)
+
+	return contract
+}
+
+// AddInt136BigInt adds an int136 parameter to the function call
+func (contract *ContractFunctionParameters) AddInt136BigInt(value *big.Int) *ContractFunctionParameters {
+	argument := _NewArgument()
+
+	valueCopy := new(big.Int).Set(value)
+	argument.value = math.U256Bytes(valueCopy)
 
 	contract.function.AddInt136()
 	contract.arguments = append(contract.arguments, argument)
@@ -309,7 +429,20 @@ func (contract *ContractFunctionParameters) AddInt136(value []byte) *ContractFun
 func (contract *ContractFunctionParameters) AddInt144(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(argument.value[:14], value...)
+	argument.value = value
+
+	contract.function.AddInt144()
+	contract.arguments = append(contract.arguments, argument)
+
+	return contract
+}
+
+// AddInt144BigInt adds an int144 parameter to the function call
+func (contract *ContractFunctionParameters) AddInt144BigInt(value *big.Int) *ContractFunctionParameters {
+	argument := _NewArgument()
+
+	valueCopy := new(big.Int).Set(value)
+	argument.value = math.U256Bytes(valueCopy)
 
 	contract.function.AddInt144()
 	contract.arguments = append(contract.arguments, argument)
@@ -321,7 +454,20 @@ func (contract *ContractFunctionParameters) AddInt144(value []byte) *ContractFun
 func (contract *ContractFunctionParameters) AddInt152(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(argument.value[:13], value...)
+	argument.value = value
+
+	contract.function.AddInt152()
+	contract.arguments = append(contract.arguments, argument)
+
+	return contract
+}
+
+// AddInt152BigInt adds an int152 parameter to the function call
+func (contract *ContractFunctionParameters) AddInt152BigInt(value *big.Int) *ContractFunctionParameters {
+	argument := _NewArgument()
+
+	valueCopy := new(big.Int).Set(value)
+	argument.value = math.U256Bytes(valueCopy)
 
 	contract.function.AddInt152()
 	contract.arguments = append(contract.arguments, argument)
@@ -333,7 +479,20 @@ func (contract *ContractFunctionParameters) AddInt152(value []byte) *ContractFun
 func (contract *ContractFunctionParameters) AddInt160(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(argument.value[:12], value...)
+	argument.value = value
+
+	contract.function.AddInt160()
+	contract.arguments = append(contract.arguments, argument)
+
+	return contract
+}
+
+// AddInt160BigInt adds an int160 parameter to the function call
+func (contract *ContractFunctionParameters) AddInt160BigInt(value *big.Int) *ContractFunctionParameters {
+	argument := _NewArgument()
+
+	valueCopy := new(big.Int).Set(value)
+	argument.value = math.U256Bytes(valueCopy)
 
 	contract.function.AddInt160()
 	contract.arguments = append(contract.arguments, argument)
@@ -345,7 +504,20 @@ func (contract *ContractFunctionParameters) AddInt160(value []byte) *ContractFun
 func (contract *ContractFunctionParameters) AddInt168(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(argument.value[:11], value...)
+	argument.value = value
+
+	contract.function.AddInt168()
+	contract.arguments = append(contract.arguments, argument)
+
+	return contract
+}
+
+// AddInt168BigInt adds an int168 parameter to the function call
+func (contract *ContractFunctionParameters) AddInt168BigInt(value *big.Int) *ContractFunctionParameters {
+	argument := _NewArgument()
+
+	valueCopy := new(big.Int).Set(value)
+	argument.value = math.U256Bytes(valueCopy)
 
 	contract.function.AddInt168()
 	contract.arguments = append(contract.arguments, argument)
@@ -357,7 +529,20 @@ func (contract *ContractFunctionParameters) AddInt168(value []byte) *ContractFun
 func (contract *ContractFunctionParameters) AddInt176(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(argument.value[:10], value...)
+	argument.value = value
+
+	contract.function.AddInt176()
+	contract.arguments = append(contract.arguments, argument)
+
+	return contract
+}
+
+// AddInt176BigInt adds an int176 parameter to the function call
+func (contract *ContractFunctionParameters) AddInt176BigInt(value *big.Int) *ContractFunctionParameters {
+	argument := _NewArgument()
+
+	valueCopy := new(big.Int).Set(value)
+	argument.value = math.U256Bytes(valueCopy)
 
 	contract.function.AddInt176()
 	contract.arguments = append(contract.arguments, argument)
@@ -369,7 +554,20 @@ func (contract *ContractFunctionParameters) AddInt176(value []byte) *ContractFun
 func (contract *ContractFunctionParameters) AddInt184(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(argument.value[:9], value...)
+	argument.value = value
+
+	contract.function.AddInt184()
+	contract.arguments = append(contract.arguments, argument)
+
+	return contract
+}
+
+// AddInt184BigInt adds an int184 parameter to the function call
+func (contract *ContractFunctionParameters) AddInt184BigInt(value *big.Int) *ContractFunctionParameters {
+	argument := _NewArgument()
+
+	valueCopy := new(big.Int).Set(value)
+	argument.value = math.U256Bytes(valueCopy)
 
 	contract.function.AddInt184()
 	contract.arguments = append(contract.arguments, argument)
@@ -381,7 +579,20 @@ func (contract *ContractFunctionParameters) AddInt184(value []byte) *ContractFun
 func (contract *ContractFunctionParameters) AddInt192(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(argument.value[:8], value...)
+	argument.value = value
+
+	contract.function.AddInt192()
+	contract.arguments = append(contract.arguments, argument)
+
+	return contract
+}
+
+// AddInt192BigInt adds an int192 parameter to the function call
+func (contract *ContractFunctionParameters) AddInt192BigInt(value *big.Int) *ContractFunctionParameters {
+	argument := _NewArgument()
+
+	valueCopy := new(big.Int).Set(value)
+	argument.value = math.U256Bytes(valueCopy)
 
 	contract.function.AddInt192()
 	contract.arguments = append(contract.arguments, argument)
@@ -393,7 +604,19 @@ func (contract *ContractFunctionParameters) AddInt192(value []byte) *ContractFun
 func (contract *ContractFunctionParameters) AddInt200(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(argument.value[:7], value...)
+	argument.value = value
+
+	contract.function.AddInt200()
+	contract.arguments = append(contract.arguments, argument)
+
+	return contract
+}
+
+// AddInt200BigInt adds an int200 parameter to the function call
+func (contract *ContractFunctionParameters) AddInt200BigInt(value *big.Int) *ContractFunctionParameters {
+	argument := _NewArgument()
+	valueCopy := new(big.Int).Set(value)
+	argument.value = math.U256Bytes(valueCopy)
 
 	contract.function.AddInt200()
 	contract.arguments = append(contract.arguments, argument)
@@ -405,7 +628,20 @@ func (contract *ContractFunctionParameters) AddInt200(value []byte) *ContractFun
 func (contract *ContractFunctionParameters) AddInt208(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(argument.value[:6], value...)
+	argument.value = value
+
+	contract.function.AddInt208()
+	contract.arguments = append(contract.arguments, argument)
+
+	return contract
+}
+
+// AddInt208BigInt adds an int208parameter to the function call
+func (contract *ContractFunctionParameters) AddInt208BigInt(value *big.Int) *ContractFunctionParameters {
+	argument := _NewArgument()
+
+	valueCopy := new(big.Int).Set(value)
+	argument.value = math.U256Bytes(valueCopy)
 
 	contract.function.AddInt208()
 	contract.arguments = append(contract.arguments, argument)
@@ -417,7 +653,20 @@ func (contract *ContractFunctionParameters) AddInt208(value []byte) *ContractFun
 func (contract *ContractFunctionParameters) AddInt216(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(argument.value[:5], value...)
+	argument.value = value
+
+	contract.function.AddInt216()
+	contract.arguments = append(contract.arguments, argument)
+
+	return contract
+}
+
+// AddInt216BigInt adds an int216 parameter to the function call
+func (contract *ContractFunctionParameters) AddInt216BigInt(value *big.Int) *ContractFunctionParameters {
+	argument := _NewArgument()
+
+	valueCopy := new(big.Int).Set(value)
+	argument.value = math.U256Bytes(valueCopy)
 
 	contract.function.AddInt216()
 	contract.arguments = append(contract.arguments, argument)
@@ -429,7 +678,20 @@ func (contract *ContractFunctionParameters) AddInt216(value []byte) *ContractFun
 func (contract *ContractFunctionParameters) AddInt224(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(argument.value[:4], value...)
+	argument.value = value
+
+	contract.function.AddInt224()
+	contract.arguments = append(contract.arguments, argument)
+
+	return contract
+}
+
+// AddInt224BigInt adds an int224 parameter to the function call
+func (contract *ContractFunctionParameters) AddInt224BigInt(value *big.Int) *ContractFunctionParameters {
+	argument := _NewArgument()
+
+	valueCopy := new(big.Int).Set(value)
+	argument.value = math.U256Bytes(valueCopy)
 
 	contract.function.AddInt224()
 	contract.arguments = append(contract.arguments, argument)
@@ -441,7 +703,20 @@ func (contract *ContractFunctionParameters) AddInt224(value []byte) *ContractFun
 func (contract *ContractFunctionParameters) AddInt232(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(argument.value[:3], value...)
+	argument.value = value
+
+	contract.function.AddInt232()
+	contract.arguments = append(contract.arguments, argument)
+
+	return contract
+}
+
+// AddInt232BigInt adds an int232 parameter to the function call
+func (contract *ContractFunctionParameters) AddInt232BigInt(value *big.Int) *ContractFunctionParameters {
+	argument := _NewArgument()
+
+	valueCopy := new(big.Int).Set(value)
+	argument.value = math.U256Bytes(valueCopy)
 
 	contract.function.AddInt232()
 	contract.arguments = append(contract.arguments, argument)
@@ -453,7 +728,20 @@ func (contract *ContractFunctionParameters) AddInt232(value []byte) *ContractFun
 func (contract *ContractFunctionParameters) AddInt240(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(argument.value[:2], value...)
+	argument.value = value
+
+	contract.function.AddInt240()
+	contract.arguments = append(contract.arguments, argument)
+
+	return contract
+}
+
+// AddInt240BigInt adds an int240 parameter to the function call
+func (contract *ContractFunctionParameters) AddInt240BigInt(value *big.Int) *ContractFunctionParameters {
+	argument := _NewArgument()
+
+	valueCopy := new(big.Int).Set(value)
+	argument.value = math.U256Bytes(valueCopy)
 
 	contract.function.AddInt240()
 	contract.arguments = append(contract.arguments, argument)
@@ -465,7 +753,20 @@ func (contract *ContractFunctionParameters) AddInt240(value []byte) *ContractFun
 func (contract *ContractFunctionParameters) AddInt248(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(argument.value[:1], value...)
+	argument.value = value
+
+	contract.function.AddInt248()
+	contract.arguments = append(contract.arguments, argument)
+
+	return contract
+}
+
+// AddInt248BigInt adds an int248 parameter to the function call
+func (contract *ContractFunctionParameters) AddInt248BigInt(value *big.Int) *ContractFunctionParameters {
+	argument := _NewArgument()
+
+	valueCopy := new(big.Int).Set(value)
+	argument.value = math.U256Bytes(valueCopy)
 
 	contract.function.AddInt248()
 	contract.arguments = append(contract.arguments, argument)
@@ -478,6 +779,19 @@ func (contract *ContractFunctionParameters) AddInt256(value []byte) *ContractFun
 	argument := _NewArgument()
 
 	argument.value = value
+
+	contract.function.AddInt256()
+	contract.arguments = append(contract.arguments, argument)
+
+	return contract
+}
+
+// AddInt256BigInt adds an int256 parameter to the function call
+func (contract *ContractFunctionParameters) AddInt256BigInt(value *big.Int) *ContractFunctionParameters {
+	argument := _NewArgument()
+
+	valueCopy := new(big.Int).Set(value)
+	argument.value = math.U256Bytes(valueCopy)
 
 	contract.function.AddInt256()
 	contract.arguments = append(contract.arguments, argument)
@@ -503,7 +817,7 @@ func (contract *ContractFunctionParameters) AddUint16(value uint16) *ContractFun
 
 	binary.BigEndian.PutUint16(argument.value[30:32], value)
 
-	contract.function.AddInt16()
+	contract.function.AddUint16()
 	contract.arguments = append(contract.arguments, argument)
 
 	return contract
@@ -515,7 +829,7 @@ func (contract *ContractFunctionParameters) AddUint24(value uint32) *ContractFun
 
 	binary.BigEndian.PutUint32(argument.value[28:32], value)
 
-	contract.function.AddInt24()
+	contract.function.AddUint24()
 	contract.arguments = append(contract.arguments, argument)
 
 	return contract
@@ -539,7 +853,7 @@ func (contract *ContractFunctionParameters) AddUint40(value uint64) *ContractFun
 
 	binary.BigEndian.PutUint64(argument.value[24:32], value)
 
-	contract.function.AddInt40()
+	contract.function.AddUint40()
 	contract.arguments = append(contract.arguments, argument)
 
 	return contract
@@ -551,7 +865,7 @@ func (contract *ContractFunctionParameters) AddUint48(value uint64) *ContractFun
 
 	binary.BigEndian.PutUint64(argument.value[24:32], value)
 
-	contract.function.AddInt48()
+	contract.function.AddUint48()
 	contract.arguments = append(contract.arguments, argument)
 
 	return contract
@@ -563,7 +877,7 @@ func (contract *ContractFunctionParameters) AddUint56(value uint64) *ContractFun
 
 	binary.BigEndian.PutUint64(argument.value[24:32], value)
 
-	contract.function.AddInt56()
+	contract.function.AddUint56()
 	contract.arguments = append(contract.arguments, argument)
 
 	return contract
@@ -585,7 +899,20 @@ func (contract *ContractFunctionParameters) AddUint64(value uint64) *ContractFun
 func (contract *ContractFunctionParameters) AddUint72(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(argument.value[:23], value...)
+	argument.value = value
+
+	contract.function.AddUint72()
+	contract.arguments = append(contract.arguments, argument)
+
+	return contract
+}
+
+// AddUint72BigInt adds a uint72 parameter to the function call
+func (contract *ContractFunctionParameters) AddUint72BigInt(value *big.Int) *ContractFunctionParameters {
+	argument := _NewArgument()
+
+	valueCopy := new(big.Int).Set(value)
+	argument.value = math.U256Bytes(valueCopy)
 
 	contract.function.AddUint72()
 	contract.arguments = append(contract.arguments, argument)
@@ -597,7 +924,20 @@ func (contract *ContractFunctionParameters) AddUint72(value []byte) *ContractFun
 func (contract *ContractFunctionParameters) AddUint80(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(argument.value[:22], value...)
+	argument.value = value
+
+	contract.function.AddUint80()
+	contract.arguments = append(contract.arguments, argument)
+
+	return contract
+}
+
+// AddUint80BigInt adds a uint80parameter to the function call
+func (contract *ContractFunctionParameters) AddUint80BigInt(value *big.Int) *ContractFunctionParameters {
+	argument := _NewArgument()
+
+	valueCopy := new(big.Int).Set(value)
+	argument.value = math.U256Bytes(valueCopy)
 
 	contract.function.AddUint80()
 	contract.arguments = append(contract.arguments, argument)
@@ -609,7 +949,20 @@ func (contract *ContractFunctionParameters) AddUint80(value []byte) *ContractFun
 func (contract *ContractFunctionParameters) AddUint88(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(argument.value[:21], value...)
+	argument.value = value
+
+	contract.function.AddUint88()
+	contract.arguments = append(contract.arguments, argument)
+
+	return contract
+}
+
+// AddUint88BigInt adds a uint88parameter to the function call
+func (contract *ContractFunctionParameters) AddUint88BigInt(value *big.Int) *ContractFunctionParameters {
+	argument := _NewArgument()
+
+	valueCopy := new(big.Int).Set(value)
+	argument.value = math.U256Bytes(valueCopy)
 
 	contract.function.AddUint88()
 	contract.arguments = append(contract.arguments, argument)
@@ -621,7 +974,20 @@ func (contract *ContractFunctionParameters) AddUint88(value []byte) *ContractFun
 func (contract *ContractFunctionParameters) AddUint96(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(argument.value[:20], value...)
+	argument.value = value
+
+	contract.function.AddUint96()
+	contract.arguments = append(contract.arguments, argument)
+
+	return contract
+}
+
+// AddUint96BigInt adds a uint96parameter to the function call
+func (contract *ContractFunctionParameters) AddUint96BigInt(value *big.Int) *ContractFunctionParameters {
+	argument := _NewArgument()
+
+	valueCopy := new(big.Int).Set(value)
+	argument.value = math.U256Bytes(valueCopy)
 
 	contract.function.AddUint96()
 	contract.arguments = append(contract.arguments, argument)
@@ -633,7 +999,20 @@ func (contract *ContractFunctionParameters) AddUint96(value []byte) *ContractFun
 func (contract *ContractFunctionParameters) AddUint104(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(argument.value[:19], value...)
+	argument.value = value
+
+	contract.function.AddUint104()
+	contract.arguments = append(contract.arguments, argument)
+
+	return contract
+}
+
+// AddUint104BigInt adds a uint104 parameter to the function call
+func (contract *ContractFunctionParameters) AddUint104igInt(value *big.Int) *ContractFunctionParameters {
+	argument := _NewArgument()
+
+	valueCopy := new(big.Int).Set(value)
+	argument.value = math.U256Bytes(valueCopy)
 
 	contract.function.AddUint104()
 	contract.arguments = append(contract.arguments, argument)
@@ -645,7 +1024,20 @@ func (contract *ContractFunctionParameters) AddUint104(value []byte) *ContractFu
 func (contract *ContractFunctionParameters) AddUint112(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(argument.value[:18], value...)
+	argument.value = value
+
+	contract.function.AddUint112()
+	contract.arguments = append(contract.arguments, argument)
+
+	return contract
+}
+
+// AddUint112BigInt adds a uint112 parameter to the function call
+func (contract *ContractFunctionParameters) AddUint112BigInt(value *big.Int) *ContractFunctionParameters {
+	argument := _NewArgument()
+
+	valueCopy := new(big.Int).Set(value)
+	argument.value = math.U256Bytes(valueCopy)
 
 	contract.function.AddUint112()
 	contract.arguments = append(contract.arguments, argument)
@@ -657,7 +1049,20 @@ func (contract *ContractFunctionParameters) AddUint112(value []byte) *ContractFu
 func (contract *ContractFunctionParameters) AddUint120(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(argument.value[:17], value...)
+	argument.value = value
+
+	contract.function.AddUint120()
+	contract.arguments = append(contract.arguments, argument)
+
+	return contract
+}
+
+// AddUint120BigInt adds a uint120 parameter to the function call
+func (contract *ContractFunctionParameters) AddUint120BigInt(value *big.Int) *ContractFunctionParameters {
+	argument := _NewArgument()
+
+	valueCopy := new(big.Int).Set(value)
+	argument.value = math.U256Bytes(valueCopy)
 
 	contract.function.AddUint120()
 	contract.arguments = append(contract.arguments, argument)
@@ -669,7 +1074,20 @@ func (contract *ContractFunctionParameters) AddUint120(value []byte) *ContractFu
 func (contract *ContractFunctionParameters) AddUint128(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(argument.value[:16], value...)
+	argument.value = value
+
+	contract.function.AddUint128()
+	contract.arguments = append(contract.arguments, argument)
+
+	return contract
+}
+
+// AddUint128BigInt adds a uint128 parameter to the function call
+func (contract *ContractFunctionParameters) AddUint128BigInt(value *big.Int) *ContractFunctionParameters {
+	argument := _NewArgument()
+
+	valueCopy := new(big.Int).Set(value)
+	argument.value = math.U256Bytes(valueCopy)
 
 	contract.function.AddUint128()
 	contract.arguments = append(contract.arguments, argument)
@@ -681,7 +1099,20 @@ func (contract *ContractFunctionParameters) AddUint128(value []byte) *ContractFu
 func (contract *ContractFunctionParameters) AddUint136(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(argument.value[:15], value...)
+	argument.value = value
+
+	contract.function.AddUint136()
+	contract.arguments = append(contract.arguments, argument)
+
+	return contract
+}
+
+// AddUint136BigInt adds a uint136 parameter to the function call
+func (contract *ContractFunctionParameters) AddUint136BigInt(value *big.Int) *ContractFunctionParameters {
+	argument := _NewArgument()
+
+	valueCopy := new(big.Int).Set(value)
+	argument.value = math.U256Bytes(valueCopy)
 
 	contract.function.AddUint136()
 	contract.arguments = append(contract.arguments, argument)
@@ -693,7 +1124,20 @@ func (contract *ContractFunctionParameters) AddUint136(value []byte) *ContractFu
 func (contract *ContractFunctionParameters) AddUint144(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(argument.value[:14], value...)
+	argument.value = value
+
+	contract.function.AddUint144()
+	contract.arguments = append(contract.arguments, argument)
+
+	return contract
+}
+
+// AddUint144BigInt adds a uint144 parameter to the function call
+func (contract *ContractFunctionParameters) AddUint144BigInt(value *big.Int) *ContractFunctionParameters {
+	argument := _NewArgument()
+
+	valueCopy := new(big.Int).Set(value)
+	argument.value = math.U256Bytes(valueCopy)
 
 	contract.function.AddUint144()
 	contract.arguments = append(contract.arguments, argument)
@@ -705,7 +1149,20 @@ func (contract *ContractFunctionParameters) AddUint144(value []byte) *ContractFu
 func (contract *ContractFunctionParameters) AddUint152(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(argument.value[:13], value...)
+	argument.value = value
+
+	contract.function.AddUint152()
+	contract.arguments = append(contract.arguments, argument)
+
+	return contract
+}
+
+// AddUint152BigInt adds a uint152 parameter to the function call
+func (contract *ContractFunctionParameters) AddUint152BigInt(value *big.Int) *ContractFunctionParameters {
+	argument := _NewArgument()
+
+	valueCopy := new(big.Int).Set(value)
+	argument.value = math.U256Bytes(valueCopy)
 
 	contract.function.AddUint152()
 	contract.arguments = append(contract.arguments, argument)
@@ -717,7 +1174,20 @@ func (contract *ContractFunctionParameters) AddUint152(value []byte) *ContractFu
 func (contract *ContractFunctionParameters) AddUint160(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(argument.value[:12], value...)
+	argument.value = value
+
+	contract.function.AddUint160()
+	contract.arguments = append(contract.arguments, argument)
+
+	return contract
+}
+
+// AddUint160BigInt adds a uint160 parameter to the function call
+func (contract *ContractFunctionParameters) AddUint160BigInt(value *big.Int) *ContractFunctionParameters {
+	argument := _NewArgument()
+
+	valueCopy := new(big.Int).Set(value)
+	argument.value = math.U256Bytes(valueCopy)
 
 	contract.function.AddUint160()
 	contract.arguments = append(contract.arguments, argument)
@@ -729,7 +1199,20 @@ func (contract *ContractFunctionParameters) AddUint160(value []byte) *ContractFu
 func (contract *ContractFunctionParameters) AddUint168(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(argument.value[:11], value...)
+	argument.value = value
+
+	contract.function.AddUint168()
+	contract.arguments = append(contract.arguments, argument)
+
+	return contract
+}
+
+// AddUint168BigInt adds a uint168 parameter to the function call
+func (contract *ContractFunctionParameters) AddUint168BigInt(value *big.Int) *ContractFunctionParameters {
+	argument := _NewArgument()
+
+	valueCopy := new(big.Int).Set(value)
+	argument.value = math.U256Bytes(valueCopy)
 
 	contract.function.AddUint168()
 	contract.arguments = append(contract.arguments, argument)
@@ -741,7 +1224,20 @@ func (contract *ContractFunctionParameters) AddUint168(value []byte) *ContractFu
 func (contract *ContractFunctionParameters) AddUint176(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(argument.value[:10], value...)
+	argument.value = value
+
+	contract.function.AddUint176()
+	contract.arguments = append(contract.arguments, argument)
+
+	return contract
+}
+
+// AddUint176BigInt adds a uint176 parameter to the function call
+func (contract *ContractFunctionParameters) AddUint176BigInt(value *big.Int) *ContractFunctionParameters {
+	argument := _NewArgument()
+
+	valueCopy := new(big.Int).Set(value)
+	argument.value = math.U256Bytes(valueCopy)
 
 	contract.function.AddUint176()
 	contract.arguments = append(contract.arguments, argument)
@@ -753,7 +1249,20 @@ func (contract *ContractFunctionParameters) AddUint176(value []byte) *ContractFu
 func (contract *ContractFunctionParameters) AddUint184(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(argument.value[:9], value...)
+	argument.value = value
+
+	contract.function.AddUint184()
+	contract.arguments = append(contract.arguments, argument)
+
+	return contract
+}
+
+// AddUint184BigInt adds a uint184 parameter to the function call
+func (contract *ContractFunctionParameters) AddUint184BigInt(value *big.Int) *ContractFunctionParameters {
+	argument := _NewArgument()
+
+	valueCopy := new(big.Int).Set(value)
+	argument.value = math.U256Bytes(valueCopy)
 
 	contract.function.AddUint184()
 	contract.arguments = append(contract.arguments, argument)
@@ -765,7 +1274,20 @@ func (contract *ContractFunctionParameters) AddUint184(value []byte) *ContractFu
 func (contract *ContractFunctionParameters) AddUint192(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(argument.value[:8], value...)
+	argument.value = value
+
+	contract.function.AddUint192()
+	contract.arguments = append(contract.arguments, argument)
+
+	return contract
+}
+
+// AddUint192BigInt adds a uint192 parameter to the function call
+func (contract *ContractFunctionParameters) AddUint192BigInt(value *big.Int) *ContractFunctionParameters {
+	argument := _NewArgument()
+
+	valueCopy := new(big.Int).Set(value)
+	argument.value = math.U256Bytes(valueCopy)
 
 	contract.function.AddUint192()
 	contract.arguments = append(contract.arguments, argument)
@@ -777,7 +1299,20 @@ func (contract *ContractFunctionParameters) AddUint192(value []byte) *ContractFu
 func (contract *ContractFunctionParameters) AddUint200(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(argument.value[:7], value...)
+	argument.value = value
+
+	contract.function.AddUint200()
+	contract.arguments = append(contract.arguments, argument)
+
+	return contract
+}
+
+// AddUint200BigInt adds a uint200 parameter to the function call
+func (contract *ContractFunctionParameters) AddUint200BigInt(value *big.Int) *ContractFunctionParameters {
+	argument := _NewArgument()
+
+	valueCopy := new(big.Int).Set(value)
+	argument.value = math.U256Bytes(valueCopy)
 
 	contract.function.AddUint200()
 	contract.arguments = append(contract.arguments, argument)
@@ -789,7 +1324,20 @@ func (contract *ContractFunctionParameters) AddUint200(value []byte) *ContractFu
 func (contract *ContractFunctionParameters) AddUint208(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(argument.value[:6], value...)
+	argument.value = value
+
+	contract.function.AddUint208()
+	contract.arguments = append(contract.arguments, argument)
+
+	return contract
+}
+
+// AddUint208BigInt adds a uint208 parameter to the function call
+func (contract *ContractFunctionParameters) AddUint208BigInt(value *big.Int) *ContractFunctionParameters {
+	argument := _NewArgument()
+
+	valueCopy := new(big.Int).Set(value)
+	argument.value = math.U256Bytes(valueCopy)
 
 	contract.function.AddUint208()
 	contract.arguments = append(contract.arguments, argument)
@@ -801,7 +1349,20 @@ func (contract *ContractFunctionParameters) AddUint208(value []byte) *ContractFu
 func (contract *ContractFunctionParameters) AddUint216(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(argument.value[:5], value...)
+	argument.value = value
+
+	contract.function.AddUint216()
+	contract.arguments = append(contract.arguments, argument)
+
+	return contract
+}
+
+// AddUint216BigInt adds a uint216 parameter to the function call
+func (contract *ContractFunctionParameters) AddUint216BigInt(value *big.Int) *ContractFunctionParameters {
+	argument := _NewArgument()
+
+	valueCopy := new(big.Int).Set(value)
+	argument.value = math.U256Bytes(valueCopy)
 
 	contract.function.AddUint216()
 	contract.arguments = append(contract.arguments, argument)
@@ -813,7 +1374,20 @@ func (contract *ContractFunctionParameters) AddUint216(value []byte) *ContractFu
 func (contract *ContractFunctionParameters) AddUint224(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(argument.value[:4], value...)
+	argument.value = value
+
+	contract.function.AddUint224()
+	contract.arguments = append(contract.arguments, argument)
+
+	return contract
+}
+
+// AddUint224BigInt adds a uint224 parameter to the function call
+func (contract *ContractFunctionParameters) AddUint224BigInt(value *big.Int) *ContractFunctionParameters {
+	argument := _NewArgument()
+
+	valueCopy := new(big.Int).Set(value)
+	argument.value = math.U256Bytes(valueCopy)
 
 	contract.function.AddUint224()
 	contract.arguments = append(contract.arguments, argument)
@@ -825,7 +1399,20 @@ func (contract *ContractFunctionParameters) AddUint224(value []byte) *ContractFu
 func (contract *ContractFunctionParameters) AddUint232(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(argument.value[:3], value...)
+	argument.value = value
+
+	contract.function.AddUint232()
+	contract.arguments = append(contract.arguments, argument)
+
+	return contract
+}
+
+// AddUint232BigInt adds a uint232 parameter to the function call
+func (contract *ContractFunctionParameters) AddUint232BigInt(value *big.Int) *ContractFunctionParameters {
+	argument := _NewArgument()
+
+	valueCopy := new(big.Int).Set(value)
+	argument.value = math.U256Bytes(valueCopy)
 
 	contract.function.AddUint232()
 	contract.arguments = append(contract.arguments, argument)
@@ -837,7 +1424,20 @@ func (contract *ContractFunctionParameters) AddUint232(value []byte) *ContractFu
 func (contract *ContractFunctionParameters) AddUint240(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(argument.value[:2], value...)
+	argument.value = value
+
+	contract.function.AddUint240()
+	contract.arguments = append(contract.arguments, argument)
+
+	return contract
+}
+
+// AddUint240BigInt adds a uint240 parameter to the function call
+func (contract *ContractFunctionParameters) AddUint240BigInt(value *big.Int) *ContractFunctionParameters {
+	argument := _NewArgument()
+
+	valueCopy := new(big.Int).Set(value)
+	argument.value = math.U256Bytes(valueCopy)
 
 	contract.function.AddUint240()
 	contract.arguments = append(contract.arguments, argument)
@@ -849,7 +1449,20 @@ func (contract *ContractFunctionParameters) AddUint240(value []byte) *ContractFu
 func (contract *ContractFunctionParameters) AddUint248(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(argument.value[:1], value...)
+	argument.value = value
+
+	contract.function.AddUint248()
+	contract.arguments = append(contract.arguments, argument)
+
+	return contract
+}
+
+// AddUint248BigInt adds a uint248 parameter to the function call
+func (contract *ContractFunctionParameters) AddUint248BigInt(value *big.Int) *ContractFunctionParameters {
+	argument := _NewArgument()
+
+	valueCopy := new(big.Int).Set(value)
+	argument.value = math.U256Bytes(valueCopy)
 
 	contract.function.AddUint248()
 	contract.arguments = append(contract.arguments, argument)
@@ -862,6 +1475,19 @@ func (contract *ContractFunctionParameters) AddUint256(value []byte) *ContractFu
 	argument := _NewArgument()
 
 	argument.value = value
+
+	contract.function.AddUint256()
+	contract.arguments = append(contract.arguments, argument)
+
+	return contract
+}
+
+// AddUint256BigInt adds a uint256 parameter to the function call
+func (contract *ContractFunctionParameters) AddUint256BigInt(value *big.Int) *ContractFunctionParameters {
+	argument := _NewArgument()
+
+	valueCopy := new(big.Int).Set(value)
+	argument.value = math.U256Bytes(valueCopy)
 
 	contract.function.AddUint256()
 	contract.arguments = append(contract.arguments, argument)
@@ -1159,13 +1785,21 @@ func (contract *ContractFunctionParameters) AddBytesArray(value [][]byte) *Contr
 func (contract *ContractFunctionParameters) AddBytes32Array(value [][]byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 	argument.dynamic = true
+	// Each item is 32 bytes. The total size should be len(value) * 32 plus 32 bytes for the length header
+	result := make([]byte, len(value)*32+32)
 
-	result := make([]byte, len(value)+32)
-
+	// Write the length of the array into the first 32 bytes
 	binary.BigEndian.PutUint64(result[24:32], uint64(len(value)))
 
 	for i, v := range value {
-		copy(result[i*32+32:i*32+32+32], v[0:32])
+		// Ensure that each byte slice is 32 bytes long.
+		var b [32]byte
+		copy(b[32-len(v):], v)
+
+		// Then copy into the result
+		from := i*32 + 32
+		to := (i+1)*32 + 32
+		copy(result[from:to], b[:])
 	}
 
 	argument.value = result
@@ -1230,6 +1864,34 @@ func (contract *ContractFunctionParameters) _Build(functionName *string) []byte 
 func _NewArgument() Argument {
 	return Argument{
 		value:   make([]byte, 32),
+		dynamic: false,
+	}
+}
+
+func _NewIntArgument(value interface{}) Argument {
+	var val int64
+	switch v := value.(type) {
+	case int64:
+		val = v
+	case int32:
+		val = int64(v)
+	case int16:
+		val = int64(v)
+	case int8:
+		val = int64(v)
+	default:
+		panic(fmt.Sprintf("unsupported type %T", value))
+	}
+
+	if val > 0 {
+		return _NewArgument()
+	}
+	argument := make([]byte, 32)
+	for i := range argument {
+		argument[i] = 0xff
+	}
+	return Argument{
+		value:   argument,
 		dynamic: false,
 	}
 }

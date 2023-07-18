@@ -309,7 +309,6 @@ func TestUnitClientLogger(t *testing.T) {
 	assert.Contains(t, buf.String(), "warn message")
 	assert.Contains(t, buf.String(), "error message")
 
-
 	buf.Reset()
 	client.SetLogLevel(LoggerLevelTrace)
 	client.logger.Trace("trace message", "traceKey", "traceValue")
