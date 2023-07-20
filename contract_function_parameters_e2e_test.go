@@ -690,7 +690,7 @@ func TestUint160Max(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 	deployContract(env)
-	intType(t, env, "uint168", "1461501637330902918203684832716283019655932542975")
+	intType(t, env, "uint160", "1461501637330902918203684832716283019655932542975")
 	err := CloseIntegrationTestEnv(env, nil)
 	require.NoError(t, err)
 }
@@ -738,7 +738,7 @@ func TestUint184Max(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 	deployContract(env)
-	intType(t, env, "uint192", "24519928653854221733733552434404946937899825954937634815")
+	intType(t, env, "uint184", "24519928653854221733733552434404946937899825954937634815")
 	err := CloseIntegrationTestEnv(env, nil)
 	require.NoError(t, err)
 }
@@ -794,7 +794,7 @@ func TestUint216Min(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 	deployContract(env)
-	intType(t, env, "uint224", "0")
+	intType(t, env, "uint216", "0")
 	err := CloseIntegrationTestEnv(env, nil)
 	require.NoError(t, err)
 }
@@ -802,7 +802,7 @@ func TestUint216Max(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 	deployContract(env)
-	intType(t, env, "uint224", "105312291668557186697918027683670432318895095400549111254310977535")
+	intType(t, env, "uint216", "105312291668557186697918027683670432318895095400549111254310977535")
 	err := CloseIntegrationTestEnv(env, nil)
 	require.NoError(t, err)
 }
@@ -1780,4 +1780,28 @@ func TestBytes32Array(t *testing.T) {
 	require.Equal(t, expected2, bytes32ArrInterface.([]interface{})[0].([][32]byte)[1])
 	err = CloseIntegrationTestEnv(env, nil)
 	require.NoError(t, err)
+}
+
+func TestContractNonces(t *testing.T){
+	t.Parallel()
+	env := NewIntegrationTestEnv(t)
+	bytecode := []byte(`6080604052348015600f57600080fd5b50604051601a90603b565b604051809103906000f0801580156035573d6000803e3d6000fd5b50506047565b605c8061009483390190565b603f806100556000396000f3fe6080604052600080fdfea2646970667358221220a20122cbad3457fedcc0600363d6e895f17048f5caa4afdab9e655123737567d64736f6c634300081200336080604052348015600f57600080fd5b50603f80601d6000396000f3fe6080604052600080fdfea264697066735822122053dfd8835e3dc6fedfb8b4806460b9b7163f8a7248bac510c6d6808d9da9d6d364736f6c63430008120033`)
+	fileCreate, err := NewFileCreateTransaction().
+		SetKeys(env.OperatorKey.PublicKey()).SetContents(bytecode).
+		Execute(env.Client)
+	require.NoError(t, err)
+	fileCreate.SetValidateStatus(true)
+	receipt, err := fileCreate.GetReceipt(env.Client)
+	require.NoError(t, err)
+	require.Equal(t, StatusSuccess, receipt.Status)
+	contractCreate, err := NewContractCreateTransaction().
+		SetBytecodeFileID(*receipt.FileID).
+		SetGas(10000000).Execute(env.Client)
+	require.NoError(t, err)
+	contractCreate.SetValidateStatus(true)
+	record,err:=contractCreate.GetRecord(env.Client)
+	require.NoError(t, err)
+	require.Equal(t, StatusSuccess, record.Receipt.Status)
+	require.Equal(t, int64(2), record.CallResult.ContractNonces[0].Nonce)
+	require.Equal(t, int64(1), record.CallResult.ContractNonces[1].Nonce)
 }
