@@ -7,8 +7,8 @@ require (
 	github.com/cenkalti/backoff/v4 v4.2.1
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.2.0 // indirect
 	github.com/ethereum/go-ethereum v1.12.0
+	github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20230720072335-ed5726877e99
 	github.com/holiman/uint256 v1.2.3 // indirect
-	github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20230620121835-2f2656b1f434
 	github.com/mattn/go-isatty v0.0.19 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/rs/zerolog v1.29.1

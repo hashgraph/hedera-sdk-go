@@ -1,3 +1,9 @@
+## v2.26.1
+
+### Added
+
+* `ContractNonces` to `ContractFunctionResult` to support HIP-729
+
 ## v2.26.0
 
 ### Added
