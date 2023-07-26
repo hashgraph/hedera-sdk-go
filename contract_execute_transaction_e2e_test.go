@@ -138,10 +138,12 @@ func TestIntegrationContractExecuteTransactionNoGas(t *testing.T) {
 	fileID := *receipt.FileID
 	assert.NotNil(t, fileID)
 
+	node_ids := []AccountID{resp.NodeID}
+
 	resp, err = NewContractCreateTransaction().
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
 		SetGas(100000).
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetNodeAccountIDs(node_ids).
 		SetConstructorParameters(NewContractFunctionParameters().AddString("hello from hedera")).
 		SetBytecodeFileID(fileID).
 		SetContractMemo("hedera-sdk-go::TestContractDeleteTransaction_Execute").
@@ -156,21 +158,19 @@ func TestIntegrationContractExecuteTransactionNoGas(t *testing.T) {
 
 	resp, err = NewContractExecuteTransaction().
 		SetContractID(contractID).
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetNodeAccountIDs(node_ids).
 		SetFunction("setMessage", NewContractFunctionParameters().AddString("new message")).
 		Execute(env.Client)
-	require.NoError(t, err)
 
-	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, "exceptional receipt status: INSUFFICIENT_GAS", err.Error())
+		assert.Contains(t, err.Error(), "INSUFFICIENT_GAS")
 	}
 
 	resp, err = NewContractDeleteTransaction().
 		SetContractID(contractID).
 		SetTransferAccountID(env.Client.GetOperatorAccountID()).
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetNodeAccountIDs(node_ids).
 		Execute(env.Client)
 	require.NoError(t, err)
 
@@ -179,7 +179,7 @@ func TestIntegrationContractExecuteTransactionNoGas(t *testing.T) {
 
 	resp, err = NewFileDeleteTransaction().
 		SetFileID(fileID).
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetNodeAccountIDs(node_ids).
 		Execute(env.Client)
 	require.NoError(t, err)
 

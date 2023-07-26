@@ -33,6 +33,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var jsonClient = `{
+	"network": "testnet",
+	"operator": {
+		"accountID": "0.0.10",
+		"privateKey": "302e020100300506032b657004220420a869f4c6191b9c8c99933e7f6b6611711737e4b1a1a5a4cb5370e719a1f6df98"
+	}
+}`
+
 func TestUnitTokenPause(t *testing.T) {
 	t.Parallel()
 
@@ -326,4 +334,163 @@ func TestUnitTokenUnpauseTransactionMock(t *testing.T) {
 
 	_, err = freez.Sign(newKey).Execute(client)
 	require.NoError(t, err)
+}
+
+func TestUnitTokenPauseTransaction_SetMaxRetry(t *testing.T) {
+	t.Parallel()
+	transaction := NewTokenPauseTransaction()
+	transaction.SetMaxRetry(5)
+
+	require.Equal(t, 5, transaction.GetMaxRetry())
+}
+
+func TestUnitTokenPauseTransaction_AddSignature(t *testing.T) {
+	t.Parallel()
+	client, _ := ClientFromConfig([]byte(jsonClient))
+
+	nodeAccountId, err := AccountIDFromString("0.0.3")
+	require.NoError(t, err)
+
+	nodeIdList := []AccountID{nodeAccountId}
+
+	transaction, err := NewTokenPauseTransaction().
+		SetNodeAccountIDs(nodeIdList).
+		FreezeWith(client)
+
+	privateKey, _ := PrivateKeyGenerateEd25519()
+	publicKey := privateKey.PublicKey()
+
+	//Signer one signs the transaction with their private key
+	signature, err := privateKey.SignTransaction(&transaction.Transaction)
+	require.NoError(t, err)
+
+	_, err = transaction.GetSignatures()
+	require.NoError(t, err)
+
+	// create new transaction to test AddSignature
+	transaction2, err := NewTokenPauseTransaction().
+		SetNodeAccountIDs(nodeIdList).
+		FreezeWith(client)
+
+	signedTransaction := transaction2.AddSignature(publicKey, signature)
+	_, err = signedTransaction.GetSignatures()
+	require.NoError(t, err)
+}
+
+func TestUnitTokenPauseTransaction_SignWithOperator(t *testing.T) {
+	t.Parallel()
+	client, _ := ClientFromConfig([]byte(jsonClient))
+	privateKey, _ := PrivateKeyGenerateEd25519()
+	operatorId, _ := AccountIDFromString("0.0.10")
+
+	client.SetOperator(operatorId, privateKey)
+
+	nodeAccountId, err := AccountIDFromString("0.0.3")
+	require.NoError(t, err)
+	nodeIdList := []AccountID{nodeAccountId}
+
+	transaction, err := NewTokenPauseTransaction().
+		SetNodeAccountIDs(nodeIdList).
+		SetTokenID(TokenID{Token: 3}).
+		SignWithOperator(client)
+
+	require.NoError(t, err)
+	require.NotNil(t, transaction)
+
+	transaction2, err := NewTokenPauseTransaction().
+		SetNodeAccountIDs(nodeIdList).
+		SetTokenID(TokenID{Token: 3}).
+		FreezeWith(client)
+
+	transaction2, err = transaction2.SignWithOperator(client)
+	require.NoError(t, err)
+	require.NotNil(t, transaction)
+
+	// test errors
+	client.operator = nil
+	_, err = NewTokenPauseTransaction().
+		SetNodeAccountIDs(nodeIdList).
+		SetTokenID(TokenID{Token: 3}).
+		SignWithOperator(client)
+
+	require.Error(t, err)
+
+	client = nil
+	_, err = NewTokenPauseTransaction().
+		SetNodeAccountIDs(nodeIdList).
+		SetTokenID(TokenID{Token: 3}).
+		SignWithOperator(client)
+
+	require.Error(t, err)
+}
+
+func TestUnitTokenPauseTransaction_SetMaxBackoff(t *testing.T) {
+	t.Parallel()
+	transaction := NewTokenPauseTransaction()
+	maxBackoff := 10 * time.Second
+
+	transaction.SetMaxBackoff(maxBackoff)
+
+	require.Equal(t, maxBackoff, transaction.GetMaxBackoff())
+
+	// test max.Nanoseconds() < 0
+	transaction2 := NewTokenPauseTransaction()
+	maxBackoff2 := -1 * time.Second
+
+	require.Panics(t, func() { transaction2.SetMaxBackoff(maxBackoff2) })
+
+	// test max.Nanoseconds() < min.Nanoseconds()
+	transaction3 := NewTokenPauseTransaction()
+	maxBackoff3 := 1 * time.Second
+	minBackoff3 := 2 * time.Second
+
+	transaction3.SetMinBackoff(minBackoff3)
+
+	require.Panics(t, func() { transaction3.SetMaxBackoff(maxBackoff3) })
+}
+
+func TestUnitTokenPauseTransaction_GetMaxBackoff(t *testing.T) {
+	t.Parallel()
+	transaction := NewTokenPauseTransaction()
+
+	require.Equal(t, 8*time.Second, transaction.GetMaxBackoff())
+}
+
+func TestUnitTokenPauseTransaction_SetMinBackoff(t *testing.T) {
+	t.Parallel()
+	transaction := NewTokenPauseTransaction()
+	minBackoff := 1 * time.Second
+
+	transaction.SetMinBackoff(minBackoff)
+
+	require.Equal(t, minBackoff, transaction.GetMinBackoff())
+
+	// test min.Nanoseconds() < 0
+	transaction2 := NewTokenPauseTransaction()
+	minBackoff2 := -1 * time.Second
+
+	require.Panics(t, func() { transaction2.SetMinBackoff(minBackoff2) })
+
+	// test transaction.maxBackoff.Nanoseconds() < min.Nanoseconds()
+	transaction3 := NewTokenPauseTransaction()
+	minBackoff3 := 10 * time.Second
+
+	require.Panics(t, func() { transaction3.SetMinBackoff(minBackoff3) })
+}
+
+func TestUnitTokenPauseTransaction_GetMinBackoff(t *testing.T) {
+	t.Parallel()
+	transaction := NewTokenPauseTransaction()
+
+	require.Equal(t, 250*time.Millisecond, transaction.GetMinBackoff())
+}
+
+func TestUnitTokenPauseTransaction_SetLogLevel(t *testing.T) {
+	t.Parallel()
+	transaction := NewTokenPauseTransaction()
+
+	transaction.SetLogLevel(LoggerLevelDebug)
+
+	level := transaction.GetLogLevel()
+	require.Equal(t, LoggerLevelDebug, *level)
 }
