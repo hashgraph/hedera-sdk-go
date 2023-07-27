@@ -30,16 +30,9 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 	protobuf "google.golang.org/protobuf/proto"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
-
-var jsonClient = `{
-	"network": "testnet",
-	"operator": {
-		"accountID": "0.0.10",
-		"privateKey": "302e020100300506032b657004220420a869f4c6191b9c8c99933e7f6b6611711737e4b1a1a5a4cb5370e719a1f6df98"
-	}
-}`
 
 func TestUnitTokenPause(t *testing.T) {
 	t.Parallel()
@@ -346,7 +339,7 @@ func TestUnitTokenPauseTransaction_SetMaxRetry(t *testing.T) {
 
 func TestUnitTokenPauseTransaction_AddSignature(t *testing.T) {
 	t.Parallel()
-	client, _ := ClientFromConfig([]byte(jsonClient))
+	client, _ := ClientFromConfig([]byte(testClientJSONWithoutMirrorNetwork))
 
 	nodeAccountId, err := AccountIDFromString("0.0.3")
 	require.NoError(t, err)
@@ -358,29 +351,34 @@ func TestUnitTokenPauseTransaction_AddSignature(t *testing.T) {
 		FreezeWith(client)
 
 	privateKey, _ := PrivateKeyGenerateEd25519()
-	publicKey := privateKey.PublicKey()
 
-	//Signer one signs the transaction with their private key
 	signature, err := privateKey.SignTransaction(&transaction.Transaction)
 	require.NoError(t, err)
 
-	_, err = transaction.GetSignatures()
+	signs, err := transaction.GetSignatures()
+	for key := range signs[nodeAccountId] {
+		require.Equal(t, signs[nodeAccountId][key], signature)
+	}
+
 	require.NoError(t, err)
 
-	// create new transaction to test AddSignature
-	transaction2, err := NewTokenPauseTransaction().
-		SetNodeAccountIDs(nodeIdList).
-		FreezeWith(client)
+	privateKey2, _ := PrivateKeyGenerateEd25519()
+	publicKey2 := privateKey2.PublicKey()
 
-	signedTransaction := transaction2.AddSignature(publicKey, signature)
-	_, err = signedTransaction.GetSignatures()
+	signedTransaction := transaction.AddSignature(publicKey2, signature)
+	signs2, err := signedTransaction.GetSignatures()
 	require.NoError(t, err)
+
+	for key := range signs2[nodeAccountId] {
+		require.Equal(t, signs2[nodeAccountId][key], signature)
+	}
 }
 
 func TestUnitTokenPauseTransaction_SignWithOperator(t *testing.T) {
 	t.Parallel()
-	client, _ := ClientFromConfig([]byte(jsonClient))
+	client, _ := ClientFromConfig([]byte(testClientJSONWithoutMirrorNetwork))
 	privateKey, _ := PrivateKeyGenerateEd25519()
+	publicKey := privateKey.PublicKey()
 	operatorId, _ := AccountIDFromString("0.0.10")
 
 	client.SetOperator(operatorId, privateKey)
@@ -397,31 +395,35 @@ func TestUnitTokenPauseTransaction_SignWithOperator(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, transaction)
 
-	transaction2, err := NewTokenPauseTransaction().
-		SetNodeAccountIDs(nodeIdList).
-		SetTokenID(TokenID{Token: 3}).
-		FreezeWith(client)
+	privateKey2, _ := PrivateKeyGenerateEd25519()
+	publicKey2 := privateKey2.PublicKey()
+	client.SetOperator(operatorId, privateKey2)
 
-	transaction2, err = transaction2.SignWithOperator(client)
+	transactionSignedWithOp, err := transaction.SignWithOperator(client)
 	require.NoError(t, err)
-	require.NotNil(t, transaction)
+	require.NotNil(t, transactionSignedWithOp)
+
+	assert.Contains(t, transactionSignedWithOp.Transaction.publicKeys, publicKey)
+	assert.Contains(t, transactionSignedWithOp.Transaction.publicKeys, publicKey2)
 
 	// test errors
 	client.operator = nil
-	_, err = NewTokenPauseTransaction().
+	tx, err := NewTokenPauseTransaction().
 		SetNodeAccountIDs(nodeIdList).
 		SetTokenID(TokenID{Token: 3}).
 		SignWithOperator(client)
 
 	require.Error(t, err)
+	require.Nil(t, tx)
 
 	client = nil
-	_, err = NewTokenPauseTransaction().
+	tx, err = NewTokenPauseTransaction().
 		SetNodeAccountIDs(nodeIdList).
 		SetTokenID(TokenID{Token: 3}).
 		SignWithOperator(client)
 
 	require.Error(t, err)
+	require.Nil(t, tx)
 }
 
 func TestUnitTokenPauseTransaction_SetMaxBackoff(t *testing.T) {
