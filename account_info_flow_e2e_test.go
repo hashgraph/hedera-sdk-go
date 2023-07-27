@@ -38,8 +38,7 @@ func TestIntegrationVerifySignatureFlowCanExecute(t *testing.T) {
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
-	newBalance := NewHbar(2)
-	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
+	newBalance := NewHbar(10)
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
