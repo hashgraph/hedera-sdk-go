@@ -310,41 +310,6 @@ func (this *ContractCreateFlow) _CreateContractCreateTransaction(fileID FileID) 
 	return contractCreateTx
 }
 
-func (this *ContractCreateFlow) _CreateContractCreateTransactionWithBytecode() *ContractCreateTransaction {
-	contractCreateTx := NewContractCreateTransaction().
-		SetGas(uint64(this.gas)).
-		SetConstructorParametersRaw(this.parameters).
-		SetInitialBalance(HbarFromTinybar(this.initialBalance)).
-		SetBytecode(this.createBytecode).
-		SetContractMemo(this.memo)
-
-	if len(this.nodeAccountIDs) > 0 {
-		contractCreateTx.SetNodeAccountIDs(this.nodeAccountIDs)
-	}
-
-	if this.adminKey != nil {
-		contractCreateTx.SetAdminKey(*this.adminKey)
-	}
-
-	if this.proxyAccountID != nil {
-		contractCreateTx.SetProxyAccountID(*this.proxyAccountID)
-	}
-
-	if this.autoRenewPeriod != nil {
-		contractCreateTx.SetAutoRenewPeriod(*this.autoRenewPeriod)
-	}
-
-	if this.autoRenewAccountID != nil {
-		contractCreateTx.SetAutoRenewAccountID(*this.autoRenewAccountID)
-	}
-
-	if this.maxAutomaticTokenAssociations != 0 {
-		contractCreateTx.SetMaxAutomaticTokenAssociations(this.maxAutomaticTokenAssociations)
-	}
-
-	return contractCreateTx
-}
-
 func (this *ContractCreateFlow) _CreateTransactionReceiptQuery(response TransactionResponse) *TransactionReceiptQuery {
 	return NewTransactionReceiptQuery().
 		SetNodeAccountIDs([]AccountID{response.NodeID}).
@@ -354,20 +319,19 @@ func (this *ContractCreateFlow) _CreateTransactionReceiptQuery(response Transact
 func (this *ContractCreateFlow) Execute(client *Client) (TransactionResponse, error) {
 	this._SplitBytecode()
 
+	fileCreateResponse, err := this._CreateFileCreateTransaction(client).Execute(client)
+	if err != nil {
+		return TransactionResponse{}, err
+	}
+	fileCreateReceipt, err := this._CreateTransactionReceiptQuery(fileCreateResponse).Execute(client)
+	if err != nil {
+		return TransactionResponse{}, err
+	}
+	if fileCreateReceipt.FileID == nil {
+		return TransactionResponse{}, errors.New("fileID is nil")
+	}
+	fileID := *fileCreateReceipt.FileID
 	if len(this.appendBytecode) > 0 {
-		fileCreateResponse, err := this._CreateFileCreateTransaction(client).Execute(client)
-		if err != nil {
-			return TransactionResponse{}, err
-		}
-		fileCreateReceipt, err := this._CreateTransactionReceiptQuery(fileCreateResponse).Execute(client)
-		if err != nil {
-			return TransactionResponse{}, err
-		}
-		if fileCreateReceipt.FileID == nil {
-			return TransactionResponse{}, errors.New("fileID is nil")
-		}
-		fileID := *fileCreateReceipt.FileID
-
 		fileAppendResponse, err := this._CreateFileAppendTransaction(fileID).Execute(client)
 		if err != nil {
 			return TransactionResponse{}, err
@@ -377,25 +341,12 @@ func (this *ContractCreateFlow) Execute(client *Client) (TransactionResponse, er
 		if err != nil {
 			return TransactionResponse{}, err
 		}
-
-		contractCreateResponse, err := this._CreateContractCreateTransaction(fileID).Execute(client)
-		if err != nil {
-			return TransactionResponse{}, err
-		}
-		_, err = this._CreateTransactionReceiptQuery(contractCreateResponse).Execute(client)
-		if err != nil {
-			return TransactionResponse{}, err
-		}
-
-		return contractCreateResponse, nil
 	}
-
-	contractCreateResponse, err := this._CreateContractCreateTransactionWithBytecode().Execute(client)
+	contractCreateResponse, err := this._CreateContractCreateTransaction(fileID).Execute(client)
 	if err != nil {
 		return TransactionResponse{}, err
 	}
-	_, err = this._CreateTransactionReceiptQuery(contractCreateResponse).
-		Execute(client)
+	_, err = this._CreateTransactionReceiptQuery(contractCreateResponse).Execute(client)
 	if err != nil {
 		return TransactionResponse{}, err
 	}
