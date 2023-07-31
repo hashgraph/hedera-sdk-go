@@ -1,3 +1,9 @@
+## v2.27.0
+
+### Fixed
+
+* `ContractCreateFlow` to work with larger contract's bytecode
+
 ## v2.26.1
 
 ### Added
