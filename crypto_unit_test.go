@@ -7,7 +7,7 @@ package hedera
  *
  * Hedera Go SDK
  *
- * Copyright (C) 2020 - 2022 Hedera Hashgraph, LLC
+ * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -95,7 +95,7 @@ func TestUnitPrivateKeyGenerate(t *testing.T) {
 
 func TestUnitPrivateEd25519KeyGenerate(t *testing.T) {
 	t.Parallel()
-	
+
 	key, err := PrivateKeyGenerateEd25519()
 
 	require.NoError(t, err)
@@ -104,7 +104,7 @@ func TestUnitPrivateEd25519KeyGenerate(t *testing.T) {
 
 func TestUnitPrivateECDSAKeyGenerate(t *testing.T) {
 	t.Parallel()
-	
+
 	key, err := PrivateKeyGenerateEcdsa()
 
 	require.NoError(t, err)
@@ -461,7 +461,7 @@ func DisabledTestUnitPrivateKeyECDSASign(t *testing.T) {
 
 func TestUnitPrivateKeyEd25519FromString(t *testing.T) {
 	t.Parallel()
-	
+
 	key, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 	key2, err := PrivateKeyFromString(key.String())
@@ -472,7 +472,7 @@ func TestUnitPrivateKeyEd25519FromString(t *testing.T) {
 
 func TestUnitPrivateKeyEd25519FromStringRaw(t *testing.T) {
 	t.Parallel()
-	
+
 	key, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 	key2, err := PrivateKeyFromStringEd25519(key.StringRaw())
@@ -483,7 +483,7 @@ func TestUnitPrivateKeyEd25519FromStringRaw(t *testing.T) {
 
 func TestUnitPrivateKeyEd25519FromStringDer(t *testing.T) {
 	t.Parallel()
-	
+
 	key, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 	key2, err := PrivateKeyFromStringEd25519(key.StringDer())
@@ -494,7 +494,7 @@ func TestUnitPrivateKeyEd25519FromStringDer(t *testing.T) {
 
 func TestUnitPublicKeyEd25519FromString(t *testing.T) {
 	t.Parallel()
-	
+
 	key, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 	publicKey := key.PublicKey()
@@ -505,7 +505,7 @@ func TestUnitPublicKeyEd25519FromString(t *testing.T) {
 
 func TestUnitPublicKeyEd25519FromStringRaw(t *testing.T) {
 	t.Parallel()
-	
+
 	key, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 	publicKey := key.PublicKey()
@@ -517,7 +517,7 @@ func TestUnitPublicKeyEd25519FromStringRaw(t *testing.T) {
 
 func TestUnitPublicKeyEd25519FromStringDer(t *testing.T) {
 	t.Parallel()
-	
+
 	key, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 	publicKey := key.PublicKey()
@@ -551,7 +551,7 @@ func TestUnitPrivateKeyECDSAFromStringRaw(t *testing.T) {
 
 func TestUnitPrivateKeyECDSAFromStringDer(t *testing.T) {
 	t.Parallel()
-	
+
 	key, err := PrivateKeyGenerateEcdsa()
 	require.NoError(t, err)
 	key2, err := PrivateKeyFromStringECDSA(key.StringDer())
@@ -608,7 +608,7 @@ func TestUnitPublicKeyECDSAFromStringRaw(t *testing.T) {
 
 func TestUnitPublicKeyECDSAFromStringDer(t *testing.T) {
 	t.Parallel()
-	
+
 	key, err := PrivateKeyGenerateEcdsa()
 	require.NoError(t, err)
 	publicKey := key.PublicKey()
@@ -629,7 +629,7 @@ func TestUnitPublicKeyECDSAFromStringLegacyDer(t *testing.T) {
 
 func TestUnitPrivateKeyFromBytesDerECDSA(t *testing.T) {
 	t.Parallel()
-	
+
 	key, err := PrivateKeyGenerateEcdsa()
 	require.NoError(t, err)
 	bytes := key.BytesDer()
@@ -653,7 +653,7 @@ func TestUnitPrivateKeyFromBytesDerECDSAUncompressed(t *testing.T) {
 
 func TestUnitPrivateKeyFromBytesDerEd25519(t *testing.T) {
 	t.Parallel()
-	
+
 	key, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 	bytes := key.BytesDer()
@@ -664,7 +664,7 @@ func TestUnitPrivateKeyFromBytesDerEd25519(t *testing.T) {
 
 func TestUnitPublicKeyFromBytesDerECDSA(t *testing.T) {
 	t.Parallel()
-	
+
 	key, err := PrivateKeyGenerateEcdsa()
 	require.NoError(t, err)
 	pkey := key.PublicKey()
@@ -676,7 +676,7 @@ func TestUnitPublicKeyFromBytesDerECDSA(t *testing.T) {
 
 func TestUnitPublicKeyFromBytesDerEd25519(t *testing.T) {
 	t.Parallel()
-	
+
 	key, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 	pkey := key.PublicKey()
@@ -688,7 +688,7 @@ func TestUnitPublicKeyFromBytesDerEd25519(t *testing.T) {
 
 func TestUnitPrivateKeyFromStringDerEd25519(t *testing.T) {
 	t.Parallel()
-	
+
 	key, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 	key2, err := PrivateKeyFromStringDer(key.StringDer())
@@ -698,7 +698,7 @@ func TestUnitPrivateKeyFromStringDerEd25519(t *testing.T) {
 
 func TestUnitPrivateKeyFromStringDerECDSA(t *testing.T) {
 	t.Parallel()
-	
+
 	key, err := PrivateKeyGenerateEcdsa()
 	require.NoError(t, err)
 	key2, err := PrivateKeyFromStringDer(key.StringDer())
@@ -708,7 +708,7 @@ func TestUnitPrivateKeyFromStringDerECDSA(t *testing.T) {
 
 func TestUnitPrivateKeyECDSAFromBytes(t *testing.T) {
 	t.Parallel()
-	
+
 	key, err := PrivateKeyGenerateEcdsa()
 	require.NoError(t, err)
 	key2, err := PrivateKeyFromBytes(key.Bytes())
@@ -718,7 +718,7 @@ func TestUnitPrivateKeyECDSAFromBytes(t *testing.T) {
 
 func TestUnitPrivateKeyEd25519FromBytes(t *testing.T) {
 	t.Parallel()
-	
+
 	key, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 	key2, err := PrivateKeyFromBytes(key.Bytes())
