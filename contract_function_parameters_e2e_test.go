@@ -3,6 +3,26 @@
 
 package hedera
 
+/*-
+ *
+ * Hedera Go SDK
+ *
+ * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 import (
 	"encoding/hex"
 	"math/big"
@@ -1550,7 +1570,7 @@ func TestMultipleInt256(t *testing.T) {
 	deployContract(env)
 	value, ok := new(big.Int).SetString("-123", 10)
 	require.True(t, ok)
-	valueTwos:= math.U256Bytes(value)
+	valueTwos := math.U256Bytes(value)
 	contractCal, err := NewContractCallQuery().SetGas(15000000).
 		SetContractID(contractID).SetFunction("returnMultipleInt256", NewContractFunctionParameters().AddInt256(valueTwos)).SetQueryPayment(NewHbar(20)).Execute(env.Client)
 	require.NoError(t, err)
@@ -1782,7 +1802,7 @@ func TestBytes32Array(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestContractNonces(t *testing.T){
+func TestContractNonces(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 	bytecode := []byte(`6080604052348015600f57600080fd5b50604051601a90603b565b604051809103906000f0801580156035573d6000803e3d6000fd5b50506047565b605c8061009483390190565b603f806100556000396000f3fe6080604052600080fdfea2646970667358221220a20122cbad3457fedcc0600363d6e895f17048f5caa4afdab9e655123737567d64736f6c634300081200336080604052348015600f57600080fd5b50603f80601d6000396000f3fe6080604052600080fdfea264697066735822122053dfd8835e3dc6fedfb8b4806460b9b7163f8a7248bac510c6d6808d9da9d6d364736f6c63430008120033`)
@@ -1799,7 +1819,7 @@ func TestContractNonces(t *testing.T){
 		SetGas(10000000).Execute(env.Client)
 	require.NoError(t, err)
 	contractCreate.SetValidateStatus(true)
-	record,err:=contractCreate.GetRecord(env.Client)
+	record, err := contractCreate.GetRecord(env.Client)
 	require.NoError(t, err)
 	require.Equal(t, StatusSuccess, record.Receipt.Status)
 	require.Equal(t, int64(2), record.CallResult.ContractNonces[0].Nonce)
