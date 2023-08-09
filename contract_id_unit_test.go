@@ -129,3 +129,36 @@ func TestUnitContractIDEvm(t *testing.T) {
 		Contract: &services.ContractID_ContractNum{ContractNum: 123},
 	})
 }
+
+func TestUnitContractIDPopulateFailForWrongMirrorHost(t *testing.T) {
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	require.NoError(t, err)
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	privateKey, err := PrivateKeyGenerateEcdsa()
+	require.NoError(t, err)
+	publicKey := privateKey.PublicKey()
+	evmAddress := publicKey.ToEvmAddress()
+	evmAddressAccountID, err := ContractIDFromEvmAddress(0, 0, evmAddress)
+	require.NoError(t, err)
+	err = evmAddressAccountID.PopulateContract(client)
+	require.Error(t, err)
+}
+
+func TestUnitContractIDPopulateFailWithNoMirror(t *testing.T) {
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	require.NoError(t, err)
+	client.mirrorNetwork = nil
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	privateKey, err := PrivateKeyGenerateEcdsa()
+	require.NoError(t, err)
+	publicKey := privateKey.PublicKey()
+	evmAddress := publicKey.ToEvmAddress()
+	evmAddressAccountID, err := ContractIDFromEvmAddress(0, 0, evmAddress)
+	require.NoError(t, err)
+	err = evmAddressAccountID.PopulateContract(client)
+	require.Error(t, err)
+}

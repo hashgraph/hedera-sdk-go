@@ -110,3 +110,36 @@ func TestUnitAccountIDEvm(t *testing.T) {
 
 	require.Equal(t, id.String(), "0.0.0011223344556677889900112233445566778899")
 }
+
+func TestUnitAccountIDPopulateFailForWrongMirrorHost(t *testing.T) {
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	require.NoError(t, err)
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	privateKey, err := PrivateKeyGenerateEcdsa()
+	require.NoError(t, err)
+	publicKey := privateKey.PublicKey()
+	evmAddress := publicKey.ToEvmAddress()
+	evmAddressAccountID, err := AccountIDFromEvmPublicAddress(evmAddress)
+	require.NoError(t, err)
+	err = evmAddressAccountID.PopulateAccount(client)
+	require.Error(t, err)
+}
+
+func TestUnitAccountIDPopulateFailWithNoMirror(t *testing.T) {
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	require.NoError(t, err)
+	client.mirrorNetwork = nil
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	privateKey, err := PrivateKeyGenerateEcdsa()
+	require.NoError(t, err)
+	publicKey := privateKey.PublicKey()
+	evmAddress := publicKey.ToEvmAddress()
+	evmAddressAccountID, err := AccountIDFromEvmPublicAddress(evmAddress)
+	require.NoError(t, err)
+	err = evmAddressAccountID.PopulateAccount(client)
+	require.Error(t, err)
+}
