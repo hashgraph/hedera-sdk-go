@@ -25,38 +25,20 @@ package hedera
 
 import (
 	"os"
-	"sync"
+	"sync/atomic"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
 
-type Count struct {
-	mx    *sync.Mutex
-	count int64
+var callCount int64
+
+func incrementCallCount() {
+	atomic.AddInt64(&callCount, 1)
 }
 
-func NewCount() *Count {
-	return &Count{mx: new(sync.Mutex), count: 0}
-}
-
-func (c *Count) Incr() {
-	c.mx.Lock()
-	c.count++
-	c.mx.Unlock()
-}
-
-func (c *Count) Count() int64 {
-	c.mx.Lock()
-	count := c.count
-	c.mx.Unlock()
-	return count
-}
-
-var fncCount = NewCount()
-
-func fnc() {
-	fncCount.Incr()
+func getCallCount() int64 {
+	return atomic.LoadInt64(&callCount)
 }
 
 func TestIntegrationOneSignature(t *testing.T) {
@@ -74,7 +56,7 @@ func TestIntegrationOneSignature(t *testing.T) {
 	_, err = response.GetReceipt(client)
 	require.NoError(t, err)
 
-	require.Equal(t, int64(1), fncCount.count)
+	require.Equal(t, int64(1), getCallCount())
 	client.Close()
 	err = CloseIntegrationTestEnv(env, nil)
 	require.NoError(t, err)
@@ -82,7 +64,7 @@ func TestIntegrationOneSignature(t *testing.T) {
 
 func signingServiceTwo(txBytes []byte) []byte {
 	localOperatorPrivateKey, _ := PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
-	go fnc()
+	incrementCallCount()
 
 	signature := localOperatorPrivateKey.Sign(txBytes)
 	return signature
