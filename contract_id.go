@@ -22,7 +22,11 @@ package hedera
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
+	"net/http"
+	"strconv"
+	"strings"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
 	"github.com/pkg/errors"
@@ -102,6 +106,7 @@ func (id *ContractID) Validate(client *Client) error {
 	return id.ValidateChecksum(client)
 }
 
+// ContractIDFromEvmAddress constructs a ContractID from a string representation of an EVM address
 func ContractIDFromEvmAddress(shard uint64, realm uint64, evmAddress string) (ContractID, error) {
 	temp, err := hex.DecodeString(evmAddress)
 	if err != nil {
@@ -164,6 +169,49 @@ func (id ContractID) ToStringWithChecksum(client Client) (string, error) {
 // ToSolidityAddress returns the string representation of the ContractID as a _Solidity address.
 func (id ContractID) ToSolidityAddress() string {
 	return _IdToSolidityAddress(id.Shard, id.Realm, id.Contract)
+}
+
+// PopulateContract gets the actual `Contract` field of the `ContractId` from the Mirror Node.
+// Should be used after generating `ContractId.FromEvmAddress()` because it sets the `Contract` field to `0`
+// automatically since there is no connection between the `Contract` and the `evmAddress`
+func (id *ContractID) PopulateContract(client *Client) error {
+	if client.mirrorNetwork == nil || len(client.GetMirrorNetwork()) == 0 {
+		return errors.New("mirror node is not set")
+	}
+	mirrorUrl := client.GetMirrorNetwork()[0]
+	index := strings.Index(mirrorUrl, ":")
+	if index == -1 {
+		return errors.New("invalid mirrorUrl format")
+	}
+	mirrorUrl = mirrorUrl[:index]
+	url := fmt.Sprintf("https://%s/api/v1/contracts/%s", mirrorUrl, hex.EncodeToString(id.EvmAddress))
+	if client.GetLedgerID().String() == "" {
+		url = fmt.Sprintf("http://%s:5551/api/v1/contracts/%s", mirrorUrl, hex.EncodeToString(id.EvmAddress))
+	}
+
+	resp, err := http.Get(url) // #nosec
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	var result map[string]interface{}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return err
+	}
+
+	mirrorContractId, ok := result["contract_id"].(string)
+	if !ok {
+		return errors.New("unexpected response format")
+	}
+
+	numStr := mirrorContractId[strings.LastIndex(mirrorContractId, ".")+1:]
+	num, err := strconv.ParseInt(numStr, 10, 64)
+	if err != nil {
+		return err
+	}
+	id.Contract = uint64(num)
+	return nil
 }
 
 func (id ContractID) _ToProtobuf() *services.ContractID {

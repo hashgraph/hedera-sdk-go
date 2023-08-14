@@ -77,9 +77,9 @@ func NewIntegrationTestEnv(t *testing.T) IntegrationTestEnv {
 	} else if os.Getenv("HEDERA_NETWORK") == "localhost" {
 		network := make(map[string]AccountID)
 		network["127.0.0.1:50213"] = AccountID{Account: 3}
-
+		mirror := []string{"127.0.0.1:5600"}
 		env.Client = ClientForNetwork(network)
-		env.Client.cancelNetworkUpdate()
+		env.Client.SetMirrorNetwork(mirror)
 	} else if os.Getenv("HEDERA_NETWORK") == "testnet" {
 		env.Client = ClientForTestnet()
 	} else if os.Getenv("CONFIG_FILE") != "" {

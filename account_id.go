@@ -4,7 +4,7 @@ package hedera
  *
  * Hedera Go SDK
  *
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
+ * Copyright (C) 2020 - 2022 Hedera Hashgraph, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,10 @@ package hedera
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
+	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -332,6 +335,49 @@ func AccountIDFromBytes(data []byte) (AccountID, error) {
 	}
 
 	return *_AccountIDFromProtobuf(&pb), nil
+}
+
+// PopulateAccount gets the actual `Account` field of the `AccountId` from the Mirror Node.
+// Should be used after generating `AccountId.FromEvmAddress()` because it sets the `Account` field to `0`
+// automatically since there is no connection between the `Account` and the `evmAddress`
+func (id *AccountID) PopulateAccount(client *Client) error {
+	if client.mirrorNetwork == nil || len(client.GetMirrorNetwork()) == 0 {
+		return errors.New("mirror node is not set")
+	}
+	mirrorUrl := client.GetMirrorNetwork()[0]
+	index := strings.Index(mirrorUrl, ":")
+	if index == -1 {
+		return errors.New("invalid mirrorUrl format")
+	}
+	mirrorUrl = mirrorUrl[:index]
+	url := fmt.Sprintf("https://%s/api/v1/accounts/%s", mirrorUrl, hex.EncodeToString(*id.AliasEvmAddress))
+	if client.GetLedgerID().String() == "" {
+		url = fmt.Sprintf("http://%s:5551/api/v1/accounts/%s", mirrorUrl, hex.EncodeToString(*id.AliasEvmAddress))
+	}
+
+	resp, err := http.Get(url) // #nosec
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	var result map[string]interface{}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return err
+	}
+
+	mirrorAccountId, ok := result["account"].(string)
+	if !ok {
+		return errors.New("unexpected response format")
+	}
+
+	numStr := mirrorAccountId[strings.LastIndex(mirrorAccountId, ".")+1:]
+	num, err := strconv.ParseInt(numStr, 10, 64)
+	if err != nil {
+		return err
+	}
+	id.Account = uint64(num)
+	return nil
 }
 
 // Compare returns 0 if the two AccountID are identical, -1 if not.
