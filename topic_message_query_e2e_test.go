@@ -25,6 +25,7 @@ package hedera
 
 import (
 	"errors"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -85,6 +86,7 @@ Etiam ut sodales ex. Nulla luctus, magna eu scelerisque sagittis, nibh quam cons
 func TestIntegrationTopicMessageQueryCanExecute(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	var finished int32 // 0 for false, 1 for true
 
 	resp, err := NewTopicCreateTransaction().
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
@@ -99,15 +101,14 @@ func TestIntegrationTopicMessageQueryCanExecute(t *testing.T) {
 	topicID := *receipt.TopicID
 	assert.NotNil(t, topicID)
 
-	finished := false
 	start := time.Now()
 
 	_, err = NewTopicMessageQuery().
 		SetTopicID(topicID).
 		SetStartTime(time.Unix(0, 0)).
-		SetLimit(14).
+		SetLimit(1).
 		SetCompletionHandler(func() {
-			finished = true
+			atomic.StoreInt32(&finished, 1)
 		}).
 		Subscribe(env.Client, func(message TopicMessage) {
 			// Do nothing
@@ -125,7 +126,8 @@ func TestIntegrationTopicMessageQueryCanExecute(t *testing.T) {
 	require.NoError(t, err)
 
 	for {
-		if finished || uint64(time.Since(start).Seconds()) > 60 {
+		condition := atomic.LoadInt32(&finished) == 1 || uint64(time.Since(start).Seconds()) > 60
+		if condition {
 			break
 		}
 
@@ -141,7 +143,7 @@ func TestIntegrationTopicMessageQueryCanExecute(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	if !finished {
+	if atomic.LoadInt32(&finished) != 1 {
 		err = errors.New("Message was not received within 60 seconds")
 	}
 	require.NoError(t, err)
@@ -153,7 +155,7 @@ func TestIntegrationTopicMessageQueryCanExecute(t *testing.T) {
 func TestIntegrationTopicMessageQueryNoTopicID(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
-
+	var wait int32 = 1 // 1 for true, 0 for false
 	resp, err := NewTopicCreateTransaction().
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
 		SetNodeAccountIDs(env.NodeAccountIDs).
@@ -167,7 +169,6 @@ func TestIntegrationTopicMessageQueryNoTopicID(t *testing.T) {
 	topicID := *receipt.TopicID
 	assert.NotNil(t, topicID)
 
-	wait := true
 	start := time.Now()
 
 	_, err = NewTopicMessageQuery().
@@ -175,7 +176,7 @@ func TestIntegrationTopicMessageQueryNoTopicID(t *testing.T) {
 		SetStartTime(time.Unix(0, 0)).
 		Subscribe(env.Client, func(message TopicMessage) {
 			if string(message.Contents) == bigContents {
-				wait = false
+				atomic.StoreInt32(&wait, 0)
 			}
 		})
 	require.NoError(t, err)
@@ -192,7 +193,8 @@ func TestIntegrationTopicMessageQueryNoTopicID(t *testing.T) {
 	}
 
 	for {
-		if err != nil || !wait || uint64(time.Since(start).Seconds()) > 30 {
+		condition := atomic.LoadInt32(&wait) == 0 || err != nil || uint64(time.Since(start).Seconds()) > 30
+		if condition {
 			break
 		}
 
@@ -208,7 +210,7 @@ func TestIntegrationTopicMessageQueryNoTopicID(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	if wait {
+	if atomic.LoadInt32(&wait) == 1 {
 		err = errors.New("Message was not received within 30 seconds")
 	}
 	assert.Error(t, err)
@@ -220,7 +222,7 @@ func TestIntegrationTopicMessageQueryNoTopicID(t *testing.T) {
 func TestIntegrationTopicMessageQueryNoMessage(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
-
+	var wait int32 = 1 // 1 for true, 0 for false
 	resp, err := NewTopicCreateTransaction().
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
 		SetNodeAccountIDs(env.NodeAccountIDs).
@@ -234,7 +236,6 @@ func TestIntegrationTopicMessageQueryNoMessage(t *testing.T) {
 	topicID := *receipt.TopicID
 	assert.NotNil(t, topicID)
 
-	wait := true
 	start := time.Now()
 
 	_, err = NewTopicMessageQuery().
@@ -242,7 +243,7 @@ func TestIntegrationTopicMessageQueryNoMessage(t *testing.T) {
 		SetStartTime(time.Unix(0, 0)).
 		Subscribe(env.Client, func(message TopicMessage) {
 			if string(message.Contents) == bigContents {
-				wait = false
+				atomic.StoreInt32(&wait, 0)
 			}
 		})
 	require.NoError(t, err)
@@ -257,7 +258,8 @@ func TestIntegrationTopicMessageQueryNoMessage(t *testing.T) {
 	}
 
 	for {
-		if err != nil || !wait || uint64(time.Since(start).Seconds()) > 30 {
+		condition := atomic.LoadInt32(&wait) == 0 || err != nil || uint64(time.Since(start).Seconds()) > 30
+		if condition {
 			break
 		}
 
@@ -273,9 +275,10 @@ func TestIntegrationTopicMessageQueryNoMessage(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	if wait {
+	if atomic.LoadInt32(&wait) == 1 {
 		err = errors.New("Message was not received within 30 seconds")
 	}
+
 	assert.Error(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
@@ -285,6 +288,7 @@ func TestIntegrationTopicMessageQueryNoMessage(t *testing.T) {
 func TestIntegrationTopicMessageQueryNoStartTime(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	var finished int32 = 0 // 0 for false, 1 for true
 
 	resp, err := NewTopicCreateTransaction().
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
@@ -299,7 +303,6 @@ func TestIntegrationTopicMessageQueryNoStartTime(t *testing.T) {
 	topicID := *receipt.TopicID
 	assert.NotNil(t, topicID)
 
-	finished := false
 	start := time.Now()
 
 	_, err = NewTopicMessageQuery().
@@ -308,9 +311,10 @@ func TestIntegrationTopicMessageQueryNoStartTime(t *testing.T) {
 		SetEndTime(time.Now().Add(time.Second*20)).
 		Subscribe(env.Client, func(message TopicMessage) {
 			if string(message.Contents) == bigContents {
-				finished = true
+				atomic.StoreInt32(&finished, 1)
 			}
 		})
+
 	require.NoError(t, err)
 
 	resp, err = NewTopicMessageSubmitTransaction().
@@ -324,7 +328,8 @@ func TestIntegrationTopicMessageQueryNoStartTime(t *testing.T) {
 	require.NoError(t, err)
 
 	for {
-		if err != nil || finished || uint64(time.Since(start).Seconds()) > 60 {
+		condition := atomic.LoadInt32(&finished) == 1 || uint64(time.Since(start).Seconds()) > 60
+		if condition {
 			break
 		}
 
@@ -340,9 +345,10 @@ func TestIntegrationTopicMessageQueryNoStartTime(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	if !finished {
+	if atomic.LoadInt32(&finished) == 0 {
 		err = errors.New("Message was not received within 60 seconds")
 	}
+
 	assert.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
@@ -353,8 +359,8 @@ func TestIntegrationTopicMessageQueryCanExecuteWithTls(t *testing.T) {
 	client := ClientForNetwork(map[string]AccountID{})
 	client.SetMirrorNetwork([]string{"mainnet-public.mirrornode.hedera.com:443"})
 	client.SetTransportSecurity(true)
+	var finished int32 = 0 // 0 for false, 1 for true
 
-	finished := false
 	start := time.Now()
 	end := start.Add(5 * time.Second)
 
@@ -363,21 +369,20 @@ func TestIntegrationTopicMessageQueryCanExecuteWithTls(t *testing.T) {
 		SetStartTime(time.Unix(0, 0)).
 		SetLimit(10).
 		SetCompletionHandler(func() {
-			finished = true
+			atomic.StoreInt32(&finished, 1)
 		}).
 		Subscribe(client, func(message TopicMessage) {
 		})
 	require.NoError(t, err)
-
 	for {
-		if finished || time.Now().After(end) {
+		condition := atomic.LoadInt32(&finished) == 1 || time.Now().After(end)
+		if condition {
 			break
 		}
-
 		time.Sleep(2 * time.Second)
 	}
 
-	require.True(t, finished)
+	require.True(t, atomic.LoadInt32(&finished) == 1)
 
 	handle.Unsubscribe()
 }

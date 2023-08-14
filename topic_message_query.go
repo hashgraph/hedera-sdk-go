@@ -25,6 +25,7 @@ import (
 	"io"
 	"math"
 	"regexp"
+	"sync"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -48,6 +49,7 @@ type TopicMessageQuery struct {
 	startTime         *time.Time
 	endTime           *time.Time
 	limit             uint64
+	mu                sync.Mutex
 }
 
 // NewTopicMessageQuery creates TopicMessageQuery which
@@ -185,6 +187,8 @@ func (query *TopicMessageQuery) _Build() *mirror.ConsensusTopicQuery {
 
 // Subscribe subscribes to messages sent to the specific TopicID
 func (query *TopicMessageQuery) Subscribe(client *Client, onNext func(TopicMessage)) (SubscriptionHandle, error) {
+	var once sync.Once
+	done := make(chan struct{})
 	handle := SubscriptionHandle{}
 
 	err := query._ValidateNetworkOnIDs(client)
@@ -202,6 +206,8 @@ func (query *TopicMessageQuery) Subscribe(client *Client, onNext func(TopicMessa
 	}
 
 	go func() {
+		query.mu.Lock()
+		defer query.mu.Unlock()
 		var subClient mirror.ConsensusService_SubscribeTopicClient
 		var err error
 
@@ -231,7 +237,9 @@ func (query *TopicMessageQuery) Subscribe(client *Client, onNext func(TopicMessa
 			if subClient == nil {
 				ctx, cancel := context.WithCancel(context.TODO())
 				handle.onUnsubscribe = cancel
-
+				once.Do(func() {
+					close(done)
+				})
 				subClient, err = (*channel).SubscribeTopic(ctx, pb)
 
 				if err != nil {
@@ -274,7 +282,7 @@ func (query *TopicMessageQuery) Subscribe(client *Client, onNext func(TopicMessa
 			}
 		}
 	}()
-
+	<-done
 	return handle, nil
 }
 

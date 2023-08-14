@@ -74,7 +74,7 @@ jobs:
                 HEDERA_NETWORK: testnet
                 OPERATOR_ID: ${{ secrets.TESTNET_OPERATOR_ID }}
                 OPERATOR_KEY: ${{ secrets.TESTNET_OPERATOR_KEY }}
-              run: go test -tags="testnets" -timeout 9999s -v -coverprofile=testnets.out -covermode=atomic
+              run: go test -tags="testnets" -timeout 9999s -v -coverprofile=testnets.out -covermode=atomic -race
 
             - name: Upload coverage to Codecov
               if: success()
