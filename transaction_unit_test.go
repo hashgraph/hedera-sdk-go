@@ -603,7 +603,7 @@ func TestUnitTransactionAttributes(t *testing.T) {
 	nodeAccountIds := client.network._GetNodeAccountIDsForExecute()
 
 	txs := []interface{}{
-	NewAccountCreateTransaction(),
+		NewAccountCreateTransaction(),
 		NewAccountDeleteTransaction(),
 		NewAccountUpdateTransaction(),
 		NewContractCreateTransaction(),
