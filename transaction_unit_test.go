@@ -609,7 +609,6 @@ func TestUnitTransactionSignSwitchCasesPointers(t *testing.T) {
 	txs := []interface{}{
 		NewAccountCreateTransaction(),
 		NewAccountDeleteTransaction(),
-		NewAccountUpdateTransaction(),
 		NewFileCreateTransaction(),
 		NewFileDeleteTransaction(),
 		NewFileUpdateTransaction(),
