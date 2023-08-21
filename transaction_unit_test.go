@@ -479,15 +479,7 @@ func TestUnitTransactionInitFeeMaxTransactionFromClientDefault(t *testing.T) {
 func TestUnitTransactionSignSwitchCases(t *testing.T) {
 	t.Parallel()
 
-	newKey, err := GeneratePrivateKey()
-	require.NoError(t, err)
-
-	client, err := _NewMockClient()
-	require.NoError(t, err)
-	client.SetLedgerID(*NewLedgerIDTestnet())
-
-	nodeAccountIds := client.network._GetNodeAccountIDsForExecute()
-	nodeAccountId := nodeAccountIds[0]
+	newKey, client, nodeAccountId := signSwitchCaseaSetup(t)
 
 	txs := []interface{}{
 		NewAccountCreateTransaction(),
@@ -518,25 +510,8 @@ func TestUnitTransactionSignSwitchCases(t *testing.T) {
 	}
 
 	for _, tx := range txs {
-		// Get the reflect.Value of the pointer to the Transaction
-		txPtr := reflect.ValueOf(tx)
-		txPtr.MethodByName("FreezeWith").Call([]reflect.Value{reflect.ValueOf(client)})
 
-		// Get the reflect.Value of the Transaction
-		txVal := txPtr.Elem()
-
-		// Get the Transaction field by name
-		txField := txVal.FieldByName("Transaction")
-
-		// Get the value of the Transaction field
-		txValue := txField.Interface().(Transaction)
-
-		refl_signature := reflect.ValueOf(newKey).MethodByName("SignTransaction").Call([]reflect.Value{reflect.ValueOf(&txValue)})
-		signature := refl_signature[0].Interface().([]byte)
-
-		transferTxBytes, err := TransactionToBytes(tx)
-		assert.NoError(t, err)
-		assert.NotEmpty(t, transferTxBytes)
+		txVal, signature, transferTxBytes := signSwitchCaseaHelper(t, tx, newKey, client)
 
 		signTests := []struct {
 			name string
@@ -596,15 +571,7 @@ func TestUnitTransactionSignSwitchCases(t *testing.T) {
 func TestUnitTransactionSignSwitchCasesPointers(t *testing.T) {
 	t.Parallel()
 
-	newKey, err := GeneratePrivateKey()
-	require.NoError(t, err)
-
-	client, err := _NewMockClient()
-	require.NoError(t, err)
-	client.SetLedgerID(*NewLedgerIDTestnet())
-
-	nodeAccountIds := client.network._GetNodeAccountIDsForExecute()
-	nodeAccountId := nodeAccountIds[0]
+	newKey, client, nodeAccountId := signSwitchCaseaSetup(t)
 
 	txs := []interface{}{
 		NewAccountCreateTransaction(),
@@ -634,25 +601,8 @@ func TestUnitTransactionSignSwitchCasesPointers(t *testing.T) {
 	}
 
 	for _, tx := range txs {
-		// Get the reflect.Value of the pointer to the Transaction
-		txPtr := reflect.ValueOf(tx)
-		txPtr.MethodByName("FreezeWith").Call([]reflect.Value{reflect.ValueOf(client)})
 
-		// Get the reflect.Value of the Transaction
-		txVal := txPtr.Elem()
-
-		// Get the Transaction field by name
-		txField := txVal.FieldByName("Transaction")
-
-		// Get the value of the Transaction field
-		txValue := txField.Interface().(Transaction)
-
-		refl_signature := reflect.ValueOf(newKey).MethodByName("SignTransaction").Call([]reflect.Value{reflect.ValueOf(&txValue)})
-		signature := refl_signature[0].Interface().([]byte)
-
-		transferTxBytes, err := TransactionToBytes(tx)
-		assert.NoError(t, err)
-		assert.NotEmpty(t, transferTxBytes)
+		txVal, signature, transferTxBytes := signSwitchCaseaHelper(t, tx, newKey, client)
 
 		signTests := []struct {
 			name string
@@ -1114,6 +1064,44 @@ func TestUnitTransactionAttributesSerialization(t *testing.T) {
 			})
 		}
 	}
+}
+
+func signSwitchCaseaSetup(t *testing.T) (PrivateKey, *Client, AccountID) {
+	newKey, err := GeneratePrivateKey()
+	require.NoError(t, err)
+
+	client, err := _NewMockClient()
+	require.NoError(t, err)
+	client.SetLedgerID(*NewLedgerIDTestnet())
+
+	nodeAccountIds := client.network._GetNodeAccountIDsForExecute()
+	nodeAccountId := nodeAccountIds[0]
+
+	return newKey, client, nodeAccountId
+}
+
+func signSwitchCaseaHelper(t *testing.T, tx interface{}, newKey PrivateKey, client *Client) (txVal reflect.Value, signature []byte, transferTxBytes []byte) {
+	// Get the reflect.Value of the pointer to the Transaction
+	txPtr := reflect.ValueOf(tx)
+	txPtr.MethodByName("FreezeWith").Call([]reflect.Value{reflect.ValueOf(client)})
+
+	// Get the reflect.Value of the Transaction
+	txVal = txPtr.Elem()
+
+	// Get the Transaction field by name
+	txField := txVal.FieldByName("Transaction")
+
+	// Get the value of the Transaction field
+	txValue := txField.Interface().(Transaction)
+
+	refl_signature := reflect.ValueOf(newKey).MethodByName("SignTransaction").Call([]reflect.Value{reflect.ValueOf(&txValue)})
+	signature = refl_signature[0].Interface().([]byte)
+
+	transferTxBytes, err := TransactionToBytes(tx)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, transferTxBytes)
+
+	return txVal, signature, transferTxBytes
 }
 
 // TransactionGetTransactionHash //needs to be tested in e2e tests
