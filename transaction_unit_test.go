@@ -476,7 +476,7 @@ func TestUnitTransactionInitFeeMaxTransactionFromClientDefault(t *testing.T) {
 	require.Equal(t, uint64(fee.AsTinybar()), transaction.transactionFee)
 }
 
-func TestUnitTransactionSwitchCases(t *testing.T) {
+func TestUnitTransactionSignSwitchCases(t *testing.T) {
 	t.Parallel()
 
 	newKey, err := GeneratePrivateKey()
@@ -591,7 +591,127 @@ func TestUnitTransactionSwitchCases(t *testing.T) {
 			})
 		}
 	}
+}
 
+func TestUnitTransactionSignSwitchCasesPointers(t *testing.T) {
+	t.Parallel()
+
+	newKey, err := GeneratePrivateKey()
+	require.NoError(t, err)
+
+	client, err := _NewMockClient()
+	require.NoError(t, err)
+	client.SetLedgerID(*NewLedgerIDTestnet())
+
+	nodeAccountIds := client.network._GetNodeAccountIDsForExecute()
+	nodeAccountId := nodeAccountIds[0]
+
+	txs := []interface{}{
+		NewAccountCreateTransaction(),
+		NewAccountDeleteTransaction(),
+		NewAccountUpdateTransaction(),
+		NewFileCreateTransaction(),
+		NewFileDeleteTransaction(),
+		NewFileUpdateTransaction(),
+		NewLiveHashAddTransaction(),
+		NewLiveHashDeleteTransaction(),
+		NewTokenAssociateTransaction(),
+		NewTokenBurnTransaction(),
+		NewTokenCreateTransaction(),
+		NewTokenDeleteTransaction(),
+		NewTokenDissociateTransaction(),
+		NewTokenFeeScheduleUpdateTransaction(),
+		NewTokenFreezeTransaction(),
+		NewTokenGrantKycTransaction(),
+		NewTokenMintTransaction(),
+		NewTokenRevokeKycTransaction(),
+		NewTokenUnfreezeTransaction(),
+		NewTokenUpdateTransaction(),
+		NewTokenWipeTransaction(),
+		NewTopicCreateTransaction(),
+		NewTopicDeleteTransaction(),
+		NewTopicUpdateTransaction(),
+		NewTransferTransaction(),
+	}
+
+	for _, tx := range txs {
+		// Get the reflect.Value of the pointer to the Transaction
+		txPtr := reflect.ValueOf(tx)
+		txPtr.MethodByName("FreezeWith").Call([]reflect.Value{reflect.ValueOf(client)})
+
+		// Get the reflect.Value of the Transaction
+		txVal := txPtr.Elem()
+
+		// Get the Transaction field by name
+		txField := txVal.FieldByName("Transaction")
+
+		// Get the value of the Transaction field
+		txValue := txField.Interface().(Transaction)
+
+		refl_signature := reflect.ValueOf(newKey).MethodByName("SignTransaction").Call([]reflect.Value{reflect.ValueOf(&txValue)})
+		signature := refl_signature[0].Interface().([]byte)
+
+		transferTxBytes, err := TransactionToBytes(tx)
+		assert.NoError(t, err)
+		assert.NotEmpty(t, transferTxBytes)
+
+		signTests := []struct {
+			name string
+			sign func(transactionInterface interface{}, key Key) (interface{}, error)
+		}{
+			{
+				name: "TransactionSign/" + txVal.Type().Name(),
+				sign: func(transactionInterface interface{}, key Key) (interface{}, error) {
+					privateKey, ok := key.(PrivateKey)
+					if !ok {
+						panic("key is not a PrivateKey")
+					}
+					return TransactionSign(transactionInterface, privateKey)
+				},
+			},
+			{
+				name: "TransactionSignWith/" + txVal.Type().Name(),
+				sign: func(transactionInterface interface{}, key Key) (interface{}, error) {
+					return TransactionSignWth(transactionInterface, newKey.PublicKey(), newKey.Sign)
+				},
+			},
+			{
+				name: "TransactionSignWithOperator/" + txVal.Type().Name(),
+				sign: func(transactionInterface interface{}, key Key) (interface{}, error) {
+					return TransactionSignWithOperator(transactionInterface, client)
+				},
+			},
+			{
+				name: "TransactionAddSignature/" + txVal.Type().Name(),
+				sign: func(transactionInterface interface{}, key Key) (interface{}, error) {
+					return TransactionAddSignature(transactionInterface, newKey.PublicKey(), signature)
+				},
+			},
+		}
+
+		for _, tt := range signTests {
+			t.Run(tt.name, func(t *testing.T) {
+				transactionInterface, err := TransactionFromBytes(transferTxBytes)
+				require.NoError(t, err)
+
+				// Convert the transactionInterface to a pointer
+				ptr := reflect.New(reflect.TypeOf(transactionInterface))
+				ptr.Elem().Set(reflect.ValueOf(transactionInterface))
+
+				tx, err := tt.sign(ptr.Interface(), newKey)
+				assert.NoError(t, err)
+				assert.NotEmpty(t, tx)
+
+				signs, err := TransactionGetSignatures(ptr.Interface())
+				assert.NoError(t, err)
+
+				// verify with range because var signs = map[AccountID]map[*PublicKey][]byte, where *PublicKey is unknown memory address
+				for key := range signs[nodeAccountId] {
+					assert.Equal(t, signs[nodeAccountId][key], signature)
+				}
+			})
+		}
+	}
 }
 
 func TestUnitTransactionAttributes(t *testing.T) {
@@ -605,7 +725,6 @@ func TestUnitTransactionAttributes(t *testing.T) {
 	txs := []interface{}{
 		NewAccountCreateTransaction(),
 		NewAccountDeleteTransaction(),
-		NewAccountUpdateTransaction(),
 		NewContractCreateTransaction(),
 		NewContractDeleteTransaction(),
 		NewContractExecuteTransaction(),
@@ -742,8 +861,168 @@ func TestUnitTransactionAttributes(t *testing.T) {
 
 		for _, tt := range tests {
 			t.Run(tt.name, func(t *testing.T) {
-
 				txSet, err := tt.set(tx)
+				require.NoError(t, err)
+
+				txGet, err := tt.get(txSet)
+				require.NoError(t, err)
+
+				tt.assert(t, txGet)
+			})
+		}
+	}
+}
+
+func TestUnitTransactionAttributesDereferanced(t *testing.T) {
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	require.NoError(t, err)
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	nodeAccountIds := client.network._GetNodeAccountIDsForExecute()
+
+	txs := []interface{}{
+		NewAccountCreateTransaction(),
+		NewAccountDeleteTransaction(),
+		NewAccountUpdateTransaction(),
+		NewContractCreateTransaction(),
+		NewContractDeleteTransaction(),
+		NewContractExecuteTransaction(),
+		NewContractUpdateTransaction(),
+		NewFileAppendTransaction(),
+		NewFileCreateTransaction(),
+		NewFileDeleteTransaction(),
+		NewFileUpdateTransaction(),
+		NewLiveHashAddTransaction(),
+		NewLiveHashDeleteTransaction(),
+		NewScheduleCreateTransaction(),
+		NewScheduleDeleteTransaction(),
+		NewScheduleSignTransaction(),
+		NewSystemDeleteTransaction(),
+		NewSystemUndeleteTransaction(),
+		NewTokenAssociateTransaction(),
+		NewTokenBurnTransaction(),
+		NewTokenCreateTransaction(),
+		NewTokenDeleteTransaction(),
+		NewTokenDissociateTransaction(),
+		NewTokenFeeScheduleUpdateTransaction(),
+		NewTokenFreezeTransaction(),
+		NewTokenGrantKycTransaction(),
+		NewTokenMintTransaction(),
+		NewTokenRevokeKycTransaction(),
+		NewTokenUnfreezeTransaction(),
+		NewTokenUpdateTransaction(),
+		NewTokenWipeTransaction(),
+		NewTopicCreateTransaction(),
+		NewTopicDeleteTransaction(),
+		NewTopicUpdateTransaction(),
+		NewTransferTransaction(),
+	}
+
+	for _, tx := range txs {
+		txName := reflect.TypeOf(tx).Elem().Name()
+
+		tests := []struct {
+			name   string
+			set    func(transactionInterface interface{}) (interface{}, error)
+			get    func(transactionInterface interface{}) (interface{}, error)
+			assert func(t *testing.T, actual interface{})
+		}{
+			{
+				name: "TransactionTransactionID/" + txName,
+				set: func(transactionInterface interface{}) (interface{}, error) {
+					transactionID := TransactionID{AccountID: &AccountID{Account: 9999}, ValidStart: &time.Time{}, scheduled: false, Nonce: nil}
+					return TransactionSetTransactionID(transactionInterface, transactionID)
+				},
+				get: func(transactionInterface interface{}) (interface{}, error) {
+					return TransactionGetTransactionID(transactionInterface)
+				},
+				assert: func(t *testing.T, actual interface{}) {
+					transactionID := TransactionID{AccountID: &AccountID{Account: 9999}, ValidStart: &time.Time{}, scheduled: false, Nonce: nil}
+					A := actual.(TransactionID)
+
+					require.Equal(t, transactionID.AccountID, A.AccountID)
+				},
+			},
+			{
+				name: "TransactionTransactionMemo/" + txName,
+				set: func(transactionInterface interface{}) (interface{}, error) {
+					return TransactionSetTransactionMemo(transactionInterface, "test memo")
+				},
+				get: func(transactionInterface interface{}) (interface{}, error) {
+					return TransactionGetTransactionMemo(transactionInterface)
+				},
+				assert: func(t *testing.T, actual interface{}) {
+					require.Equal(t, "test memo", actual)
+				},
+			},
+			{
+				name: "TransactionMaxTransactionFee/" + txName,
+				set: func(transactionInterface interface{}) (interface{}, error) {
+					return TransactionSetMaxTransactionFee(transactionInterface, NewHbar(1))
+				},
+				get: func(transactionInterface interface{}) (interface{}, error) {
+					return TransactionGetMaxTransactionFee(transactionInterface)
+				},
+				assert: func(t *testing.T, actual interface{}) {
+					require.Equal(t, NewHbar(1), actual)
+				},
+			},
+			{
+				name: "TransactionTransactionValidDuration/" + txName,
+				set: func(transactionInterface interface{}) (interface{}, error) {
+					return TransactionSetTransactionValidDuration(transactionInterface, time.Second*10)
+				},
+				get: func(transactionInterface interface{}) (interface{}, error) {
+					return TransactionGetTransactionValidDuration(transactionInterface)
+				},
+				assert: func(t *testing.T, actual interface{}) {
+					require.Equal(t, time.Second*10, actual)
+				},
+			},
+			{
+				name: "TransactionNodeAccountIDs/" + txName,
+				set: func(transactionInterface interface{}) (interface{}, error) {
+					return TransactionSetNodeAccountIDs(transactionInterface, nodeAccountIds)
+				},
+				get: func(transactionInterface interface{}) (interface{}, error) {
+					return TransactionGetNodeAccountIDs(transactionInterface)
+				},
+				assert: func(t *testing.T, actual interface{}) {
+					require.Equal(t, nodeAccountIds, actual)
+				},
+			},
+			{
+				name: "TransactionMinBackoff/" + txName,
+				set: func(transactionInterface interface{}) (interface{}, error) {
+					tx, _ := TransactionSetMaxBackoff(transactionInterface, time.Second*200)
+					return TransactionSetMinBackoff(tx, time.Second*10)
+				},
+				get: func(transactionInterface interface{}) (interface{}, error) {
+					return TransactionGetMinBackoff(transactionInterface)
+				},
+				assert: func(t *testing.T, actual interface{}) {
+					require.Equal(t, time.Second*10, actual)
+				},
+			},
+			{
+				name: "TransactionMaxBackoff/" + txName,
+				set: func(transactionInterface interface{}) (interface{}, error) {
+					return TransactionSetMaxBackoff(transactionInterface, time.Second*200)
+				},
+				get: func(transactionInterface interface{}) (interface{}, error) {
+					return TransactionGetMaxBackoff(transactionInterface)
+				},
+				assert: func(t *testing.T, actual interface{}) {
+					require.Equal(t, time.Second*200, actual)
+				},
+			},
+		}
+
+		for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+				txValue := reflect.ValueOf(tx).Elem().Interface()
+				txSet, err := tt.set(txValue)
 				require.NoError(t, err)
 
 				txGet, err := tt.get(txSet)
@@ -831,6 +1110,8 @@ func TestUnitTransactionAttributesSerialization(t *testing.T) {
 		for _, tt := range tests {
 			t.Run(tt.name, func(t *testing.T) {
 				tt.act(tx)
+				txValue := reflect.ValueOf(tx).Elem().Interface()
+				tt.act(txValue)
 			})
 		}
 	}
