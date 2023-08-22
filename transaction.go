@@ -342,6 +342,7 @@ func _TransactionCompare(list *sdk.TransactionList) (bool, error) {
 	}
 
 	for i := 1; i < len(body); i++ {
+		// #nosec G602
 		if reflect.TypeOf(body[0].Data) != reflect.TypeOf(body[i].Data) {
 			return false, nil
 		}
