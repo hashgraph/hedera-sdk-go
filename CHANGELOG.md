@@ -1,3 +1,13 @@
+## v2.28.0
+
+### Added
+
+* `PopulateAccount` to `AccountID`
+* `PopulateContract` to `ContractID`
+
+### Fixed
+
+* Data race in `TopicMessageQuery`
 ## v2.27.0
 
 ### Fixed
