@@ -365,8 +365,10 @@ func TestUnitAccountAllowanceDeleteTransactionCoverage(t *testing.T) {
 	transaction.GetRegenerateTransactionID()
 	byt, err := transaction.ToBytes()
 	require.NoError(t, err)
-	txFromBytes, err := TransactionFromBytes(byt)
+	txFromBytesI, err := TransactionFromBytes(byt)
 	require.NoError(t, err)
+	txFromBytes, ok := txFromBytesI.(AccountAllowanceDeleteTransaction)
+	require.Equal(t, true, ok)
 	sig, err := newKey.SignTransaction(&transaction.Transaction)
 	require.NoError(t, err)
 
@@ -381,7 +383,7 @@ func TestUnitAccountAllowanceDeleteTransactionCoverage(t *testing.T) {
 	transaction.GetAllHbarDeleteAllowances()
 	transaction.GetAllTokenDeleteAllowances()
 	transaction._GetLogID()
-	txFromBytes.(*AccountAllowanceDeleteTransaction).AddSignature(newKey.PublicKey(), sig)
+	txFromBytes.AddSignature(newKey.PublicKey(), sig)
 }
 
 func TestUnitAccountAllowanceDeleteTransactionMock(t *testing.T) {

@@ -248,11 +248,11 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 	case *services.TransactionBody_CryptoTransfer:
 		return *_TransferTransactionFromProtobuf(tx, first), nil
 	case *services.TransactionBody_CryptoUpdateAccount:
-		return _AccountUpdateTransactionFromProtobuf(tx, first), nil
+		return *_AccountUpdateTransactionFromProtobuf(tx, first), nil
 	case *services.TransactionBody_CryptoApproveAllowance:
-		return _AccountAllowanceApproveTransactionFromProtobuf(tx, first), nil
+		return *_AccountAllowanceApproveTransactionFromProtobuf(tx, first), nil
 	case *services.TransactionBody_CryptoDeleteAllowance:
-		return _AccountAllowanceDeleteTransactionFromProtobuf(tx, first), nil
+		return *_AccountAllowanceDeleteTransactionFromProtobuf(tx, first), nil
 	case *services.TransactionBody_FileAppend:
 		return *_FileAppendTransactionFromProtobuf(tx, first), nil
 	case *services.TransactionBody_FileCreate:
@@ -897,6 +897,10 @@ func TransactionSign(transaction interface{}, privateKey PrivateKey) (interface{
 		return i.Sign(privateKey), nil
 	case AccountUpdateTransaction:
 		return i.Sign(privateKey), nil
+	case AccountAllowanceApproveTransaction:
+		return i.Sign(privateKey), nil
+	case AccountAllowanceDeleteTransaction:
+		return i.Sign(privateKey), nil
 	case ContractCreateTransaction:
 		return i.Sign(privateKey), nil
 	case ContractDeleteTransaction:
@@ -968,6 +972,10 @@ func TransactionSign(transaction interface{}, privateKey PrivateKey) (interface{
 	case *AccountDeleteTransaction:
 		return i.Sign(privateKey), nil
 	case *AccountUpdateTransaction:
+		return i.Sign(privateKey), nil
+	case *AccountAllowanceApproveTransaction:
+		return i.Sign(privateKey), nil
+	case *AccountAllowanceDeleteTransaction:
 		return i.Sign(privateKey), nil
 	case *ContractCreateTransaction:
 		return i.Sign(privateKey), nil
@@ -1048,6 +1056,10 @@ func TransactionSignWth(transaction interface{}, publicKKey PublicKey, signer Tr
 		return i.SignWith(publicKKey, signer), nil
 	case AccountUpdateTransaction:
 		return i.SignWith(publicKKey, signer), nil
+	case AccountAllowanceApproveTransaction:
+		return i.SignWith(publicKKey, signer), nil
+	case AccountAllowanceDeleteTransaction:
+		return i.SignWith(publicKKey, signer), nil
 	case ContractCreateTransaction:
 		return i.SignWith(publicKKey, signer), nil
 	case ContractDeleteTransaction:
@@ -1119,6 +1131,10 @@ func TransactionSignWth(transaction interface{}, publicKKey PublicKey, signer Tr
 	case *AccountDeleteTransaction:
 		return i.SignWith(publicKKey, signer), nil
 	case *AccountUpdateTransaction:
+		return i.SignWith(publicKKey, signer), nil
+	case *AccountAllowanceApproveTransaction:
+		return i.SignWith(publicKKey, signer), nil
+	case *AccountAllowanceDeleteTransaction:
 		return i.SignWith(publicKKey, signer), nil
 	case *ContractCreateTransaction:
 		return i.SignWith(publicKKey, signer), nil
@@ -1199,6 +1215,10 @@ func TransactionSignWithOperator(transaction interface{}, client *Client) (inter
 		return i.SignWithOperator(client)
 	case AccountUpdateTransaction:
 		return i.SignWithOperator(client)
+	case AccountAllowanceApproveTransaction:
+		return i.SignWithOperator(client)
+	case AccountAllowanceDeleteTransaction:
+		return i.SignWithOperator(client)
 	case ContractCreateTransaction:
 		return i.SignWithOperator(client)
 	case ContractDeleteTransaction:
@@ -1270,6 +1290,10 @@ func TransactionSignWithOperator(transaction interface{}, client *Client) (inter
 	case *AccountDeleteTransaction:
 		return i.SignWithOperator(client)
 	case *AccountUpdateTransaction:
+		return i.SignWithOperator(client)
+	case *AccountAllowanceApproveTransaction:
+		return i.SignWithOperator(client)
+	case *AccountAllowanceDeleteTransaction:
 		return i.SignWithOperator(client)
 	case *ContractCreateTransaction:
 		return i.SignWithOperator(client)
@@ -1350,6 +1374,10 @@ func TransactionAddSignature(transaction interface{}, publicKey PublicKey, signa
 		return i.AddSignature(publicKey, signature), nil
 	case AccountUpdateTransaction:
 		return i.AddSignature(publicKey, signature), nil
+	case AccountAllowanceApproveTransaction:
+		return i.AddSignature(publicKey, signature), nil
+	case AccountAllowanceDeleteTransaction:
+		return i.AddSignature(publicKey, signature), nil
 	case ContractCreateTransaction:
 		return i.AddSignature(publicKey, signature), nil
 	case ContractDeleteTransaction:
@@ -1415,6 +1443,10 @@ func TransactionAddSignature(transaction interface{}, publicKey PublicKey, signa
 	case *AccountDeleteTransaction:
 		return i.AddSignature(publicKey, signature), nil
 	case *AccountUpdateTransaction:
+		return i.AddSignature(publicKey, signature), nil
+	case *AccountAllowanceApproveTransaction:
+		return i.AddSignature(publicKey, signature), nil
+	case *AccountAllowanceDeleteTransaction:
 		return i.AddSignature(publicKey, signature), nil
 	case *ContractCreateTransaction:
 		return i.AddSignature(publicKey, signature), nil
@@ -1489,6 +1521,10 @@ func TransactionGetSignatures(transaction interface{}) (map[AccountID]map[*Publi
 		return i.GetSignatures()
 	case AccountUpdateTransaction:
 		return i.GetSignatures()
+	case AccountAllowanceApproveTransaction:
+		return i.GetSignatures()
+	case AccountAllowanceDeleteTransaction:
+		return i.GetSignatures()
 	case ContractCreateTransaction:
 		return i.GetSignatures()
 	case ContractDeleteTransaction:
@@ -1560,6 +1596,10 @@ func TransactionGetSignatures(transaction interface{}) (map[AccountID]map[*Publi
 	case *AccountDeleteTransaction:
 		return i.GetSignatures()
 	case *AccountUpdateTransaction:
+		return i.GetSignatures()
+	case *AccountAllowanceApproveTransaction:
+		return i.GetSignatures()
+	case *AccountAllowanceDeleteTransaction:
 		return i.GetSignatures()
 	case *ContractCreateTransaction:
 		return i.GetSignatures()
@@ -1640,6 +1680,10 @@ func TransactionSetTransactionID(transaction interface{}, transactionID Transact
 		return i.SetTransactionID(transactionID), nil
 	case AccountUpdateTransaction:
 		return i.SetTransactionID(transactionID), nil
+	case AccountAllowanceApproveTransaction:
+		return i.SetTransactionID(transactionID), nil
+	case AccountAllowanceDeleteTransaction:
+		return i.SetTransactionID(transactionID), nil
 	case ContractCreateTransaction:
 		return i.SetTransactionID(transactionID), nil
 	case ContractDeleteTransaction:
@@ -1711,6 +1755,10 @@ func TransactionSetTransactionID(transaction interface{}, transactionID Transact
 	case *AccountDeleteTransaction:
 		return i.SetTransactionID(transactionID), nil
 	case *AccountUpdateTransaction:
+		return i.SetTransactionID(transactionID), nil
+	case *AccountAllowanceApproveTransaction:
+		return i.SetTransactionID(transactionID), nil
+	case *AccountAllowanceDeleteTransaction:
 		return i.SetTransactionID(transactionID), nil
 	case *ContractCreateTransaction:
 		return i.SetTransactionID(transactionID), nil
@@ -1791,6 +1839,10 @@ func TransactionGetTransactionID(transaction interface{}) (TransactionID, error)
 		return i.GetTransactionID(), nil
 	case AccountUpdateTransaction:
 		return i.GetTransactionID(), nil
+	case AccountAllowanceApproveTransaction:
+		return i.GetTransactionID(), nil
+	case AccountAllowanceDeleteTransaction:
+		return i.GetTransactionID(), nil
 	case ContractCreateTransaction:
 		return i.GetTransactionID(), nil
 	case ContractDeleteTransaction:
@@ -1862,6 +1914,10 @@ func TransactionGetTransactionID(transaction interface{}) (TransactionID, error)
 	case *AccountDeleteTransaction:
 		return i.GetTransactionID(), nil
 	case *AccountUpdateTransaction:
+		return i.GetTransactionID(), nil
+	case *AccountAllowanceApproveTransaction:
+		return i.GetTransactionID(), nil
+	case *AccountAllowanceDeleteTransaction:
 		return i.GetTransactionID(), nil
 	case *ContractCreateTransaction:
 		return i.GetTransactionID(), nil
@@ -1942,6 +1998,10 @@ func TransactionSetTransactionMemo(transaction interface{}, transactionMemo stri
 		return i.SetTransactionMemo(transactionMemo), nil
 	case AccountUpdateTransaction:
 		return i.SetTransactionMemo(transactionMemo), nil
+	case AccountAllowanceApproveTransaction:
+		return i.SetTransactionMemo(transactionMemo), nil
+	case AccountAllowanceDeleteTransaction:
+		return i.SetTransactionMemo(transactionMemo), nil
 	case ContractCreateTransaction:
 		return i.SetTransactionMemo(transactionMemo), nil
 	case ContractDeleteTransaction:
@@ -2013,6 +2073,10 @@ func TransactionSetTransactionMemo(transaction interface{}, transactionMemo stri
 	case *AccountDeleteTransaction:
 		return i.SetTransactionMemo(transactionMemo), nil
 	case *AccountUpdateTransaction:
+		return i.SetTransactionMemo(transactionMemo), nil
+	case *AccountAllowanceApproveTransaction:
+		return i.SetTransactionMemo(transactionMemo), nil
+	case *AccountAllowanceDeleteTransaction:
 		return i.SetTransactionMemo(transactionMemo), nil
 	case *ContractCreateTransaction:
 		return i.SetTransactionMemo(transactionMemo), nil
@@ -2093,6 +2157,10 @@ func TransactionGetTransactionMemo(transaction interface{}) (string, error) { //
 		return i.GetTransactionMemo(), nil
 	case AccountUpdateTransaction:
 		return i.GetTransactionMemo(), nil
+	case AccountAllowanceApproveTransaction:
+		return i.GetTransactionMemo(), nil
+	case AccountAllowanceDeleteTransaction:
+		return i.GetTransactionMemo(), nil
 	case ContractCreateTransaction:
 		return i.GetTransactionMemo(), nil
 	case ContractDeleteTransaction:
@@ -2164,6 +2232,10 @@ func TransactionGetTransactionMemo(transaction interface{}) (string, error) { //
 	case *AccountDeleteTransaction:
 		return i.GetTransactionMemo(), nil
 	case *AccountUpdateTransaction:
+		return i.GetTransactionMemo(), nil
+	case *AccountAllowanceApproveTransaction:
+		return i.GetTransactionMemo(), nil
+	case *AccountAllowanceDeleteTransaction:
 		return i.GetTransactionMemo(), nil
 	case *ContractCreateTransaction:
 		return i.GetTransactionMemo(), nil
@@ -2244,6 +2316,10 @@ func TransactionSetMaxTransactionFee(transaction interface{}, maxTransactionFee 
 		return i.SetMaxTransactionFee(maxTransactionFee), nil
 	case AccountUpdateTransaction:
 		return i.SetMaxTransactionFee(maxTransactionFee), nil
+	case AccountAllowanceApproveTransaction:
+		return i.SetMaxTransactionFee(maxTransactionFee), nil
+	case AccountAllowanceDeleteTransaction:
+		return i.SetMaxTransactionFee(maxTransactionFee), nil
 	case ContractCreateTransaction:
 		return i.SetMaxTransactionFee(maxTransactionFee), nil
 	case ContractDeleteTransaction:
@@ -2315,6 +2391,10 @@ func TransactionSetMaxTransactionFee(transaction interface{}, maxTransactionFee 
 	case *AccountDeleteTransaction:
 		return i.SetMaxTransactionFee(maxTransactionFee), nil
 	case *AccountUpdateTransaction:
+		return i.SetMaxTransactionFee(maxTransactionFee), nil
+	case *AccountAllowanceApproveTransaction:
+		return i.SetMaxTransactionFee(maxTransactionFee), nil
+	case *AccountAllowanceDeleteTransaction:
 		return i.SetMaxTransactionFee(maxTransactionFee), nil
 	case *ContractCreateTransaction:
 		return i.SetMaxTransactionFee(maxTransactionFee), nil
@@ -2395,6 +2475,10 @@ func TransactionGetMaxTransactionFee(transaction interface{}) (Hbar, error) { //
 		return i.GetMaxTransactionFee(), nil
 	case AccountUpdateTransaction:
 		return i.GetMaxTransactionFee(), nil
+	case AccountAllowanceApproveTransaction:
+		return i.GetMaxTransactionFee(), nil
+	case AccountAllowanceDeleteTransaction:
+		return i.GetMaxTransactionFee(), nil
 	case ContractCreateTransaction:
 		return i.GetMaxTransactionFee(), nil
 	case ContractDeleteTransaction:
@@ -2466,6 +2550,10 @@ func TransactionGetMaxTransactionFee(transaction interface{}) (Hbar, error) { //
 	case *AccountDeleteTransaction:
 		return i.GetMaxTransactionFee(), nil
 	case *AccountUpdateTransaction:
+		return i.GetMaxTransactionFee(), nil
+	case *AccountAllowanceApproveTransaction:
+		return i.GetMaxTransactionFee(), nil
+	case *AccountAllowanceDeleteTransaction:
 		return i.GetMaxTransactionFee(), nil
 	case *ContractCreateTransaction:
 		return i.GetMaxTransactionFee(), nil
@@ -2546,6 +2634,10 @@ func TransactionSetTransactionValidDuration(transaction interface{}, transaction
 		return i.SetTransactionValidDuration(transactionValidDuration), nil
 	case AccountUpdateTransaction:
 		return i.SetTransactionValidDuration(transactionValidDuration), nil
+	case AccountAllowanceApproveTransaction:
+		return i.SetTransactionValidDuration(transactionValidDuration), nil
+	case AccountAllowanceDeleteTransaction:
+		return i.SetTransactionValidDuration(transactionValidDuration), nil
 	case ContractCreateTransaction:
 		return i.SetTransactionValidDuration(transactionValidDuration), nil
 	case ContractDeleteTransaction:
@@ -2617,6 +2709,10 @@ func TransactionSetTransactionValidDuration(transaction interface{}, transaction
 	case *AccountDeleteTransaction:
 		return i.SetTransactionValidDuration(transactionValidDuration), nil
 	case *AccountUpdateTransaction:
+		return i.SetTransactionValidDuration(transactionValidDuration), nil
+	case *AccountAllowanceApproveTransaction:
+		return i.SetTransactionValidDuration(transactionValidDuration), nil
+	case *AccountAllowanceDeleteTransaction:
 		return i.SetTransactionValidDuration(transactionValidDuration), nil
 	case *ContractCreateTransaction:
 		return i.SetTransactionValidDuration(transactionValidDuration), nil
@@ -2697,6 +2793,10 @@ func TransactionGetTransactionValidDuration(transaction interface{}) (time.Durat
 		return i.GetTransactionValidDuration(), nil
 	case AccountUpdateTransaction:
 		return i.GetTransactionValidDuration(), nil
+	case AccountAllowanceApproveTransaction:
+		return i.GetTransactionValidDuration(), nil
+	case AccountAllowanceDeleteTransaction:
+		return i.GetTransactionValidDuration(), nil
 	case ContractCreateTransaction:
 		return i.GetTransactionValidDuration(), nil
 	case ContractDeleteTransaction:
@@ -2768,6 +2868,10 @@ func TransactionGetTransactionValidDuration(transaction interface{}) (time.Durat
 	case *AccountDeleteTransaction:
 		return i.GetTransactionValidDuration(), nil
 	case *AccountUpdateTransaction:
+		return i.GetTransactionValidDuration(), nil
+	case *AccountAllowanceApproveTransaction:
+		return i.GetTransactionValidDuration(), nil
+	case *AccountAllowanceDeleteTransaction:
 		return i.GetTransactionValidDuration(), nil
 	case *ContractCreateTransaction:
 		return i.GetTransactionValidDuration(), nil
@@ -2848,6 +2952,10 @@ func TransactionSetNodeAccountIDs(transaction interface{}, nodeAccountIDs []Acco
 		return i.SetNodeAccountIDs(nodeAccountIDs), nil
 	case AccountUpdateTransaction:
 		return i.SetNodeAccountIDs(nodeAccountIDs), nil
+	case AccountAllowanceApproveTransaction:
+		return i.SetNodeAccountIDs(nodeAccountIDs), nil
+	case AccountAllowanceDeleteTransaction:
+		return i.SetNodeAccountIDs(nodeAccountIDs), nil
 	case ContractCreateTransaction:
 		return i.SetNodeAccountIDs(nodeAccountIDs), nil
 	case ContractDeleteTransaction:
@@ -2919,6 +3027,10 @@ func TransactionSetNodeAccountIDs(transaction interface{}, nodeAccountIDs []Acco
 	case *AccountDeleteTransaction:
 		return i.SetNodeAccountIDs(nodeAccountIDs), nil
 	case *AccountUpdateTransaction:
+		return i.SetNodeAccountIDs(nodeAccountIDs), nil
+	case *AccountAllowanceApproveTransaction:
+		return i.SetNodeAccountIDs(nodeAccountIDs), nil
+	case *AccountAllowanceDeleteTransaction:
 		return i.SetNodeAccountIDs(nodeAccountIDs), nil
 	case *ContractCreateTransaction:
 		return i.SetNodeAccountIDs(nodeAccountIDs), nil
@@ -2999,6 +3111,10 @@ func TransactionGetNodeAccountIDs(transaction interface{}) ([]AccountID, error) 
 		return i.GetNodeAccountIDs(), nil
 	case AccountUpdateTransaction:
 		return i.GetNodeAccountIDs(), nil
+	case AccountAllowanceApproveTransaction:
+		return i.GetNodeAccountIDs(), nil
+	case AccountAllowanceDeleteTransaction:
+		return i.GetNodeAccountIDs(), nil
 	case ContractCreateTransaction:
 		return i.GetNodeAccountIDs(), nil
 	case ContractDeleteTransaction:
@@ -3070,6 +3186,10 @@ func TransactionGetNodeAccountIDs(transaction interface{}) ([]AccountID, error) 
 	case *AccountDeleteTransaction:
 		return i.GetNodeAccountIDs(), nil
 	case *AccountUpdateTransaction:
+		return i.GetNodeAccountIDs(), nil
+	case *AccountAllowanceApproveTransaction:
+		return i.GetNodeAccountIDs(), nil
+	case *AccountAllowanceDeleteTransaction:
 		return i.GetNodeAccountIDs(), nil
 	case *ContractCreateTransaction:
 		return i.GetNodeAccountIDs(), nil
@@ -3150,6 +3270,10 @@ func TransactionGetTransactionHash(transaction interface{}) ([]byte, error) { //
 		return i.GetTransactionHash()
 	case AccountUpdateTransaction:
 		return i.GetTransactionHash()
+	case AccountAllowanceApproveTransaction:
+		return i.GetTransactionHash()
+	case AccountAllowanceDeleteTransaction:
+		return i.GetTransactionHash()
 	case ContractCreateTransaction:
 		return i.GetTransactionHash()
 	case ContractDeleteTransaction:
@@ -3221,6 +3345,10 @@ func TransactionGetTransactionHash(transaction interface{}) ([]byte, error) { //
 	case *AccountDeleteTransaction:
 		return i.GetTransactionHash()
 	case *AccountUpdateTransaction:
+		return i.GetTransactionHash()
+	case *AccountAllowanceApproveTransaction:
+		return i.GetTransactionHash()
+	case *AccountAllowanceDeleteTransaction:
 		return i.GetTransactionHash()
 	case *ContractCreateTransaction:
 		return i.GetTransactionHash()
@@ -3301,6 +3429,10 @@ func TransactionGetTransactionHashPerNode(transaction interface{}) (map[AccountI
 		return i.GetTransactionHashPerNode()
 	case AccountUpdateTransaction:
 		return i.GetTransactionHashPerNode()
+	case AccountAllowanceApproveTransaction:
+		return i.GetTransactionHashPerNode()
+	case AccountAllowanceDeleteTransaction:
+		return i.GetTransactionHashPerNode()
 	case ContractCreateTransaction:
 		return i.GetTransactionHashPerNode()
 	case ContractDeleteTransaction:
@@ -3372,6 +3504,10 @@ func TransactionGetTransactionHashPerNode(transaction interface{}) (map[AccountI
 	case *AccountDeleteTransaction:
 		return i.GetTransactionHashPerNode()
 	case *AccountUpdateTransaction:
+		return i.GetTransactionHashPerNode()
+	case *AccountAllowanceApproveTransaction:
+		return i.GetTransactionHashPerNode()
+	case *AccountAllowanceDeleteTransaction:
 		return i.GetTransactionHashPerNode()
 	case *ContractCreateTransaction:
 		return i.GetTransactionHashPerNode()
@@ -3452,6 +3588,10 @@ func TransactionSetMinBackoff(transaction interface{}, minBackoff time.Duration)
 		return i.SetMinBackoff(minBackoff), nil
 	case AccountUpdateTransaction:
 		return i.SetMinBackoff(minBackoff), nil
+	case AccountAllowanceApproveTransaction:
+		return i.SetMinBackoff(minBackoff), nil
+	case AccountAllowanceDeleteTransaction:
+		return i.SetMinBackoff(minBackoff), nil
 	case ContractCreateTransaction:
 		return i.SetMinBackoff(minBackoff), nil
 	case ContractDeleteTransaction:
@@ -3523,6 +3663,10 @@ func TransactionSetMinBackoff(transaction interface{}, minBackoff time.Duration)
 	case *AccountDeleteTransaction:
 		return i.SetMinBackoff(minBackoff), nil
 	case *AccountUpdateTransaction:
+		return i.SetMinBackoff(minBackoff), nil
+	case *AccountAllowanceApproveTransaction:
+		return i.SetMinBackoff(minBackoff), nil
+	case *AccountAllowanceDeleteTransaction:
 		return i.SetMinBackoff(minBackoff), nil
 	case *ContractCreateTransaction:
 		return i.SetMinBackoff(minBackoff), nil
@@ -3603,6 +3747,10 @@ func TransactionGetMinBackoff(transaction interface{}) (time.Duration, error) { 
 		return i.GetMinBackoff(), nil
 	case AccountUpdateTransaction:
 		return i.GetMinBackoff(), nil
+	case AccountAllowanceApproveTransaction:
+		return i.GetMinBackoff(), nil
+	case AccountAllowanceDeleteTransaction:
+		return i.GetMinBackoff(), nil
 	case ContractCreateTransaction:
 		return i.GetMinBackoff(), nil
 	case ContractDeleteTransaction:
@@ -3674,6 +3822,10 @@ func TransactionGetMinBackoff(transaction interface{}) (time.Duration, error) { 
 	case *AccountDeleteTransaction:
 		return i.GetMinBackoff(), nil
 	case *AccountUpdateTransaction:
+		return i.GetMinBackoff(), nil
+	case *AccountAllowanceApproveTransaction:
+		return i.GetMinBackoff(), nil
+	case *AccountAllowanceDeleteTransaction:
 		return i.GetMinBackoff(), nil
 	case *ContractCreateTransaction:
 		return i.GetMinBackoff(), nil
@@ -3754,6 +3906,10 @@ func TransactionSetMaxBackoff(transaction interface{}, maxBackoff time.Duration)
 		return i.SetMaxBackoff(maxBackoff), nil
 	case AccountUpdateTransaction:
 		return i.SetMaxBackoff(maxBackoff), nil
+	case AccountAllowanceApproveTransaction:
+		return i.SetMaxBackoff(maxBackoff), nil
+	case AccountAllowanceDeleteTransaction:
+		return i.SetMaxBackoff(maxBackoff), nil
 	case ContractCreateTransaction:
 		return i.SetMaxBackoff(maxBackoff), nil
 	case ContractDeleteTransaction:
@@ -3825,6 +3981,10 @@ func TransactionSetMaxBackoff(transaction interface{}, maxBackoff time.Duration)
 	case *AccountDeleteTransaction:
 		return i.SetMaxBackoff(maxBackoff), nil
 	case *AccountUpdateTransaction:
+		return i.SetMaxBackoff(maxBackoff), nil
+	case *AccountAllowanceApproveTransaction:
+		return i.SetMaxBackoff(maxBackoff), nil
+	case *AccountAllowanceDeleteTransaction:
 		return i.SetMaxBackoff(maxBackoff), nil
 	case *ContractCreateTransaction:
 		return i.SetMaxBackoff(maxBackoff), nil
@@ -3905,6 +4065,10 @@ func TransactionGetMaxBackoff(transaction interface{}) (time.Duration, error) { 
 		return i.GetMaxBackoff(), nil
 	case AccountUpdateTransaction:
 		return i.GetMaxBackoff(), nil
+	case AccountAllowanceApproveTransaction:
+		return i.GetMaxBackoff(), nil
+	case AccountAllowanceDeleteTransaction:
+		return i.GetMaxBackoff(), nil
 	case ContractCreateTransaction:
 		return i.GetMaxBackoff(), nil
 	case ContractDeleteTransaction:
@@ -3976,6 +4140,10 @@ func TransactionGetMaxBackoff(transaction interface{}) (time.Duration, error) { 
 	case *AccountDeleteTransaction:
 		return i.GetMaxBackoff(), nil
 	case *AccountUpdateTransaction:
+		return i.GetMaxBackoff(), nil
+	case *AccountAllowanceApproveTransaction:
+		return i.GetMaxBackoff(), nil
+	case *AccountAllowanceDeleteTransaction:
 		return i.GetMaxBackoff(), nil
 	case *ContractCreateTransaction:
 		return i.GetMaxBackoff(), nil
@@ -4056,6 +4224,10 @@ func TransactionString(transaction interface{}) (string, error) { // nolint
 		return i.String(), nil
 	case AccountUpdateTransaction:
 		return i.String(), nil
+	case AccountAllowanceApproveTransaction:
+		return i.String(), nil
+	case AccountAllowanceDeleteTransaction:
+		return i.String(), nil
 	case ContractCreateTransaction:
 		return i.String(), nil
 	case ContractDeleteTransaction:
@@ -4127,6 +4299,10 @@ func TransactionString(transaction interface{}) (string, error) { // nolint
 	case *AccountDeleteTransaction:
 		return i.String(), nil
 	case *AccountUpdateTransaction:
+		return i.String(), nil
+	case *AccountAllowanceApproveTransaction:
+		return i.String(), nil
+	case *AccountAllowanceDeleteTransaction:
 		return i.String(), nil
 	case *ContractCreateTransaction:
 		return i.String(), nil
@@ -4207,6 +4383,10 @@ func TransactionToBytes(transaction interface{}) ([]byte, error) { // nolint
 		return i.ToBytes()
 	case AccountUpdateTransaction:
 		return i.ToBytes()
+	case AccountAllowanceApproveTransaction:
+		return i.ToBytes()
+	case AccountAllowanceDeleteTransaction:
+		return i.ToBytes()
 	case ContractCreateTransaction:
 		return i.ToBytes()
 	case ContractDeleteTransaction:
@@ -4278,6 +4458,10 @@ func TransactionToBytes(transaction interface{}) ([]byte, error) { // nolint
 	case *AccountDeleteTransaction:
 		return i.ToBytes()
 	case *AccountUpdateTransaction:
+		return i.ToBytes()
+	case *AccountAllowanceApproveTransaction:
+		return i.ToBytes()
+	case *AccountAllowanceDeleteTransaction:
 		return i.ToBytes()
 	case *ContractCreateTransaction:
 		return i.ToBytes()
@@ -4358,6 +4542,10 @@ func TransactionExecute(transaction interface{}, client *Client) (TransactionRes
 		return i.Execute(client)
 	case AccountUpdateTransaction:
 		return i.Execute(client)
+	case AccountAllowanceApproveTransaction:
+		return i.Execute(client)
+	case AccountAllowanceDeleteTransaction:
+		return i.Execute(client)
 	case ContractCreateTransaction:
 		return i.Execute(client)
 	case ContractDeleteTransaction:
@@ -4435,6 +4623,10 @@ func TransactionExecute(transaction interface{}, client *Client) (TransactionRes
 	case *AccountDeleteTransaction:
 		return i.Execute(client)
 	case *AccountUpdateTransaction:
+		return i.Execute(client)
+	case *AccountAllowanceApproveTransaction:
+		return i.Execute(client)
+	case *AccountAllowanceDeleteTransaction:
 		return i.Execute(client)
 	case *ContractCreateTransaction:
 		return i.Execute(client)
