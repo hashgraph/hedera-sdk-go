@@ -234,11 +234,11 @@ func TestUnitTransactionReceiptToJson(t *testing.T) {
 						ContractID: &services.ContractID{Contract: &services.ContractID_ContractNum{
 							ContractNum: 456,
 						}},
-						FileID:              &services.FileID{FileNum: 789},
-						TokenID:             &services.TokenID{TokenNum: 987},
-						SerialNumbers: 	 []int64{1, 2, 3},
-						TopicID:             &services.TopicID{TopicNum: 654},
-						ScheduleID:          &services.ScheduleID{ScheduleNum: 321},
+						FileID:        &services.FileID{FileNum: 789},
+						TokenID:       &services.TokenID{TokenNum: 987},
+						SerialNumbers: []int64{1, 2, 3},
+						TopicID:       &services.TopicID{TopicNum: 654},
+						ScheduleID:    &services.ScheduleID{ScheduleNum: 321},
 						ScheduledTransactionID: &services.TransactionID{
 							AccountID: &services.AccountID{Account: &services.AccountID_AccountNum{
 								AccountNum: 123,
@@ -268,11 +268,11 @@ func TestUnitTransactionReceiptToJson(t *testing.T) {
 							ContractID: &services.ContractID{Contract: &services.ContractID_ContractNum{
 								ContractNum: 456,
 							}},
-							FileID:              &services.FileID{FileNum: 789},
-							TokenID:             &services.TokenID{TokenNum: 987},
-							SerialNumbers: 	 []int64{1, 2, 3},
-							TopicID:             &services.TopicID{TopicNum: 654},
-							ScheduleID:          &services.ScheduleID{ScheduleNum: 321},
+							FileID:        &services.FileID{FileNum: 789},
+							TokenID:       &services.TokenID{TokenNum: 987},
+							SerialNumbers: []int64{1, 2, 3},
+							TopicID:       &services.TopicID{TopicNum: 654},
+							ScheduleID:    &services.ScheduleID{ScheduleNum: 321},
 							ScheduledTransactionID: &services.TransactionID{
 								AccountID: &services.AccountID{Account: &services.AccountID_AccountNum{
 									AccountNum: 123,
@@ -303,11 +303,11 @@ func TestUnitTransactionReceiptToJson(t *testing.T) {
 							ContractID: &services.ContractID{Contract: &services.ContractID_ContractNum{
 								ContractNum: 456,
 							}},
-							FileID:              &services.FileID{FileNum: 789},
-							TokenID:             &services.TokenID{TokenNum: 987},
-							SerialNumbers: 	 []int64{1, 2, 3},
-							TopicID:             &services.TopicID{TopicNum: 654},
-							ScheduleID:          &services.ScheduleID{ScheduleNum: 321},
+							FileID:        &services.FileID{FileNum: 789},
+							TokenID:       &services.TokenID{TokenNum: 987},
+							SerialNumbers: []int64{1, 2, 3},
+							TopicID:       &services.TopicID{TopicNum: 654},
+							ScheduleID:    &services.ScheduleID{ScheduleNum: 321},
 							ScheduledTransactionID: &services.TransactionID{
 								AccountID: &services.AccountID{Account: &services.AccountID_AccountNum{
 									AccountNum: 123,
@@ -343,7 +343,7 @@ func TestUnitTransactionReceiptToJson(t *testing.T) {
 	require.NoError(t, err)
 	receipt, err := tx.SetValidateStatus(true).GetReceipt(client)
 	require.NoError(t, err)
-	jsonBytes, err := receipt.ToJSON()
+	jsonBytes, err := json.Marshal(receipt)
 	fmt.Printf("receipt: %v\n", string(jsonBytes))
 	require.NoError(t, err)
 	expected := `{"AccountID":"0.0.123","Children":[{"AccountID":"0.0.123","Children":[],"ContractID":"0.0.456","Duplicates":[],"ExchangeRate":

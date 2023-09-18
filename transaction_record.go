@@ -98,7 +98,7 @@ func (record TransactionRecord) ToJSON() ([]byte, error) {
 
     // Checking if the receipt is nil
 	if record.Receipt.TransactionID != nil {
-		receiptJSON, err := record.Receipt.ToJSON()
+		receiptJSON, err := json.Marshal(record.Receipt)
 		if err != nil {
 			return nil, err
 		}

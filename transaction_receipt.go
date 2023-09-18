@@ -21,8 +21,8 @@ package hedera
  */
 
 import (
-	jsoniter "github.com/json-iterator/go"
-	"reflect"
+	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -143,7 +143,7 @@ func (receipt *TransactionReceipt) _ToMap() map[string]interface{} {
 		Cents          int32  `json:"Cents"`
 		ExpirationTime string `json:"ExpirationTime"`
 	}
-	
+
 	if receipt.ExchangeRate != nil {
 		// Convert the expiration time to iso 8601 format
 		expiration := time.Unix(receipt.ExchangeRate.expirationTime.Seconds, 0)
@@ -166,49 +166,17 @@ func (receipt *TransactionReceipt) _ToMap() map[string]interface{} {
 		"ScheduledTransactionID": receipt.ScheduledTransactionID,
 	}
 	for key, field := range fields {
-		m[key] = receipt._GetFieldAsString(field)
+		m[key] = fmt.Sprintf("%v", field)
 	}
 
-	// Handling Children and Duplicates
-	processNested := func(receipt []TransactionReceipt) []map[string]interface{} {
-		result := make([]map[string]interface{}, len(receipt))
-		for i, r := range receipt {
-			result[i] = r._ToMap()
-		}
-		return result
-	}
-	m["Children"] = processNested(receipt.Children)
-	m["Duplicates"] = processNested(receipt.Duplicates)
+	m["Children"] = receipt.Children
+	m["Duplicates"] = receipt.Duplicates
 
 	return m
 }
 
-// ToJSON returns the JSON representation of the TransactionReceipt.
-// This should yield the same result in all SDK's.
-func (receipt TransactionReceipt) ToJSON() ([]byte, error) {
-	var json = jsoniter.ConfigCompatibleWithStandardLibrary
-	obj := receipt._ToMap()
-	return json.Marshal(obj)
-}
-
-// _GetFieldAsString checks if the given field is nil or implements the String() method. 
-// If the field is nil, it returns nil.
-// If the field implements the String() method, it returns the result of that method.
-// Otherwise, it returns the field as-is.
-func (receipt *TransactionReceipt) _GetFieldAsString(field interface{}) interface{} {
-	if field == nil || (reflect.ValueOf(field).Kind() == reflect.Ptr && reflect.ValueOf(field).IsNil()) {
-		return nil
-	}
-
-	type stringer interface {
-		String() string
-	}
-
-	if strField, ok := field.(stringer); ok {
-		return strField.String()
-	}
-
-	return field
+func (receipt TransactionReceipt) MarshalJSON() ([]byte, error) {
+	return json.Marshal(receipt._ToMap())
 }
 
 func _TransactionReceiptFromProtobuf(protoResponse *services.TransactionGetReceiptResponse, transactionID *TransactionID) TransactionReceipt {

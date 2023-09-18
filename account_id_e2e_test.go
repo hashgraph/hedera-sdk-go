@@ -24,6 +24,7 @@ package hedera
  */
 
 import (
+	"encoding/json"
 	"testing"
 	"time"
 
@@ -46,7 +47,7 @@ func TestIntegrationAccountIDCanPopulateAccountNumber(t *testing.T) {
 	receipt, err := tx.GetReceiptQuery().SetIncludeChildren(true).Execute(env.Client)
 	require.NoError(t, err)
 	newAccountId := *receipt.Children[0].AccountID
-	a, err := receipt.ToJSON()
+	a, err := json.Marshal(receipt)
 	require.NoError(t, err)
 	println(string(a))
 	idMirror, err := AccountIDFromEvmPublicAddress(evmAddress)
