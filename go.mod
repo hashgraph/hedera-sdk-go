@@ -9,6 +9,7 @@ require (
 	github.com/ethereum/go-ethereum v1.12.2
 	github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20230720072335-ed5726877e99
 	github.com/holiman/uint256 v1.2.3 // indirect
+	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.19 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/rs/zerolog v1.30.0

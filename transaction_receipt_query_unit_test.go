@@ -24,6 +24,9 @@ package hedera
  */
 
 import (
+	"encoding/hex"
+	"encoding/json"
+	"fmt"
 	"testing"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -207,4 +210,191 @@ func TestUnitTransactionReceiptUknown(t *testing.T) {
 	receipt, err := tx.SetValidateStatus(true).GetReceipt(client)
 	require.NoError(t, err)
 	require.Equal(t, StatusSuccess, receipt.Status)
+}
+
+func TestUnitTransactionReceiptToJson(t *testing.T) {
+	t.Parallel()
+
+	responses := [][]interface{}{{
+		&services.TransactionResponse{
+			NodeTransactionPrecheckCode: services.ResponseCodeEnum_OK,
+		},
+		&services.Response{
+			Response: &services.Response_TransactionGetReceipt{
+				TransactionGetReceipt: &services.TransactionGetReceiptResponse{
+					Header: &services.ResponseHeader{
+						Cost:         0,
+						ResponseType: services.ResponseType_ANSWER_ONLY,
+					},
+					Receipt: &services.TransactionReceipt{
+						Status: services.ResponseCodeEnum_SUCCESS,
+						AccountID: &services.AccountID{Account: &services.AccountID_AccountNum{
+							AccountNum: 123,
+						}},
+						ContractID: &services.ContractID{Contract: &services.ContractID_ContractNum{
+							ContractNum: 456,
+						}},
+						FileID:              &services.FileID{FileNum: 789},
+						TokenID:             &services.TokenID{TokenNum: 987},
+						SerialNumbers: 	 []int64{1, 2, 3},
+						TopicID:             &services.TopicID{TopicNum: 654},
+						ScheduleID:          &services.ScheduleID{ScheduleNum: 321},
+						ScheduledTransactionID: &services.TransactionID{
+							AccountID: &services.AccountID{Account: &services.AccountID_AccountNum{
+								AccountNum: 123,
+							}},
+							TransactionValidStart: &services.Timestamp{
+								Seconds: 1694689200,
+							},
+						},
+						TopicSequenceNumber: 10,
+						TopicRunningHash:    []byte{1, 2, 3},
+						ExchangeRate: &services.ExchangeRateSet{
+							CurrentRate: &services.ExchangeRate{
+								HbarEquiv: 30000,
+								CentEquiv: 154271,
+								ExpirationTime: &services.TimestampSeconds{
+									Seconds: 1694689200,
+								},
+							},
+						},
+					},
+					ChildTransactionReceipts: []*services.TransactionReceipt{
+						{
+							Status: services.ResponseCodeEnum_SUCCESS,
+							AccountID: &services.AccountID{Account: &services.AccountID_AccountNum{
+								AccountNum: 123,
+							}},
+							ContractID: &services.ContractID{Contract: &services.ContractID_ContractNum{
+								ContractNum: 456,
+							}},
+							FileID:              &services.FileID{FileNum: 789},
+							TokenID:             &services.TokenID{TokenNum: 987},
+							SerialNumbers: 	 []int64{1, 2, 3},
+							TopicID:             &services.TopicID{TopicNum: 654},
+							ScheduleID:          &services.ScheduleID{ScheduleNum: 321},
+							ScheduledTransactionID: &services.TransactionID{
+								AccountID: &services.AccountID{Account: &services.AccountID_AccountNum{
+									AccountNum: 123,
+								}},
+								TransactionValidStart: &services.Timestamp{
+									Seconds: 1694689200,
+								},
+							},
+							TopicSequenceNumber: 10,
+							TopicRunningHash:    []byte{1, 2, 3},
+							ExchangeRate: &services.ExchangeRateSet{
+								CurrentRate: &services.ExchangeRate{
+									HbarEquiv: 30000,
+									CentEquiv: 154271,
+									ExpirationTime: &services.TimestampSeconds{
+										Seconds: 1694689200,
+									},
+								},
+							},
+						},
+					},
+					DuplicateTransactionReceipts: []*services.TransactionReceipt{
+						{
+							Status: services.ResponseCodeEnum_SUCCESS,
+							AccountID: &services.AccountID{Account: &services.AccountID_AccountNum{
+								AccountNum: 123,
+							}},
+							ContractID: &services.ContractID{Contract: &services.ContractID_ContractNum{
+								ContractNum: 456,
+							}},
+							FileID:              &services.FileID{FileNum: 789},
+							TokenID:             &services.TokenID{TokenNum: 987},
+							SerialNumbers: 	 []int64{1, 2, 3},
+							TopicID:             &services.TopicID{TopicNum: 654},
+							ScheduleID:          &services.ScheduleID{ScheduleNum: 321},
+							ScheduledTransactionID: &services.TransactionID{
+								AccountID: &services.AccountID{Account: &services.AccountID_AccountNum{
+									AccountNum: 123,
+								}},
+								TransactionValidStart: &services.Timestamp{
+									Seconds: 1694689200,
+								},
+							},
+							TopicSequenceNumber: 10,
+							TopicRunningHash:    []byte{1, 2, 3},
+							ExchangeRate: &services.ExchangeRateSet{
+								CurrentRate: &services.ExchangeRate{
+									HbarEquiv: 30000,
+									CentEquiv: 154271,
+									ExpirationTime: &services.TimestampSeconds{
+										Seconds: 1694689200,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}}
+	client, server := NewMockClientAndServer(responses)
+	defer server.Close()
+	tx, err := NewTransferTransaction().
+		SetNodeAccountIDs([]AccountID{{Account: 3}}).
+		AddHbarTransfer(AccountID{Account: 2}, HbarFromTinybar(-1)).
+		AddHbarTransfer(AccountID{Account: 3}, HbarFromTinybar(1)).
+		Execute(client)
+	require.NoError(t, err)
+	receipt, err := tx.SetValidateStatus(true).GetReceipt(client)
+	require.NoError(t, err)
+	jsonBytes, err := receipt.ToJSON()
+	fmt.Printf("receipt: %v\n", string(jsonBytes))
+	require.NoError(t, err)
+	expected := `{"AccountID":"0.0.123","Children":[{"AccountID":"0.0.123","Children":[],"ContractID":"0.0.456","Duplicates":[],"ExchangeRate":
+	{"Hbars":30000,"Cents":154271,"ExpirationTime":"2023-09-14T14:00:00+03:00"},"FileID":"0.0.789","ScheduleID":"0.0.321",
+	"ScheduledTransactionID":"0.0.123@1694689200.000000000","SerialNumbers":[1,2,3],"Status":"SUCCESS","TokenID":"0.0.987","TopicID":"0.0.654",
+	"TopicRunningHash":"AQID","TopicRunningHashVersion":0,"TopicSequenceNumber":10,"TotalSupply":0}],"ContractID":"0.0.456",
+	"Duplicates":[{"AccountID":"0.0.123","Children":[],"ContractID":"0.0.456","Duplicates":[],"ExchangeRate":{"Hbars":30000,"Cents":154271,
+	"ExpirationTime":"2023-09-14T14:00:00+03:00"},"FileID":"0.0.789","ScheduleID":"0.0.321","ScheduledTransactionID":"0.0.123@1694689200.000000000",
+	"SerialNumbers":[1,2,3],"Status":"SUCCESS","TokenID":"0.0.987","TopicID":"0.0.654","TopicRunningHash":"AQID","TopicRunningHashVersion":0,
+	"TopicSequenceNumber":10,"TotalSupply":0}],"ExchangeRate":{"Hbars":30000,"Cents":154271,"ExpirationTime":"2023-09-14T14:00:00+03:00"},
+	"FileID":"0.0.789","ScheduleID":"0.0.321","ScheduledTransactionID":"0.0.123@1694689200.000000000","SerialNumbers":[1,2,3],"Status":"SUCCESS",
+	"TokenID":"0.0.987","TopicID":"0.0.654","TopicRunningHash":"AQID","TopicRunningHashVersion":0,"TopicSequenceNumber":10,"TotalSupply":0}`
+	assert.JSONEqf(t, expected, string(jsonBytes), "json should be equal")
+}
+
+func TestUnitTransactionResponseToJson(t *testing.T) {
+	t.Parallel()
+
+	responses := [][]interface{}{{
+		&services.TransactionResponse{
+			NodeTransactionPrecheckCode: services.ResponseCodeEnum_OK,
+		},
+		&services.Response{
+			Response: &services.Response_TransactionGetReceipt{
+				TransactionGetReceipt: &services.TransactionGetReceiptResponse{
+					Header: &services.ResponseHeader{
+						Cost:         0,
+						ResponseType: services.ResponseType_ANSWER_ONLY,
+					},
+					Receipt: &services.TransactionReceipt{
+						Status: services.ResponseCodeEnum_SUCCESS,
+					},
+				},
+			},
+		},
+	}}
+	client, server := NewMockClientAndServer(responses)
+	defer server.Close()
+	tx, err := NewTransferTransaction().
+		SetNodeAccountIDs([]AccountID{{Account: 3}}).
+		AddHbarTransfer(AccountID{Account: 2}, HbarFromTinybar(-1)).
+		AddHbarTransfer(AccountID{Account: 3}, HbarFromTinybar(1)).
+		Execute(client)
+	require.NoError(t, err)
+	jsonBytes, err := tx.ToJSON()
+	require.NoError(t, err)
+	obj := make(map[string]interface{})
+	obj["nodeID"] = tx.NodeID.String()
+	obj["hash"] = hex.EncodeToString(tx.Hash)
+	obj["transactionID"] = tx.TransactionID.String()
+	expectedJSON, err := json.Marshal(obj)
+	require.NoError(t, err)
+	assert.Equal(t, expectedJSON, jsonBytes)
 }

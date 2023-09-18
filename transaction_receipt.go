@@ -21,6 +21,10 @@ package hedera
  */
 
 import (
+	jsoniter "github.com/json-iterator/go"
+	"reflect"
+	"time"
+
 	"github.com/hashgraph/hedera-protobufs-go/services"
 	protobuf "google.golang.org/protobuf/proto"
 )
@@ -44,6 +48,167 @@ type TransactionReceipt struct {
 	Duplicates              []TransactionReceipt
 	Children                []TransactionReceipt
 	TransactionID           *TransactionID
+}
+
+// func (receipt *TransactionReceipt) getFieldAsString(field interface{}) interface{} {
+// 	if field == nil || (reflect.ValueOf(field).Kind() == reflect.Ptr && reflect.ValueOf(field).IsNil()) {
+// 		return nil
+// 	}
+
+// 	type stringer interface {
+// 		String() string
+// 	}
+
+// 	if strField, ok := field.(stringer); ok {
+// 		return strField.String()
+// 	}
+
+// 	return field
+// }
+
+// // ToJson returns the JSON string representation of the TransactionReceipt
+// func (receipt TransactionReceipt) ToJSON() ([]byte, error) {
+// 	obj := make(map[string]interface{})
+
+// 	// This can be handled without looping since they are simple assignments
+// 	obj["Status"] = receipt.Status.String()
+// 	obj["TopicSequenceNumber"] = receipt.TopicSequenceNumber
+// 	obj["TopicRunningHash"] = receipt.TopicRunningHash
+// 	obj["TopicRunningHashVersion"] = receipt.TopicRunningHashVersion
+// 	obj["TotalSupply"] = receipt.TotalSupply
+// 	obj["SerialNumbers"] = receipt.SerialNumbers
+// 	obj["Duplicates"] = receipt.Duplicates
+// 	if len(receipt.Children) > 0 {
+// 		children := make([]interface{}, len(receipt.Children))
+// 		for i, child := range receipt.Children {
+// 			childJSON, err := child.ToJSON()
+// 			if err != nil {
+// 				return nil, err
+// 			}
+// 			children[i] = childJSON
+// 		}
+// 		obj["Children"] = children
+// 	} else {
+// 		obj["Children"] = nil
+// 	}
+// 	type ExchangeRateJSON struct {
+// 		Hbars          int32  `json:"Hbars"`
+// 		Cents          int32  `json:"Cents"`
+// 		ExpirationTime string `json:"ExpirationTime"`
+// 	}
+
+// 	if receipt.ExchangeRate != nil {
+// 		expiration := time.Unix(receipt.ExchangeRate.expirationTime.Seconds, 0)
+// 		expirationStr := expiration.Format(time.RFC3339)
+
+// 		obj["ExchangeRate"] = ExchangeRateJSON{
+// 			Hbars:          receipt.ExchangeRate.Hbars,
+// 			Cents:          receipt.ExchangeRate.cents,
+// 			ExpirationTime: expirationStr,
+// 		}
+// 	} else {
+// 		obj["ExchangeRate"] = nil
+// 	}
+// 	// Fields to check and convert
+// 	fields := map[string]interface{}{
+// 		"TopicID":                receipt.TopicID,
+// 		"FileID":                 receipt.FileID,
+// 		"ContractID":             receipt.ContractID,
+// 		"AccountID":              receipt.AccountID,
+// 		"TokenID":                receipt.TokenID,
+// 		"ScheduleID":             receipt.ScheduleID,
+// 		"ScheduledTransactionID": receipt.ScheduledTransactionID,
+// 	}
+
+// 	for key, field := range fields {
+// 		obj[key] = receipt.getFieldAsString(field)
+// 	}
+
+// 	return json.Marshal(obj)
+// }
+
+func (receipt *TransactionReceipt) _ToMap() map[string]interface{} {
+	m := map[string]interface{}{
+		"Status":                  receipt.Status.String(),
+		"TopicSequenceNumber":     receipt.TopicSequenceNumber,
+		"TopicRunningHash":        receipt.TopicRunningHash,
+		"TopicRunningHashVersion": receipt.TopicRunningHashVersion,
+		"TotalSupply":             receipt.TotalSupply,
+		"SerialNumbers":           receipt.SerialNumbers,
+	}
+
+	// The real ExchangeRate struct has cents and ExpirationTime fields as private, so they can't be marshalled directly
+	type ExchangeRateJSON struct {
+		Hbars          int32  `json:"Hbars"`
+		Cents          int32  `json:"Cents"`
+		ExpirationTime string `json:"ExpirationTime"`
+	}
+	
+	if receipt.ExchangeRate != nil {
+		// Convert the expiration time to iso 8601 format
+		expiration := time.Unix(receipt.ExchangeRate.expirationTime.Seconds, 0)
+		expirationStr := expiration.Format(time.RFC3339)
+		m["ExchangeRate"] = ExchangeRateJSON{
+			Hbars:          receipt.ExchangeRate.Hbars,
+			Cents:          receipt.ExchangeRate.cents,
+			ExpirationTime: expirationStr,
+		}
+	}
+
+	// Handling fields with possible nil values
+	fields := map[string]interface{}{
+		"TopicID":                receipt.TopicID,
+		"FileID":                 receipt.FileID,
+		"ContractID":             receipt.ContractID,
+		"AccountID":              receipt.AccountID,
+		"TokenID":                receipt.TokenID,
+		"ScheduleID":             receipt.ScheduleID,
+		"ScheduledTransactionID": receipt.ScheduledTransactionID,
+	}
+	for key, field := range fields {
+		m[key] = receipt._GetFieldAsString(field)
+	}
+
+	// Handling Children and Duplicates
+	processNested := func(receipt []TransactionReceipt) []map[string]interface{} {
+		result := make([]map[string]interface{}, len(receipt))
+		for i, r := range receipt {
+			result[i] = r._ToMap()
+		}
+		return result
+	}
+	m["Children"] = processNested(receipt.Children)
+	m["Duplicates"] = processNested(receipt.Duplicates)
+
+	return m
+}
+
+// ToJSON returns the JSON representation of the TransactionReceipt.
+// This should yield the same result in all SDK's.
+func (receipt TransactionReceipt) ToJSON() ([]byte, error) {
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
+	obj := receipt._ToMap()
+	return json.Marshal(obj)
+}
+
+// _GetFieldAsString checks if the given field is nil or implements the String() method. 
+// If the field is nil, it returns nil.
+// If the field implements the String() method, it returns the result of that method.
+// Otherwise, it returns the field as-is.
+func (receipt *TransactionReceipt) _GetFieldAsString(field interface{}) interface{} {
+	if field == nil || (reflect.ValueOf(field).Kind() == reflect.Ptr && reflect.ValueOf(field).IsNil()) {
+		return nil
+	}
+
+	type stringer interface {
+		String() string
+	}
+
+	if strField, ok := field.(stringer); ok {
+		return strField.String()
+	}
+
+	return field
 }
 
 func _TransactionReceiptFromProtobuf(protoResponse *services.TransactionGetReceiptResponse, transactionID *TransactionID) TransactionReceipt {

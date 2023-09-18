@@ -21,6 +21,8 @@ package hedera
  */
 
 import (
+	jsoniter "github.com/json-iterator/go"
+
 	"fmt"
 	"time"
 
@@ -64,6 +66,78 @@ type TransactionRecord struct {
 	PrngNumber         *int32
 	EvmAddress         []byte
 }
+
+// ToJson returns the JSON string representation of the TransactionRecord
+func (record TransactionRecord) ToJSON() ([]byte, error) {
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
+    obj := make(map[string]interface{})
+
+    // Direct assignments
+    obj["TransactionHash"] = record.TransactionHash
+    obj["ConsensusTimestamp"] = record.ConsensusTimestamp
+    obj["TransactionID"] = record.TransactionID.String() // Assuming TransactionID has a String() method
+    obj["TransactionMemo"] = record.TransactionMemo
+    obj["TransactionFee"] = record.TransactionFee // Assuming Hbar can be directly serialized
+    obj["Transfers"] = record.Transfers // Assuming Transfer is directly serializable
+    obj["TokenTransfers"] = record.TokenTransfers // Maps with serializable types
+    obj["NftTransfers"] = record.NftTransfers
+    obj["ExpectedDecimals"] = record.ExpectedDecimals
+    obj["CallResultIsCreate"] = record.CallResultIsCreate
+    obj["AssessedCustomFees"] = record.AssessedCustomFees
+    obj["AutomaticTokenAssociations"] = record.AutomaticTokenAssociations
+    obj["ParentConsensusTimestamp"] = record.ParentConsensusTimestamp
+    obj["AliasKey"] = record.AliasKey // Assuming PublicKey is directly serializable or has a String() method
+    obj["HbarAllowances"] = record.HbarAllowances
+    obj["TokenAllowances"] = record.TokenAllowances
+    obj["TokenNftAllowances"] = record.TokenNftAllowances
+    obj["EthereumHash"] = record.EthereumHash
+    obj["PaidStakingRewards"] = record.PaidStakingRewards
+    obj["PrngBytes"] = record.PrngBytes
+    obj["PrngNumber"] = record.PrngNumber
+    obj["EvmAddress"] = record.EvmAddress
+
+    // Checking if the receipt is nil
+	if record.Receipt.TransactionID != nil {
+		receiptJSON, err := record.Receipt.ToJSON()
+		if err != nil {
+			return nil, err
+		}
+		var receiptObj map[string]interface{}
+		if err := json.Unmarshal(receiptJSON, &receiptObj); err != nil {
+			return nil, err
+		}
+		obj["Receipt"] = receiptObj
+	}
+	
+
+    // Recursive approach for TransactionRecord fields
+    if len(record.Children) > 0 {
+        children := make([]interface{}, len(record.Children))
+        for i, child := range record.Children {
+            childJSON, err := child.ToJSON()
+            if err != nil {
+                return nil, err
+            }
+            children[i] = childJSON
+        }
+        obj["Children"] = children
+    }
+
+    if len(record.Duplicates) > 0 {
+        duplicates := make([]interface{}, len(record.Duplicates))
+        for i, dup := range record.Duplicates {
+            dupJSON, err := dup.ToJSON()
+            if err != nil {
+                return nil, err
+            }
+            duplicates[i] = dupJSON
+        }
+        obj["Duplicates"] = duplicates
+    }
+asd, err := json.Marshal(obj)
+    return asd, err
+}
+
 
 // GetContractExecuteResult returns the ContractFunctionResult if the transaction was a contract call
 func (record TransactionRecord) GetContractExecuteResult() (ContractFunctionResult, error) {
