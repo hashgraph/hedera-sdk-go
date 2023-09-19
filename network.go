@@ -83,6 +83,9 @@ func (network *_Network) _IncreaseBackoff(node *_Node) {
 
 func (network *_Network) _GetNodeForAccountID(id AccountID) (*_Node, bool) {
 	node, ok := network.network[id.String()]
+	if !ok || node == nil {
+		return nil, false
+	}
 	return node[0].(*_Node), ok
 }
 

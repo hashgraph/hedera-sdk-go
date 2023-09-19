@@ -31,6 +31,61 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestIntegrationClientCanExecuteSerializedTransactionFromAnotherClient(t *testing.T) { // nolint
+	t.Parallel()
+	env := NewIntegrationTestEnv(t)
+	client2 := ClientForNetwork(env.Client.GetNetwork())
+	client2.SetOperator(env.OperatorID, env.OperatorKey)
+
+	tx, err := NewTransferTransaction().AddHbarTransfer(env.OperatorID, HbarFromTinybar(-1)).
+		AddHbarTransfer(AccountID{Account: 3}, HbarFromTinybar(1)).SetNodeAccountIDs([]AccountID{{Account: 3}}).FreezeWith(env.Client)
+	require.NoError(t, err)
+	txBytes, err := tx.ToBytes()
+	FromBytes, err := TransactionFromBytes(txBytes)
+	require.NoError(t, err)
+	txFromBytes, ok := FromBytes.(TransferTransaction)
+	require.True(t, ok)
+	resp, err := txFromBytes.Execute(client2)
+	require.NoError(t, err)
+	reciept, err := resp.SetValidateStatus(true).GetReceipt(client2)
+	require.NoError(t, err)
+	assert.Equal(t, StatusSuccess, reciept.Status)
+}
+
+func TestIntegrationClientCanFailGracefullyWhenDoesNotHaveNodeOfAnotherClient(t *testing.T) { // nolint
+	t.Parallel()
+	env := NewIntegrationTestEnv(t)
+
+	// Get one of the nodes of the network from the original client
+	var address string
+	for key := range env.Client.GetNetwork() {
+		address = key
+		break
+	}
+	// Use that node to create a network for the second client but with a different node account id
+	var network = map[string]AccountID{
+		address: {Account: 99},
+	}
+
+	client2 := ClientForNetwork(network)
+	client2.SetOperator(env.OperatorID, env.OperatorKey)
+
+	// Create a transaction with a node using original client
+	tx, err := NewTransferTransaction().AddHbarTransfer(env.OperatorID, HbarFromTinybar(-1)).
+		AddHbarTransfer(AccountID{Account: 3}, HbarFromTinybar(1)).SetNodeAccountIDs([]AccountID{{Account: 3}}).FreezeWith(env.Client)
+	require.NoError(t, err)
+	txBytes, err := tx.ToBytes()
+	FromBytes, err := TransactionFromBytes(txBytes)
+	require.NoError(t, err)
+	txFromBytes, ok := FromBytes.(TransferTransaction)
+	require.True(t, ok)
+
+	// Try to execute it with the second client, which does not have the node
+	_, err = txFromBytes.Execute(client2)
+	require.Error(t, err)
+	require.Equal(t, err.Error(), "Invalid node AccountID was set for transaction: 0.0.3")	
+}
+
 func DisabledTestIntegrationClientPingAllBadNetwork(t *testing.T) { // nolint
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
