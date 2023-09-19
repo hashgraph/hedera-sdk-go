@@ -1,3 +1,10 @@
+## v2.29.0
+
+### Fixed
+
+* SDK Panics if node account id not in the network list
+* non-exhaustive switch statement errors for `AccountAllowanceApproveTransaction` and `AccountAllowanceDeleteTransaction`
+
 ## v2.28.0
 
 ### Added
