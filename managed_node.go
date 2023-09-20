@@ -21,6 +21,7 @@ package hedera
  */
 
 import (
+	"sync"
 	"time"
 )
 
@@ -57,9 +58,12 @@ type _ManagedNode struct {
 	maxBackoff         time.Duration
 	badGrpcStatusCount int64
 	readmitTime        *time.Time
+	mutex              sync.RWMutex
 }
 
 func (node *_ManagedNode) _GetAttempts() int64 {
+	node.mutex.RLock()
+	defer node.mutex.RUnlock()
 	return node.badGrpcStatusCount
 }
 
@@ -72,6 +76,8 @@ func (node *_ManagedNode) _GetAddress() string {
 }
 
 func (node *_ManagedNode) _GetReadmitTime() *time.Time {
+	node.mutex.RLock()
+	defer node.mutex.RUnlock()
 	return node.readmitTime
 }
 
@@ -109,11 +115,17 @@ func (node *_ManagedNode) _GetMaxBackoff() time.Duration {
 }
 
 func (node *_ManagedNode) _InUse() {
+	node.mutex.Lock()
+	defer node.mutex.Unlock()
+
 	node.useCount++
 	node.lastUsed = time.Now()
 }
 
 func (node *_ManagedNode) _IsHealthy() bool {
+	node.mutex.RLock()
+	defer node.mutex.RUnlock()
+
 	if node.readmitTime == nil {
 		return true
 	}
@@ -122,6 +134,9 @@ func (node *_ManagedNode) _IsHealthy() bool {
 }
 
 func (node *_ManagedNode) _IncreaseBackoff() {
+	node.mutex.Lock()
+	defer node.mutex.Unlock()
+
 	node.badGrpcStatusCount++
 	node.currentBackoff *= 2
 	if node.currentBackoff > node.maxBackoff {
@@ -132,6 +147,9 @@ func (node *_ManagedNode) _IncreaseBackoff() {
 }
 
 func (node *_ManagedNode) _DecreaseBackoff() {
+	node.mutex.Lock()
+	defer node.mutex.Unlock()
+
 	node.currentBackoff /= 2
 	if node.currentBackoff < node.minBackoff {
 		node.currentBackoff = node.minBackoff
@@ -139,6 +157,8 @@ func (node *_ManagedNode) _DecreaseBackoff() {
 }
 
 func (node *_ManagedNode) _Wait() time.Duration {
+	node.mutex.RLock()
+	defer node.mutex.RUnlock()
 	return node.readmitTime.Sub(node.lastUsed)
 }
 
