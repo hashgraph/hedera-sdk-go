@@ -111,3 +111,64 @@ func TestUnitConcurrentGetNodeReadmit(t *testing.T) {
 	network._ReadmitNodes()
 	require.Equal(t, len(nodes), len(network.healthyNodes))
 }
+
+func TestUnitConcurrentNodeAccess(t *testing.T) {
+	t.Parallel()
+
+	network := _NewNetwork()
+	nodes := newNetworkMockNodes()
+	err := network.SetNetwork(nodes)
+	network._SetMinNodeReadmitPeriod(0)
+	network._SetMaxNodeReadmitPeriod(0)
+	require.NoError(t, err)
+
+	for _, node := range network.nodes {
+		node._SetMaxBackoff(-1 * time.Minute)
+	}
+
+	numThreads := 3
+	var wg sync.WaitGroup
+	node := network._GetNode()
+	wg.Add(numThreads)
+	for i := 0; i < numThreads; i++ {
+		go func() {
+			for i := 0; i < 20; i++ {
+				network._GetNode()
+				network._IncreaseBackoff(node)
+				node._IsHealthy()
+				node._GetAttempts()
+				node._GetReadmitTime()
+				node._Wait()
+				node._InUse()
+			}
+			wg.Done()
+		}()
+	}
+	wg.Wait()
+	network._ReadmitNodes()
+	require.Equal(t, len(nodes), len(network.healthyNodes))
+}
+
+func TestUnitConcurrentNodeGetChannel(t *testing.T) {
+	t.Parallel()
+
+	network := _NewNetwork()
+	nodes := newNetworkMockNodes()
+	err := network.SetNetwork(nodes)
+	require.NoError(t, err)
+
+	numThreads := 20
+	var wg sync.WaitGroup
+	node := network._GetNode()
+	wg.Add(numThreads)
+	logger := NewLogger("", LoggerLevelError)
+	for i := 0; i < numThreads; i++ {
+		go func() {
+			node._GetChannel(logger)
+			wg.Done()
+		}()
+	}
+	wg.Wait()
+	network._ReadmitNodes()
+	require.Equal(t, len(nodes), len(network.healthyNodes))
+}

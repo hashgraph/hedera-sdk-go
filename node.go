@@ -27,6 +27,7 @@ import (
 	"crypto/x509"
 	"encoding/hex"
 	"encoding/pem"
+	"sync"
 	"time"
 
 	"context"
@@ -45,6 +46,7 @@ type _Node struct {
 	channel           *_Channel
 	addressBook       *NodeAddress
 	verifyCertificate bool
+	channelMutex      sync.Mutex
 }
 
 func _NewNode(accountID AccountID, address string, minBackoff time.Duration) (node *_Node, err error) {
@@ -121,6 +123,9 @@ func (node *_Node) _GetReadmitTime() *time.Time {
 }
 
 func (node *_Node) _GetChannel(logger Logger) (*_Channel, error) {
+	node.channelMutex.Lock()
+	defer node.channelMutex.Unlock()
+
 	if node.channel != nil {
 		return node.channel, nil
 	}
@@ -196,6 +201,9 @@ func (node *_Node) _GetChannel(logger Logger) (*_Channel, error) {
 }
 
 func (node *_Node) _Close() error {
+	node.channelMutex.Lock()
+	defer node.channelMutex.Unlock()
+
 	if node.channel != nil {
 		err := node.channel.client.Close()
 		node.channel = nil
