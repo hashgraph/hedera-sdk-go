@@ -774,7 +774,7 @@ func (transaction *TokenCreateTransaction) Freeze() (*TokenCreateTransaction, er
 }
 
 func (transaction *TokenCreateTransaction) FreezeWith(client *Client) (*TokenCreateTransaction, error) {
-	if transaction.autoRenewPeriod != nil && client != nil && !client.GetOperatorAccountID()._IsZero() {
+	if transaction.autoRenewAccountID == nil && transaction.autoRenewPeriod != nil && client != nil && !client.GetOperatorAccountID()._IsZero() {
 		transaction.SetAutoRenewAccount(client.GetOperatorAccountID())
 	}
 

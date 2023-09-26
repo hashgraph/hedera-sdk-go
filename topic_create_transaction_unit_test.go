@@ -302,3 +302,38 @@ func TestUnitTopicCreateTransactionMock(t *testing.T) {
 	_, err = freez.Sign(newKey).Execute(client)
 	require.NoError(t, err)
 }
+
+func TestUnitTopicCreateTransactionSerialization(t *testing.T) {
+	t.Parallel()
+
+	nodeAccountID := []AccountID{{Account: 10}}
+	transactionID := TransactionIDGenerate(AccountID{Account: 324})
+	newKey, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+
+	topicCreate, err := NewTopicCreateTransaction().
+		SetTransactionID(transactionID).
+		SetAdminKey(newKey).
+		SetNodeAccountIDs(nodeAccountID).
+		SetSubmitKey(newKey).
+		SetTopicMemo("ad").
+		SetAutoRenewPeriod(time.Second * 30).
+		Freeze()
+	require.NoError(t, err)
+
+	transactionBytes, err := topicCreate.ToBytes()
+	require.NoError(t, err)
+
+	txParsed, err := TransactionFromBytes(transactionBytes)
+	require.NoError(t, err)
+
+	result, ok := txParsed.(TopicCreateTransaction)
+	require.True(t, ok)
+
+	require.Equal(t, topicCreate.GetTopicMemo(), result.GetTopicMemo())
+	require.Equal(t, topicCreate.GetAutoRenewPeriod(), result.GetAutoRenewPeriod())
+	adminKey, _ := result.GetAdminKey()
+	require.Equal(t, newKey.PublicKey(), adminKey)
+	submitKey, _ := result.GetSubmitKey()
+	require.Equal(t, newKey.PublicKey(), submitKey)
+}

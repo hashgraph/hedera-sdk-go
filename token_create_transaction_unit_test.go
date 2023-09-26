@@ -330,3 +330,14 @@ func TestUnitTokenCreateTransactionMock(t *testing.T) {
 	_, err = freez.Sign(newKey).Execute(client)
 	require.NoError(t, err)
 }
+
+func TestUnitTokenCreateAutoRenewAccountSetting(t *testing.T) {
+	client, err := _NewMockClient()
+	autoRenewAccount := AccountID{Account: 3}
+	frozenTx, err := NewTokenCreateTransaction().
+		SetAutoRenewAccount(autoRenewAccount).
+		SetAutoRenewPeriod(24 * time.Hour).
+		FreezeWith(client)
+	require.NoError(t, err)
+	require.Equal(t, autoRenewAccount, frozenTx.GetAutoRenewAccount())
+}

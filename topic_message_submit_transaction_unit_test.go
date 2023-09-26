@@ -291,3 +291,34 @@ func TestUnitTopicMessageSubmitTransactionCoverage(t *testing.T) {
 		b.AddSignature(newKey.PublicKey(), sig)
 	}
 }
+
+func TestUnitTopicMessageSubmitTransactionSerialization(t *testing.T) {
+	t.Parallel()
+
+	topic := TopicID{Topic: 3}
+	nodeAccountID := []AccountID{{Account: 10}}
+	transactionID := TransactionIDGenerate(AccountID{Account: 324})
+
+	transaction, err := NewTopicMessageSubmitTransaction().
+		SetTransactionID(transactionID).
+		SetNodeAccountIDs(nodeAccountID).
+		SetTopicID(topic).
+		SetMessage([]byte("nothing to see here")).
+		SetMaxChunks(30).
+		SetTransactionMemo("no").
+		Freeze()
+	require.NoError(t, err)
+
+	txBytes, err := transaction.ToBytes()
+	require.NoError(t, err)
+
+	txParsed, err := TransactionFromBytes(txBytes)
+	require.NoError(t, err)
+
+	result, ok := txParsed.(TopicMessageSubmitTransaction)
+	require.True(t, ok)
+
+	require.Equal(t, transactionID.AccountID, result.GetTransactionID().AccountID)
+	require.Equal(t, transaction.GetMessage(), result.GetMessage())
+	require.Equal(t, transaction.GetTransactionMemo(), result.GetTransactionMemo())
+}
