@@ -66,7 +66,7 @@ func _TopicCreateTransactionFromProtobuf(transaction Transaction, pb *services.T
 		autoRenewAccountID: _AccountIDFromProtobuf(pb.GetConsensusCreateTopic().GetAutoRenewAccount()),
 		adminKey:           adminKey,
 		submitKey:          submitKey,
-		memo:               pb.GetContractCreateInstance().GetMemo(),
+		memo:               pb.GetConsensusCreateTopic().GetMemo(),
 		autoRenewPeriod:    &autoRenew,
 	}
 }

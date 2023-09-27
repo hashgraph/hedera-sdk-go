@@ -58,7 +58,7 @@ func _TopicMessageSubmitTransactionFromProtobuf(transaction Transaction, pb *ser
 	tx := &TopicMessageSubmitTransaction{
 		Transaction: transaction,
 		maxChunks:   20,
-		message:     make([]byte, 0),
+		message:     pb.GetConsensusSubmitMessage().GetMessage(),
 		topicID:     _TopicIDFromProtobuf(pb.GetConsensusSubmitMessage().GetTopicID()),
 	}
 

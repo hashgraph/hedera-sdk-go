@@ -58,7 +58,7 @@ func _FileAppendTransactionFromProtobuf(transaction Transaction, pb *services.Tr
 	return &FileAppendTransaction{
 		Transaction: transaction,
 		maxChunks:   20,
-		contents:    make([]byte, 0),
+		contents:    pb.GetFileAppend().GetContents(),
 		chunkSize:   2048,
 		fileID:      _FileIDFromProtobuf(pb.GetFileAppend().GetFileID()),
 	}

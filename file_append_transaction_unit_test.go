@@ -363,3 +363,32 @@ func TestUnitFileAppendTransactionCoverage(t *testing.T) {
 		b.AddSignature(newKey.PublicKey(), sig)
 	}
 }
+
+func TestUnitFileAppendTransactionSerialization(t *testing.T) {
+	t.Parallel()
+
+	fileID := FileID{File: 7}
+	nodeAccountID := []AccountID{{Account: 10}}
+	transactionID := TransactionIDGenerate(AccountID{Account: 324})
+
+	transaction, err := NewFileAppendTransaction().
+		SetTransactionID(transactionID).
+		SetNodeAccountIDs(nodeAccountID).
+		SetFileID(fileID).
+		SetContents([]byte("Hello, World")).
+		Freeze()
+	require.NoError(t, err)
+
+	txBytes, err := transaction.ToBytes()
+	require.NoError(t, err)
+
+	txParsed, err := TransactionFromBytes(txBytes)
+	require.NoError(t, err)
+
+	result, ok := txParsed.(FileAppendTransaction)
+	require.True(t, ok)
+
+	require.Equal(t, transactionID.AccountID, result.GetTransactionID().AccountID)
+	require.Equal(t, fileID, result.GetFileID())
+	require.Equal(t, transaction.GetContents(), result.GetContents())
+}
