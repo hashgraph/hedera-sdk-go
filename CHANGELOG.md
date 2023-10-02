@@ -1,3 +1,10 @@
+## v2.30.0
+
+### Fixed
+
+* Node/Managed node concurrency issues
+* Serialization issues with `FileAppendTransaction`, `TokenCreateTransaction`, `TopicCreateTransaction`, `TopicMessageSubmitTransaction`
+
 ## v2.29.0
 
 ### Fixed
