@@ -11,20 +11,23 @@ func main() {
 	// Our hypothetical primary service only knows the operator/sender's account ID and the recipient's accountID
 	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
 	if err != nil {
-		println(err.Error(), ": error converting string to AccountID")
-		return
+		panic(fmt.Sprintf("%v : error converting string to AccountID", err))
 	}
 
 	operatorPrivateKey, err := hedera.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
 	if err != nil {
-		println(err.Error(), ": error converting string to PrivateKey")
-		return
+		panic(fmt.Sprintf("%v : error converting string to PrivateKey", err))
 	}
 
 	recipientAccountID := hedera.AccountID{Account: 3}
 
 	// We create a client without a set operator
-	client := hedera.ClientForTestnet().SetOperator(operatorAccountID, operatorPrivateKey)
+	client, err := hedera.ClientForName(os.Getenv("HEDERA_NETWORK"))
+	if err != nil {
+		panic(fmt.Sprintf("%v : error creating client", err))
+	}
+
+	client.SetOperator(operatorAccountID, operatorPrivateKey)
 
 	// We must manually construct a TransactionID with the accountID of the operator/sender
 	// This is the account that will be charged the transaction fee
@@ -43,15 +46,13 @@ func main() {
 		FreezeWith(client)
 
 	if err != nil {
-		println(err.Error(), ": error freezing Transfer Transaction")
-		return
+		panic(fmt.Sprintf("%v : error freezing Transfer Transaction", err))
 	}
 
 	// Marshal your transaction to bytes
 	txBytes, err := transaction.ToBytes()
 	if err != nil {
-		println(err.Error(), ": error converting transfer transaction to bytes")
-		return
+		panic(fmt.Sprintf("%v : error converting transfer transaction to bytes", err))
 	}
 
 	fmt.Printf("Marshalled the unsigned transaction to bytes \n%v\n", txBytes)
@@ -62,8 +63,7 @@ func main() {
 	signedTxBytes, err := signingService(txBytes)
 
 	if err != nil {
-		println(err.Error(), ": error signing transfer transaction")
-		return
+		panic(fmt.Sprintf("%v : error signing transfer transaction", err))
 	}
 
 	fmt.Printf("Received bytes for signed transaction: \n%v\n", signedTxBytes)
@@ -72,8 +72,7 @@ func main() {
 	var signedTx hedera.TransferTransaction
 	tx, err := hedera.TransactionFromBytes(signedTxBytes)
 	if err != nil {
-		println(err.Error(), ": error converting bytes to transfer transaction")
-		return
+		panic(fmt.Sprintf("%v : error converting bytes to transfer transaction", err))
 	}
 
 	// Converting from interface{} to TransferTransaction, if that's what we got
@@ -88,16 +87,14 @@ func main() {
 	response, err := signedTx.Execute(client)
 
 	if err != nil {
-		println(err.Error(), ": error executing the transfer transaction")
-		return
+		panic(fmt.Sprintf("%v : error executing the transfer transaction", err))
 	}
 
 	// Get the receipt of the transaction to check the status
 	receipt, err := response.GetReceipt(client)
 
 	if err != nil {
-		println(err.Error(), ": error retrieving transfer transaction receipt")
-		return
+		panic(fmt.Sprintf("%v : error retrieving transfer transaction receipt", err))
 	}
 
 	// If Status Success is returned then everything is good

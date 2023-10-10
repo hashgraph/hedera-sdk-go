@@ -23,24 +23,21 @@ func main() {
 	net := os.Getenv("HEDERA_NETWORK")
 	client, err = hedera.ClientForName(net)
 	if err != nil {
-		println(err.Error(), ": error creating client")
-		return
+		panic(fmt.Sprintf("%v : error creating client", err))
 	}
 
 	configOperatorID := os.Getenv("OPERATOR_ID")
 	configOperatorKey := os.Getenv("OPERATOR_KEY")
 
-	if configOperatorID != "" && configOperatorKey != "" && client.GetOperatorPublicKey().Bytes() == nil {
+	if configOperatorID != "" && configOperatorKey != "" {
 		operatorAccountID, err := hedera.AccountIDFromString(configOperatorID)
 		if err != nil {
-			println(err.Error(), ": error converting string to AccountID")
-			return
+			panic(fmt.Sprintf("%v : error converting string to AccountID", err))
 		}
 
 		operatorKey, err := hedera.PrivateKeyFromString(configOperatorKey)
 		if err != nil {
-			println(err.Error(), ": error converting string to PrivateKey")
-			return
+			panic(fmt.Sprintf("%v : error converting string to PrivateKey", err))
 		}
 
 		client.SetOperator(operatorAccountID, operatorKey)
@@ -49,16 +46,14 @@ func main() {
 	defer func() {
 		err = client.Close()
 		if err != nil {
-			println(err.Error(), ": error closing client")
-			return
+			panic(fmt.Sprintf("%v : error closing client", err))
 		}
 	}()
 
 	// R contents from hello_world.json file
 	rawContract, err := os.ReadFile("./hello_world.json")
 	if err != nil {
-		println(err.Error(), ": error reading hello_world.json")
-		return
+		panic(fmt.Sprintf("%v : error reading hello_world.json", err))
 	}
 
 	// Initialize simple contract
@@ -67,8 +62,7 @@ func main() {
 	// Unmarshal the json read from the file into the simple contract
 	err = json.Unmarshal([]byte(rawContract), &contract)
 	if err != nil {
-		println(err.Error(), ": error unmarshaling the json file")
-		return
+		panic(fmt.Sprintf("%v : error unmarshaling the json file", err))
 	}
 
 	// Convert contract to bytes
@@ -87,15 +81,13 @@ func main() {
 		Execute(client)
 
 	if err != nil {
-		println(err.Error(), ": error creating file")
-		return
+		panic(fmt.Sprintf("%v : error creating file", err))
 	}
 
 	// Get the record
 	byteCodeTransactionRecord, err := byteCodeTransactionID.GetRecord(client)
 	if err != nil {
-		println(err.Error(), ": error getting file creation record")
-		return
+		panic(fmt.Sprintf("%v : error getting file creation record", err))
 	}
 
 	fmt.Printf("contract bytecode file upload fee: %v\n", byteCodeTransactionRecord.TransactionFee)
@@ -116,21 +108,18 @@ func main() {
 		Execute(client)
 
 	if err != nil {
-		println(err.Error(), ": error creating contract")
-		return
+		panic(fmt.Sprintf("%v : error creating contract", err))
 	}
 
 	// get the record for the contract we created
 	contractRecord, err := contractTransactionResponse.GetRecord(client)
 	if err != nil {
-		println(err.Error(), ": error retrieving contract creation record")
-		return
+		panic(fmt.Sprintf("%v : error retrieving contract creation record", err))
 	}
 
 	contractCreateResult, err := contractRecord.GetContractCreateResult()
 	if err != nil {
-		println(err.Error(), ": error retrieving contract creation result")
-		return
+		panic(fmt.Sprintf("%v : error retrieving contract creation result", err))
 	}
 
 	// get the contract ID from the record
@@ -155,8 +144,7 @@ func main() {
 		Execute(client)
 
 	if err != nil {
-		println(err.Error(), ": error executing contract call query")
-		return
+		panic(fmt.Sprintf("%v : error executing contract call query", err))
 	}
 
 	fmt.Printf("Call gas used: %v\n", callResult.GasUsed)
@@ -166,17 +154,16 @@ func main() {
 	deleteTransactionResponse, err := hedera.NewContractDeleteTransaction().
 		// Only thing required here is the contract ID
 		SetContractID(newContractID).
+		SetTransferAccountID(client.GetOperatorAccountID()).
 		Execute(client)
 
 	if err != nil {
-		println(err.Error(), ": error deleting contract")
-		return
+		panic(fmt.Sprintf("%v : error deleting contract", err))
 	}
 
 	deleteTransactionReceipt, err := deleteTransactionResponse.GetReceipt(client)
 	if err != nil {
-		println(err.Error(), ": error retrieving contract delete receipt")
-		return
+		panic(fmt.Sprintf("%v : error retrieving contract delete receipt", err))
 	}
 
 	fmt.Printf("Status of transaction deletion: %v\n", deleteTransactionReceipt.Status)

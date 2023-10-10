@@ -9,21 +9,18 @@ import (
 func main() {
 	client, err := hedera.ClientForName(os.Getenv("HEDERA_NETWORK"))
 	if err != nil {
-		fmt.Println(err.Error(), ": error creating client")
-		return
+		panic(fmt.Sprintf("%v : error creating client", err))
 	}
 
 	id, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
 	if err != nil {
-		fmt.Println(err.Error(), ": error converting string to AccountID")
-		return
+		panic(fmt.Sprintf("%v : error converting string to AccountID", err))
 	}
 
 	// Retrieving operator key from environment variable OPERATOR_KEY
 	key, err := hedera.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
 	if err != nil {
-		fmt.Println(err.Error(), ": error converting string to PrivateKey")
-		return
+		panic(fmt.Sprintf("%v : error converting string to PrivateKey", err))
 	}
 
 	// Setting the client operator ID and key
@@ -119,8 +116,7 @@ func main() {
 		SetWipeKey(key.PublicKey()).SetInitialSupply(100000000). // Total supply = 100000000 / 10 ^ 2
 		SetDecimals(2).SetCustomFees([]hedera.Fee{fee1, fee2, fee3}).FreezeWith(client)
 	if err != nil {
-		fmt.Println(err)
-		return
+		panic(err)
 	}
 
 	transactionResponse, err := tokenCreateTransaction.Sign(key).
@@ -128,13 +124,11 @@ func main() {
 		Sign(secondAccountPrivateKey).
 		Sign(thirdAccountPrivateKey).Execute(client)
 	if err != nil {
-		fmt.Println(err)
-		return
+		panic(err)
 	}
 	receipt, err := transactionResponse.GetReceipt(client)
 	if err != nil {
-		fmt.Println(err)
-		return
+		panic(err)
 	}
 	tokenId := *receipt.TokenID
 	fmt.Println("Created token with token id: ", tokenId)
@@ -151,19 +145,16 @@ func main() {
 		AddTokenTransfer(tokenId, id, -amount).AddTokenTransfer(tokenId, secondAccountId, amount).
 		FreezeWith(client)
 	if err != nil {
-		fmt.Println(err)
-		return
+		panic(err)
 	}
 
 	treasuryTokenTransferSubmit, err := treasuryTokenTransferTransaction.Sign(key).Execute(client)
 	if err != nil {
-		fmt.Println(err)
-		return
+		panic(err)
 	}
 	treasuryTransferReceipt, err := treasuryTokenTransferSubmit.GetReceipt(client)
 	if err != nil {
-		fmt.Println(err)
-		return
+		panic(err)
 	}
 
 	fmt.Println("Sending from treasury account to the second account - 'TransferTransaction' status: ", treasuryTransferReceipt.Status)
@@ -173,20 +164,17 @@ func main() {
 		AddTokenTransfer(tokenId, firstAccountId, amount).
 		FreezeWith(client)
 	if err != nil {
-		fmt.Println(err)
-		return
+		panic(err)
 	}
 
 	submitTransaction, err := tokenTransferTx.Sign(key).Sign(secondAccountPrivateKey).Execute(client)
 	if err != nil {
-		fmt.Println(err)
-		return
+		panic(err)
 	}
 
 	record, err := submitTransaction.GetRecord(client)
 	if err != nil {
-		fmt.Println(err)
-		return
+		panic(err)
 	}
 	fmt.Println("Transaction fee: ", record.TransactionFee)
 
@@ -201,8 +189,7 @@ func main() {
 		SetAccountID(firstAccountId).
 		Execute(client)
 	if err != nil {
-		fmt.Println(err)
-		return
+		panic(err)
 	}
 	fmt.Println("first's balance:", firstAccountBalanceAfter.Tokens.Get(tokenId))
 
@@ -210,8 +197,7 @@ func main() {
 		SetAccountID(secondAccountId).
 		Execute(client)
 	if err != nil {
-		fmt.Println(err)
-		return
+		panic(err)
 	}
 	fmt.Println("second's balance:", secondAccountBalanceAfter.Tokens.Get(tokenId))
 
@@ -219,8 +205,7 @@ func main() {
 		SetAccountID(thirdAccountId).
 		Execute(client)
 	if err != nil {
-		fmt.Println(err)
-		return
+		panic(err)
 	}
 	fmt.Println("third's balance:", secondAccountBalanceAfter.Tokens.Get(tokenId))
 

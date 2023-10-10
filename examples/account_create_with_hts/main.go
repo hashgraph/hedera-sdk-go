@@ -10,21 +10,18 @@ func main() {
 
 	client, err := hedera.ClientForName(os.Getenv("HEDERA_NETWORK"))
 	if err != nil {
-		println(err.Error(), ": error creating client")
-		return
+		panic(fmt.Sprintf("%v : error creating client", err))
 	}
 
 	operatorId, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
 	if err != nil {
-		println(err.Error(), ": error converting string to AccountID")
-		return
+		panic(fmt.Sprintf("%v : error converting string to AccountID", err))
 	}
 
 	// Retrieving operator key from environment variable OPERATOR_KEY
 	operatorKey, err := hedera.PrivateKeyFromStringEd25519(os.Getenv("OPERATOR_KEY"))
 	if err != nil {
-		println(err.Error(), ": error converting string to PrivateKey")
-		return
+		panic(fmt.Sprintf("%v : error converting string to PrivateKey", err))
 	}
 
 	// Setting the client operator ID and key
@@ -32,18 +29,15 @@ func main() {
 
 	supplyKey, err := hedera.PrivateKeyGenerateEcdsa()
 	if err != nil {
-		println(err.Error(), ": error creating supply key")
-		return
+		panic(fmt.Sprintf("%v : error creating supply key", err))
 	}
 	freezeKey, err := hedera.PrivateKeyGenerateEcdsa()
 	if err != nil {
-		println(err.Error(), ": error creating freeze key")
-		return
+		panic(fmt.Sprintf("%v : error creating freeze key", err))
 	}
 	wipeKey, err := hedera.PrivateKeyGenerateEcdsa()
 	if err != nil {
-		println(err.Error(), ": error creating wipe key")
-		return
+		panic(fmt.Sprintf("%v : error creating wipe key", err))
 	}
 	/**
 	 *     Example 1
@@ -67,22 +61,19 @@ func main() {
 		SetTreasuryAccountID(operatorId).SetSupplyType(hedera.TokenSupplyTypeFinite).
 		SetAdminKey(operatorKey).SetFreezeKey(freezeKey).SetWipeKey(wipeKey).SetSupplyKey(supplyKey).FreezeWith(client)
 	if err != nil {
-		println(err.Error(), ": error creating token transaction")
-		return
+		panic(fmt.Sprintf("%v : error creating token transaction", err))
 	}
 	// Sign the transaction with the operator key
 	nftSignTransaction := nftCreateTransaction.Sign(operatorKey)
 	// Submit the transaction to the Hedera network
 	nftCreateSubmit, err := nftSignTransaction.Execute(client)
 	if err != nil {
-		println(err.Error(), ": error submitting transaction")
-		return
+		panic(fmt.Sprintf("%v : error submitting transaction", err))
 	}
 	// Get transaction receipt information
 	nftCreateReceipt, err := nftCreateSubmit.GetReceipt(client)
 	if err != nil {
-		println(err.Error(), ": error receiving receipt")
-		return
+		panic(fmt.Sprintf("%v : error receiving receipt", err))
 	}
 	// Get token id from the transaction
 	nftTokenID := *nftCreateReceipt.TokenID
@@ -99,18 +90,15 @@ func main() {
 	for i, s := range cid {
 		mintTransaction, err := hedera.NewTokenMintTransaction().SetTokenID(nftTokenID).SetMetadata([]byte(s)).FreezeWith(client)
 		if err != nil {
-			println(err.Error(), ": error creating mint transaction")
-			return
+			panic(fmt.Sprintf("%v : error creating mint transaction", err))
 		}
 		mintTransactionSubmit, err := mintTransaction.Sign(supplyKey).Execute(client)
 		if err != nil {
-			println(err.Error(), ": error submitting transaction")
-			return
+			panic(fmt.Sprintf("%v : error submitting transaction", err))
 		}
 		receipt, err := mintTransactionSubmit.GetReceipt(client)
 		if err != nil {
-			println(err.Error(), ": error receiving receipt")
-			return
+			panic(fmt.Sprintf("%v : error receiving receipt", err))
 		}
 		nftCollection = append(nftCollection, receipt)
 		fmt.Println("Created NFT ", nftTokenID.String(), " with serial: ", nftCollection[i].SerialNumbers[0])
@@ -125,8 +113,7 @@ func main() {
 	fmt.Println("Creating new account...")
 	privateKey, err := hedera.PrivateKeyGenerateEcdsa()
 	if err != nil {
-		println(err.Error(), ": error generating private key")
-		return
+		panic(fmt.Sprintf("%v : error generating private key", err))
 	}
 	publicKey := privateKey.PublicKey()
 	// Assuming that the target shard and realm are known.
@@ -142,16 +129,14 @@ func main() {
 	 */
 	nftTransferTransaction, err := hedera.NewTransferTransaction().AddNftTransfer(exampleNftId, operatorId, *aliasAccountId).FreezeWith(client)
 	if err != nil {
-		println(err.Error(), ": error creating transaction")
-		return
+		panic(fmt.Sprintf("%v : error creating transaction", err))
 	}
 	// Sign the transaction with the operator key
 	nftTransferTransactionSign := nftTransferTransaction.Sign(operatorKey)
 	// Submit the transaction to the Hedera network
 	nftTransferTransactionSubmit, err := nftTransferTransactionSign.Execute(client)
 	if err != nil {
-		println(err.Error(), ": error submitting transaction")
-		return
+		panic(fmt.Sprintf("%v : error submitting transaction", err))
 	}
 	// Get transaction receipt information here
 	fmt.Println(nftTransferTransactionSubmit.GetReceipt(client))
@@ -165,8 +150,7 @@ func main() {
 	//Returns the info for the specified NFT id
 	nftInfo, err := hedera.NewTokenNftInfoQuery().SetNftID(exampleNftId).Execute(client)
 	if err != nil {
-		println(err.Error(), ": error info query transaction")
-		return
+		panic(fmt.Sprintf("%v : error info query transaction", err))
 	}
 	nftOwnerAccountId := nftInfo[0].AccountID
 	fmt.Println("Current owner account id: ", nftOwnerAccountId)
@@ -178,8 +162,7 @@ func main() {
 	 */
 	accountInfo, err := hedera.NewAccountInfoQuery().SetAccountID(*aliasAccountId).Execute(client)
 	if err != nil {
-		println(err.Error(), ": error account info query")
-		return
+		panic(fmt.Sprintf("%v : error account info query", err))
 	}
 	fmt.Println("The normal account ID of the given alias ", accountInfo.AccountID)
 
@@ -202,23 +185,20 @@ func main() {
 		SetTokenSymbol("H542").SetTokenType(hedera.TokenTypeFungibleCommon).SetTreasuryAccountID(operatorId).
 		SetInitialSupply(10000).SetDecimals(2).SetAutoRenewAccount(operatorId).FreezeWith(client)
 	if err != nil {
-		println(err.Error(), ": error creating transaction")
-		return
+		panic(fmt.Sprintf("%v : error creating transaction", err))
 	}
 	// Sign the transaction with the operator key
 	tokenCreateTransactionSign := tokenCreateTransaction.Sign(operatorKey)
 	// Submit the transaction to the Hedera network
 	tokenCreateTransactionSubmit, err := tokenCreateTransactionSign.Execute(client)
 	if err != nil {
-		println(err.Error(), ": error submitting transaction")
-		return
+		panic(fmt.Sprintf("%v : error submitting transaction", err))
 	}
 
 	// Get transaction receipt information
 	tokenCreateTransactionReceipt, err := tokenCreateTransactionSubmit.GetReceipt(client)
 	if err != nil {
-		println(err.Error(), ": error retrieving receipt")
-		return
+		panic(fmt.Sprintf("%v : error retrieving receipt", err))
 	}
 	tokenId := *tokenCreateTransactionReceipt.TokenID
 	fmt.Println("Created token with token id: ", tokenId)
@@ -230,8 +210,7 @@ func main() {
 	 */
 	privateKey2, err := hedera.PrivateKeyGenerateEcdsa()
 	if err != nil {
-		println(err.Error(), ": error generating private key")
-		return
+		panic(fmt.Sprintf("%v : error generating private key", err))
 	}
 	publicKey2 := privateKey2.PublicKey()
 	// Assuming that the target shard and realm are known.
@@ -250,16 +229,14 @@ func main() {
 		AddTokenTransfer(tokenId, operatorId, -10).AddTokenTransfer(tokenId, aliasAccountId2, 10).
 		FreezeWith(client)
 	if err != nil {
-		println(err.Error(), ": error creating transaction")
-		return
+		panic(fmt.Sprintf("%v : error creating transaction", err))
 	}
 	// Sign the transaction with the operator key
 	tokenTransferTransactionSign := tokenTransferTransaction.Sign(operatorKey)
 	// Submit the transaction to the Hedera network
 	tokenTransferTransactionSubmit, err := tokenTransferTransactionSign.Execute(client)
 	if err != nil {
-		println(err.Error(), ": error submitting transaction")
-		return
+		panic(fmt.Sprintf("%v : error submitting transaction", err))
 	}
 	// Get transaction receipt information
 	fmt.Println(tokenTransferTransactionSubmit.GetReceipt(client))
@@ -272,8 +249,7 @@ func main() {
 
 	accountId2Info, err := hedera.NewAccountInfoQuery().SetAccountID(aliasAccountId2).Execute(client)
 	if err != nil {
-		println(err.Error(), ": error executing acount info query")
-		return
+		panic(fmt.Sprintf("%v : error executing acount info query", err))
 	}
 	accountId2 := accountId2Info.AccountID
 	fmt.Println("The normal account ID of the given alias: ", accountId2)
@@ -286,8 +262,7 @@ func main() {
 
 	accountBalances, err := hedera.NewAccountBalanceQuery().SetAccountID(aliasAccountId2).Execute(client)
 	if err != nil {
-		println(err.Error(), ": error receiving account balance")
-		return
+		panic(fmt.Sprintf("%v : error receiving account balance", err))
 	}
 
 	tokenBalanceAccountId2 := accountBalances.Tokens.Get(tokenId)

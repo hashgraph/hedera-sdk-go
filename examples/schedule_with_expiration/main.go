@@ -15,22 +15,19 @@ func main() {
 	// Retrieving network type from environment variable HEDERA_NETWORK
 	client, err = hedera.ClientForName(os.Getenv("HEDERA_NETWORK"))
 	if err != nil {
-		println(err.Error(), ": error creating client")
-		return
+		panic(fmt.Sprintf("%v : error creating client", err))
 	}
 
 	// Retrieving operator ID from environment variable OPERATOR_ID
 	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
 	if err != nil {
-		println(err.Error(), ": error converting string to AccountID")
-		return
+		panic(fmt.Sprintf("%v : error converting string to AccountID", err))
 	}
 
 	// Retrieving operator key from environment variable OPERATOR_KEY
 	operatorKey, err := hedera.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
 	if err != nil {
-		println(err.Error(), ": error converting string to PrivateKey")
-		return
+		panic(fmt.Sprintf("%v : error converting string to PrivateKey", err))
 	}
 
 	// Setting the client operator ID and key
@@ -46,8 +43,7 @@ func main() {
 	for i := range keys {
 		newKey, err := hedera.PrivateKeyGenerateEd25519()
 		if err != nil {
-			println(err.Error(), ": error generating PrivateKey}")
-			return
+			panic(fmt.Sprintf("%v : error generating PrivateKey}", err))
 		}
 
 		fmt.Printf("Key %v:\n", i)
@@ -73,15 +69,13 @@ func main() {
 		SetInitialBalance(hedera.NewHbar(10)).
 		Execute(client)
 	if err != nil {
-		println(err.Error(), ": error executing create account transaction")
-		return
+		panic(fmt.Sprintf("%v : error executing create account transaction", err))
 	}
 
 	// Make sure the transaction succeeded
 	transactionReceipt, err := createResponse.GetReceipt(client)
 	if err != nil {
-		println(err.Error(), ": error getting receipt")
-		return
+		panic(fmt.Sprintf("%v : error getting receipt", err))
 	}
 
 	// Pre-generating transaction id for the scheduled transaction so we can track it
@@ -104,8 +98,7 @@ func main() {
 	// Scheduling it, this gives us hedera.ScheduleCreateTransaction
 	scheduled, err := transferTx.Schedule()
 	if err != nil {
-		println(err.Error(), ": error scheduling Transfer Transaction")
-		return
+		panic(fmt.Sprintf("%v : error scheduling Transfer Transaction", err))
 	}
 
 	// Executing the scheduled transaction
@@ -113,15 +106,13 @@ func main() {
 		SetExpirationTime(time.Now().Add(30 * time.Minute)).
 		Execute(client)
 	if err != nil {
-		println(err.Error(), ": error executing schedule create")
-		return
+		panic(fmt.Sprintf("%v : error executing schedule create", err))
 	}
 
 	// Make sure it executed successfully
 	scheduleRecord, err := scheduleResponse.GetRecord(client)
 	if err != nil {
-		println(err.Error(), ": error getting schedule create record")
-		return
+		panic(fmt.Sprintf("%v : error getting schedule create record", err))
 	}
 
 	// Taking out the schedule ID
@@ -137,8 +128,7 @@ func main() {
 		SetScheduleID(scheduleID).
 		FreezeWith(client)
 	if err != nil {
-		println(err.Error(), ": error freezing sign transaction")
-		return
+		panic(fmt.Sprintf("%v : error freezing sign transaction", err))
 	}
 
 	// Signing the scheduled transaction
@@ -146,15 +136,13 @@ func main() {
 
 	resp, err := signTransaction.Execute(client)
 	if err != nil {
-		println(err.Error(), ": error executing schedule sign transaction")
-		return
+		panic(fmt.Sprintf("%v : error executing schedule sign transaction", err))
 	}
 
 	// Getting the receipt to make sure the signing executed properly
 	_, err = resp.GetReceipt(client)
 	if err != nil {
-		println(err.Error(), ": error executing schedule sign receipt")
-		return
+		panic(fmt.Sprintf("%v : error executing schedule sign receipt", err))
 	}
 
 	// Making sure the scheduled transaction executed properly with schedule info query
@@ -163,8 +151,7 @@ func main() {
 		SetNodeAccountIDs([]hedera.AccountID{createResponse.NodeID}).
 		Execute(client)
 	if err != nil {
-		println(err.Error(), ": error retrieving schedule info after signing")
-		return
+		panic(fmt.Sprintf("%v : error retrieving schedule info after signing", err))
 	}
 
 	println("Signers: ", info.Signatories.String())
@@ -176,8 +163,7 @@ func main() {
 		SetScheduleID(scheduleID).
 		FreezeWith(client)
 	if err != nil {
-		println(err.Error(), ": error freezing sign transaction")
-		return
+		panic(fmt.Sprintf("%v : error freezing sign transaction", err))
 	}
 
 	// Signing the scheduled transaction
@@ -185,15 +171,13 @@ func main() {
 
 	resp, err = signTransaction.Execute(client)
 	if err != nil {
-		println(err.Error(), ": error executing schedule sign transaction")
-		return
+		panic(fmt.Sprintf("%v : error executing schedule sign transaction", err))
 	}
 
 	// Getting the receipt to make sure the signing executed properly
 	_, err = resp.GetReceipt(client)
 	if err != nil {
-		println(err.Error(), ": error executing schedule sign receipt")
-		return
+		panic(fmt.Sprintf("%v : error executing schedule sign receipt", err))
 	}
 
 	info, err = hedera.NewScheduleInfoQuery().
@@ -201,14 +185,12 @@ func main() {
 		SetNodeAccountIDs([]hedera.AccountID{createResponse.NodeID}).
 		Execute(client)
 	if err != nil {
-		println(err.Error(), ": error retrieving schedule info after signing")
-		return
+		panic(fmt.Sprintf("%v : error retrieving schedule info after signing", err))
 	}
 
 	println("Signers: ", info.Signatories.String())
 
 	if info.ExecutedAt != nil {
 		println("Singing success, executed at: ", info.ExecutedAt.String())
-		return
 	}
 }

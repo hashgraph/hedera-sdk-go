@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/hashgraph/hedera-sdk-go/v2"
@@ -19,22 +20,19 @@ func main() {
 	// Creating client from the set HEDERA_NETWORK environment variable
 	namedNetworkClient, err := hedera.ClientForName(os.Getenv("HEDERA_NETWORK"))
 	if err != nil {
-		println(err.Error(), ": error creating client for name")
-		return
+		panic(fmt.Sprintf("%v : error creating client for name", err))
 	}
 
 	// Creating account ID of 0.0.3
 	id, err := hedera.AccountIDFromString("0.0.3")
 	if err != nil {
-		println(err.Error(), ": error creating AccountID from string")
-		return
+		panic(fmt.Sprintf("%v : error creating AccountID from string", err))
 	}
 
 	// Creating a PrivateKey from a random key string we have
 	key, err := hedera.PrivateKeyFromString("302e020100300506032b657004220420db484b828e64b2d8f12ce3c0a0e93a0b8cce7af1bb8f39c97732394482538e10")
 	if err != nil {
-		println(err.Error(), ": error creating PrivateKey from string")
-		return
+		panic(fmt.Sprintf("%v : error creating PrivateKey from string", err))
 	}
 
 	// Set the operators for each client
@@ -58,15 +56,13 @@ func main() {
 		// Creating client from a file specified in environment variable CONFIG_FILE
 		configClient, err := hedera.ClientFromConfigFile(os.Getenv("CONFIG_FILE"))
 		if err != nil {
-			println(err.Error(), ": error creating Client from config file")
-			return
+			panic(fmt.Sprintf("%v : error creating Client from config file", err))
 		}
 
 		// Closing the client from file
 		err = configClient.Close()
 		if err != nil {
-			println(err.Error(), ": error closing configClient")
-			return
+			panic(fmt.Sprintf("%v : error closing configClient", err))
 		}
 	}
 
@@ -74,28 +70,23 @@ func main() {
 	// Can also do this by using defer in after setting up the client
 	err = previewnetClient.Close()
 	if err != nil {
-		println(err.Error(), ": error closing previewnetClient")
-		return
+		panic(fmt.Sprintf("%v : error closing previewnetClient", err))
 	}
 	err = testnetClient.Close()
 	if err != nil {
-		println(err.Error(), ": error closing testnetClient")
-		return
+		panic(fmt.Sprintf("%v : error closing testnetClient", err))
 	}
 	err = mainnetClient.Close()
 	if err != nil {
-		println(err.Error(), ": error closing mainnetClient")
-		return
+		panic(fmt.Sprintf("%v : error closing mainnetClient", err))
 	}
 	err = namedNetworkClient.Close()
 	if err != nil {
-		println(err.Error(), ": error closing namedNetworkClient")
-		return
+		panic(fmt.Sprintf("%v : error closing namedNetworkClient", err))
 	}
 	err = customClient.Close()
 	if err != nil {
-		println(err.Error(), ": error closing customClient")
-		return
+		panic(fmt.Sprintf("%v : error closing customClient", err))
 	}
 
 	println("Success!")

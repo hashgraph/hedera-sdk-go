@@ -13,22 +13,19 @@ func main() {
 	// Retrieving network type from environment variable HEDERA_NETWORK
 	client, err = hedera.ClientForName(os.Getenv("HEDERA_NETWORK"))
 	if err != nil {
-		println(err.Error(), ": error creating client")
-		return
+		panic(fmt.Sprintf("%v : error creating client", err))
 	}
 
 	// Retrieving operator ID from environment variable OPERATOR_ID
 	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
 	if err != nil {
-		println(err.Error(), ": error converting string to AccountID")
-		return
+		panic(fmt.Sprintf("%v : error converting string to AccountID", err))
 	}
 
 	// Retrieving operator key from environment variable OPERATOR_KEY
 	operatorKey, err := hedera.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
 	if err != nil {
-		println(err.Error(), ": error converting string to PrivateKey")
-		return
+		panic(fmt.Sprintf("%v : error converting string to PrivateKey", err))
 	}
 
 	// Setting the client operator ID and key
@@ -37,8 +34,7 @@ func main() {
 	// Generate new key to use with new account
 	newKey, err := hedera.PrivateKeyGenerateEd25519()
 	if err != nil {
-		println(err.Error(), ": error generating PrivateKey")
-		return
+		panic(fmt.Sprintf("%v : error generating PrivateKey", err))
 	}
 
 	fmt.Printf("private = %v\n", newKey)
@@ -60,19 +56,17 @@ func main() {
 		// The account is charged to extend its expiration date every this many seconds. If it doesn't
 		// have enough balance, it extends as long as possible. If it is empty when it expires, then it
 		// is deleted.
-		SetStakedNodeID(3).
+		SetStakedAccountID(hedera.AccountID{Account: 3}).
 		SetInitialBalance(hedera.NewHbar(20)).
 		Execute(client)
 	if err != nil {
-		println(err.Error(), ": error executing account create transaction")
-		return
+		panic(fmt.Sprintf("%v : error executing account create transaction", err))
 	}
 
 	// Get receipt to see if transaction succeeded, and has the account ID
 	transactionReceipt, err := transactionResponse.GetReceipt(client)
 	if err != nil {
-		println(err.Error(), ": error getting receipt")
-		return
+		panic(fmt.Sprintf("%v : error getting receipt", err))
 	}
 
 	accountID := *transactionReceipt.AccountID
@@ -81,11 +75,10 @@ func main() {
 		SetAccountID(accountID).
 		Execute(client)
 	if err != nil {
-		println(err.Error(), ": error retrieving account info")
-		return
+		panic(fmt.Sprintf("%v : error retrieving account info", err))
 	}
 
-	println("Staked node id:", *info.StakingInfo.StakedNodeID)
+	println("Staked account id:", info.StakingInfo.StakedAccountID.String())
 
 	freezeUpdate, err := hedera.NewAccountUpdateTransaction().
 		SetNodeAccountIDs([]hedera.AccountID{transactionResponse.NodeID}).
@@ -94,30 +87,26 @@ func main() {
 		SetStakedNodeID(0).
 		FreezeWith(client)
 	if err != nil {
-		println(err.Error(), ": error freezing account update transaction")
-		return
+		panic(fmt.Sprintf("%v : error freezing account update transaction", err))
 	}
 
 	freezeUpdate.Sign(newKey)
 
 	transactionResponse, err = freezeUpdate.Execute(client)
 	if err != nil {
-		println(err.Error(), ": error executing account update transaction")
-		return
+		panic(fmt.Sprintf("%v : error executing account update transaction", err))
 	}
 
 	transactionReceipt, err = transactionResponse.GetReceipt(client)
 	if err != nil {
-		println(err.Error(), ": error getting receipt}")
-		return
+		panic(fmt.Sprintf("%v : error getting receipt}", err))
 	}
 
 	info, err = hedera.NewAccountInfoQuery().
 		SetAccountID(accountID).
 		Execute(client)
 	if err != nil {
-		println(err.Error(), ": error retrieving account info")
-		return
+		panic(fmt.Sprintf("%v : error retrieving account info", err))
 	}
 
 	println("Staked node id after update:", *info.StakingInfo.StakedNodeID)

@@ -11,15 +11,13 @@ func main() {
 	// Generate 24 word mnemonic
 	mnemonic24, err := hedera.GenerateMnemonic24()
 	if err != nil {
-		println(err.Error(), ": error generating 24 word mnemonic")
-		return
+		panic(fmt.Sprintf("%v : error generating 24 word mnemonic", err))
 	}
 
 	// Generate 12 word mnemonic
 	mnemonic12, err := hedera.GenerateMnemonic12()
 	if err != nil {
-		println(err.Error(), ": error generating 12 word mnemonic")
-		return
+		panic(fmt.Sprintf("%v : error generating 12 word mnemonic", err))
 	}
 
 	// Given legacy string
@@ -28,8 +26,7 @@ func main() {
 	// Initializing a legacy mnemonic from legacy string
 	mnemonicLegacy, err := hedera.NewMnemonic(strings.Split(legacyString, ","))
 	if err != nil {
-		println(err.Error(), ": error generating mnemonic from legacy string")
-		return
+		panic(fmt.Sprintf("%v : error generating mnemonic from legacy string", err))
 	}
 
 	fmt.Printf("mnemonic 24 word = %v\n", mnemonic24)
@@ -39,22 +36,19 @@ func main() {
 	// Creating a Private Key from 24 word mnemonic with an optional passphrase
 	privateKey24, err := mnemonic24.ToPrivateKey( /* passphrase */ "")
 	if err != nil {
-		println(err.Error(), ": error converting 24 word mnemonic to PrivateKey")
-		return
+		panic(fmt.Sprintf("%v : error converting 24 word mnemonic to PrivateKey", err))
 	}
 
 	// Creating a Private Key from 12 word mnemonic with an optional passphrase
 	privateKey12, err := mnemonic12.ToPrivateKey( /* passphrase */ "")
 	if err != nil {
-		println(err.Error(), ": error converting 12 word mnemonic to PrivateKey")
-		return
+		panic(fmt.Sprintf("%v : error converting 12 word mnemonic to PrivateKey", err))
 	}
 
 	// ToLegacyPrivateKey() doesn't support a passphrase
 	privateLegacy, err := mnemonicLegacy.ToLegacyPrivateKey()
 	if err != nil {
-		println(err.Error(), ": error converting legacy mnemonic to PrivateKey")
-		return
+		panic(fmt.Sprintf("%v : error converting legacy mnemonic to PrivateKey", err))
 	}
 
 	// Retrieving the Public Key

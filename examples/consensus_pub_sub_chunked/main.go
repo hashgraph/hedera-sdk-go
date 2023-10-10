@@ -15,22 +15,19 @@ func main() {
 	// Retrieving network type from environment variable HEDERA_NETWORK
 	client, err = hedera.ClientForName(os.Getenv("HEDERA_NETWORK"))
 	if err != nil {
-		println(err.Error(), ": error creating client")
-		return
+		panic(fmt.Sprintf("%v : error creating client", err))
 	}
 
 	// Retrieving operator ID from environment variable OPERATOR_ID
 	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
 	if err != nil {
-		println(err.Error(), ": error converting string to AccountID")
-		return
+		panic(fmt.Sprintf("%v : error converting string to AccountID", err))
 	}
 
 	// Retrieving operator key from environment variable OPERATOR_KEY
 	operatorKey, err := hedera.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
 	if err != nil {
-		println(err.Error(), ": error converting string to PrivateKey")
-		return
+		panic(fmt.Sprintf("%v : error converting string to PrivateKey", err))
 	}
 
 	// Defaults the operator account ID and key such that all generated transactions will be paid for
@@ -40,8 +37,7 @@ func main() {
 	// generate a submit key to use with the topic
 	submitKey, err := hedera.GeneratePrivateKey()
 	if err != nil {
-		println(err.Error(), ": error generating PrivateKey")
-		return
+		panic(fmt.Sprintf("%v : error generating PrivateKey", err))
 	}
 
 	// Make a new topic ID to use
@@ -59,15 +55,13 @@ func main() {
 		Execute(client)
 
 	if err != nil {
-		println(err.Error(), ": error creating topic")
-		return
+		panic(fmt.Sprintf("%v : error creating topic", err))
 	}
 
 	// Get the receipt that will contain topic ID
 	transactionReceipt, err := transactionResponse.GetReceipt(client)
 	if err != nil {
-		println(err.Error(), ": error retrieving topic creation receipt")
-		return
+		panic(fmt.Sprintf("%v : error retrieving topic creation receipt", err))
 	}
 
 	// Get the new topic ID
@@ -95,8 +89,7 @@ func main() {
 		})
 
 	if err != nil {
-		println(err.Error(), ": error subscribing")
-		return
+		panic(fmt.Sprintf("%v : error subscribing", err))
 	}
 
 	// Prepare a message send transaction that requires a submit key from "somewhere else"
@@ -112,23 +105,20 @@ func main() {
 		// this is the party who will be charged the transaction fee
 		SignWithOperator(client)
 	if err != nil {
-		println(err.Error(), ": error signing with operator")
-		return
+		panic(fmt.Sprintf("%v : error signing with operator", err))
 	}
 
 	// Serialize to bytes so it can be signed "somewhere else" by the submit key
 	transactionBytes, err := transaction.ToBytes()
 	if err != nil {
-		println(err.Error(), ": error serializing topic submit transaction to bytes")
-		return
+		panic(fmt.Sprintf("%v : error serializing topic submit transaction to bytes", err))
 	}
 
 	// Now pretend we sent those bytes across the network
 	// parse them into a transaction so we can sign with the submit key
 	transactionFromBytes, err := hedera.TransactionFromBytes(transactionBytes)
 	if err != nil {
-		println(err.Error(), ": error deserializing topic submit transaction")
-		return
+		panic(fmt.Sprintf("%v : error deserializing topic submit transaction", err))
 	}
 
 	// Interface{} back to TopicMessageSubmitTransaction
@@ -155,8 +145,7 @@ func main() {
 	// Get the receipt to ensure there were no errors
 	receipt, err := transactionResponse.GetReceipt(client)
 	if err != nil {
-		println(err.Error(), ": error retrieving topic submit transaction receipt")
-		return
+		panic(fmt.Sprintf("%v : error retrieving topic submit transaction receipt", err))
 	}
 
 	println("TransactionID to check if successfully sent:", transactionResponse.TransactionID.String())
@@ -169,14 +158,12 @@ func main() {
 		SetMaxTransactionFee(hedera.NewHbar(5)).
 		Execute(client)
 	if err != nil {
-		println(err.Error(), ": error deleting topic")
-		return
+		panic(fmt.Sprintf("%v : error deleting topic", err))
 	}
 
 	_, err = transactionResponse.GetReceipt(client)
 	if err != nil {
-		println(err.Error(), ": error retrieving topic delete transaction receipt")
-		return
+		panic(fmt.Sprintf("%v : error retrieving topic delete transaction receipt", err))
 	}
 
 	if wait {

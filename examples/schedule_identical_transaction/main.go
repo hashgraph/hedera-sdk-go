@@ -14,22 +14,19 @@ func main() {
 	// Retrieving network type from environment variable HEDERA_NETWORK
 	client, err = hedera.ClientForName(os.Getenv("HEDERA_NETWORK"))
 	if err != nil {
-		println(err.Error(), ": error creating client")
-		return
+		panic(fmt.Sprintf("%v : error creating client", err))
 	}
 
 	// Retrieving operator ID from environment variable OPERATOR_ID
 	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
 	if err != nil {
-		println(err.Error(), ": error converting string to AccountID")
-		return
+		panic(fmt.Sprintf("%v : error converting string to AccountID", err))
 	}
 
 	// Retrieving operator key from environment variable OPERATOR_KEY
 	operatorKey, err := hedera.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
 	if err != nil {
-		println(err.Error(), ": error converting string to PrivateKey")
-		return
+		panic(fmt.Sprintf("%v : error converting string to PrivateKey", err))
 	}
 
 	// Setting the client operator ID and key
@@ -48,8 +45,7 @@ func main() {
 	for i := range pubKeys {
 		newKey, err := hedera.GeneratePrivateKey()
 		if err != nil {
-			println(err.Error(), ": error generating PrivateKey")
-			return
+			panic(fmt.Sprintf("%v : error generating PrivateKey", err))
 		}
 
 		fmt.Printf("Key %v:\n", i)
@@ -65,21 +61,18 @@ func main() {
 			SetInitialBalance(hedera.NewHbar(1)).
 			Execute(client)
 		if err != nil {
-			println(err.Error(), ": error creating account")
-			return
+			panic(fmt.Sprintf("%v : error creating account", err))
 		}
 
 		// Make sure the transaction succeeded
 		transactionReceipt, err := createResponse.GetReceipt(client)
 		if err != nil {
-			println(err.Error(), ": error getting receipt 1")
-			return
+			panic(fmt.Sprintf("%v : error getting receipt 1", err))
 		}
 
 		newClient, err := hedera.ClientForName(os.Getenv("HEDERA_NETWORK"))
 		if err != nil {
-			println(err.Error(), ": error creating client")
-			return
+			panic(fmt.Sprintf("%v : error creating client", err))
 		}
 		newClient = newClient.SetOperator(*transactionReceipt.AccountID, newKey)
 
@@ -103,15 +96,13 @@ func main() {
 		SetInitialBalance(hedera.NewHbar(10)).
 		Execute(client)
 	if err != nil {
-		println(err.Error(), ": error executing create account transaction")
-		return
+		panic(fmt.Sprintf("%v : error executing create account transaction", err))
 	}
 
 	// Make sure the transaction succeeded
 	transactionReceipt, err := createResponse.GetReceipt(client)
 	if err != nil {
-		println(err.Error(), ": error getting receipt 2")
-		return
+		panic(fmt.Sprintf("%v : error getting receipt 2", err))
 	}
 	thresholdAccount := *transactionReceipt.AccountID
 
@@ -130,21 +121,18 @@ func main() {
 
 		tx, err := tx.FreezeWith(client)
 		if err != nil {
-			println(err.Error(), ": error while freezing transaction for client ")
-			return
+			panic(fmt.Sprintf("%v : error while freezing transaction for client ", err))
 		}
 
 		signedTransaction, err := tx.SignWithOperator(client)
 		if err != nil {
-			println(err.Error(), ": error while signing with operator client ", operator)
-			return
+			panic(fmt.Sprintf("%v : error while signing with operator client ", operator))
 		}
 
 		scheduledTx, err := hedera.NewScheduleCreateTransaction().
 			SetScheduledTransaction(signedTransaction)
 		if err != nil {
-			println(err.Error(), ": error while setting scheduled transaction with operator client", operator)
-			return
+			panic(fmt.Sprintf("%v : error while setting scheduled transaction with operator client", operator))
 		}
 
 		scheduledTx = scheduledTx.
@@ -152,8 +140,7 @@ func main() {
 
 		response, err := scheduledTx.Execute(client)
 		if err != nil {
-			println(err.Error(), ": error while executing schedule create transaction with operator", operator)
-			return
+			panic(fmt.Sprintf("%v : error while executing schedule create transaction with operator", operator))
 		}
 
 		receipt, err := hedera.NewTransactionReceiptQuery().
@@ -161,8 +148,7 @@ func main() {
 			SetNodeAccountIDs([]hedera.AccountID{response.NodeID}).
 			Execute(client)
 		if err != nil {
-			println(err.Error(), ": error while getting schedule create receipt transaction with operator", operator)
-			return
+			panic(fmt.Sprintf("%v : error while getting schedule create receipt transaction with operator", operator))
 		}
 
 		fmt.Printf("operator [%s]: scheduleID = %v\n", operator, receipt.ScheduleID)
@@ -173,8 +159,7 @@ func main() {
 		}
 
 		if scheduleID.String() != receipt.ScheduleID.String() {
-			println("invalid generated schedule id, expected ", scheduleID.String(), ", got ", receipt.ScheduleID.String())
-			return
+			panic("invalid generated schedule id, expected " + scheduleID.String() + ", got "+ receipt.ScheduleID.String())
 		}
 
 		// If the status return by the receipt is related to already created, execute a schedule sign transaction
@@ -185,15 +170,13 @@ func main() {
 				Execute(client)
 
 			if err != nil {
-				println(err.Error(), ": error while executing scheduled sign with operator", operator)
-				return
+				panic(fmt.Sprintf("%v : error while executing scheduled sign with operator", operator))
 			}
 
 			_, err = signTransaction.GetReceipt(client)
 			if err != nil {
 				if err.Error() != "exceptional receipt status: SCHEDULE_ALREADY_EXECUTED" {
-					println(err.Error(), ": error while getting scheduled sign with operator ", operator)
-					return
+					panic(fmt.Sprintf("%v : error while getting scheduled sign with operator ", operator))
 				}
 			}
 		}
@@ -205,14 +188,14 @@ func main() {
 		SetNodeAccountIDs([]hedera.AccountID{createResponse.NodeID}).
 		Execute(client)
 	if err != nil {
-		println(err.Error(), ": error retrieving schedule info after signing")
-		return
+		panic(fmt.Sprintf("%v : error retrieving schedule info after signing", err))
 	}
 
 	// Checking if the scheduled transaction was executed and signed, and retrieving the signatories
 	if !info.ExecutedAt.IsZero() {
 		println("Signing success, signed at: ", info.ExecutedAt.String())
 		println("Signatories: ", info.Signatories.String())
-		return
+	}else{
+		panic("Signing failed")
 	}
 }
