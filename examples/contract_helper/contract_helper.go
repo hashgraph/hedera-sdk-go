@@ -1,6 +1,7 @@
 package contract_helper
 
 import (
+	"encoding/hex"
 	"fmt"
 	"strconv"
 
@@ -9,12 +10,13 @@ import (
 )
 
 type ContractHelper struct {
-	contractID             hedera.ContractID
+	ContractID             hedera.ContractID
 	stepResultValidators   map[int32]func(hedera.ContractFunctionResult) bool
 	stepParameterSuppliers map[int32]func() *hedera.ContractFunctionParameters
 	stepPayableAmounts     map[int32]*hedera.Hbar
 	stepSigners            map[int32][]hedera.PrivateKey
 	stepFeePayers          map[int32]*hedera.AccountID
+	stepLogic              map[int32]func(address string)
 }
 
 func NewContractHelper(bytecode []byte, constructorParameters hedera.ContractFunctionParameters, client *hedera.Client) *ContractHelper {
@@ -34,12 +36,13 @@ func NewContractHelper(bytecode []byte, constructorParameters hedera.ContractFun
 	}
 	if receipt.ContractID != nil {
 		return &ContractHelper{
-			contractID:             *receipt.ContractID,
+			ContractID:             *receipt.ContractID,
 			stepResultValidators:   make(map[int32]func(hedera.ContractFunctionResult) bool),
 			stepParameterSuppliers: make(map[int32]func() *hedera.ContractFunctionParameters),
 			stepPayableAmounts:     make(map[int32]*hedera.Hbar),
 			stepSigners:            make(map[int32][]hedera.PrivateKey),
 			stepFeePayers:          make(map[int32]*hedera.AccountID),
+			stepLogic:              make(map[int32]func(address string)),
 		}
 	}
 
@@ -75,6 +78,11 @@ func (this *ContractHelper) AddSignerForStep(stepIndex int32, signer hedera.Priv
 func (this *ContractHelper) SetFeePayerForStep(stepIndex int32, account hedera.AccountID, accountKey hedera.PrivateKey) *ContractHelper {
 	this.stepFeePayers[stepIndex] = &account
 	return this.AddSignerForStep(stepIndex, accountKey)
+}
+
+func (this *ContractHelper) SetStepLogic(stepIndex int32, specialFunction func(address string)) *ContractHelper {
+	this.stepLogic[stepIndex] = specialFunction
+	return this
 }
 
 func (this *ContractHelper) GetResultValidator(stepIndex int32) func(hedera.ContractFunctionResult) bool {
@@ -119,7 +127,7 @@ func (this *ContractHelper) ExecuteSteps(firstStep int32, lastStep int32, client
 		println("Attempting to execuite step", stepIndex)
 
 		transaction := hedera.NewContractExecuteTransaction().
-			SetContractID(this.contractID).
+			SetContractID(this.ContractID).
 			SetGas(10000000)
 
 		payableAmount := this.GetPayableAmount(stepIndex)
@@ -160,6 +168,13 @@ func (this *ContractHelper) ExecuteSteps(firstStep int32, lastStep int32, client
 		functionResult, err := record.GetContractExecuteResult()
 		if err != nil {
 			return &ContractHelper{}, err
+		}
+
+		if this.stepLogic[stepIndex] != nil {
+			address := functionResult.GetAddress(1)
+			if function, exists := this.stepLogic[stepIndex]; exists && function != nil {
+				function(hex.EncodeToString(address))
+			}
 		}
 
 		if this.GetResultValidator(stepIndex)(functionResult) {

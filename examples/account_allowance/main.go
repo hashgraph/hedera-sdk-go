@@ -1,8 +1,10 @@
 package main
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2"
+	"fmt"
 	"os"
+
+	"github.com/hashgraph/hedera-sdk-go/v2"
 )
 
 func main() {
@@ -12,22 +14,19 @@ func main() {
 	// Retrieving network type from environment variable HEDERA_NETWORK
 	client, err = hedera.ClientForName(os.Getenv("HEDERA_NETWORK"))
 	if err != nil {
-		println(err.Error(), ": error creating client")
-		return
+		panic(fmt.Sprintf("%v : error creating client", err))
 	}
 
-	// Retrieving operator ID from environment variable OPERATOR_ID
+	// Retrieving operator ID from environment variable OPERATOR_ID 
 	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
 	if err != nil {
-		println(err.Error(), ": error converting string to AccountID")
-		return
+		panic(fmt.Sprintf("%v : error converting string to AccountID", err))
 	}
 
 	// Retrieving operator key from environment variable OPERATOR_KEY
 	operatorKey, err := hedera.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
 	if err != nil {
-		println(err.Error(), ": error converting string to PrivateKey")
-		return
+		panic(fmt.Sprintf("%v : error converting string to PrivateKey", err))
 	}
 
 	// Setting the client operator ID and key
@@ -35,19 +34,16 @@ func main() {
 
 	aliceKey, err := hedera.PrivateKeyGenerateEd25519()
 	if err != nil {
-		println(err.Error(), ": error generating PrivateKey")
-		return
+		panic(fmt.Sprintf("%v : error generating PrivateKey", err))
 	}
 	bobKey, err := hedera.PrivateKeyGenerateEd25519()
 	if err != nil {
-		println(err.Error(), ": error generating PrivateKey")
-		return
+		panic(fmt.Sprintf("%v : error generating PrivateKey", err))
 	}
 
 	charlieKey, err := hedera.PrivateKeyGenerateEd25519()
 	if err != nil {
-		println(err.Error(), ": error generating PrivateKey")
-		return
+		panic(fmt.Sprintf("%v : error generating PrivateKey", err))
 	}
 
 	transactionResponse, err := hedera.NewAccountCreateTransaction().
@@ -55,14 +51,12 @@ func main() {
 		SetInitialBalance(hedera.NewHbar(5)).
 		Execute(client)
 	if err != nil {
-		println(err.Error(), ": error creating account")
-		return
+		panic(fmt.Sprintf("%v : error creating account", err))
 	}
 
 	transactionReceipt, err := transactionResponse.GetReceipt(client)
 	if err != nil {
-		println(err.Error(), ": error retrieving account creation receipt")
-		return
+		panic(fmt.Sprintf("%v : error retrieving account creation receipt", err))
 	}
 
 	aliceID := *transactionReceipt.AccountID
@@ -73,14 +67,12 @@ func main() {
 		SetInitialBalance(hedera.NewHbar(5)).
 		Execute(client)
 	if err != nil {
-		println(err.Error(), ": error creating second account")
-		return
+		panic(fmt.Sprintf("%v : error creating second account", err))
 	}
 
 	transactionReceipt, err = transactionResponse.GetReceipt(client)
 	if err != nil {
-		println(err.Error(), ": error retrieving second account creation receipt")
-		return
+		panic(fmt.Sprintf("%v : error retrieving second account creation receipt", err))
 	}
 
 	bobID := *transactionReceipt.AccountID
@@ -91,14 +83,12 @@ func main() {
 		SetInitialBalance(hedera.NewHbar(5)).
 		Execute(client)
 	if err != nil {
-		println(err.Error(), ": error creating second account")
-		return
+		panic(fmt.Sprintf("%v : error creating second account", err))
 	}
 
 	transactionReceipt, err = transactionResponse.GetReceipt(client)
 	if err != nil {
-		println(err.Error(), ": error retrieving second account creation receipt")
-		return
+		panic(fmt.Sprintf("%v : error retrieving second account creation receipt", err))
 	}
 
 	charlieID := *transactionReceipt.AccountID
@@ -109,8 +99,7 @@ func main() {
 	println("Initial Balance:")
 	err = printBalance(client, aliceID, bobID, charlieID, []hedera.AccountID{transactionResponse.NodeID})
 	if err != nil {
-		println(err.Error(), ": error retrieving balances")
-		return
+		panic(fmt.Sprintf("%v : error retrieving balances", err))
 	}
 
 	println("Approve an allowance of 2 Hbar with owner Alice and spender Bob")
@@ -120,28 +109,24 @@ func main() {
 		ApproveHbarAllowance(aliceID, bobID, hedera.NewHbar(2)).
 		FreezeWith(client)
 	if err != nil {
-		println(err.Error(), ": error freezing account allowance approve transaction")
-		return
+		panic(fmt.Sprintf("%v : error freezing account allowance approve transaction", err))
 	}
 
 	approvalFreeze.Sign(aliceKey)
 
 	transactionResponse, err = approvalFreeze.Execute(client)
 	if err != nil {
-		println(err.Error(), ": error executing account allowance approve transaction")
-		return
+		panic(fmt.Sprintf("%v : error executing account allowance approve transaction", err))
 	}
 
 	transactionReceipt, err = transactionResponse.GetReceipt(client)
 	if err != nil {
-		println(err.Error(), ": error getting account allowance receipt")
-		return
+		panic(fmt.Sprintf("%v : error getting account allowance receipt", err))
 	}
 
 	err = printBalance(client, aliceID, bobID, charlieID, []hedera.AccountID{transactionResponse.NodeID})
 	if err != nil {
-		println(err.Error(), ": error retrieving balances")
-		return
+		panic(fmt.Sprintf("%v : error retrieving balances", err))
 	}
 
 	println("Transferring 1 Hbar from Alice to Charlie, but the transaction is signed _only_ by Bob (Bob is dipping into his allowance from Alice)")
@@ -153,29 +138,25 @@ func main() {
 		SetTransactionID(hedera.TransactionIDGenerate(bobID)).
 		FreezeWith(client)
 	if err != nil {
-		println(err.Error(), ": error freezing transfer transaction")
-		return
+		panic(fmt.Sprintf("%v : error freezing transfer transaction", err))
 	}
 
 	transferFreeze.Sign(bobKey)
 
 	transactionResponse, err = transferFreeze.Execute(client)
 	if err != nil {
-		println(err.Error(), ": error executing transfer transaction")
-		return
+		panic(fmt.Sprintf("%v : error executing transfer transaction", err))
 	}
 
 	transactionReceipt, err = transactionResponse.GetReceipt(client)
 	if err != nil {
-		println(err.Error(), ": error retrieving transfer transaction receipt")
-		return
+		panic(fmt.Sprintf("%v : error retrieving transfer transaction receipt", err))
 	}
 
 	println("Transfer succeeded. Bob should now have 1 Hbar left in his allowance.")
 	err = printBalance(client, aliceID, bobID, charlieID, []hedera.AccountID{transactionResponse.NodeID})
 	if err != nil {
-		println(err.Error(), ": error retrieving balances")
-		return
+		panic(fmt.Sprintf("%v : error retrieving balances", err))
 	}
 
 	println("Attempting to transfer 2 Hbar from Alice to Charlie using Bob's allowance.")
@@ -188,16 +169,14 @@ func main() {
 		SetTransactionID(hedera.TransactionIDGenerate(bobID)).
 		FreezeWith(client)
 	if err != nil {
-		println(err.Error(), ": error freezing transfer transaction")
-		return
+		panic(fmt.Sprintf("%v : error freezing transfer transaction", err))
 	}
 
 	transferFreeze.Sign(bobKey)
 
 	transactionResponse, err = transferFreeze.Execute(client)
 	if err != nil {
-		println(err.Error(), ": error executing transfer transaction")
-		return
+		panic(fmt.Sprintf("%v : error executing transfer transaction", err))
 	}
 
 	transactionReceipt, err = transactionResponse.GetReceipt(client)
@@ -212,28 +191,24 @@ func main() {
 		ApproveHbarAllowance(aliceID, bobID, hedera.NewHbar(2)).
 		FreezeWith(client)
 	if err != nil {
-		println(err.Error(), ": error freezing account allowance adjust transaction")
-		return
+		panic(fmt.Sprintf("%v : error freezing account allowance adjust transaction", err))
 	}
 
 	allowanceAdjust.Sign(aliceKey)
 
 	transactionResponse, err = allowanceAdjust.Execute(client)
 	if err != nil {
-		println(err.Error(), ": error executing account allowance adjust transaction")
-		return
+		panic(fmt.Sprintf("%v : error executing account allowance adjust transaction", err))
 	}
 
 	transactionReceipt, err = transactionResponse.GetReceipt(client)
 	if err != nil {
-		println(err.Error(), ": error retrieving account allowance adjust receipt")
-		return
+		panic(fmt.Sprintf("%v : error retrieving account allowance adjust receipt", err))
 	}
 
 	err = printBalance(client, aliceID, bobID, charlieID, []hedera.AccountID{transactionResponse.NodeID})
 	if err != nil {
-		println(err.Error(), ": error retrieving balances")
-		return
+		panic(fmt.Sprintf("%v : error retrieving balances", err))
 	}
 
 	println("Attempting to transfer 2 Hbar from Alice to Charlie using Bob's allowance again.")
@@ -246,29 +221,25 @@ func main() {
 		SetTransactionID(hedera.TransactionIDGenerate(bobID)).
 		FreezeWith(client)
 	if err != nil {
-		println(err.Error(), ": error freezing transfer transaction")
-		return
+		panic(fmt.Sprintf("%v : error freezing transfer transaction", err))
 	}
 
 	transferFreeze.Sign(bobKey)
 
 	transactionResponse, err = transferFreeze.Execute(client)
 	if err != nil {
-		println(err.Error(), ": error executing transfer transaction")
-		return
+		panic(fmt.Sprintf("%v : error executing transfer transaction", err))
 	}
 
 	transactionReceipt, err = transactionResponse.GetReceipt(client)
 	if err != nil {
-		println(err.Error(), ", error retrieving transfer transaction receipt")
-		return
+		panic(fmt.Sprintf("%v : error retrieving transfer transaction receipt", err))
 	}
 
 	println("Transfer succeeded.")
 	err = printBalance(client, aliceID, bobID, charlieID, []hedera.AccountID{transactionResponse.NodeID})
 	if err != nil {
-		println(err.Error(), ": error retrieving balances")
-		return
+		panic(fmt.Sprintf("%v : error retrieving balances", err))
 	}
 
 	println("Deleting Bob's allowance")
@@ -278,22 +249,19 @@ func main() {
 		ApproveHbarAllowance(aliceID, bobID, hedera.ZeroHbar).
 		FreezeWith(client)
 	if err != nil {
-		println(err.Error(), ": error freezing account allowance approve transaction")
-		return
+		panic(fmt.Sprintf("%v : error freezing account allowance approve transaction", err))
 	}
 
 	approvalFreeze.Sign(aliceKey)
 
 	transactionResponse, err = approvalFreeze.Execute(client)
 	if err != nil {
-		println(err.Error(), ": error executing account allowance approve transaction")
-		return
+		panic(fmt.Sprintf("%v : error executing account allowance approve transaction", err))
 	}
 
 	_, err = transactionResponse.GetReceipt(client)
 	if err != nil {
-		println(err.Error(), ": error getting account allowance receipt")
-		return
+		panic(fmt.Sprintf("%v : error getting account allowance receipt", err))
 	}
 
 	println("If Bob tries to use his allowance it should fail.")
@@ -305,16 +273,14 @@ func main() {
 		SetTransactionID(hedera.TransactionIDGenerate(bobID)).
 		FreezeWith(client)
 	if err != nil {
-		println(err.Error(), ": error freezing transfer transaction")
-		return
+		panic(fmt.Sprintf("%v : error freezing transfer transaction", err))
 	}
 
 	transferFreeze.Sign(bobKey)
 
 	transactionResponse, err = transferFreeze.Execute(client)
 	if err != nil {
-		println(err.Error(), ": error executing transfer transaction")
-		return
+		panic(fmt.Sprintf("%v : error executing transfer transaction", err))
 	}
 
 	transactionReceipt, err = transactionResponse.GetReceipt(client)
@@ -330,22 +296,19 @@ func main() {
 		SetTransferAccountID(client.GetOperatorAccountID()).
 		FreezeWith(client)
 	if err != nil {
-		println(err.Error(), ": error freezing alice's account deletion")
-		return
+		panic(fmt.Sprintf("%v : error freezing alice's account deletion", err))
 	}
 
 	accountDelete.Sign(aliceKey)
 
 	transactionResponse, err = accountDelete.Execute(client)
 	if err != nil {
-		println(err.Error(), ": error executing alice's account deletion")
-		return
+		panic(fmt.Sprintf("%v : error executing alice's account deletion", err))
 	}
 
 	_, err = transactionResponse.GetReceipt(client)
 	if err != nil {
-		println(err.Error(), ": error retrieving alice's account deletion receipt")
-		return
+		panic(fmt.Sprintf("%v : error retrieving alice's account deletion receipt", err))
 	}
 
 	accountDelete, err = hedera.NewAccountDeleteTransaction().
@@ -354,22 +317,19 @@ func main() {
 		SetTransferAccountID(client.GetOperatorAccountID()).
 		FreezeWith(client)
 	if err != nil {
-		println(err.Error(), ": error freezing bob's account deletion")
-		return
+		panic(fmt.Sprintf("%v : error freezing bob's account deletion", err))
 	}
 
 	accountDelete.Sign(bobKey)
 
 	transactionResponse, err = accountDelete.Execute(client)
 	if err != nil {
-		println(err.Error(), ": error executing bob's account deletion")
-		return
+		panic(fmt.Sprintf("%v : error executing bob's account deletion", err))
 	}
 
 	_, err = transactionResponse.GetReceipt(client)
 	if err != nil {
-		println(err.Error(), ": error retrieving bob's account deletion receipt")
-		return
+		panic(fmt.Sprintf("%v : error retrieving bob's account deletion receipt", err))
 	}
 
 	accountDelete, err = hedera.NewAccountDeleteTransaction().
@@ -378,28 +338,24 @@ func main() {
 		SetTransferAccountID(client.GetOperatorAccountID()).
 		FreezeWith(client)
 	if err != nil {
-		println(err.Error(), ": error freezing charlie's account deletion")
-		return
+		panic(fmt.Sprintf("%v : error freezing charlie's account deletion", err))
 	}
 
 	accountDelete.Sign(charlieKey)
 
 	transactionResponse, err = accountDelete.Execute(client)
 	if err != nil {
-		println(err.Error(), ": error executing charlie's account deletion")
-		return
+		panic(fmt.Sprintf("%v : error executing charlie's account deletion", err))
 	}
 
 	_, err = transactionResponse.GetReceipt(client)
 	if err != nil {
-		println(err.Error(), ": error retrieving charlie's account deletion receipt")
-		return
+		panic(fmt.Sprintf("%v : error retrieving charlie's account deletion receipt", err))
 	}
 
 	err = client.Close()
 	if err != nil {
-		println(err.Error(), ": error closing client")
-		return
+		panic(fmt.Sprintf("%v : error closing client", err))
 	}
 }
 

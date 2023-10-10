@@ -17,22 +17,19 @@ func main() {
 	// Retrieving network type from environment variable HEDERA_NETWORK
 	client, err = hedera.ClientForName(os.Getenv("HEDERA_NETWORK"))
 	if err != nil {
-		println(err.Error(), ": error creating client")
-		return
+		panic(fmt.Sprintf("%v : error creating client", err))
 	}
 
 	// Retrieving operator ID from environment variable OPERATOR_ID
 	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
 	if err != nil {
-		println(err.Error(), ": error converting string to AccountID")
-		return
+		panic(fmt.Sprintf("%v : error converting string to AccountID", err))
 	}
 
 	// Retrieving operator key from environment variable OPERATOR_KEY
 	operatorKey, err := hedera.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
 	if err != nil {
-		println(err.Error(), ": error converting string to PrivateKey")
-		return
+		panic(fmt.Sprintf("%v : error converting string to PrivateKey", err))
 	}
 
 	// Defaults the operator account ID and key such that all generated transactions will be paid for
@@ -46,16 +43,14 @@ func main() {
 		Execute(client)
 
 	if err != nil {
-		println(err.Error(), ": error creating topic")
-		return
+		panic(fmt.Sprintf("%v : error creating topic", err))
 	}
 
 	// Get the receipt
 	transactionReceipt, err := transactionResponse.GetReceipt(client)
 
 	if err != nil {
-		println(err.Error(), ": error getting topic create receipt")
-		return
+		panic(fmt.Sprintf("%v : error getting topic create receipt", err))
 	}
 
 	// get the topic id from receipt
@@ -76,8 +71,7 @@ func main() {
 		})
 
 	if err != nil {
-		println(err.Error(), ": error subscribing to the topic")
-		return
+		panic(fmt.Sprintf("%v : error subscribing to the topic", err))
 	}
 
 	// Loop submit transaction with "content" as message, wait a bit to make sure it propagates
@@ -90,12 +84,11 @@ func main() {
 			Execute(client)
 
 		if err != nil {
-			println(err.Error(), ": error submitting topic")
-			return
+			panic(fmt.Sprintf("%v : error submitting topic", err))
 		}
 
 		// Setting up how long the loop wil run
-		if uint64(time.Since(start).Seconds()) > 60*10 {
+		if uint64(time.Since(start).Seconds()) > 16 {
 			break
 		}
 
@@ -115,14 +108,12 @@ func main() {
 		SetMaxTransactionFee(hedera.NewHbar(5)).
 		Execute(client)
 	if err != nil {
-		println(err.Error(), ": error deleting topic")
-		return
+		panic(fmt.Sprintf("%v : error deleting topic", err))
 	}
 
 	// Get the receipt to make sure everything went through
 	_, err = transactionResponse.GetReceipt(client)
 	if err != nil {
-		println(err.Error(), ": error getting receipt for topic deletion")
-		return
+		panic(fmt.Sprintf("%v : error getting receipt for topic deletion", err))
 	}
 }

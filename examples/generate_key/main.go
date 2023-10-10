@@ -10,8 +10,7 @@ func main() {
 	// Generating key
 	privateKey, err := hedera.GeneratePrivateKey()
 	if err != nil {
-		println(err.Error(), ": error generating PrivateKey")
-		return
+		panic(fmt.Sprintf("%v : error generating PrivateKey", err))
 	}
 
 	// Retrieve the public key

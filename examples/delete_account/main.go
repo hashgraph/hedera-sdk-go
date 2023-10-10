@@ -14,22 +14,19 @@ func main() {
 	// Retrieving network type from environment variable HEDERA_NETWORK
 	client, err = hedera.ClientForName(os.Getenv("HEDERA_NETWORK"))
 	if err != nil {
-		println(err.Error(), ": error creating client")
-		return
+		panic(fmt.Sprintf("%v : error creating client", err))
 	}
 
 	// Retrieving operator ID from environment variable OPERATOR_ID
 	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
 	if err != nil {
-		println(err.Error(), ": error converting string to AccountID")
-		return
+		panic(fmt.Sprintf("%v : error converting string to AccountID", err))
 	}
 
 	// Retrieving operator key from environment variable OPERATOR_KEY
 	operatorKey, err := hedera.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
 	if err != nil {
-		println(err.Error(), ": error converting string to PrivateKey")
-		return
+		panic(fmt.Sprintf("%v : error converting string to PrivateKey", err))
 	}
 
 	// Setting the client operator ID and key
@@ -38,8 +35,7 @@ func main() {
 	// Generate the key to use with the new account
 	newKey, err := hedera.GeneratePrivateKey()
 	if err != nil {
-		println(err.Error(), ": error generating PrivateKey")
-		return
+		panic(fmt.Sprintf("%v : error generating PrivateKey", err))
 	}
 
 	fmt.Println("Creating an account to delete:")
@@ -56,14 +52,12 @@ func main() {
 		Execute(client)
 
 	if err != nil {
-		println(err.Error(), ": error creating account")
-		return
+		panic(fmt.Sprintf("%v : error creating account", err))
 	}
 
 	transactionReceipt, err := transactionResponse.GetReceipt(client)
 	if err != nil {
-		println(err.Error(), ": error retrieving account creation receipt")
-		return
+		panic(fmt.Sprintf("%v : error retrieving account creation receipt", err))
 	}
 
 	newAccountID := *transactionReceipt.AccountID
@@ -81,8 +75,7 @@ func main() {
 		FreezeWith(client)
 
 	if err != nil {
-		println(err.Error(), ": error freezing account delete transaction")
-		return
+		panic(fmt.Sprintf("%v : error freezing account delete transaction", err))
 	}
 
 	// Manually sign the transaction with the private key of the account to be deleted
@@ -92,14 +85,12 @@ func main() {
 	deleteTransactionResponse, err := deleteTransaction.Execute(client)
 
 	if err != nil {
-		println(err.Error(), ": error deleting account")
-		return
+		panic(fmt.Sprintf("%v : error deleting account", err))
 	}
 
 	deleteTransactionReceipt, err := deleteTransactionResponse.GetReceipt(client)
 	if err != nil {
-		println(err.Error(), ": error retrieving account deletion receipt")
-		return
+		panic(fmt.Sprintf("%v : error retrieving account deletion receipt", err))
 	}
 
 	fmt.Printf("account delete transaction status: %v\n", deleteTransactionReceipt.Status)

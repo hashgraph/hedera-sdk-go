@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/hashgraph/hedera-sdk-go/v2"
@@ -13,22 +14,19 @@ func main() {
 	// Retrieving network type from environment variable HEDERA_NETWORK
 	client, err = hedera.ClientForName(os.Getenv("HEDERA_NETWORK"))
 	if err != nil {
-		println(err.Error(), ": error creating client")
-		return
+		panic(fmt.Sprintf("%v : error creating client", err))
 	}
 
 	// Retrieving operator ID from environment variable OPERATOR_ID
 	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
 	if err != nil {
-		println(err.Error(), ": error converting string to AccountID")
-		return
+		panic(fmt.Sprintf("%v : error converting string to AccountID", err))
 	}
 
 	// Retrieving operator key from environment variable OPERATOR_KEY
 	operatorKey, err := hedera.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
 	if err != nil {
-		println(err.Error(), ": error converting string to PrivateKey")
-		return
+		panic(fmt.Sprintf("%v : error converting string to PrivateKey", err))
 	}
 
 	// Setting the client operator ID and key
@@ -42,8 +40,7 @@ func main() {
 
 	cost, err := fileQuery.GetCost(client)
 	if err != nil {
-		println(err.Error(), ": error getting file contents query cost")
-		return
+		panic(fmt.Sprintf("%v : error getting file contents query cost", err))
 	}
 
 	println("file contents cost:", cost.String())
@@ -54,33 +51,28 @@ func main() {
 	// Execute the file content query
 	contents, err := fileQuery.Execute(client)
 	if err != nil {
-		println(err.Error(), ": error executing file contents query")
-		return
+		panic(fmt.Sprintf("%v : error executing file contents query", err))
 	}
 
 	fileByte, err := os.OpenFile("address-book-byte.pb", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
-		println(err.Error(), ": error opening address-book-byte.pb")
-		return
+		panic(fmt.Sprintf("%v : error opening address-book-byte.pb", err))
 	}
 
 	fileString, err := os.OpenFile("address-book-string.pb", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
-		println(err.Error(), ": error opening address-book-string.pb")
-		return
+		panic(fmt.Sprintf("%v : error opening address-book-string.pb", err))
 	}
 
 	// Write the contents (string([]byte)) into the string file
 	leng, err := fileString.WriteString(string(contents))
 	if err != nil {
-		println(err.Error(), ": error writing contents to file")
-		return
+		panic(fmt.Sprintf("%v : error writing contents to file", err))
 	}
 	// Write the contents ([]byte) into the byte file
 	_, err = fileByte.Write(contents)
 	if err != nil {
-		println(err.Error(), ": error writing contents to file")
-		return
+		panic(fmt.Sprintf("%v : error writing contents to file", err))
 	}
 
 	temp := make([]byte, leng)
@@ -90,12 +82,10 @@ func main() {
 	// Close the files
 	err = fileString.Close()
 	if err != nil {
-		println(err.Error(), ": error closing the file")
-		return
+		panic(fmt.Sprintf("%v : error closing the file", err))
 	}
 	err = fileByte.Close()
 	if err != nil {
-		println(err.Error(), ": error closing the file")
-		return
+		panic(fmt.Sprintf("%v : error closing the file", err))
 	}
 }

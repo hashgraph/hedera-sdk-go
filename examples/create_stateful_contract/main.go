@@ -25,22 +25,19 @@ func main() {
 	// Retrieving network type from environment variable HEDERA_NETWORK
 	client, err = hedera.ClientForName(os.Getenv("HEDERA_NETWORK"))
 	if err != nil {
-		println(err.Error(), ": error creating client")
-		return
+		panic(fmt.Sprintf("%v : error creating client", err))
 	}
 
 	// Retrieving operator ID from environment variable OPERATOR_ID
 	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
 	if err != nil {
-		println(err.Error(), ": error converting string to AccountID")
-		return
+		panic(fmt.Sprintf("%v : error converting string to AccountID", err))
 	}
 
 	// Retrieving operator key from environment variable OPERATOR_KEY
 	operatorKey, err := hedera.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
 	if err != nil {
-		println(err.Error(), ": error converting string to PrivateKey")
-		return
+		panic(fmt.Sprintf("%v : error converting string to PrivateKey", err))
 	}
 
 	// Setting the client operator ID and key
@@ -50,16 +47,14 @@ func main() {
 	defer func() {
 		err = client.Close()
 		if err != nil {
-			println(err.Error(), ": error closing client")
-			return
+			panic(fmt.Sprintf("%v : error closing client", err))
 		}
 	}()
 
 	// Read in the compiled contract from stateful.json
 	rawSmartContract, err := os.ReadFile("./stateful.json")
 	if err != nil {
-		println(err.Error(), ": error reading stateful.json")
-		return
+		panic(fmt.Sprintf("%v : error reading stateful.json", err))
 	}
 
 	// Initialize contracts
@@ -68,8 +63,7 @@ func main() {
 	// Parse the rawSmartContract into smartContract
 	err = json.Unmarshal([]byte(rawSmartContract), &smartContract)
 	if err != nil {
-		println(err.Error(), ": error unmarshaling")
-		return
+		panic(fmt.Sprintf("%v : error unmarshaling", err))
 	}
 
 	// Retrieve the bytecode from the parsed smart contract
@@ -87,15 +81,13 @@ func main() {
 		SetContents([]byte(smartContractByteCode)).
 		Execute(client)
 	if err != nil {
-		println(err.Error(), ": error creating file")
-		return
+		panic(fmt.Sprintf("%v : error creating file", err))
 	}
 
 	// Retrieve the receipt to make sure the transaction went through and to get bytecode file ID
 	byteCodeTransactionReceipt, err := byteCodeTransactionResponse.GetReceipt(client)
 	if err != nil {
-		println(err.Error(), ": error getting file create transaction receipt")
-		return
+		panic(fmt.Sprintf("%v : error getting file create transaction receipt", err))
 	}
 
 	// Retrieve bytecode file ID from the receipt
@@ -124,22 +116,19 @@ func main() {
 		Execute(client)
 
 	if err != nil {
-		println(err.Error(), ": error creating contract")
-		return
+		panic(fmt.Sprintf("%v : error creating contract", err))
 	}
 
 	// Get the new contract record to make sure the transaction ran successfully
 	contractRecord, err := contractTransactionID.GetRecord(client)
 	if err != nil {
-		println(err.Error(), ": error retrieving contract creation record")
-		return
+		panic(fmt.Sprintf("%v : error retrieving contract creation record", err))
 	}
 
 	// Get the contract create result from the record
 	contractCreateResult, err := contractRecord.GetContractCreateResult()
 	if err != nil {
-		println(err.Error(), ": error retrieving contract creation result")
-		return
+		panic(fmt.Sprintf("%v : error retrieving contract creation result", err))
 	}
 
 	// Get the new contract ID from the receipt contained in the record
@@ -163,16 +152,14 @@ func main() {
 		SetFunction("getMessage", nil).
 		Execute(client)
 	if err != nil {
-		println(err.Error(), ": error executing contract call query")
-		return
+		panic(fmt.Sprintf("%v : error executing contract call query", err))
 	}
 
 	fmt.Printf("Call gas used: %v\n", callResult.GasUsed)
 	// Get the message from the result
 	// The `0` is the index to fetch a particular type from
 	//
-	// e.g.
-	// If the return type of `getMessage` was `(uint32, string)`
+	// e.g. type of `getMessage` was `(uint32, string)`
 	// then you'd need to get each field separately using:
 	//      uint32 := callResult.getUint32(0);
 	//      string := callResult.getString(1);
@@ -201,22 +188,19 @@ func main() {
 		Execute(client)
 
 	if err != nil {
-		println(err.Error(), ": error executing contract")
-		return
+		panic(fmt.Sprintf("%v : error executing contract", err))
 	}
 
 	// Retrieve the record to make sure the execute transaction ran
 	contractExecuteRecord, err := contractExecuteID.GetRecord(client)
 	if err != nil {
-		println(err.Error(), ": error retrieving contract execution record")
-		return
+		panic(fmt.Sprintf("%v : error retrieving contract execution record", err))
 	}
 
 	// Get the contract execute result, that contains gas used
 	contractExecuteResult, err := contractExecuteRecord.GetContractExecuteResult()
 	if err != nil {
-		println(err.Error(), ": error retrieving contract exe")
-		return
+		panic(fmt.Sprintf("%v : error retrieving contract exe", err))
 	}
 
 	// Print gas used
@@ -236,8 +220,7 @@ func main() {
 		Execute(client)
 
 	if err != nil {
-		println(err.Error(), ": error executing contract call query")
-		return
+		panic(fmt.Sprintf("%v : error executing contract call query", err))
 	}
 
 	// Get gas used

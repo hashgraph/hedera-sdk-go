@@ -1,12 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/hashgraph/hedera-sdk-go/v2"
 )
-
-const content = `Programming is the process of creating a set of instructions that tell a computer how to perform a task. Programming can be done using a variety of computer programming languages, such as JavaScript, Python, and C++`
 
 func main() {
 	var client *hedera.Client
@@ -15,22 +14,19 @@ func main() {
 	// Retrieving network type from environment variable HEDERA_NETWORK
 	client, err = hedera.ClientForName(os.Getenv("HEDERA_NETWORK"))
 	if err != nil {
-		println(err.Error(), ": error creating client")
-		return
+		panic(fmt.Sprintf("%v : error creating client", err))
 	}
 
 	// Retrieving operator ID from environment variable OPERATOR_ID
 	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
 	if err != nil {
-		println(err.Error(), ": error converting string to AccountID")
-		return
+		panic(fmt.Sprintf("%v : error converting string to AccountID", err))
 	}
 
 	// Retrieving operator key from environment variable OPERATOR_KEY
 	operatorKey, err := hedera.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
 	if err != nil {
-		println(err.Error(), ": error converting string to PrivateKey")
-		return
+		panic(fmt.Sprintf("%v : error converting string to PrivateKey", err))
 	}
 
 	// Defaults the operator account ID and key such that all generated transactions will be paid for
@@ -64,8 +60,7 @@ func main() {
 
 	key, err := hedera.GeneratePrivateKey()
 	if err != nil {
-		println(err.Error(), ": error generating private key")
-		return
+		panic(fmt.Sprintf("%v : error generating private key", err))
 	}
 	publicKey := key.PublicKey()
 
@@ -99,8 +94,7 @@ func main() {
 		AddHbarTransfer(*aliasAccountID, hedera.NewHbar(1)).
 		Execute(client)
 	if err != nil {
-		println(err.Error(), ": error executing transfer transaction")
-		return
+		panic(fmt.Sprintf("%v : error executing transfer transaction", err))
 	}
 
 	receipt, err := resp.GetReceipt(client)
@@ -109,16 +103,14 @@ func main() {
 		println(receipt.AccountID.String())
 	}
 	if err != nil {
-		println(err.Error(), ": error getting transfer transaction receipt")
-		return
+		panic(fmt.Sprintf("%v : error getting transfer transaction receipt", err))
 	}
 
 	balance, err := hedera.NewAccountBalanceQuery().
 		SetAccountID(*aliasAccountID).
 		Execute(client)
 	if err != nil {
-		println(err.Error(), ": error retrieving balance")
-		return
+		panic(fmt.Sprintf("%v : error retrieving balance", err))
 	}
 
 	println("Balance of the new account:", balance.Hbars.String())
@@ -127,8 +119,7 @@ func main() {
 		SetAccountID(*aliasAccountID).
 		Execute(client)
 	if err != nil {
-		println(err.Error(), ": error retrieving account info")
-		return
+		panic(fmt.Sprintf("%v : error retrieving account info", err))
 	}
 
 	/*
@@ -145,7 +136,6 @@ func main() {
 	println("Example complete")
 	err = client.Close()
 	if err != nil {
-		println(err.Error(), ": error closing client")
-		return
+		panic(fmt.Sprintf("%v : error closing client", err))
 	}
 }

@@ -8,19 +8,29 @@ import (
 )
 
 func main() {
-	// client := hedera.ClientForTestnet()
-	client := hedera.ClientForPreviewnet()
-	myAccountId, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
+	var client *hedera.Client
+	var err error
+
+	// Retrieving network type from environment variable HEDERA_NETWORK
+	client, err = hedera.ClientForName(os.Getenv("HEDERA_NETWORK"))
 	if err != nil {
-		panic(err)
+		panic(fmt.Sprintf("%v : error creating client", err))
 	}
 
-	myPrivateKey, err := hedera.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
+	// Retrieving operator ID from environment variable OPERATOR_ID
+	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
 	if err != nil {
-		panic(err)
+		panic(fmt.Sprintf("%v : error converting string to AccountID", err))
 	}
 
-	client.SetOperator(myAccountId, myPrivateKey)
+	// Retrieving operator key from environment variable OPERATOR_KEY
+	operatorKey, err := hedera.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
+	if err != nil {
+		panic(fmt.Sprintf("%v : error converting string to PrivateKey", err))
+	}
+
+	// Setting the client operator ID and key
+	client.SetOperator(operatorAccountID, operatorKey)
 
 	// ## Example
 	// Create an ED25519 admin private key and ECSDA private key
@@ -33,14 +43,12 @@ func main() {
 	// Create an ED25519 admin private key and ECSDA private key
 	adminKey, err := hedera.PrivateKeyGenerateEd25519()
 	if err != nil {
-		println(err.Error())
-		return
+		panic(err.Error())
 	}
 
 	privateKey, err := hedera.PrivateKeyGenerateEcdsa()
 	if err != nil {
-		println(err.Error())
-		return
+		panic(err.Error())
 	}
 	// Extract the ECDSA public key public key
 	publicKey := privateKey.PublicKey()
@@ -51,14 +59,12 @@ func main() {
 	response, err := hedera.NewAccountCreateTransaction().SetReceiverSignatureRequired(true).SetInitialBalance(hedera.HbarFromTinybar(100)).
 		SetKey(adminKey).SetAlias(evmAddress).Sign(adminKey).Sign(privateKey).Execute(client)
 	if err != nil {
-		println(err.Error())
-		return
+		panic(err.Error())
 	}
 
 	transactionReceipt, err := response.GetReceipt(client)
 	if err != nil {
-		println(err.Error(), ": error getting receipt}")
-		return
+		panic(fmt.Sprintf("%v : error getting receipt}", err))
 	}
 
 	newAccountId := *transactionReceipt.AccountID
@@ -66,8 +72,7 @@ func main() {
 	// Get the `AccountInfo` on the new account and show that the account has contractAccountId
 	info, err := hedera.NewAccountInfoQuery().SetAccountID(newAccountId).Execute(client)
 	if err != nil {
-		println(err.Error())
-		return
+		panic(err.Error())
 	}
 	// Verify account is created with the provided EVM address
 	fmt.Println(info.ContractAccountID == evmAddress)

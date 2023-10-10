@@ -13,8 +13,7 @@ func main() {
 	// Retrieving network type from environment variable HEDERA_NETWORK
 	client, err = hedera.ClientForName(os.Getenv("HEDERA_NETWORK"))
 	if err != nil {
-		println(err.Error(), ": error creating client")
-		return
+		panic(fmt.Sprintf("%v : error creating client", err))
 	}
 
 	// The client comes with default logger.
@@ -31,15 +30,13 @@ func main() {
 	// Retrieving operator ID from environment variable OPERATOR_ID
 	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
 	if err != nil {
-		println(err.Error(), ": error converting string to AccountID")
-		return
+		panic(fmt.Sprintf("%v : error converting string to AccountID", err))
 	}
 
 	// Retrieving operator key from environment variable OPERATOR_KEY
 	operatorKey, err := hedera.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
 	if err != nil {
-		println(err.Error(), ": error converting string to PrivateKey")
-		return
+		panic(fmt.Sprintf("%v : error converting string to PrivateKey", err))
 	}
 
 	// Setting the client operator ID and key
@@ -48,8 +45,7 @@ func main() {
 	// Generate new key to use with new account
 	newKey, err := hedera.GeneratePrivateKey()
 	if err != nil {
-		println(err.Error(), ": error generating PrivateKey}")
-		return
+		panic(fmt.Sprintf("%v : error generating PrivateKey}", err))
 	}
 
 	fmt.Printf("private = %v\n", newKey)
@@ -60,8 +56,7 @@ func main() {
 		SetKey(newKey.PublicKey()).
 		Execute(client)
 	if err != nil {
-		println(err.Error(), ": error executing account create transaction}")
-		return
+		panic(fmt.Sprintf("%v : error executing account create transaction}", err))
 	}
 
 	// Disable default logging on client, to show logging functionality from transaction
@@ -74,7 +69,6 @@ func main() {
 		SetLogLevel(hedera.LoggerLevelTrace).
 		Execute(client)
 	if err != nil {
-		println(err.Error(), ": error executing account create transaction}")
-		return
+		panic(fmt.Sprintf("%v : error executing account create transaction}", err))
 	}
 }

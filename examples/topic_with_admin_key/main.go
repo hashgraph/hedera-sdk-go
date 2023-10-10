@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/hashgraph/hedera-sdk-go/v2"
@@ -13,22 +14,19 @@ func main() {
 	// Retrieving network type from environment variable HEDERA_NETWORK
 	client, err = hedera.ClientForName(os.Getenv("HEDERA_NETWORK"))
 	if err != nil {
-		println(err.Error(), ": error creating client")
-		return
+		panic(fmt.Sprintf("%v : error creating client", err))
 	}
 
 	// Retrieving operator ID from environment variable OPERATOR_ID
 	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
 	if err != nil {
-		println(err.Error(), ": error converting string to AccountID")
-		return
+		panic(fmt.Sprintf("%v : error converting string to AccountID", err))
 	}
 
 	// Retrieving operator key from environment variable OPERATOR_KEY
 	operatorKey, err := hedera.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
 	if err != nil {
-		println(err.Error(), ": error converting string to PrivateKey")
-		return
+		panic(fmt.Sprintf("%v : error converting string to PrivateKey", err))
 	}
 
 	// Setting the client operator ID and key
@@ -40,8 +38,7 @@ func main() {
 	for i := range initialAdminKeys {
 		key, err := hedera.GeneratePrivateKey()
 		if err != nil {
-			println(err.Error(), ": error generating PrivateKey")
-			return
+			panic(fmt.Sprintf("%v : error generating PrivateKey", err))
 		}
 		initialAdminKeys[i] = key
 	}
@@ -61,8 +58,7 @@ func main() {
 		SetAdminKey(keyList).
 		FreezeWith(client)
 	if err != nil {
-		println(err.Error(), ": error freezing topic create transaction")
-		return
+		panic(fmt.Sprintf("%v : error freezing topic create transaction", err))
 	}
 
 	// Signing ConsensusTopicCreateTransaction with initialAdminKeys
@@ -74,15 +70,13 @@ func main() {
 	// Executing ConsensusTopicCreateTransaction
 	response, err := topicTx.Execute(client)
 	if err != nil {
-		println(err.Error(), ": error creating topic")
-		return
+		panic(fmt.Sprintf("%v : error creating topic", err))
 	}
 
 	// Make sure it executed properly
 	receipt, err := response.GetReceipt(client)
 	if err != nil {
-		println(err.Error(), ": error retrieving topic creation receipt")
-		return
+		panic(fmt.Sprintf("%v : error retrieving topic creation receipt", err))
 	}
 
 	// Get the topic ID out of the receipt
@@ -96,8 +90,7 @@ func main() {
 	for i := range newAdminKeys {
 		key, err := hedera.GeneratePrivateKey()
 		if err != nil {
-			println(err.Error(), ": error generating PrivateKey")
-			return
+			panic(fmt.Sprintf("%v : error generating PrivateKey", err))
 		}
 		newAdminKeys[i] = key
 	}
@@ -115,8 +108,7 @@ func main() {
 		SetAdminKey(keyList).
 		FreezeWith(client)
 	if err != nil {
-		println(err.Error(), ": error freezing topic update transaction")
-		return
+		panic(fmt.Sprintf("%v : error freezing topic update transaction", err))
 	}
 
 	// Have to sign with the initial admin keys first
@@ -134,15 +126,13 @@ func main() {
 	// Now to execute the topic update transaction
 	response, err = topicUpdate.Execute(client)
 	if err != nil {
-		println(err.Error(), ": error updating topic")
-		return
+		panic(fmt.Sprintf("%v : error updating topic", err))
 	}
 
 	// Make sure the transaction ran properly
 	receipt, err = response.GetReceipt(client)
 	if err != nil {
-		println(err.Error(), ": error retrieving topic update receipt")
-		return
+		panic(fmt.Sprintf("%v : error retrieving topic update receipt", err))
 	}
 
 	println("Updated topic ", topicID.String(), " with 3-of-4 threshold key as adminKey")
@@ -152,8 +142,7 @@ func main() {
 		SetTopicID(topicID).
 		Execute(client)
 	if err != nil {
-		println(err.Error(), ": error executing topic info query")
-		return
+		panic(fmt.Sprintf("%v : error executing topic info query", err))
 	}
 
 	// Should be "updated topic demo"

@@ -199,6 +199,13 @@ func ClientForName(name string) (*Client, error) {
 		return ClientForPreviewnet(), nil
 	case string(NetworkNameMainnet):
 		return ClientForMainnet(), nil
+	case "local", "localhost":
+		network := make(map[string]AccountID)
+		network["127.0.0.1:50213"] = AccountID{Account: 3}
+		mirror := []string{"127.0.0.1:5600"}
+		client := ClientForNetwork(network)
+		client.SetMirrorNetwork(mirror)
+		return client, nil
 	default:
 		return &Client{}, fmt.Errorf("%q is not recognized as a valid Hedera _Network", name)
 	}

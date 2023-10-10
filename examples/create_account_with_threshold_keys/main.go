@@ -14,22 +14,19 @@ func main() {
 	// Retrieving network type from environment variable HEDERA_NETWORK
 	client, err = hedera.ClientForName(os.Getenv("HEDERA_NETWORK"))
 	if err != nil {
-		println(err.Error(), ": error creating client")
-		return
+		panic(fmt.Sprintf("%v : error creating client", err))
 	}
 
 	// Retrieving operator ID from environment variable OPERATOR_ID
 	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
 	if err != nil {
-		println(err.Error(), ": error converting string to AccountID")
-		return
+		panic(fmt.Sprintf("%v : error converting string to AccountID", err))
 	}
 
 	// Retrieving operator key from environment variable OPERATOR_KEY
 	operatorKey, err := hedera.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
 	if err != nil {
-		println(err.Error(), ": error converting string to PrivateKey")
-		return
+		panic(fmt.Sprintf("%v : error converting string to PrivateKey", err))
 	}
 
 	// Setting the client operator ID and key
@@ -46,8 +43,7 @@ func main() {
 	for i := range keys {
 		newKey, err := hedera.GeneratePrivateKey()
 		if err != nil {
-			println(err.Error(), ": error generating PrivateKey}")
-			return
+			panic(fmt.Sprintf("%v : error generating PrivateKey}", err))
 		}
 
 		fmt.Printf("Key %v:\n", i)
@@ -78,8 +74,7 @@ func main() {
 		SetTransactionMemo("sdk example create_account_with_threshold_keys/main.go").
 		FreezeWith(client)
 	if err != nil {
-		println(err.Error(), ": error freezing create account transaction")
-		return
+		panic(fmt.Sprintf("%v : error freezing create account transaction", err))
 	}
 
 	// Sign with all the private keys
@@ -91,16 +86,14 @@ func main() {
 	transactionResponse, err := transaction.Execute(client)
 
 	if err != nil {
-		println(err.Error(), ": error creating account")
-		return
+		panic(fmt.Sprintf("%v : error creating account", err))
 	}
 
 	// Get the receipt to see everything worked
 	transactionReceipt, err := transactionResponse.GetReceipt(client)
 
 	if err != nil {
-		println(err.Error(), ": error retrieving account create receipt")
-		return
+		panic(fmt.Sprintf("%v : error retrieving account create receipt", err))
 	}
 
 	// Get the new account ID
@@ -120,8 +113,7 @@ func main() {
 		FreezeWith(client)
 
 	if err != nil {
-		println(err.Error(), ": error freezing transfer transaction")
-		return
+		panic(fmt.Sprintf("%v : error freezing transfer transaction", err))
 	}
 
 	// Manually sign with 2 of the private keys provided in the threshold
@@ -130,15 +122,13 @@ func main() {
 		Sign(keys[1]).
 		Execute(client)
 	if err != nil {
-		println(err.Error(), ": error freezing create account transaction")
-		return
+		panic(fmt.Sprintf("%v : error freezing create account transaction", err))
 	}
 
 	// Make sure the transaction executes properly
 	transactionReceipt, err = transactionResponse.GetReceipt(client)
 	if err != nil {
-		println(err.Error(), ": error retrieving transfer receipt")
-		return
+		panic(fmt.Sprintf("%v : error retrieving transfer receipt", err))
 	}
 
 	fmt.Printf("status of transfer transaction: %v\n", transactionReceipt.Status)
@@ -151,8 +141,7 @@ func main() {
 		SetNodeAccountIDs([]hedera.AccountID{transactionResponse.NodeID}).
 		Execute(client)
 	if err != nil {
-		println(err.Error(), ": error executing account balance query")
-		return
+		panic(fmt.Sprintf("%v : error executing account balance query", err))
 	}
 
 	fmt.Printf("account balance after transfer: %v\n", balance.Hbars.String())

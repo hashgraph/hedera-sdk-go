@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/hashgraph/hedera-sdk-go/v2"
@@ -13,22 +14,19 @@ func main() {
 	// Retrieving network type from environment variable HEDERA_NETWORK
 	client, err = hedera.ClientForName(os.Getenv("HEDERA_NETWORK"))
 	if err != nil {
-		println(err.Error(), ": error creating client")
-		return
+		panic(fmt.Sprintf("%v : error creating client", err))
 	}
 
 	// Retrieving operator ID from environment variable OPERATOR_ID
 	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
 	if err != nil {
-		println(err.Error(), ": error converting string to AccountID")
-		return
+		panic(fmt.Sprintf("%v : error converting string to AccountID", err))
 	}
 
 	// Retrieving operator key from environment variable OPERATOR_KEY
 	operatorKey, err := hedera.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
 	if err != nil {
-		println(err.Error(), ": error converting string to PrivateKey")
-		return
+		panic(fmt.Sprintf("%v : error converting string to PrivateKey", err))
 	}
 
 	// Setting the client operator ID and key
@@ -37,8 +35,7 @@ func main() {
 	// Generate new key to be used with new account
 	aliceKey, err := hedera.GeneratePrivateKey()
 	if err != nil {
-		println(err.Error(), ": error generating PrivateKey")
-		return
+		panic(fmt.Sprintf("%v : error generating PrivateKey", err))
 	}
 
 	// Create three accounts, Alice, Bob, and Charlie.  Alice will be the treasury for our example token.
@@ -49,35 +46,30 @@ func main() {
 		SetKey(aliceKey).
 		FreezeWith(client)
 	if err != nil {
-		println(err.Error(), ": error freezing account create for alice")
-		return
+		panic(fmt.Sprintf("%v : error freezing account create for alice", err))
 	}
 
 	aliceAccountCreate.Sign(aliceKey)
 	resp, err := aliceAccountCreate.Execute(client)
 	if err != nil {
-		println(err.Error(), ": error executing account create for alice")
-		return
+		panic(fmt.Sprintf("%v : error executing account create for alice", err))
 	}
 
 	receipt, err := resp.GetReceipt(client)
 	if err != nil {
-		println(err.Error(), ": error getting receipt for alice account create")
-		return
+		panic(fmt.Sprintf("%v : error getting receipt for alice account create", err))
 	}
 
 	var aliceId hedera.AccountID
 	if receipt.AccountID != nil {
 		aliceId = *receipt.AccountID
 	} else {
-		println("Receipt didn't return alice's ID")
-		return
+		panic("Receipt didn't return alice's ID")
 	}
 
 	bobKey, err := hedera.GeneratePrivateKey()
 	if err != nil {
-		println(err.Error(), ": error generating PrivateKey")
-		return
+		panic(fmt.Sprintf("%v : error generating PrivateKey", err))
 	}
 
 	bobAccountCreate, err := hedera.NewAccountCreateTransaction().
@@ -85,35 +77,30 @@ func main() {
 		SetKey(bobKey).
 		FreezeWith(client)
 	if err != nil {
-		println(err.Error(), ": error freezing account create for bob")
-		return
+		panic(fmt.Sprintf("%v : error freezing account create for bob", err))
 	}
 
 	bobAccountCreate.Sign(bobKey)
 	resp, err = bobAccountCreate.Execute(client)
 	if err != nil {
-		println(err.Error(), ": error executing account create for bob")
-		return
+		panic(fmt.Sprintf("%v : error executing account create for bob", err))
 	}
 
 	receipt, err = resp.GetReceipt(client)
 	if err != nil {
-		println(err.Error(), ": error getting receipt for bob account create")
-		return
+		panic(fmt.Sprintf("%v : error getting receipt for bob account create", err))
 	}
 
 	var bobId hedera.AccountID
 	if receipt.AccountID != nil {
 		bobId = *receipt.AccountID
 	} else {
-		println("Receipt didn't return bob's ID")
-		return
+		panic("Receipt didn't return bob's ID")
 	}
 
 	charlieKey, err := hedera.GeneratePrivateKey()
 	if err != nil {
-		println(err.Error(), ": error generating PrivateKey")
-		return
+		panic(fmt.Sprintf("%v : error generating PrivateKey", err))
 	}
 
 	charlieAccountCreate, err := hedera.NewAccountCreateTransaction().
@@ -121,29 +108,25 @@ func main() {
 		SetKey(charlieKey).
 		FreezeWith(client)
 	if err != nil {
-		println(err.Error(), ": error freezing account create for charlie")
-		return
+		panic(fmt.Sprintf("%v : error freezing account create for charlie", err))
 	}
 
 	charlieAccountCreate.Sign(aliceKey)
 	resp, err = charlieAccountCreate.Execute(client)
 	if err != nil {
-		println(err.Error(), ": error executing account create for charlie")
-		return
+		panic(fmt.Sprintf("%v : error executing account create for charlie", err))
 	}
 
 	receipt, err = resp.GetReceipt(client)
 	if err != nil {
-		println(err.Error(), ": error getting receipt for charlie account create")
-		return
+		panic(fmt.Sprintf("%v : error getting receipt for charlie account create", err))
 	}
 
 	var charlieId hedera.AccountID
 	if receipt.AccountID != nil {
 		charlieId = *receipt.AccountID
 	} else {
-		println("Receipt didn't return charlie's ID")
-		return
+		panic("Receipt didn't return charlie's ID")
 	}
 
 	println("Alice:", aliceId.String())
@@ -193,23 +176,20 @@ func main() {
 		SetInitialSupply(100).
 		FreezeWith(client)
 	if err != nil {
-		println(err.Error(), ": error freezing token create transaction")
-		return
+		panic(fmt.Sprintf("%v : error freezing token create transaction", err))
 	}
 
 	// Sign with alice's key before executing
 	tokenCreate.Sign(aliceKey)
 	resp, err = tokenCreate.Execute(client)
 	if err != nil {
-		println(err.Error(), ": error executing token create transaction")
-		return
+		panic(fmt.Sprintf("%v : error executing token create transaction", err))
 	}
 
 	// Get receipt to make sure the transaction passed through
 	receipt, err = resp.GetReceipt(client)
 	if err != nil {
-		println(err.Error(), ": error getting receipt for token create transaction")
-		return
+		panic(fmt.Sprintf("%v : error getting receipt for token create transaction", err))
 	}
 
 	// Get the token out of the receipt
@@ -218,7 +198,6 @@ func main() {
 		tokenId = *receipt.TokenID
 	} else {
 		println("Token ID missing in the receipt")
-		return
 	}
 
 	println("TokenID:", tokenId.String())
@@ -244,22 +223,19 @@ func main() {
 		SetTokenIDs(tokenId).
 		FreezeWith(client)
 	if err != nil {
-		println(err.Error(), ": error freezing token associate transaction for bob")
-		return
+		panic(fmt.Sprintf("%v : error freezing token associate transaction for bob", err))
 	}
 
 	// Signing with bob's key
 	tokenAssociate.Sign(bobKey)
 	resp, err = tokenAssociate.Execute(client)
 	if err != nil {
-		println(err.Error(), ": error executing token associate transaction for bob")
-		return
+		panic(fmt.Sprintf("%v : error executing token associate transaction for bob", err))
 	}
 
 	_, err = resp.GetReceipt(client)
 	if err != nil {
-		println(err.Error(), ": error getting receipt for token associate transaction for bob")
-		return
+		panic(fmt.Sprintf("%v : error getting receipt for token associate transaction for bob", err))
 	}
 
 	// Associating charlie's account with the token
@@ -270,22 +246,19 @@ func main() {
 		SetTokenIDs(tokenId).
 		FreezeWith(client)
 	if err != nil {
-		println(err.Error(), ": error freezing token associate transaction for charlie")
-		return
+		panic(fmt.Sprintf("%v : error freezing token associate transaction for charlie", err))
 	}
 
 	// Signing with charlie's key
 	tokenAssociate.Sign(charlieKey)
 	resp, err = tokenAssociate.Execute(client)
 	if err != nil {
-		println(err.Error(), ": error executing token associate transaction for charlie")
-		return
+		panic(fmt.Sprintf("%v : error executing token associate transaction for charlie", err))
 	}
 
 	_, err = resp.GetReceipt(client)
 	if err != nil {
-		println(err.Error(), ": error getting receipt for token associate transaction for charlie")
-		return
+		panic(fmt.Sprintf("%v : error getting receipt for token associate transaction for charlie", err))
 	}
 
 	// Give all 100 tokens to Bob
@@ -296,23 +269,20 @@ func main() {
 		AddTokenTransfer(tokenId, aliceId, -100).
 		FreezeWith(client)
 	if err != nil {
-		println(err.Error(), ": error freezing token transfer transaction for alice")
-		return
+		panic(fmt.Sprintf("%v : error freezing token transfer transaction for alice", err))
 	}
 
 	// Have to sign with alice's key as we are taking alice's tokens
 	transferTransaction.Sign(aliceKey)
 	resp, err = transferTransaction.Execute(client)
 	if err != nil {
-		println(err.Error(), ": error executing token transfer transaction for alice")
-		return
+		panic(fmt.Sprintf("%v : error executing token transfer transaction for alice", err))
 	}
 
 	// Make sure the transaction passed through
 	_, err = resp.GetReceipt(client)
 	if err != nil {
-		println(err.Error(), ": error getting receipt for token transfer transaction for alice")
-		return
+		panic(fmt.Sprintf("%v : error getting receipt for token transfer transaction for alice", err))
 	}
 
 	// Check alice's balance before Bob transfers 20 tokens to Charlie
@@ -321,8 +291,7 @@ func main() {
 		SetAccountID(aliceId).
 		Execute(client)
 	if err != nil {
-		println(err.Error(), ": error getting account balance 1 for alice")
-		return
+		panic(fmt.Sprintf("%v : error getting account balance 1 for alice", err))
 	}
 
 	println("Alice's Hbar balance before Bob transfers 20 tokens to Charlie:", aliceBalance1.Hbars.String())
@@ -335,23 +304,20 @@ func main() {
 		AddTokenTransfer(tokenId, charlieId, 20).
 		FreezeWith(client)
 	if err != nil {
-		println(err.Error(), ": error freezing token transfer transaction for bob")
-		return
+		panic(fmt.Sprintf("%v : error freezing token transfer transaction for bob", err))
 	}
 
 	// As we are taking from bob, bob has to sign this.
 	transferTransaction.Sign(bobKey)
 	resp, err = transferTransaction.Execute(client)
 	if err != nil {
-		println(err.Error(), ": error executing token transfer transaction for bob")
-		return
+		panic(fmt.Sprintf("%v : error executing token transfer transaction for bob", err))
 	}
 
 	// Getting the record to show the assessed custom fees
 	record1, err := resp.GetRecord(client)
 	if err != nil {
-		println(err.Error(), ": error getting record for token transfer transaction for bob")
-		return
+		panic(fmt.Sprintf("%v : error getting record for token transfer transaction for bob", err))
 	}
 
 	// Query to check alice's balance
@@ -359,8 +325,7 @@ func main() {
 		SetAccountID(aliceId).
 		Execute(client)
 	if err != nil {
-		println(err.Error(), ": error getting account balance 2 for alice")
-		return
+		panic(fmt.Sprintf("%v : error getting account balance 2 for alice", err))
 	}
 
 	println("Alice's Hbar balance after Bob transfers 20 tokens to Charlie:", aliceBalance2.Hbars.String())
@@ -397,22 +362,19 @@ func main() {
 		SetCustomFees([]hedera.Fee{*customFractionalFee}).
 		FreezeWith(client)
 	if err != nil {
-		println(err.Error(), ": error freezing token fee update")
-		return
+		panic(fmt.Sprintf("%v : error freezing token fee update", err))
 	}
 
 	// As the token is owned by alice and all keys are set to alice's key we have to sign with that
 	tokenFeeUpdate.Sign(aliceKey)
 	resp, err = tokenFeeUpdate.Execute(client)
 	if err != nil {
-		println(err.Error(), ": error executing token fee update")
-		return
+		panic(fmt.Sprintf("%v : error executing token fee update", err))
 	}
 
 	_, err = resp.GetReceipt(client)
 	if err != nil {
-		println(err.Error(), ": error getting receipt for token fee update")
-		return
+		panic(fmt.Sprintf("%v : error getting receipt for token fee update", err))
 	}
 
 	// Get token info, we can check if the custom fee is updated
@@ -420,8 +382,7 @@ func main() {
 		SetTokenID(tokenId).
 		Execute(client)
 	if err != nil {
-		println(err.Error(), ": error getting token info 2")
-		return
+		panic(fmt.Sprintf("%v : error getting token info 2", err))
 	}
 
 	println("Custom Fees according to TokenInfoQuery:")
@@ -437,8 +398,7 @@ func main() {
 		SetAccountID(aliceId).
 		Execute(client)
 	if err != nil {
-		println(err.Error(), ": error getting account balance 3 for alice")
-		return
+		panic(fmt.Sprintf("%v : error getting account balance 3 for alice", err))
 	}
 
 	println("Alice's token balance before Bob transfers 20 tokens to Charlie:", aliceBalance3.Tokens.Get(tokenId))
@@ -449,22 +409,19 @@ func main() {
 		AddTokenTransfer(tokenId, charlieId, 20).
 		FreezeWith(client)
 	if err != nil {
-		println(err.Error(), ": error freezing token transfer transaction for bob")
-		return
+		panic(fmt.Sprintf("%v : error freezing token transfer transaction for bob", err))
 	}
 
 	// Bob's is losing 20 tokens again. so he has to sign this transfer
 	transferTransaction.Sign(bobKey)
 	resp, err = transferTransaction.Execute(client)
 	if err != nil {
-		println(err.Error(), ": error executing token transfer transaction for bob")
-		return
+		panic(fmt.Sprintf("%v : error executing token transfer transaction for bob", err))
 	}
 
 	record2, err := resp.GetRecord(client)
 	if err != nil {
-		println(err.Error(), ": error getting record for token transfer transaction for bob")
-		return
+		panic(fmt.Sprintf("%v : error getting record for token transfer transaction for bob", err))
 	}
 
 	// Checking alice's token balance again
@@ -472,8 +429,7 @@ func main() {
 		SetAccountID(aliceId).
 		Execute(client)
 	if err != nil {
-		println(err.Error(), ": error getting account balance 2 for alice")
-		return
+		panic(fmt.Sprintf("%v : error getting account balance 2 for alice", err))
 	}
 
 	println("Alice's token balance after Bob transfers 20 tokens to Charlie:", aliceBalance4.Tokens.Get(tokenId))

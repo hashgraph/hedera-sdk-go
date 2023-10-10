@@ -21,8 +21,7 @@ func main() {
 	// Retrieving network type from environment variable HEDERA_NETWORK, i.e. testnet
 	client, err = hedera.ClientForName(os.Getenv("HEDERA_NETWORK"))
 	if err != nil {
-		println(err.Error(), ": error creating client")
-		return
+		panic(fmt.Sprintf("%v : error creating client", err))
 	}
 
 	//Grab your testnet account ID and private key from the environment variable
@@ -76,32 +75,48 @@ func main() {
 
 	rawContract, err := os.ReadFile("../precompile_example/ZeroTokenOperations.json")
 	if err != nil {
-		println(err.Error(), ": error reading json")
-		return
+		panic(fmt.Sprintf("%v : error reading json", err))
 	}
 
 	err = json.Unmarshal([]byte(rawContract), &contract)
 	if err != nil {
-		println(err.Error(), ": error unmarshaling the json file")
-		return
+		panic(fmt.Sprintf("%v : error unmarshaling the json file", err))
 	}
 	params, err := hedera.NewContractFunctionParameters().AddAddress(myAccountId.ToSolidityAddress())
 	if err != nil {
-		println(err.Error(), ": error adding first address to contract function parameters")
-		return
+		panic(fmt.Sprintf("%v : error adding first address to contract function parameters", err))
 	}
 	params, err = params.AddAddress(aliceAccountId.ToSolidityAddress())
 	if err != nil {
-		println(err.Error(), ": error adding second address to contract function parameters")
-		return
+		panic(fmt.Sprintf("%v : error adding second address to contract function parameters", err))
 	}
 
 	helper := contract_helper.NewContractHelper([]byte(contract.Bytecode), *params, client)
 	helper.SetPayableAmountForStep(0, hedera.NewHbar(20)).AddSignerForStep(1, alicePrivateKey)
+	
+	keyList := hedera.KeyListWithThreshold(1).Add(myPrivateKey.PublicKey()).Add(helper.ContractID)
+	tx, err := hedera.NewAccountUpdateTransaction().SetAccountID(myAccountId).SetKey(keyList).Sign(myPrivateKey).Execute(client)
+	if err != nil {
+		panic(fmt.Sprintf("%v : error updating alice's account", err))
+	}
+	_, err = tx.GetReceipt(client)
+	if err != nil {
+		panic(err)
+	}
+	keyList = hedera.KeyListWithThreshold(1).Add(alicePrivateKey.PublicKey()).Add(helper.ContractID)
+
+	tx, err = hedera.NewAccountUpdateTransaction().SetAccountID(aliceAccountId).SetKey(keyList).Sign(alicePrivateKey).Execute(client)
+	if err != nil {
+		panic(fmt.Sprintf("%v : error updating alice's account", err))
+	}
+	_, err = tx.GetReceipt(client)
+	if err != nil {
+		panic(err)
+	}
+
 	_, err = helper.ExecuteSteps(0, 5, client)
 	if err != nil {
-		println(err.Error(), ": error in helper")
-		return
+		panic(fmt.Sprintf("%v : error in helper", err))
 	}
 	transactionResponse, err := hedera.NewTokenCreateTransaction().
 		SetTokenName("Black Sea LimeChain Token").
@@ -113,15 +128,13 @@ func main() {
 		SetFreezeDefault(false).
 		Execute(client)
 	if err != nil {
-		println(err.Error(), ": error creating token")
-		return
+		panic(fmt.Sprintf("%v : error creating token", err))
 	}
 
 	// Make sure the token create transaction ran
 	transactionReceipt, err := transactionResponse.GetReceipt(client)
 	if err != nil {
-		println(err.Error(), ": error retrieving token creation receipt")
-		return
+		panic(fmt.Sprintf("%v : error retrieving token creation receipt", err))
 	}
 
 	// Retrieve the token out of the receipt
@@ -138,23 +151,20 @@ func main() {
 		SetTokenIDs(tokenID).
 		FreezeWith(client)
 	if err != nil {
-		println(err.Error(), ": error freezing second token associate transaction")
-		return
+		panic(fmt.Sprintf("%v : error freezing second token associate transaction", err))
 	}
 	// Has to be signed by the account2's key
 	transactionResponse, err = associatingTransaction.
 		Sign(alicePrivateKey).
 		Execute(client)
 	if err != nil {
-		println(err.Error(), ": error executing second token associate transaction")
-		return
+		panic(fmt.Sprintf("%v : error executing second token associate transaction", err))
 	}
 
 	// Make sure the transaction succeeded
 	transactionReceipt, err = transactionResponse.GetReceipt(client)
 	if err != nil {
-		println(err.Error(), ": error retrieving second token associate transaction receipt")
-		return
+		panic(fmt.Sprintf("%v : error retrieving second token associate transaction receipt", err))
 	}
 
 	fmt.Printf("Associated account %v with token %v\n", aliceAccountId.String(), tokenID.String())
@@ -163,12 +173,10 @@ func main() {
 	transactionResponse, err = hedera.NewTransferTransaction().
 		AddTokenTransfer(tokenID, myAccountId, 0).AddTokenTransfer(tokenID, aliceAccountId, 0).Execute(client)
 	if err != nil {
-		println(err.Error(), ": error transfering token")
-		return
+		panic(fmt.Sprintf("%v : error transfering token", err))
 	}
 	_, err = transactionResponse.GetRecord(client)
 	if err != nil {
-		println(err.Error(), ": error retrieving transaction")
-		return
+		panic(fmt.Sprintf("%v : error retrieving transaction", err))
 	}
 }
