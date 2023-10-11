@@ -35,3 +35,20 @@ tasks:
     "test:integration":
         cmds:
             - go test -tags="e2e" -v -timeout 9999s
+    run-examples:
+        cmds:
+            - |
+                for example in examples/*; do
+                    if [ -d "$example" ]; then
+                        pushd "$example" > /dev/null
+                        if [ -f main.go ]; then
+                            echo "Running $example/main.go"
+                            go run main.go
+                            if [ $? -ne 0 ]; then
+                                echo "Error: $example/main.go failed"
+                                exit 1
+                            fi
+                        fi
+                        popd > /dev/null
+                    fi
+                done
