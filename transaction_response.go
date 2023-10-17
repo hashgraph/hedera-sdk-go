@@ -1,5 +1,11 @@
 package hedera
 
+import (
+	"encoding/hex"
+
+	jsoniter "github.com/json-iterator/go"
+)
+
 /*-
  *
  * Hedera Go SDK
@@ -31,6 +37,17 @@ type TransactionResponse struct {
 	NodeID                 AccountID
 	Hash                   []byte
 	ValidateStatus         bool
+}
+
+// MarshalJSON returns the JSON representation of the TransactionResponse.
+// This should yield the same result in all SDK's.
+func (response TransactionResponse) MarshalJSON() ([]byte, error) {
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
+	obj := make(map[string]interface{})
+	obj["nodeID"] = response.NodeID.String()
+	obj["hash"] = hex.EncodeToString(response.Hash)
+	obj["transactionID"] = response.TransactionID.String()
+	return json.Marshal(obj)
 }
 
 // GetReceipt retrieves the receipt for the transaction

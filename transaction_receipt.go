@@ -21,6 +21,12 @@ package hedera
  */
 
 import (
+	"encoding/hex"
+	"encoding/json"
+	"fmt"
+	"reflect"
+	"time"
+
 	"github.com/hashgraph/hedera-protobufs-go/services"
 	protobuf "google.golang.org/protobuf/proto"
 )
@@ -44,6 +50,63 @@ type TransactionReceipt struct {
 	Duplicates              []TransactionReceipt
 	Children                []TransactionReceipt
 	TransactionID           *TransactionID
+}
+
+func (receipt *TransactionReceipt) _ToMap() map[string]interface{} {
+	m := map[string]interface{}{
+		"status":                  receipt.Status.String(),
+		"topicSequenceNumber":     receipt.TopicSequenceNumber,
+		"topicRunningHash":        hex.EncodeToString(receipt.TopicRunningHash),
+		"topicRunningHashVersion": receipt.TopicRunningHashVersion,
+		"totalSupply":             receipt.TotalSupply,
+		"serialNumbers":           receipt.SerialNumbers,
+	}
+
+	// The real ExchangeRate struct has cents and ExpirationTime fields as private, so they can't be marshalled directly
+	type ExchangeRateJSON struct {
+		Hbars          int32  `json:"hbars"`
+		Cents          int32  `json:"cents"`
+		ExpirationTime string `json:"expirationTime"`
+	}
+
+	if receipt.ExchangeRate != nil {
+		const layout = "2006-01-02T15:04:05.000Z"
+		expiration := time.Unix(receipt.ExchangeRate.expirationTime.Seconds, 0)
+		expirationStr := expiration.UTC().Format(layout)
+
+		m["exchangeRate"] = ExchangeRateJSON{
+			Hbars:          receipt.ExchangeRate.Hbars,
+			Cents:          receipt.ExchangeRate.cents,
+			ExpirationTime: expirationStr,
+		}
+	}
+
+	// Handling fields with possible nil values
+	fields := map[string]interface{}{
+		"topicId":                receipt.TopicID,
+		"fileId":                 receipt.FileID,
+		"contractId":             receipt.ContractID,
+		"accountId":              receipt.AccountID,
+		"tokenId":                receipt.TokenID,
+		"scheduleId":             receipt.ScheduleID,
+		"scheduledTransactionId": receipt.ScheduledTransactionID,
+	}
+	for key, field := range fields {
+		m[key] = nil
+		if !reflect.ValueOf(field).IsNil() {
+			m[key] = fmt.Sprintf("%v", field)
+		}
+	}
+
+	m["children"] = receipt.Children
+	m["duplicates"] = receipt.Duplicates
+	return m
+}
+
+// MarshalJSON returns the JSON representation of the TransactionReceipt.
+// This should yield the same result in all SDK's.
+func (receipt TransactionReceipt) MarshalJSON() ([]byte, error) {
+	return json.Marshal(receipt._ToMap())
 }
 
 func _TransactionReceiptFromProtobuf(protoResponse *services.TransactionGetReceiptResponse, transactionID *TransactionID) TransactionReceipt {

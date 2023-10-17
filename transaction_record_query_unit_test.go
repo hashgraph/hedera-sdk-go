@@ -24,6 +24,7 @@ package hedera
  */
 
 import (
+	"encoding/hex"
 	"fmt"
 	"testing"
 	"time"
@@ -171,4 +172,91 @@ func TestUnitTransactionRecordReceiptNotFound(t *testing.T) {
 	require.Error(t, err)
 	require.Equal(t, "exceptional precheck status RECEIPT_NOT_FOUND", err.Error())
 	require.Equal(t, StatusReceiptNotFound, record.Receipt.Status)
+}
+
+func TestUnitTransactionRecordQueryMarshalJSON(t *testing.T) {
+	t.Parallel()
+	hexRecord, err := hex.DecodeString(`1afe010a26081612070800100018de092a130a110801100c1a0b0880ae99a4ffffffffff013800420058001230cac44f2db045ba441f3fbc295217f2eb0f956293d28b3401578f6160e66f4e47ea87952d91c4b1cb5bda6447823b979a1a0c08f3fcb495061083d9be900322190a0c08e8fcb495061098f09cf20112070800100018850918002a0030bee8f013526c0a0f0a0608001000180510d0df820118000a0f0a0608001000186210f08dff1e18000a100a070800100018a00610def1ef0318000a100a070800100018a10610def1ef0318000a110a070800100018850910fbf8b7e10718000a110a070800100018de091080a8d6b90718008a0100aa0100`)
+	require.NoError(t, err)
+	record, err := TransactionRecordFromBytes([]byte(hexRecord))
+	require.NoError(t, err)
+	accID, err := AccountIDFromString("0.0.1246")
+	require.NoError(t, err)
+	tokenID, err := TokenIDFromString("0.0.123")
+	require.NoError(t, err)
+	contractID, err := ContractIDFromString("0.0.3")
+	require.NoError(t, err)
+	record.Receipt.ContractID = &contractID
+
+	tokenTransfer := TokenTransfer{
+		AccountID:  accID,
+		Amount:     789,
+		IsApproved: true,
+	}
+	tokenTransferList := map[TokenID][]TokenTransfer{}
+	tokenTransferList[tokenID] = []TokenTransfer{tokenTransfer}
+
+	tokenNftTransfer := TokenNftTransfer{
+		SenderAccountID:   accID,
+		ReceiverAccountID: accID,
+		SerialNumber:      123,
+		IsApproved:        true,
+	}
+	tokenNftTransferList := map[TokenID][]TokenNftTransfer{}
+	tokenNftTransferList[tokenID] = []TokenNftTransfer{tokenNftTransfer}
+
+	assessedCustomFee := AssessedCustomFee{
+		FeeCollectorAccountId: &accID,
+		Amount:                789,
+		TokenID:               &tokenID,
+		PayerAccountIDs:       []*AccountID{&accID},
+	}
+
+	tokenAssociation := TokenAssociation{
+		AccountID: &accID,
+		TokenID:   &tokenID,
+	}
+
+	plaidStaking := map[AccountID]Hbar{}
+	for _, transfer := range record.Transfers {
+		plaidStaking[transfer.AccountID] = transfer.Amount
+	}
+
+	pk, err := PublicKeyFromString("302a300506032b6570032100d7366c45e4d2f1a6c1d9af054f5ef8edc0b8d3875ba5d08a7f2e81ee8876e9e8")
+	require.NoError(t, err)
+
+	prngNumber := int32(123)
+	evmAddressBytes, err := hex.DecodeString("deadbeef")
+	require.NoError(t, err)
+
+	record.TransactionMemo = "test"
+	record.TokenTransfers = tokenTransferList
+	record.NftTransfers = tokenNftTransferList
+	record.ParentConsensusTimestamp = record.ConsensusTimestamp
+	record.AliasKey = &pk
+	record.EthereumHash = []byte{1, 2, 3, 4}
+	record.PaidStakingRewards = plaidStaking
+	record.PrngBytes = []byte{1, 2, 3, 4}
+	record.PrngNumber = &prngNumber
+	record.EvmAddress = evmAddressBytes
+	record.AssessedCustomFees = []AssessedCustomFee{assessedCustomFee}
+	record.AutomaticTokenAssociations = []TokenAssociation{tokenAssociation}
+	result, err := record.MarshalJSON()
+	require.NoError(t, err)
+	expected := `{"aliasKey":"302a300506032b6570032100d7366c45e4d2f1a6c1d9af054f5ef8edc0b8d3875ba5d08a7f2e81ee8876e9e8","assessedCustomFees":
+	[{"feeCollectorAccountId":"0.0.1246","tokenId":"0.0.123","amount":"789","payerAccountIds":["0.0.1246"]}],"automaticTokenAssociations":
+	[{"tokenId":"0.0.123","accountId":"0.0.1246"}],"callResultIsCreate":true,"children":[],"consensusTimestamp":"2022-06-18T02:54:43.839Z",
+	"duplicates":[],"ethereumHash":"01020304","evmAddress":"deadbeef","expectedDecimals":null,"nftTransfers":{"0.0.123":[{"sender":"0.0.1246","recipient":
+	"0.0.1246","isApproved":true,"serial":123}]},"paidStakingRewards":[{"accountId":"0.0.1157","amount":"-1041694270","isApproved":false},{"accountId":
+	"0.0.1246","amount":"1000000000","isApproved":false},{"accountId":"0.0.5","amount":"1071080","isApproved":false},{"accountId":"0.0.800","amount":"4062319",
+	"isApproved":false},{"accountId":"0.0.801","amount":"4062319","isApproved":false},{"accountId":"0.0.98","amount":"32498552","isApproved":false}],
+	"parentConsensusTimestamp":"2022-06-18T02:54:43.839Z","prngBytes":"01020304","prngNumber":123,"receipt":{"accountId":"0.0.1246","children":[],
+	"contractId":"0.0.3","duplicates":[],"exchangeRate":{"cents":12,"expirationTime":"1963-11-25T17:31:44.000Z","hbars":1},"fileId":null,"scheduleId":
+	null,"scheduledTransactionId":null,"serialNumbers":null,"status":"SUCCESS","tokenId":null,"topicId":null,"topicRunningHash":"","topicRunningHashVersion":
+	0,"topicSequenceNumber":0,"totalSupply":0},"tokenTransfers":{"0.0.123":{"0.0.1246":"789"}},"transactionFee":"41694270","transactionHash":
+	"cac44f2db045ba441f3fbc295217f2eb0f956293d28b3401578f6160e66f4e47ea87952d91c4b1cb5bda6447823b979a","transactionId":"0.0.1157@1655520872.507983896",
+	"transactionMemo":"test","transfers":[{"accountId":"0.0.5","amount":"1071080","isApproved":false},{"accountId":"0.0.98","amount":"32498552",
+	"isApproved":false},{"accountId":"0.0.800","amount":"4062319","isApproved":false},{"accountId":"0.0.801","amount":"4062319","isApproved":false},
+	{"accountId":"0.0.1157","amount":"-1041694270","isApproved":false},{"accountId":"0.0.1246","amount":"1000000000","isApproved":false}]}`
+	require.JSONEqf(t, expected, string(result), "json should be equal")
 }

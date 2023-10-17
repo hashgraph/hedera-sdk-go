@@ -21,9 +21,12 @@ package hedera
  */
 
 import (
+	"encoding/hex"
 	"fmt"
+	"sort"
 	"time"
 
+	jsoniter "github.com/json-iterator/go"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 
 	protobuf "google.golang.org/protobuf/proto"
@@ -63,6 +66,152 @@ type TransactionRecord struct {
 	PrngBytes          []byte
 	PrngNumber         *int32
 	EvmAddress         []byte
+}
+
+// MarshalJSON returns the JSON representation of the TransactionRecord
+func (record TransactionRecord) MarshalJSON() ([]byte, error) {
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
+	m := make(map[string]interface{})
+	type TransferJSON struct {
+		AccountID  string      `json:"accountId"`
+		Amount     interface{} `json:"amount"`
+		IsApproved bool        `json:"isApproved"`
+	}
+	var transfersJSON []TransferJSON
+	for _, t := range record.Transfers {
+		transfersJSON = append(transfersJSON, TransferJSON{
+			AccountID:  t.AccountID.String(),
+			Amount:     fmt.Sprint(t.Amount.AsTinybar()),
+			IsApproved: t.IsApproved,
+		})
+	}
+
+	// It's weird because we need it without field names to match the specification
+	tokenTransfersMap := make(map[string]map[string]string)
+
+	for tokenId, transfers := range record.TokenTransfers {
+		accountIdMap := make(map[string]string)
+		for _, transfer := range transfers {
+			accountIdMap[transfer.AccountID.String()] = fmt.Sprint(transfer.Amount)
+		}
+		tokenTransfersMap[tokenId.String()] = accountIdMap
+	}
+
+	type TransferNftTokensJSON struct {
+		SenderAccountID            string `json:"sender"`
+		ReceiverAccountIDAccountID string `json:"recipient"`
+		IsApproved                 bool   `json:"isApproved"`
+		SerialNumber               int64  `json:"serial"`
+	}
+	var transfersNftTokenJSON []TransferNftTokensJSON
+	tokenTransfersNftMap := make(map[string][]TransferNftTokensJSON)
+	for k, v := range record.NftTransfers {
+		for _, tt := range v {
+			transfersNftTokenJSON = append(transfersNftTokenJSON, TransferNftTokensJSON{
+				SenderAccountID:            tt.SenderAccountID.String(),
+				ReceiverAccountIDAccountID: tt.ReceiverAccountID.String(),
+				IsApproved:                 tt.IsApproved,
+				SerialNumber:               tt.SerialNumber,
+			})
+		}
+		tokenTransfersNftMap[k.String()] = transfersNftTokenJSON
+	}
+
+	m["transactionHash"] = hex.EncodeToString(record.TransactionHash)
+	m["transactionId"] = record.TransactionID.String()
+	m["transactionMemo"] = record.TransactionMemo
+	m["transactionFee"] = fmt.Sprint(record.TransactionFee.AsTinybar())
+	m["transfers"] = transfersJSON
+	m["tokenTransfers"] = tokenTransfersMap
+	m["nftTransfers"] = tokenTransfersNftMap
+	m["expectedDecimals"] = record.ExpectedDecimals
+	m["callResultIsCreate"] = record.CallResultIsCreate
+
+	type AssessedCustomFeeJSON struct {
+		FeeCollectorAccountID string   `json:"feeCollectorAccountId"`
+		TokenID               string   `json:"tokenId"`
+		Amount                string   `json:"amount"`
+		PayerAccountIDs       []string `json:"payerAccountIds"`
+	}
+
+	customFeesJSON := make([]AssessedCustomFeeJSON, len(record.AssessedCustomFees))
+
+	for i, fee := range record.AssessedCustomFees {
+		payerAccountIDsStr := make([]string, len(fee.PayerAccountIDs))
+		for j, accID := range fee.PayerAccountIDs {
+			payerAccountIDsStr[j] = accID.String()
+		}
+		customFeesJSON[i] = AssessedCustomFeeJSON{
+			FeeCollectorAccountID: fee.FeeCollectorAccountId.String(),
+			TokenID:               fee.TokenID.String(),
+			Amount:                fmt.Sprint(fee.Amount),
+			PayerAccountIDs:       payerAccountIDsStr,
+		}
+	}
+
+	m["assessedCustomFees"] = customFeesJSON
+
+	type TokenAssociationOutput struct {
+		TokenID   string `json:"tokenId"`
+		AccountID string `json:"accountId"`
+	}
+	automaticTokenAssociations := make([]TokenAssociationOutput, len(record.AutomaticTokenAssociations))
+	for i, ta := range record.AutomaticTokenAssociations {
+		automaticTokenAssociations[i] = TokenAssociationOutput{
+			TokenID:   ta.TokenID.String(),
+			AccountID: ta.AccountID.String(),
+		}
+	}
+	m["automaticTokenAssociations"] = automaticTokenAssociations
+
+	consensusTime := record.ConsensusTimestamp.UTC().Format("2006-01-02T15:04:05.000Z")
+	parentConsesnusTime := record.ParentConsensusTimestamp.UTC().Format("2006-01-02T15:04:05.000Z")
+	m["consensusTimestamp"] = consensusTime
+	m["parentConsensusTimestamp"] = parentConsesnusTime
+
+	m["aliasKey"] = fmt.Sprint(record.AliasKey)
+	m["ethereumHash"] = hex.EncodeToString(record.EthereumHash)
+	type PaidStakingReward struct {
+		AccountID  string `json:"accountId"`
+		Amount     string `json:"amount"`
+		IsApproved bool   `json:"isApproved"`
+	}
+	var paidStakingRewards []PaidStakingReward
+	for k, reward := range record.PaidStakingRewards {
+		paidStakingReward := PaidStakingReward{
+			AccountID:  k.String(),
+			Amount:     fmt.Sprint(reward.AsTinybar()),
+			IsApproved: false,
+		}
+		paidStakingRewards = append(paidStakingRewards, paidStakingReward)
+	}
+
+	sort.Slice(paidStakingRewards, func(i, j int) bool {
+		return paidStakingRewards[i].AccountID < paidStakingRewards[j].AccountID
+	})
+
+	m["paidStakingRewards"] = paidStakingRewards
+
+	m["prngBytes"] = hex.EncodeToString(record.PrngBytes)
+	m["prngNumber"] = record.PrngNumber
+	m["evmAddress"] = hex.EncodeToString(record.EvmAddress)
+	m["receipt"] = record.Receipt
+	m["children"] = record.Children
+	m["duplicates"] = record.Duplicates
+
+	receiptBytes, err := record.Receipt.MarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	var receiptInterface interface{}
+	err = json.Unmarshal(receiptBytes, &receiptInterface)
+	if err != nil {
+		return nil, err
+	}
+	m["receipt"] = receiptInterface
+
+	result, err := json.Marshal(m)
+	return result, err
 }
 
 // GetContractExecuteResult returns the ContractFunctionResult if the transaction was a contract call
