@@ -1,3 +1,10 @@
+## v2.31.0
+
+### Added
+
+* `MarshalJSON` to `TransactionResponse`, `TransactionReceipt`, `TransactionRecord`
+* `IsApproved` boolean to `Transfer`
+
 ## v2.30.0
 
 ### Fixed
