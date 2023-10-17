@@ -83,7 +83,7 @@ func TestIntegrationClientCanFailGracefullyWhenDoesNotHaveNodeOfAnotherClient(t 
 	// Try to execute it with the second client, which does not have the node
 	_, err = txFromBytes.Execute(client2)
 	require.Error(t, err)
-	require.Equal(t, err.Error(), "Invalid node AccountID was set for transaction: 0.0.3")	
+	require.Equal(t, err.Error(), "Invalid node AccountID was set for transaction: 0.0.3")
 }
 
 func DisabledTestIntegrationClientPingAllBadNetwork(t *testing.T) { // nolint

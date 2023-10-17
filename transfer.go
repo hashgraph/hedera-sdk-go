@@ -26,8 +26,9 @@ import (
 
 // Transfer is a transfer of hbars or tokens from one account to another
 type Transfer struct {
-	AccountID AccountID
-	Amount    Hbar
+	AccountID  AccountID
+	Amount     Hbar
+	IsApproved bool
 }
 
 func _TransferFromProtobuf(pb *services.AccountAmount) Transfer {
@@ -41,8 +42,9 @@ func _TransferFromProtobuf(pb *services.AccountAmount) Transfer {
 	}
 
 	return Transfer{
-		AccountID: accountID,
-		Amount:    HbarFromTinybar(pb.Amount),
+		AccountID:  accountID,
+		Amount:     HbarFromTinybar(pb.Amount),
+		IsApproved: pb.GetIsApproval(),
 	}
 }
 

@@ -13,6 +13,7 @@ require (
 	github.com/ethereum/go-ethereum v1.13.2
 	github.com/getsentry/sentry-go v0.24.1 // indirect
 	github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20230720072335-ed5726877e99
+	github.com/json-iterator/go v1.1.12
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/common v0.44.0 // indirect
 	github.com/prometheus/procfs v0.12.0 // indirect

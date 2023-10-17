@@ -46,7 +46,6 @@ func TestIntegrationAccountIDCanPopulateAccountNumber(t *testing.T) {
 	receipt, err := tx.GetReceiptQuery().SetIncludeChildren(true).Execute(env.Client)
 	require.NoError(t, err)
 	newAccountId := *receipt.Children[0].AccountID
-
 	idMirror, err := AccountIDFromEvmPublicAddress(evmAddress)
 	require.NoError(t, err)
 	time.Sleep(5 * time.Second)
