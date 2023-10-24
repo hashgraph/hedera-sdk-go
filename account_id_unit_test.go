@@ -181,3 +181,4 @@ func TestUnitAccountIDPopulateEvmFailWithNoMirrorNetwork(t *testing.T) {
 	err = id.PopulateEvmAddress(client)
 	require.Error(t, err)
 }
+

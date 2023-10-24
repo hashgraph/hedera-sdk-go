@@ -77,3 +77,47 @@ func TestIntegrationAccountIDCanPopulateAccountAliasEvmAddress(t *testing.T) {
 	require.Equal(t, newAccountId.Account, evmAddressAccount.Account)
 	require.Equal(t, evmAddress, hex.EncodeToString(*newAccountId.AliasEvmAddress))
 }
+
+func TestIntegrationAccountIDCanPopulateAccountAliasEvmAddressWithMirror(t *testing.T) {
+	t.Parallel()
+	env := NewIntegrationTestEnv(t)
+
+	privateKey, err := PrivateKeyGenerateEcdsa()
+	require.NoError(t, err)
+	publicKey := privateKey.PublicKey()
+	evmAddress := publicKey.ToEvmAddress()
+	evmAddressAccount, err := AccountIDFromEvmPublicAddress(evmAddress)
+	require.NoError(t, err)
+	tx, err := NewTransferTransaction().AddHbarTransfer(evmAddressAccount, NewHbar(1)).
+		AddHbarTransfer(env.OperatorID, NewHbar(-1)).Execute(env.Client)
+	require.NoError(t, err)
+	receipt, err := tx.GetReceiptQuery().SetIncludeChildren(true).Execute(env.Client)
+	require.NoError(t, err)
+	newAccountId := *receipt.Children[0].AccountID
+	time.Sleep(5 * time.Second)
+	error:= newAccountId.PopulateEvmAddress(env.Client)
+	require.NoError(t, error)
+	require.Equal(t, evmAddress, hex.EncodeToString(*newAccountId.AliasEvmAddress))
+}
+
+func TestIntegrationAccountIDCanPopulateAccountAliasEvmAddressWithNoMirror(t *testing.T){
+	t.Parallel()
+	env := NewIntegrationTestEnv(t)
+	env.Client.mirrorNetwork = nil
+	privateKey, err := PrivateKeyGenerateEcdsa()
+	require.NoError(t, err)
+	publicKey := privateKey.PublicKey()
+	evmAddress := publicKey.ToEvmAddress()
+	evmAddressAccount, err := AccountIDFromEvmPublicAddress(evmAddress)
+	require.NoError(t, err)
+	tx, err := NewTransferTransaction().AddHbarTransfer(evmAddressAccount, NewHbar(1)).
+		AddHbarTransfer(env.OperatorID, NewHbar(-1)).Execute(env.Client)
+	require.NoError(t, err)
+	receipt, err := tx.GetReceiptQuery().SetIncludeChildren(true).Execute(env.Client)
+	require.NoError(t, err)
+	newAccountId := *receipt.Children[0].AccountID
+	env.Client.mirrorNetwork = nil
+	time.Sleep(5 * time.Second)
+	error:= newAccountId.PopulateEvmAddress(env.Client)
+	require.Error(t, error)
+}
