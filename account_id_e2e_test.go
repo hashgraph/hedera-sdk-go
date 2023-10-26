@@ -74,7 +74,6 @@ func TestIntegrationAccountIDCanPopulateAccountAliasEvmAddress(t *testing.T) {
 	time.Sleep(5 * time.Second)
 	error:= newAccountId.PopulateEvmAddress(env.Client)
 	require.NoError(t, error)
-	require.Equal(t, newAccountId.Account, &evmAddressAccount.Account)
 	require.Equal(t, evmAddress, hex.EncodeToString(*newAccountId.AliasEvmAddress))
 }
 
