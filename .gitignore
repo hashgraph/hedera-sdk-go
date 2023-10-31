@@ -17,3 +17,4 @@ vendor/
 # Editors
 .idea
 .env
+go.work
