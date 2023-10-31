@@ -143,3 +143,42 @@ func TestUnitAccountIDPopulateFailWithNoMirror(t *testing.T) {
 	err = evmAddressAccountID.PopulateAccount(client)
 	require.Error(t, err)
 }
+
+func TestUnitAccountIDPopulateEvmFailForWrongMirrorHost(t *testing.T) {
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	require.NoError(t, err)
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	id, err := AccountIDFromString("0.0.3")
+	require.NoError(t, err)
+	err = id.PopulateEvmAddress(client)
+	require.Error(t, err)
+}
+
+func TestUnitAccountIDPopulateEvmFailWithNoMirror(t *testing.T) {
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	require.NoError(t, err)
+	client.mirrorNetwork = nil
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	id, err := AccountIDFromString("0.0.3")
+	require.NoError(t, err)
+	err = id.PopulateEvmAddress(client)
+	require.Error(t, err)
+}
+
+func TestUnitAccountIDPopulateEvmFailWithNoMirrorNetwork(t *testing.T) {
+	t.Parallel()
+
+	client, err := _NewMockClient()
+	require.NoError(t, err)
+	client.mirrorNetwork = nil
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	id, err := AccountIDFromString("0.0.3")
+	require.NoError(t, err)
+	err = id.PopulateEvmAddress(client)
+	require.Error(t, err)
+}
+
