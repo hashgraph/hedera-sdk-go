@@ -1,3 +1,9 @@
+## v2.32.0
+
+### Added
+
+* `PopulateAccount` to `AccountID`
+
 ## v2.31.0
 
 ### Added
