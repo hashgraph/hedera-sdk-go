@@ -337,32 +337,60 @@ func AccountIDFromBytes(data []byte) (AccountID, error) {
 	return *_AccountIDFromProtobuf(&pb), nil
 }
 
-// PopulateAccount gets the actual `Account` field of the `AccountId` from the Mirror Node.
-// Should be used after generating `AccountId.FromEvmAddress()` because it sets the `Account` field to `0`
-// automatically since there is no connection between the `Account` and the `evmAddress`
-func (id *AccountID) PopulateAccount(client *Client) error {
+type PopulateType int
+
+const (
+	Account PopulateType = iota
+	EvmAddress
+)
+
+func (id *AccountID) _MirrorNodeRequest(client *Client, populateType string) (map[string]interface{}, error) {
 	if client.mirrorNetwork == nil || len(client.GetMirrorNetwork()) == 0 {
-		return errors.New("mirror node is not set")
+		return nil, errors.New("mirror node is not set")
 	}
+
 	mirrorUrl := client.GetMirrorNetwork()[0]
 	index := strings.Index(mirrorUrl, ":")
 	if index == -1 {
-		return errors.New("invalid mirrorUrl format")
+		return nil, errors.New("invalid mirrorUrl format")
 	}
 	mirrorUrl = mirrorUrl[:index]
-	url := fmt.Sprintf("https://%s/api/v1/accounts/%s", mirrorUrl, hex.EncodeToString(*id.AliasEvmAddress))
+
+	var url string
+	protocol := "https"
+	port := ""
+
 	if client.GetLedgerID().String() == "" {
-		url = fmt.Sprintf("http://%s:5551/api/v1/accounts/%s", mirrorUrl, hex.EncodeToString(*id.AliasEvmAddress))
+		protocol = "http"
+		port = ":5551"
+	}
+
+	if populateType == "account" {
+		url = fmt.Sprintf("%s://%s%s/api/v1/accounts/%s", protocol, mirrorUrl, port, hex.EncodeToString(*id.AliasEvmAddress))
+	} else {
+		url = fmt.Sprintf("%s://%s%s/api/v1/accounts/%s", protocol, mirrorUrl, port, id.String())
 	}
 
 	resp, err := http.Get(url) // #nosec
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	var result map[string]interface{}
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// PopulateAccount gets the actual `Account` field of the `AccountId` from the Mirror Node.
+// Should be used after generating `AccountId.FromEvmAddress()` because it sets the `Account` field to `0`
+// automatically since there is no connection between the `Account` and the `evmAddress`
+func (id *AccountID) PopulateAccount(client *Client) error {
+	result, err := id._MirrorNodeRequest(client, "account")
+	if err != nil {
 		return err
 	}
 
@@ -377,6 +405,27 @@ func (id *AccountID) PopulateAccount(client *Client) error {
 		return err
 	}
 	id.Account = uint64(num)
+	return nil
+}
+
+// PopulateEvmAddress gets the actual `AliasEvmAddress` field of the `AccountId` from the Mirror Node.
+func (id *AccountID) PopulateEvmAddress(client *Client) error {
+	result, err := id._MirrorNodeRequest(client, "evmAddress")
+	if err != nil {
+		return err
+	}
+
+	mirrorEvmAddress, ok := result["evm_address"].(string)
+	if !ok {
+		return errors.New("unexpected response format")
+	}
+
+	mirrorEvmAddress = strings.TrimPrefix(mirrorEvmAddress, "0x")
+	asd, err := hex.DecodeString(mirrorEvmAddress)
+	if err != nil {
+		return err
+	}
+	id.AliasEvmAddress = &asd
 	return nil
 }
 
