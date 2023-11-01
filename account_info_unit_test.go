@@ -24,61 +24,52 @@ package hedera
  */
 
 import (
-	"fmt"
-	"reflect"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/require"
 )
 
-func TestAccountInfoToBytes(t *testing.T) {
+// The function checks the conversation methods on the AccountInfo struct. We check wether it is correctly converted to protobuf and back.
+func TestUnitAccountInfoToBytes(t *testing.T) {
 	t.Parallel()
 
-	accInfoOriginal := _MockAccountInfo();
-	fmt.Println("Original AccountInfo = ", accInfoOriginal.);
-	accInfoBytes := accInfoOriginal.ToBytes();
+	accInfoOriginal := *_MockAccountInfo()
+	accInfoBytes := accInfoOriginal.ToBytes()
 
-	accInfoFromBytes,err := AccountInfoFromBytes(accInfoBytes);
+	accInfoFromBytes, err := AccountInfoFromBytes(accInfoBytes)
 
-	fmt.Println("AccountInfo obtained from bytes = ", accInfoFromBytes);
+	require.NoError(t, err)
+	require.Equal(t, accInfoOriginal.AccountID, accInfoFromBytes.AccountID)
+	require.Equal(t, accInfoOriginal.ContractAccountID, accInfoFromBytes.ContractAccountID)
+	require.Equal(t, accInfoOriginal.Key, accInfoFromBytes.Key)
+	require.Equal(t, accInfoOriginal.LedgerID, accInfoFromBytes.LedgerID)
+}
+func _MockAccountInfo() *AccountInfo {
+	privateKey, _ := PrivateKeyFromString(mockPrivateKey)
+	accountID, _ := AccountIDFromString("0.0.123-esxsf")
+	accountID.checksum = nil
 
-	if(err != nil){
-		t.Fatalf("Error trying to parse from bytes to accountInfo. Error = %v", err );
+	return &AccountInfo{
+		AccountID:                      accountID,
+		ContractAccountID:              "",
+		IsDeleted:                      false,
+		ProxyReceived:                  Hbar{},
+		Key:                            privateKey.PublicKey(),
+		Balance:                        Hbar{},
+		GenerateSendRecordThreshold:    Hbar{},
+		GenerateReceiveRecordThreshold: Hbar{},
+		ReceiverSigRequired:            false,
+		ExpirationTime:                 time.Date(2222, 2, 2, 2, 2, 2, 2, time.Now().UTC().Location()),
+		AutoRenewPeriod:                time.Duration(time.Duration(5).Seconds()),
+		LiveHashes:                     nil,
+		AccountMemo:                    "",
+		OwnedNfts:                      0,
+		MaxAutomaticTokenAssociations:  0,
+		AliasKey:                       nil,
+		LedgerID:                       *NewLedgerIDTestnet(),
+		EthereumNonce:                  0,
+		StakingInfo:                    nil,
 	}
-	if !reflect.DeepEqual(accInfoOriginal, accInfoFromBytes){
-		t.Fatalf("AccountInfoToBytes() = %v, want %v", accInfoFromBytes, accInfoOriginal);
-	}
-}		
-
-func _MockAccountInfo() *AccountInfo{
-
-	privateKey,_ := PrivateKeyFromString(mockPrivateKey);
-	accountID,_ := AccountIDFromString("0.0.123-esxsf")
-
-		return &AccountInfo{
-			AccountID:                      accountID,
-			ContractAccountID:              "",
-			IsDeleted:                      false,
-			ProxyAccountID:                 AccountID{},
-			ProxyReceived:                  Hbar{},
-			Key:                            privateKey,
-			Balance:                        Hbar{},
-			GenerateSendRecordThreshold:    Hbar{},
-			GenerateReceiveRecordThreshold: Hbar{},
-			ReceiverSigRequired:            false,
-			ExpirationTime:                 time.Now(),
-			AutoRenewPeriod:                time.Hour,
-			LiveHashes:                     []*LiveHash{},
-			TokenRelationships:             []*TokenRelationship{},
-			AccountMemo:                    "",
-			OwnedNfts:                      0,
-			MaxAutomaticTokenAssociations:  0,
-			AliasKey:                       &PublicKey{},
-			LedgerID:                       LedgerID{},
-			HbarAllowances:                 []HbarAllowance{},
-			NftAllowances:                  []TokenNftAllowance{},
-			TokenAllowances:                []TokenAllowance{},
-			EthereumNonce:                  0,
-			StakingInfo:                    &StakingInfo{},
-		}
 
 }

@@ -59,7 +59,7 @@ func (fee *AssessedCustomFee) _ToProtobuf() *services.AssessedCustomFee {
 	}
 
 	var accountID *services.AccountID
-	if fee.TokenID != nil {
+	if fee.FeeCollectorAccountId != nil {
 		accountID = fee.FeeCollectorAccountId._ToProtobuf()
 	}
 
