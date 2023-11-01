@@ -1,3 +1,6 @@
+//go:build all || unit
+// +build all unit
+
 package hedera
 
 import (
@@ -38,7 +41,7 @@ func TestUnitassessedCustomFee(t *testing.T) {
 
 func _MockAssessedCustomFee() AssessedCustomFee {
 	accountID, _ := AccountIDFromString("0.0.123-esxsf")
-	accountID.checksum = nil;
+	accountID.checksum = nil
 	return AssessedCustomFee{
 		Amount:                100,
 		TokenID:               nil,

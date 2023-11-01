@@ -56,7 +56,7 @@ func _MockAccountInfo() *AccountInfo {
 		IsDeleted:                      false,
 		ProxyReceived:                  Hbar{},
 		Key:                            privateKey.PublicKey(),
-		Balance:                        Hbar{},
+		Balance:                        HbarFromTinybar(100000000000),
 		GenerateSendRecordThreshold:    Hbar{},
 		GenerateReceiveRecordThreshold: Hbar{},
 		ReceiverSigRequired:            false,
