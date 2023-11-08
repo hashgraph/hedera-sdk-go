@@ -178,8 +178,8 @@ func TestUnitClientSetNetworkExtensive(t *testing.T) {
 func TestUnitClientSetMirrorNetwork(t *testing.T) {
 	t.Parallel()
 	
-	mirrorNetworkString := "hcs.testnet.mirrornode.hedera.com:443"
-	mirrorNetwork1String := "hcs.testnet1.mirrornode.hedera.com:443"
+	mirrorNetworkString := "testnet.mirrornode.hedera.com:443"
+	mirrorNetwork1String := "testnet1.mirrornode.hedera.com:443"
 	defaultNetwork := make([]string, 0)
 	defaultNetwork = append(defaultNetwork, mirrorNetworkString)
 	client, err := _NewMockClient()
