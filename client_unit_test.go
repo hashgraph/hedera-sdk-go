@@ -25,6 +25,7 @@ package hedera
 
 import (
 	"bytes"
+	"fmt"
 	"testing"
 	"time"
 
@@ -96,6 +97,7 @@ func TestUnitClientFromConfigWrongNetworkType(t *testing.T) {
 
 func TestUnitClientFromConfigWrongAccountIDNetworkType(t *testing.T) {
 	_, err := ClientFromConfig([]byte(testClientJSONWrongAccountIDNetwork))
+	fmt.Println(err)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "expected {shard}.{realm}.{num}", err.Error())
@@ -175,47 +177,49 @@ func TestUnitClientSetNetworkExtensive(t *testing.T) {
 
 func TestUnitClientSetMirrorNetwork(t *testing.T) {
 	t.Parallel()
-
+	
+	mirrorNetworkString := "hcs.testnet.mirrornode.hedera.com:443"
+	mirrorNetwork1String := "hcs.testnet1.mirrornode.hedera.com:443"
 	defaultNetwork := make([]string, 0)
-	defaultNetwork = append(defaultNetwork, "hcs.testnet.mirrornode.hedera.com:5600")
+	defaultNetwork = append(defaultNetwork, mirrorNetworkString)
 	client, err := _NewMockClient()
 	require.NoError(t, err)
 	client.SetMirrorNetwork(defaultNetwork)
 
 	mirrorNetwork := client.GetMirrorNetwork()
 	assert.Equal(t, 1, len(mirrorNetwork))
-	assert.Equal(t, "hcs.testnet.mirrornode.hedera.com:5600", mirrorNetwork[0])
+	assert.Equal(t, mirrorNetworkString, mirrorNetwork[0])
 
 	defaultNetworkWithExtraNode := make([]string, 0)
-	defaultNetworkWithExtraNode = append(defaultNetworkWithExtraNode, "hcs.testnet.mirrornode.hedera.com:5600")
-	defaultNetworkWithExtraNode = append(defaultNetworkWithExtraNode, "hcs.testnet1.mirrornode.hedera.com:5600")
+	defaultNetworkWithExtraNode = append(defaultNetworkWithExtraNode, mirrorNetworkString)
+	defaultNetworkWithExtraNode = append(defaultNetworkWithExtraNode, mirrorNetwork1String)
 
 	client.SetMirrorNetwork(defaultNetworkWithExtraNode)
 	mirrorNetwork = client.GetMirrorNetwork()
 	assert.Equal(t, 2, len(mirrorNetwork))
-	require.True(t, contains(mirrorNetwork, "hcs.testnet.mirrornode.hedera.com:5600"))
-	require.True(t, contains(mirrorNetwork, "hcs.testnet1.mirrornode.hedera.com:5600"))
+	require.True(t, contains(mirrorNetwork, mirrorNetworkString))
+	require.True(t, contains(mirrorNetwork, mirrorNetwork1String))
 
 	defaultNetwork = make([]string, 0)
-	defaultNetwork = append(defaultNetwork, "hcs.testnet1.mirrornode.hedera.com:5600")
+	defaultNetwork = append(defaultNetwork, mirrorNetwork1String)
 
 	client.SetMirrorNetwork(defaultNetwork)
 	mirrorNetwork = client.GetMirrorNetwork()
 	assert.Equal(t, 1, len(mirrorNetwork))
-	assert.Equal(t, "hcs.testnet1.mirrornode.hedera.com:5600", mirrorNetwork[0])
+	assert.Equal(t, mirrorNetwork1String, mirrorNetwork[0])
 
 	defaultNetwork = make([]string, 0)
-	defaultNetwork = append(defaultNetwork, "hcs.testnet.mirrornode.hedera.com:5600")
+	defaultNetwork = append(defaultNetwork, mirrorNetworkString)
 
 	client.SetMirrorNetwork(defaultNetwork)
 	mirrorNetwork = client.GetMirrorNetwork()
 	assert.Equal(t, 1, len(mirrorNetwork))
-	assert.Equal(t, "hcs.testnet.mirrornode.hedera.com:5600", mirrorNetwork[0])
+	assert.Equal(t, mirrorNetworkString, mirrorNetwork[0])
 
 	client.SetTransportSecurity(true)
 	mirrorNetwork = client.GetMirrorNetwork()
 	// SetTransportSecurity is deprecated, so the mirror node should not be updated
-	assert.Equal(t, "hcs.testnet.mirrornode.hedera.com:5600", mirrorNetwork[0])
+	assert.Equal(t, mirrorNetworkString, mirrorNetwork[0])
 
 	err = client.Close()
 	require.NoError(t, err)

@@ -24,7 +24,6 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
-	"strings"
 )
 
 var hostAndPort = regexp.MustCompile(`^(\S+):(\d+)$`)
@@ -57,20 +56,18 @@ func (address *_ManagedNodeAddress) _IsTransportSecurity() bool {
 }
 
 func (address *_ManagedNodeAddress) _ToInsecure() *_ManagedNodeAddress {
-	address.port = uint32(50211)
+	if address.port == 50212 {
+		address.port = uint32(50211)
+	}
 
 	return address
 }
 
-func (nodeAddress *_ManagedNodeAddress) _ToSecure() *_ManagedNodeAddress {
-	network := *nodeAddress.address
-
-	if strings.Contains(network, "mirrornode") {
-		nodeAddress.port = uint32(443)
-	} else {
-		nodeAddress.port = uint32(50212)
+func (address *_ManagedNodeAddress) _ToSecure() *_ManagedNodeAddress {
+	if address.port == 50211 {
+		address.port = uint32(50212)
 	}
-	return nodeAddress
+	return address
 }
 
 func (address *_ManagedNodeAddress) _Equals(comp _ManagedNodeAddress) bool { //nolint
