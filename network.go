@@ -21,6 +21,7 @@ package hedera
  */
 
 import (
+	"math/rand"
 	"time"
 )
 
@@ -139,10 +140,18 @@ func (network *_Network) _GetNodeAccountIDsForExecute() []AccountID { //nolint
 
 	network.healthyNodesMutex.RLock()
 	defer network.healthyNodesMutex.RUnlock()
-	for i := 0; i < nodesForTransaction; i++ {
-		nodes = append(nodes, network.healthyNodes[i].(*_Node).accountID)
-	}
 
+	healthyNodes := make([]_IManagedNode, len(network.healthyNodes))
+	copy(healthyNodes, network.healthyNodes)
+
+	// shuffle the nodes, so that the first node is not always the same
+	for i := range healthyNodes {
+		j := rand.Intn(i + 1) // #nosec
+		healthyNodes[i], healthyNodes[j] = healthyNodes[j], healthyNodes[i]
+	}
+	for i := 0; i < nodesForTransaction; i++ {
+		nodes = append(nodes, healthyNodes[i].(*_Node).accountID)
+	}
 	return nodes
 }
 
