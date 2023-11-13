@@ -29,29 +29,29 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// func TestIntegrationPreviewnetTls(t *testing.T) {
-// 	var network = map[string]AccountID{
-// 		"0.previewnet.hedera.com:50212": {Account: 3},
-// 		"1.previewnet.hedera.com:50212": {Account: 4},
-// 		"2.previewnet.hedera.com:50212": {Account: 5},
-// 		// "3.previewnet.hedera.com:50212": {Account: 6},
-// 		"4.previewnet.hedera.com:50212": {Account: 7},
-// 	}
+func TestIntegrationPreviewnetTls(t *testing.T) {
+	var network = map[string]AccountID{
+		"0.previewnet.hedera.com:50212": {Account: 3},
+		"1.previewnet.hedera.com:50212": {Account: 4},
+		"2.previewnet.hedera.com:50212": {Account: 5},
+		"3.previewnet.hedera.com:50212": {Account: 6},
+		"4.previewnet.hedera.com:50212": {Account: 7},
+	}
 
-// 	client := ClientForNetwork(network)
-// 	ledger, _ := LedgerIDFromNetworkName(NetworkNamePreviewnet)
-// 	client.SetTransportSecurity(true)
-// 	client.SetLedgerID(*ledger)
-// 	client.SetMaxAttempts(3)
+	client := ClientForNetwork(network)
+	ledger, _ := LedgerIDFromNetworkName(NetworkNamePreviewnet)
+	client.SetTransportSecurity(true)
+	client.SetLedgerID(*ledger)
+	client.SetMaxAttempts(3)
 
-// 	for _, nodeAccountID := range network {
-// 		_, err := NewAccountBalanceQuery().
-// 			SetNodeAccountIDs([]AccountID{nodeAccountID}).
-// 			SetAccountID(nodeAccountID).
-// 			Execute(client)
-// 		require.NoError(t, err)
-// 	}
-// }
+	for _, nodeAccountID := range network {
+		_, err := NewAccountBalanceQuery().
+			SetNodeAccountIDs([]AccountID{nodeAccountID}).
+			SetAccountID(nodeAccountID).
+			Execute(client)
+		require.NoError(t, err)
+	}
+}
 
 func TestIntegrationTestnetTls(t *testing.T) {
 	var network = map[string]AccountID{
