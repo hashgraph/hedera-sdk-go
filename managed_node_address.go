@@ -56,41 +56,18 @@ func (address *_ManagedNodeAddress) _IsTransportSecurity() bool {
 }
 
 func (address *_ManagedNodeAddress) _ToInsecure() *_ManagedNodeAddress {
-	port := address.port
-
-	switch address.port {
-	case 50212:
-		port = 50211
-	case 443:
-		port = 5600
+	if address.port == 50212 {
+		address.port = uint32(50211)
 	}
 
-	return &_ManagedNodeAddress{
-		address: address.address,
-		port:    port,
-	}
+	return address
 }
 
 func (address *_ManagedNodeAddress) _ToSecure() *_ManagedNodeAddress {
-	port := address.port
-
-	switch port {
-	case 50211:
-		return &_ManagedNodeAddress{
-			address: address.address,
-			port:    50212,
-		}
-	case 5600:
-		return &_ManagedNodeAddress{
-			address: address.address,
-			port:    443,
-		}
+	if address.port == 50211 {
+		address.port = uint32(50212)
 	}
-
-	return &_ManagedNodeAddress{
-		address: address.address,
-		port:    port,
-	}
+	return address
 }
 
 func (address *_ManagedNodeAddress) _Equals(comp _ManagedNodeAddress) bool { //nolint

@@ -77,7 +77,7 @@ const testClientJSONWrongTypeNetwork string = `{
         "accountId": "0.0.3",
         "privateKey": "302e020100300506032b657004220420db484b828e64b2d8f12ce3c0a0e93a0b8cce7af1bb8f39c97732394482538e10"
     },
- 	"mirrorNetwork": ["hcs.testnet.mirrornode.hedera.com:5600"]
+ 	"mirrorNetwork": ["testnet.mirrornode.hedera.com:443"]
 }`
 
 const testClientJSONWrongAccountIDNetwork string = `{
@@ -86,5 +86,5 @@ const testClientJSONWrongAccountIDNetwork string = `{
         "accountId": "wrong",
         "privateKey": "302e020100300506032b657004220420db484b828e64b2d8f12ce3c0a0e93a0b8cce7af1bb8f39c97732394482538e10"
     },
- 	"mirrorNetwork": ["hcs.testnet.mirrornode.hedera.com:5600"]
+ 	"mirrorNetwork": ["testnet.mirrornode.hedera.com:443"]
 }`
