@@ -25,7 +25,6 @@ package hedera
 
 import (
 	"bytes"
-	"fmt"
 	"testing"
 	"time"
 
@@ -97,7 +96,6 @@ func TestUnitClientFromConfigWrongNetworkType(t *testing.T) {
 
 func TestUnitClientFromConfigWrongAccountIDNetworkType(t *testing.T) {
 	_, err := ClientFromConfig([]byte(testClientJSONWrongAccountIDNetwork))
-	fmt.Println(err)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "expected {shard}.{realm}.{num}", err.Error())
