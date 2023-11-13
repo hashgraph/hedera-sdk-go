@@ -1,6 +1,3 @@
-//go:build all || unit
-// +build all unit
-
 package hedera
 
 /*-
@@ -72,8 +69,8 @@ func TestUnitManagedNodeAddressTest(t *testing.T) {
 
 	mirrorNodeAddressSecure := mirrorNodeAddress._ToSecure()
 	require.True(t, *mirrorNodeAddressSecure.address == "hcs.mainnet.mirrornode.hedera.com")
-	require.True(t, mirrorNodeAddressSecure.port == 443)
-	require.True(t, mirrorNodeAddressSecure._String() == "hcs.mainnet.mirrornode.hedera.com:443")
+	require.True(t, mirrorNodeAddressSecure.port == 50212)
+	require.True(t, mirrorNodeAddressSecure._String() == "hcs.mainnet.mirrornode.hedera.com:50212")
 
 	mirrorNodeAddressInsecure := mirrorNodeAddressSecure._ToInsecure()
 	require.True(t, *mirrorNodeAddressInsecure.address == "hcs.mainnet.mirrornode.hedera.com")
