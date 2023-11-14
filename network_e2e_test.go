@@ -123,3 +123,43 @@ func TestIntegrationNodeForQuery(t *testing.T) {
 	}
 	require.True(t, len(nodeAccountIDs) > 1, "Expected multiple different node account IDs")
 }
+
+func TestIntegrationNodeForTransactionSourceListUnchanged(t *testing.T) {
+	t.Parallel()
+
+	client := ClientForTestnet()
+	operatorID,err:= AccountIDFromString(os.Getenv("OPERATOR_ID"))
+	require.NoError(t, err)
+	operatorKey, err := PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
+	require.NoError(t, err)
+	client.SetOperator(operatorID, operatorKey)
+
+	
+
+	var buf bytes.Buffer
+	writer := zerolog.ConsoleWriter{Out: &buf, TimeFormat: time.RFC3339}
+	zerolog.SetGlobalLevel(zerolog.TraceLevel)
+
+	l := NewLogger("test", LoggerLevelTrace)
+	l.SetLevel(LoggerLevelTrace)
+
+	logger := zerolog.New(&writer)
+	l.logger = &logger
+	client.SetLogger(l)
+	ledger, _ := LedgerIDFromNetworkName(NetworkNameTestnet)
+	client.SetTransportSecurity(true)
+	client.SetLedgerID(*ledger)
+	client.SetMaxAttempts(3)
+	
+		_, err = NewAccountBalanceQuery().
+			SetAccountID(AccountID{Account: 3}).
+			Execute(client)
+			expectedHealthyNodes := make([]_IManagedNode, len(client.network.healthyNodes))
+	copy(expectedHealthyNodes, client.network.healthyNodes)
+	resultHealthyNodes := make([]_IManagedNode, len(client.network.healthyNodes))
+	_, err = NewAccountBalanceQuery().
+			SetAccountID(AccountID{Account: 3}).
+			Execute(client)
+	copy(resultHealthyNodes, client.network.healthyNodes)
+	require.Equal(t, expectedHealthyNodes, resultHealthyNodes)
+}
