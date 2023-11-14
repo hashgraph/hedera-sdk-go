@@ -34,21 +34,21 @@ import (
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
+var tokenID1 = TokenID{Token: 1}
+var tokenID2 = TokenID{Token: 141}
+var serialNumber1 = int64(3)
+var serialNumber2 = int64(4)
+var nftID1 = tokenID2.Nft(serialNumber1)
+var nftID2 = tokenID2.Nft(serialNumber2)
+var owner = AccountID{Account: 10}
+var spenderAccountID1 = AccountID{Account: 7}
+var spenderAccountID2 = AccountID{Account: 7890}
+var nodeAccountID = []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
+var hbarAmount = HbarFromTinybar(100)
+var tokenAmount = int64(101)
+
 func TestUnitAccountAllowanceApproveTransaction(t *testing.T) {
 	t.Parallel()
-
-	tokenID1 := TokenID{Token: 1}
-	tokenID2 := TokenID{Token: 141}
-	serialNumber1 := int64(3)
-	serialNumber2 := int64(4)
-	nftID1 := tokenID2.Nft(serialNumber1)
-	nftID2 := tokenID2.Nft(serialNumber2)
-	owner := AccountID{Account: 10}
-	spenderAccountID1 := AccountID{Account: 7}
-	spenderAccountID2 := AccountID{Account: 7890}
-	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
-	hbarAmount := HbarFromTinybar(100)
-	tokenAmount := int64(101)
 
 	transactionID := TransactionIDGenerate(AccountID{Account: 324})
 
@@ -111,22 +111,31 @@ func TestUnitAccountAllowanceApproveTransaction(t *testing.T) {
 		})
 	}
 }
+func TestUnit_ValidateNetworkOnIDs(t *testing.T){
+	transactionID := TransactionIDGenerate(AccountID{Account: 324})
 
+
+	transaction, err := NewAccountAllowanceApproveTransaction().
+	SetTransactionID(transactionID).
+	SetNodeAccountIDs(nodeAccountID).
+	ApproveHbarAllowance(owner, spenderAccountID1, hbarAmount).
+	ApproveTokenAllowance(tokenID1, owner, spenderAccountID1, tokenAmount).
+	ApproveTokenNftAllowance(nftID1, owner, spenderAccountID1).
+	ApproveTokenNftAllowance(nftID2, owner, spenderAccountID1).
+	ApproveTokenNftAllowance(nftID2, owner, spenderAccountID2).
+	AddAllTokenNftApproval(tokenID1, spenderAccountID1).
+	Freeze()
+	require.NoError(t, err)
+
+	client, err := _NewMockClient()
+	client.SetLedgerID(*NewLedgerIDTestnet())
+	require.NoError(t, err)
+
+	e := transaction._ValidateNetworkOnIDs(client)
+	require.NoError(t, e)
+}
 func TestUnitAccountAllowanceApproveTransactionGet(t *testing.T) {
 	t.Parallel()
-
-	tokenID1 := TokenID{Token: 1}
-	tokenID2 := TokenID{Token: 141}
-	serialNumber1 := int64(3)
-	serialNumber2 := int64(4)
-	nftID1 := tokenID2.Nft(serialNumber1)
-	nftID2 := tokenID2.Nft(serialNumber2)
-	owner := AccountID{Account: 10}
-	spenderAccountID1 := AccountID{Account: 7}
-	spenderAccountID2 := AccountID{Account: 7890}
-	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
-	hbarAmount := HbarFromTinybar(100)
-	tokenAmount := int64(101)
 
 	transactionID := TransactionIDGenerate(AccountID{Account: 324})
 
@@ -214,19 +223,6 @@ func TestUnitAccountAllowanceDeleteTransactionSetNothing(t *testing.T) {
 func TestUnitAccountAllowanceApproveTransactionFromProtobuf(t *testing.T) {
 	t.Parallel()
 
-	tokenID1 := TokenID{Token: 1}
-	tokenID2 := TokenID{Token: 141}
-	serialNumber1 := int64(3)
-	serialNumber2 := int64(4)
-	nftID1 := tokenID2.Nft(serialNumber1)
-	nftID2 := tokenID2.Nft(serialNumber2)
-	owner := AccountID{Account: 10}
-	spenderAccountID1 := AccountID{Account: 7}
-	spenderAccountID2 := AccountID{Account: 7890}
-	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
-	hbarAmount := HbarFromTinybar(100)
-	tokenAmount := int64(101)
-
 	transactionID := TransactionIDGenerate(AccountID{Account: 324})
 
 	tx, err := NewAccountAllowanceApproveTransaction().
@@ -246,19 +242,6 @@ func TestUnitAccountAllowanceApproveTransactionFromProtobuf(t *testing.T) {
 
 func TestUnitAccountAllowanceApproveTransactionScheduleProtobuf(t *testing.T) {
 	t.Parallel()
-
-	tokenID1 := TokenID{Token: 1}
-	tokenID2 := TokenID{Token: 141}
-	serialNumber1 := int64(3)
-	serialNumber2 := int64(4)
-	nftID1 := tokenID2.Nft(serialNumber1)
-	nftID2 := tokenID2.Nft(serialNumber2)
-	owner := AccountID{Account: 10}
-	spenderAccountID1 := AccountID{Account: 7}
-	spenderAccountID2 := AccountID{Account: 7890}
-	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
-	hbarAmount := HbarFromTinybar(100)
-	tokenAmount := int64(101)
 
 	transactionID := TransactionIDGenerate(AccountID{Account: 324})
 
