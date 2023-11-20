@@ -33,7 +33,7 @@ import (
 // FileCreateTransaction, then it can be created with the first part of its contents, and then appended multiple times
 // to create the entire file.
 type FileAppendTransaction struct {
-	Transaction
+	transaction
 	maxChunks uint64
 	contents  []byte
 	fileID    *FileID
@@ -41,10 +41,10 @@ type FileAppendTransaction struct {
 }
 
 // NewFileAppendTransaction creates a FileAppendTransaction transaction which can be
-// used to construct and execute a File Append Transaction.
+// used to construct and execute a File Append transaction.
 func NewFileAppendTransaction() *FileAppendTransaction {
 	transaction := FileAppendTransaction{
-		Transaction: _NewTransaction(),
+		transaction: _NewTransaction(),
 		maxChunks:   20,
 		contents:    make([]byte, 0),
 		chunkSize:   2048,
@@ -54,9 +54,9 @@ func NewFileAppendTransaction() *FileAppendTransaction {
 	return &transaction
 }
 
-func _FileAppendTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) *FileAppendTransaction {
+func _FileAppendTransactionFromProtobuf(transaction transaction, pb *services.TransactionBody) *FileAppendTransaction {
 	return &FileAppendTransaction{
-		Transaction: transaction,
+		transaction: transaction,
 		maxChunks:   20,
 		contents:    pb.GetFileAppend().GetContents(),
 		chunkSize:   2048,
@@ -66,7 +66,7 @@ func _FileAppendTransactionFromProtobuf(transaction Transaction, pb *services.Tr
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (transaction *FileAppendTransaction) SetGrpcDeadline(deadline *time.Duration) *FileAppendTransaction {
-	transaction.Transaction.SetGrpcDeadline(deadline)
+	transaction.transaction.SetGrpcDeadline(deadline)
 	return transaction
 }
 
@@ -144,7 +144,7 @@ func (transaction *FileAppendTransaction) _Build() *services.TransactionBody {
 
 	return &services.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
-		Memo:                     transaction.Transaction.memo,
+		Memo:                     transaction.transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
 		TransactionID:            transaction.transactionID._ToProtobuf(),
 		Data: &services.TransactionBody_FileAppend{
@@ -183,7 +183,7 @@ func (transaction *FileAppendTransaction) _ConstructScheduleProtobuf() (*service
 
 	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.transactionFee,
-		Memo:           transaction.Transaction.memo,
+		Memo:           transaction.transaction.memo,
 		Data: &services.SchedulableTransactionBody_FileAppend{
 			FileAppend: body,
 		},
@@ -229,7 +229,7 @@ func (transaction *FileAppendTransaction) SignWithOperator(
 	return transaction.SignWith(client.operator.publicKey, client.operator.signer), nil
 }
 
-// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
+// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
 // with the publicKey as the map key.
 func (transaction *FileAppendTransaction) SignWith(
 	publicKey PublicKey,
@@ -242,7 +242,7 @@ func (transaction *FileAppendTransaction) SignWith(
 	return transaction
 }
 
-// Execute executes the Transaction with the provided client
+// Execute executes the transaction with the provided client
 func (transaction *FileAppendTransaction) Execute(
 	client *Client,
 ) (TransactionResponse, error) {
@@ -308,7 +308,7 @@ func (transaction *FileAppendTransaction) ExecuteAll(
 	for i := 0; i < size; i++ {
 		resp, err := _Execute(
 			client,
-			&transaction.Transaction,
+			&transaction.transaction,
 			_TransactionShouldRetry,
 			_TransactionMakeRequest,
 			_TransactionAdvanceRequest,
@@ -427,79 +427,79 @@ func (transaction *FileAppendTransaction) FreezeWith(client *Client) (*FileAppen
 
 // GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *FileAppendTransaction) GetMaxTransactionFee() Hbar {
-	return transaction.Transaction.GetMaxTransactionFee()
+	return transaction.transaction.GetMaxTransactionFee()
 }
 
 // SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *FileAppendTransaction) SetMaxTransactionFee(fee Hbar) *FileAppendTransaction {
 	transaction._RequireNotFrozen()
-	transaction.Transaction.SetMaxTransactionFee(fee)
+	transaction.transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
 
 // SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
 func (transaction *FileAppendTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *FileAppendTransaction {
 	transaction._RequireNotFrozen()
-	transaction.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	transaction.transaction.SetRegenerateTransactionID(regenerateTransactionID)
 	return transaction
 }
 
 // GetRegenerateTransactionID returns true if transaction ID regeneration is enabled.
 func (transaction *FileAppendTransaction) GetRegenerateTransactionID() bool {
-	return transaction.Transaction.GetRegenerateTransactionID()
+	return transaction.transaction.GetRegenerateTransactionID()
 }
 
 // GetTransactionMemo returns the memo for this FileAppendTransaction.
 func (transaction *FileAppendTransaction) GetTransactionMemo() string {
-	return transaction.Transaction.GetTransactionMemo()
+	return transaction.transaction.GetTransactionMemo()
 }
 
 // SetTransactionMemo sets the memo for this FileAppendTransaction.
 func (transaction *FileAppendTransaction) SetTransactionMemo(memo string) *FileAppendTransaction {
 	transaction._RequireNotFrozen()
-	transaction.Transaction.SetTransactionMemo(memo)
+	transaction.transaction.SetTransactionMemo(memo)
 	return transaction
 }
 
 // GetTransactionValidDuration returns the duration that this transaction is valid for.
 func (transaction *FileAppendTransaction) GetTransactionValidDuration() time.Duration {
-	return transaction.Transaction.GetTransactionValidDuration()
+	return transaction.transaction.GetTransactionValidDuration()
 }
 
 // SetTransactionValidDuration sets the valid duration for this FileAppendTransaction.
 func (transaction *FileAppendTransaction) SetTransactionValidDuration(duration time.Duration) *FileAppendTransaction {
 	transaction._RequireNotFrozen()
-	transaction.Transaction.SetTransactionValidDuration(duration)
+	transaction.transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
 
 // GetTransactionID gets the TransactionID for this	FileAppendTransaction.
 func (transaction *FileAppendTransaction) GetTransactionID() TransactionID {
-	return transaction.Transaction.GetTransactionID()
+	return transaction.transaction.GetTransactionID()
 }
 
 // SetTransactionID sets the TransactionID for this FileAppendTransaction.
 func (transaction *FileAppendTransaction) SetTransactionID(transactionID TransactionID) *FileAppendTransaction {
 	transaction._RequireNotFrozen()
 
-	transaction.Transaction.SetTransactionID(transactionID)
+	transaction.transaction.SetTransactionID(transactionID)
 	return transaction
 }
 
 // SetNodeAccountID sets the _Node AccountID for this FileAppendTransaction.
 func (transaction *FileAppendTransaction) SetNodeAccountIDs(nodeAccountIDs []AccountID) *FileAppendTransaction {
 	transaction._RequireNotFrozen()
-	transaction.Transaction.SetNodeAccountIDs(nodeAccountIDs)
+	transaction.transaction.SetNodeAccountIDs(nodeAccountIDs)
 	return transaction
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (transaction *FileAppendTransaction) SetMaxRetry(count int) *FileAppendTransaction {
-	transaction.Transaction.SetMaxRetry(count)
+	transaction.transaction.SetMaxRetry(count)
 	return transaction
 }
 
-// AddSignature adds a signature to the Transaction.
+// AddSignature adds a signature to the transaction.
 func (transaction *FileAppendTransaction) AddSignature(publicKey PublicKey, signature []byte) *FileAppendTransaction {
 	transaction._RequireOneNodeAccountID()
 
@@ -579,6 +579,6 @@ func (transaction *FileAppendTransaction) _GetLogID() string {
 }
 
 func (transaction *FileAppendTransaction) SetLogLevel(level LogLevel) *FileAppendTransaction {
-	transaction.Transaction.SetLogLevel(level)
+	transaction.transaction.SetLogLevel(level)
 	return transaction
 }

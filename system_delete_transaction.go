@@ -35,31 +35,31 @@ import (
 // When a smart contract is deleted, the cryptocurrency account within it continues
 // to exist, and is not affected by the expiration time here.
 type SystemDeleteTransaction struct {
-	Transaction
+	transaction
 	contractID     *ContractID
 	fileID         *FileID
 	expirationTime *time.Time
 }
 
 // NewSystemDeleteTransaction creates a SystemDeleteTransaction transaction which can be
-// used to construct and execute a System Delete Transaction.
+// used to construct and execute a System Delete transaction.
 func NewSystemDeleteTransaction() *SystemDeleteTransaction {
 	transaction := SystemDeleteTransaction{
-		Transaction: _NewTransaction(),
+		transaction: _NewTransaction(),
 	}
 	transaction._SetDefaultMaxTransactionFee(NewHbar(2))
 
 	return &transaction
 }
 
-func _SystemDeleteTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) *SystemDeleteTransaction {
+func _SystemDeleteTransactionFromProtobuf(transaction transaction, pb *services.TransactionBody) *SystemDeleteTransaction {
 	expiration := time.Date(
 		time.Now().Year(), time.Now().Month(), time.Now().Day(),
 		time.Now().Hour(), time.Now().Minute(),
 		int(pb.GetSystemDelete().ExpirationTime.Seconds), time.Now().Nanosecond(), time.Now().Location(),
 	)
 	return &SystemDeleteTransaction{
-		Transaction:    transaction,
+		transaction:    transaction,
 		contractID:     _ContractIDFromProtobuf(pb.GetSystemDelete().GetContractID()),
 		fileID:         _FileIDFromProtobuf(pb.GetSystemDelete().GetFileID()),
 		expirationTime: &expiration,
@@ -68,7 +68,7 @@ func _SystemDeleteTransactionFromProtobuf(transaction Transaction, pb *services.
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (transaction *SystemDeleteTransaction) SetGrpcDeadline(deadline *time.Duration) *SystemDeleteTransaction {
-	transaction.Transaction.SetGrpcDeadline(deadline)
+	transaction.transaction.SetGrpcDeadline(deadline)
 	return transaction
 }
 
@@ -163,7 +163,7 @@ func (transaction *SystemDeleteTransaction) _Build() *services.TransactionBody {
 
 	return &services.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
-		Memo:                     transaction.Transaction.memo,
+		Memo:                     transaction.transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
 		TransactionID:            transaction.transactionID._ToProtobuf(),
 		Data: &services.TransactionBody_SystemDelete{
@@ -206,7 +206,7 @@ func (transaction *SystemDeleteTransaction) _ConstructScheduleProtobuf() (*servi
 
 	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.transactionFee,
-		Memo:           transaction.Transaction.memo,
+		Memo:           transaction.transaction.memo,
 		Data: &services.SchedulableTransactionBody_SystemDelete{
 			SystemDelete: body,
 		},
@@ -262,7 +262,7 @@ func (transaction *SystemDeleteTransaction) SignWithOperator(
 	return transaction.SignWith(client.operator.publicKey, client.operator.signer), nil
 }
 
-// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
+// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
 // with the publicKey as the map key.
 func (transaction *SystemDeleteTransaction) SignWith(
 	publicKey PublicKey,
@@ -275,7 +275,7 @@ func (transaction *SystemDeleteTransaction) SignWith(
 	return transaction
 }
 
-// Execute executes the Transaction with the provided client
+// Execute executes the transaction with the provided client
 func (transaction *SystemDeleteTransaction) Execute(
 	client *Client,
 ) (TransactionResponse, error) {
@@ -309,7 +309,7 @@ func (transaction *SystemDeleteTransaction) Execute(
 
 	resp, err := _Execute(
 		client,
-		&transaction.Transaction,
+		&transaction.transaction,
 		_TransactionShouldRetry,
 		_TransactionMakeRequest,
 		_TransactionAdvanceRequest,
@@ -358,84 +358,84 @@ func (transaction *SystemDeleteTransaction) FreezeWith(client *Client) (*SystemD
 	}
 	body := transaction._Build()
 
-	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
+	return transaction, _TransactionFreezeWith(&transaction.transaction, client, body)
 }
 
 // GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *SystemDeleteTransaction) GetMaxTransactionFee() Hbar {
-	return transaction.Transaction.GetMaxTransactionFee()
+	return transaction.transaction.GetMaxTransactionFee()
 }
 
 // SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *SystemDeleteTransaction) SetMaxTransactionFee(fee Hbar) *SystemDeleteTransaction {
 	transaction._RequireNotFrozen()
-	transaction.Transaction.SetMaxTransactionFee(fee)
+	transaction.transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
 
 // SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
 func (transaction *SystemDeleteTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *SystemDeleteTransaction {
 	transaction._RequireNotFrozen()
-	transaction.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	transaction.transaction.SetRegenerateTransactionID(regenerateTransactionID)
 	return transaction
 }
 
 // GetRegenerateTransactionID returns true if transaction ID regeneration is enabled.
 func (transaction *SystemDeleteTransaction) GetRegenerateTransactionID() bool {
-	return transaction.Transaction.GetRegenerateTransactionID()
+	return transaction.transaction.GetRegenerateTransactionID()
 }
 
 func (transaction *SystemDeleteTransaction) GetTransactionMemo() string {
-	return transaction.Transaction.GetTransactionMemo()
+	return transaction.transaction.GetTransactionMemo()
 }
 
 // SetTransactionMemo sets the memo for this SystemDeleteTransaction.
 func (transaction *SystemDeleteTransaction) SetTransactionMemo(memo string) *SystemDeleteTransaction {
 	transaction._RequireNotFrozen()
-	transaction.Transaction.SetTransactionMemo(memo)
+	transaction.transaction.SetTransactionMemo(memo)
 	return transaction
 }
 
 // GetTransactionValidDuration sets the duration that this transaction is valid for.
 // This is defaulted by the SDK to 120 seconds (or two minutes).
 func (transaction *SystemDeleteTransaction) GetTransactionValidDuration() time.Duration {
-	return transaction.Transaction.GetTransactionValidDuration()
+	return transaction.transaction.GetTransactionValidDuration()
 }
 
 // SetTransactionValidDuration sets the valid duration for this SystemDeleteTransaction.
 func (transaction *SystemDeleteTransaction) SetTransactionValidDuration(duration time.Duration) *SystemDeleteTransaction {
 	transaction._RequireNotFrozen()
-	transaction.Transaction.SetTransactionValidDuration(duration)
+	transaction.transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
 
 // GetTransactionID gets the TransactionID for this	SystemDeleteTransaction.
 func (transaction *SystemDeleteTransaction) GetTransactionID() TransactionID {
-	return transaction.Transaction.GetTransactionID()
+	return transaction.transaction.GetTransactionID()
 }
 
 // SetTransactionID sets the TransactionID for this SystemDeleteTransaction.
 func (transaction *SystemDeleteTransaction) SetTransactionID(transactionID TransactionID) *SystemDeleteTransaction {
 	transaction._RequireNotFrozen()
 
-	transaction.Transaction.SetTransactionID(transactionID)
+	transaction.transaction.SetTransactionID(transactionID)
 	return transaction
 }
 
 // SetNodeAccountID sets the _Node AccountID for this SystemDeleteTransaction.
 func (transaction *SystemDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *SystemDeleteTransaction {
 	transaction._RequireNotFrozen()
-	transaction.Transaction.SetNodeAccountIDs(nodeID)
+	transaction.transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (transaction *SystemDeleteTransaction) SetMaxRetry(count int) *SystemDeleteTransaction {
-	transaction.Transaction.SetMaxRetry(count)
+	transaction.transaction.SetMaxRetry(count)
 	return transaction
 }
 
-// AddSignature adds a signature to the Transaction.
+// AddSignature adds a signature to the transaction.
 func (transaction *SystemDeleteTransaction) AddSignature(publicKey PublicKey, signature []byte) *SystemDeleteTransaction {
 	transaction._RequireOneNodeAccountID()
 
@@ -515,6 +515,6 @@ func (transaction *SystemDeleteTransaction) _GetLogID() string {
 }
 
 func (transaction *SystemDeleteTransaction) SetLogLevel(level LogLevel) *SystemDeleteTransaction {
-	transaction.Transaction.SetLogLevel(level)
+	transaction.transaction.SetLogLevel(level)
 	return transaction
 }

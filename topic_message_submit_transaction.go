@@ -35,7 +35,7 @@ const chunkSize = 1024
 // TopicMessageSubmitTransaction
 // Sends a message/messages to the Topic ID
 type TopicMessageSubmitTransaction struct {
-	Transaction
+	transaction
 	maxChunks uint64
 	message   []byte
 	topicID   *TopicID
@@ -45,7 +45,7 @@ type TopicMessageSubmitTransaction struct {
 // sends a message/messages to the Topic ID
 func NewTopicMessageSubmitTransaction() *TopicMessageSubmitTransaction {
 	transaction := TopicMessageSubmitTransaction{
-		Transaction: _NewTransaction(),
+		transaction: _NewTransaction(),
 		maxChunks:   20,
 		message:     make([]byte, 0),
 	}
@@ -54,9 +54,9 @@ func NewTopicMessageSubmitTransaction() *TopicMessageSubmitTransaction {
 	return &transaction
 }
 
-func _TopicMessageSubmitTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) *TopicMessageSubmitTransaction {
+func _TopicMessageSubmitTransactionFromProtobuf(transaction transaction, pb *services.TransactionBody) *TopicMessageSubmitTransaction {
 	tx := &TopicMessageSubmitTransaction{
-		Transaction: transaction,
+		transaction: transaction,
 		maxChunks:   20,
 		message:     pb.GetConsensusSubmitMessage().GetMessage(),
 		topicID:     _TopicIDFromProtobuf(pb.GetConsensusSubmitMessage().GetTopicID()),
@@ -67,7 +67,7 @@ func _TopicMessageSubmitTransactionFromProtobuf(transaction Transaction, pb *ser
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (transaction *TopicMessageSubmitTransaction) SetGrpcDeadline(deadline *time.Duration) *TopicMessageSubmitTransaction {
-	transaction.Transaction.SetGrpcDeadline(deadline)
+	transaction.transaction.SetGrpcDeadline(deadline)
 	return transaction
 }
 
@@ -111,7 +111,7 @@ func (transaction *TopicMessageSubmitTransaction) GetMaxChunks() uint64 {
 }
 
 func (transaction *TopicMessageSubmitTransaction) IsFrozen() bool {
-	return transaction.Transaction._IsFrozen()
+	return transaction.transaction._IsFrozen()
 }
 
 // Sign uses the provided privateKey to sign the transaction.
@@ -143,7 +143,7 @@ func (transaction *TopicMessageSubmitTransaction) SignWithOperator(
 	return transaction.SignWith(client.operator.publicKey, client.operator.signer), nil
 }
 
-// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
+// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
 // with the publicKey as the map key.
 func (transaction *TopicMessageSubmitTransaction) SignWith(
 	publicKey PublicKey,
@@ -178,7 +178,7 @@ func (transaction *TopicMessageSubmitTransaction) _Build() *services.Transaction
 
 	return &services.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
-		Memo:                     transaction.Transaction.memo,
+		Memo:                     transaction.transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
 		TransactionID:            transaction.transactionID._ToProtobuf(),
 		Data: &services.TransactionBody_ConsensusSubmitMessage{
@@ -218,7 +218,7 @@ func (transaction *TopicMessageSubmitTransaction) _ConstructScheduleProtobuf() (
 
 	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.transactionFee,
-		Memo:           transaction.Transaction.memo,
+		Memo:           transaction.transaction.memo,
 		Data: &services.SchedulableTransactionBody_ConsensusSubmitMessage{
 			ConsensusSubmitMessage: body,
 		},
@@ -279,7 +279,7 @@ func (transaction *TopicMessageSubmitTransaction) ExecuteAll(
 	for i := 0; i < size; i++ {
 		resp, err := _Execute(
 			client,
-			&transaction.Transaction,
+			&transaction.transaction,
 			_TransactionShouldRetry,
 			_TransactionMakeRequest,
 			_TransactionAdvanceRequest,
@@ -396,79 +396,79 @@ func _TopicMessageSubmitTransactionGetMethod(request interface{}, channel *_Chan
 
 // GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *TopicMessageSubmitTransaction) GetMaxTransactionFee() Hbar {
-	return transaction.Transaction.GetMaxTransactionFee()
+	return transaction.transaction.GetMaxTransactionFee()
 }
 
 // SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *TopicMessageSubmitTransaction) SetMaxTransactionFee(fee Hbar) *TopicMessageSubmitTransaction {
 	transaction._RequireNotFrozen()
-	transaction.Transaction.SetMaxTransactionFee(fee)
+	transaction.transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
 
 // SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
 func (transaction *TopicMessageSubmitTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *TopicMessageSubmitTransaction {
 	transaction._RequireNotFrozen()
-	transaction.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	transaction.transaction.SetRegenerateTransactionID(regenerateTransactionID)
 	return transaction
 }
 
 // GetRegenerateTransactionID returns true if transaction ID regeneration is enabled.
 func (transaction *TopicMessageSubmitTransaction) GetRegenerateTransactionID() bool {
-	return transaction.Transaction.GetRegenerateTransactionID()
+	return transaction.transaction.GetRegenerateTransactionID()
 }
 
 // GetTransactionMemo returns the memo for this	TopicMessageSubmitTransaction.
 func (transaction *TopicMessageSubmitTransaction) GetTransactionMemo() string {
-	return transaction.Transaction.GetTransactionMemo()
+	return transaction.transaction.GetTransactionMemo()
 }
 
 // SetTransactionMemo sets the memo for this TopicMessageSubmitTransaction.
 func (transaction *TopicMessageSubmitTransaction) SetTransactionMemo(memo string) *TopicMessageSubmitTransaction {
 	transaction._RequireNotFrozen()
-	transaction.Transaction.SetTransactionMemo(memo)
+	transaction.transaction.SetTransactionMemo(memo)
 	return transaction
 }
 
 // GetTransactionValidDuration returns the duration that this transaction is valid for.
 func (transaction *TopicMessageSubmitTransaction) GetTransactionValidDuration() time.Duration {
-	return transaction.Transaction.GetTransactionValidDuration()
+	return transaction.transaction.GetTransactionValidDuration()
 }
 
 // SetTransactionValidDuration sets the valid duration for this TopicMessageSubmitTransaction.
 func (transaction *TopicMessageSubmitTransaction) SetTransactionValidDuration(duration time.Duration) *TopicMessageSubmitTransaction {
 	transaction._RequireNotFrozen()
-	transaction.Transaction.SetTransactionValidDuration(duration)
+	transaction.transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
 
 // GetTransactionID gets the TransactionID for this TopicMessageSubmitTransaction.
 func (transaction *TopicMessageSubmitTransaction) GetTransactionID() TransactionID {
-	return transaction.Transaction.GetTransactionID()
+	return transaction.transaction.GetTransactionID()
 }
 
 // SetTransactionID sets the TransactionID for this TopicMessageSubmitTransaction.
 func (transaction *TopicMessageSubmitTransaction) SetTransactionID(transactionID TransactionID) *TopicMessageSubmitTransaction {
 	transaction._RequireNotFrozen()
 
-	transaction.Transaction.SetTransactionID(transactionID)
+	transaction.transaction.SetTransactionID(transactionID)
 	return transaction
 }
 
 // SetNodeAccountID sets the _Node AccountID for this TopicMessageSubmitTransaction.
 func (transaction *TopicMessageSubmitTransaction) SetNodeAccountIDs(nodeID []AccountID) *TopicMessageSubmitTransaction {
 	transaction._RequireNotFrozen()
-	transaction.Transaction.SetNodeAccountIDs(nodeID)
+	transaction.transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (transaction *TopicMessageSubmitTransaction) SetMaxRetry(count int) *TopicMessageSubmitTransaction {
-	transaction.Transaction.SetMaxRetry(count)
+	transaction.transaction.SetMaxRetry(count)
 	return transaction
 }
 
-// AddSignature adds a signature to the Transaction.
+// AddSignature adds a signature to the transaction.
 func (transaction *TopicMessageSubmitTransaction) AddSignature(publicKey PublicKey, signature []byte) *TopicMessageSubmitTransaction {
 	transaction._RequireOneNodeAccountID()
 
@@ -548,6 +548,6 @@ func (transaction *TopicMessageSubmitTransaction) _GetLogID() string {
 }
 
 func (transaction *TopicMessageSubmitTransaction) SetLogLevel(level LogLevel) *TopicMessageSubmitTransaction {
-	transaction.Transaction.SetLogLevel(level)
+	transaction.transaction.SetLogLevel(level)
 	return transaction
 }

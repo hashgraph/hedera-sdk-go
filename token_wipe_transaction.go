@@ -45,7 +45,7 @@ import (
 // Token A has 2 decimals. In order to wipe 100 tokens from account, one must provide amount of
 // 10000. In order to wipe 100.55 tokens, one must provide amount of 10055.
 type TokenWipeTransaction struct {
-	Transaction
+	transaction
 	tokenID   *TokenID
 	accountID *AccountID
 	amount    uint64
@@ -71,16 +71,16 @@ type TokenWipeTransaction struct {
 // 10000. In order to wipe 100.55 tokens, one must provide amount of 10055.
 func NewTokenWipeTransaction() *TokenWipeTransaction {
 	transaction := TokenWipeTransaction{
-		Transaction: _NewTransaction(),
+		transaction: _NewTransaction(),
 	}
 	transaction._SetDefaultMaxTransactionFee(NewHbar(30))
 
 	return &transaction
 }
 
-func _TokenWipeTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) *TokenWipeTransaction {
+func _TokenWipeTransactionFromProtobuf(transaction transaction, pb *services.TransactionBody) *TokenWipeTransaction {
 	return &TokenWipeTransaction{
-		Transaction: transaction,
+		transaction: transaction,
 		tokenID:     _TokenIDFromProtobuf(pb.GetTokenWipe().GetToken()),
 		accountID:   _AccountIDFromProtobuf(pb.GetTokenWipe().GetAccount()),
 		amount:      pb.GetTokenWipe().Amount,
@@ -90,7 +90,7 @@ func _TokenWipeTransactionFromProtobuf(transaction Transaction, pb *services.Tra
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (transaction *TokenWipeTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenWipeTransaction {
-	transaction.Transaction.SetGrpcDeadline(deadline)
+	transaction.transaction.SetGrpcDeadline(deadline)
 	return transaction
 }
 
@@ -193,7 +193,7 @@ func (transaction *TokenWipeTransaction) _Build() *services.TransactionBody {
 
 	return &services.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
-		Memo:                     transaction.Transaction.memo,
+		Memo:                     transaction.transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
 		TransactionID:            transaction.transactionID._ToProtobuf(),
 		Data: &services.TransactionBody_TokenWipe{
@@ -231,7 +231,7 @@ func (transaction *TokenWipeTransaction) _ConstructScheduleProtobuf() (*services
 	}
 	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.transactionFee,
-		Memo:           transaction.Transaction.memo,
+		Memo:           transaction.transaction.memo,
 		Data: &services.SchedulableTransactionBody_TokenWipe{
 			TokenWipe: body,
 		},
@@ -277,7 +277,7 @@ func (transaction *TokenWipeTransaction) SignWithOperator(
 	return transaction.SignWith(client.operator.publicKey, client.operator.signer), nil
 }
 
-// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
+// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
 // with the publicKey as the map key.
 func (transaction *TokenWipeTransaction) SignWith(
 	publicKey PublicKey,
@@ -290,7 +290,7 @@ func (transaction *TokenWipeTransaction) SignWith(
 	return transaction
 }
 
-// Execute executes the Transaction with the provided client
+// Execute executes the transaction with the provided client
 func (transaction *TokenWipeTransaction) Execute(
 	client *Client,
 ) (TransactionResponse, error) {
@@ -316,7 +316,7 @@ func (transaction *TokenWipeTransaction) Execute(
 
 	resp, err := _Execute(
 		client,
-		&transaction.Transaction,
+		&transaction.transaction,
 		_TransactionShouldRetry,
 		_TransactionMakeRequest,
 		_TransactionAdvanceRequest,
@@ -365,84 +365,84 @@ func (transaction *TokenWipeTransaction) FreezeWith(client *Client) (*TokenWipeT
 	}
 	body := transaction._Build()
 
-	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
+	return transaction, _TransactionFreezeWith(&transaction.transaction, client, body)
 }
 
 // GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *TokenWipeTransaction) GetMaxTransactionFee() Hbar {
-	return transaction.Transaction.GetMaxTransactionFee()
+	return transaction.transaction.GetMaxTransactionFee()
 }
 
 // SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *TokenWipeTransaction) SetMaxTransactionFee(fee Hbar) *TokenWipeTransaction {
 	transaction._RequireNotFrozen()
-	transaction.Transaction.SetMaxTransactionFee(fee)
+	transaction.transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
 
 // SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
 func (transaction *TokenWipeTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *TokenWipeTransaction {
 	transaction._RequireNotFrozen()
-	transaction.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	transaction.transaction.SetRegenerateTransactionID(regenerateTransactionID)
 	return transaction
 }
 
 // GetRegenerateTransactionID returns true if transaction ID regeneration is enabled.
 func (transaction *TokenWipeTransaction) GetRegenerateTransactionID() bool {
-	return transaction.Transaction.GetRegenerateTransactionID()
+	return transaction.transaction.GetRegenerateTransactionID()
 }
 
 // GetTransactionMemo returns the memo for this	TokenWipeTransaction.
 func (transaction *TokenWipeTransaction) GetTransactionMemo() string {
-	return transaction.Transaction.GetTransactionMemo()
+	return transaction.transaction.GetTransactionMemo()
 }
 
 // SetTransactionMemo sets the memo for this TokenWipeTransaction.
 func (transaction *TokenWipeTransaction) SetTransactionMemo(memo string) *TokenWipeTransaction {
 	transaction._RequireNotFrozen()
-	transaction.Transaction.SetTransactionMemo(memo)
+	transaction.transaction.SetTransactionMemo(memo)
 	return transaction
 }
 
 // GetTransactionValidDuration returns the duration that this transaction is valid for.
 func (transaction *TokenWipeTransaction) GetTransactionValidDuration() time.Duration {
-	return transaction.Transaction.GetTransactionValidDuration()
+	return transaction.transaction.GetTransactionValidDuration()
 }
 
 // SetTransactionValidDuration sets the valid duration for this TokenWipeTransaction.
 func (transaction *TokenWipeTransaction) SetTransactionValidDuration(duration time.Duration) *TokenWipeTransaction {
 	transaction._RequireNotFrozen()
-	transaction.Transaction.SetTransactionValidDuration(duration)
+	transaction.transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
 
 // GetTransactionID gets the TransactionID for this TokenWipeTransaction.
 func (transaction *TokenWipeTransaction) GetTransactionID() TransactionID {
-	return transaction.Transaction.GetTransactionID()
+	return transaction.transaction.GetTransactionID()
 }
 
 // SetTransactionID sets the TransactionID for this TokenWipeTransaction.
 func (transaction *TokenWipeTransaction) SetTransactionID(transactionID TransactionID) *TokenWipeTransaction {
 	transaction._RequireNotFrozen()
 
-	transaction.Transaction.SetTransactionID(transactionID)
+	transaction.transaction.SetTransactionID(transactionID)
 	return transaction
 }
 
 // SetNodeTokenID sets the _Node TokenID for this TokenWipeTransaction.
 func (transaction *TokenWipeTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenWipeTransaction {
 	transaction._RequireNotFrozen()
-	transaction.Transaction.SetNodeAccountIDs(nodeID)
+	transaction.transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (transaction *TokenWipeTransaction) SetMaxRetry(count int) *TokenWipeTransaction {
-	transaction.Transaction.SetMaxRetry(count)
+	transaction.transaction.SetMaxRetry(count)
 	return transaction
 }
 
-// AddSignature adds a signature to the Transaction.
+// AddSignature adds a signature to the transaction.
 func (transaction *TokenWipeTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenWipeTransaction {
 	transaction._RequireOneNodeAccountID()
 
@@ -522,6 +522,6 @@ func (transaction *TokenWipeTransaction) _GetLogID() string {
 }
 
 func (transaction *TokenWipeTransaction) SetLogLevel(level LogLevel) *TokenWipeTransaction {
-	transaction.Transaction.SetLogLevel(level)
+	transaction.transaction.SetLogLevel(level)
 	return transaction
 }

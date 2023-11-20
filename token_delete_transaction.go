@@ -30,39 +30,39 @@ import (
 // TokenDeleteTransaction
 // Marks a token as deleted, though it will remain in the ledger.
 // The operation must be signed by the specified Admin Key of the Token. If
-// admin key is not set, Transaction will result in TOKEN_IS_IMMUTABlE.
+// admin key is not set, transaction will result in TOKEN_IS_IMMUTABlE.
 // Once deleted update, mint, burn, wipe, freeze, unfreeze, grant kyc, revoke
 // kyc and token transfer transactions will resolve to TOKEN_WAS_DELETED.
 type TokenDeleteTransaction struct {
-	Transaction
+	transaction
 	tokenID *TokenID
 }
 
 // NewTokenDeleteTransaction creates TokenDeleteTransaction which marks a token as deleted,
 // though it will remain in the ledger.
 // The operation must be signed by the specified Admin Key of the Token. If
-// admin key is not set, Transaction will result in TOKEN_IS_IMMUTABlE.
+// admin key is not set, transaction will result in TOKEN_IS_IMMUTABlE.
 // Once deleted update, mint, burn, wipe, freeze, unfreeze, grant kyc, revoke
 // kyc and token transfer transactions will resolve to TOKEN_WAS_DELETED.
 func NewTokenDeleteTransaction() *TokenDeleteTransaction {
 	transaction := TokenDeleteTransaction{
-		Transaction: _NewTransaction(),
+		transaction: _NewTransaction(),
 	}
 	transaction._SetDefaultMaxTransactionFee(NewHbar(30))
 
 	return &transaction
 }
 
-func _TokenDeleteTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) *TokenDeleteTransaction {
+func _TokenDeleteTransactionFromProtobuf(transaction transaction, pb *services.TransactionBody) *TokenDeleteTransaction {
 	return &TokenDeleteTransaction{
-		Transaction: transaction,
+		transaction: transaction,
 		tokenID:     _TokenIDFromProtobuf(pb.GetTokenDeletion().GetToken()),
 	}
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (transaction *TokenDeleteTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenDeleteTransaction {
-	transaction.Transaction.SetGrpcDeadline(deadline)
+	transaction.transaction.SetGrpcDeadline(deadline)
 	return transaction
 }
 
@@ -104,7 +104,7 @@ func (transaction *TokenDeleteTransaction) _Build() *services.TransactionBody {
 
 	return &services.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
-		Memo:                     transaction.Transaction.memo,
+		Memo:                     transaction.transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
 		TransactionID:            transaction.transactionID._ToProtobuf(),
 		Data: &services.TransactionBody_TokenDeletion{
@@ -131,7 +131,7 @@ func (transaction *TokenDeleteTransaction) _ConstructScheduleProtobuf() (*servic
 	}
 	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.transactionFee,
-		Memo:           transaction.Transaction.memo,
+		Memo:           transaction.transaction.memo,
 		Data: &services.SchedulableTransactionBody_TokenDeletion{
 			TokenDeletion: body,
 		},
@@ -177,7 +177,7 @@ func (transaction *TokenDeleteTransaction) SignWithOperator(
 	return transaction.SignWith(client.operator.publicKey, client.operator.signer), nil
 }
 
-// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
+// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
 // with the publicKey as the map key.
 func (transaction *TokenDeleteTransaction) SignWith(
 	publicKey PublicKey,
@@ -190,7 +190,7 @@ func (transaction *TokenDeleteTransaction) SignWith(
 	return transaction
 }
 
-// Execute executes the Transaction with the provided client
+// Execute executes the transaction with the provided client
 func (transaction *TokenDeleteTransaction) Execute(
 	client *Client,
 ) (TransactionResponse, error) {
@@ -220,7 +220,7 @@ func (transaction *TokenDeleteTransaction) Execute(
 
 	resp, err := _Execute(
 		client,
-		&transaction.Transaction,
+		&transaction.transaction,
 		_TransactionShouldRetry,
 		_TransactionMakeRequest,
 		_TransactionAdvanceRequest,
@@ -269,84 +269,84 @@ func (transaction *TokenDeleteTransaction) FreezeWith(client *Client) (*TokenDel
 	}
 	body := transaction._Build()
 
-	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
+	return transaction, _TransactionFreezeWith(&transaction.transaction, client, body)
 }
 
 // GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *TokenDeleteTransaction) GetMaxTransactionFee() Hbar {
-	return transaction.Transaction.GetMaxTransactionFee()
+	return transaction.transaction.GetMaxTransactionFee()
 }
 
 // SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *TokenDeleteTransaction) SetMaxTransactionFee(fee Hbar) *TokenDeleteTransaction {
 	transaction._RequireNotFrozen()
-	transaction.Transaction.SetMaxTransactionFee(fee)
+	transaction.transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
 
 // SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
 func (transaction *TokenDeleteTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *TokenDeleteTransaction {
 	transaction._RequireNotFrozen()
-	transaction.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	transaction.transaction.SetRegenerateTransactionID(regenerateTransactionID)
 	return transaction
 }
 
 // GetRegenerateTransactionID returns true if transaction ID regeneration is enabled.
 func (transaction *TokenDeleteTransaction) GetRegenerateTransactionID() bool {
-	return transaction.Transaction.GetRegenerateTransactionID()
+	return transaction.transaction.GetRegenerateTransactionID()
 }
 
 // GetTransactionMemo returns the memo for this	TokenDeleteTransaction.
 func (transaction *TokenDeleteTransaction) GetTransactionMemo() string {
-	return transaction.Transaction.GetTransactionMemo()
+	return transaction.transaction.GetTransactionMemo()
 }
 
 // SetTransactionMemo sets the memo for this TokenDeleteTransaction.
 func (transaction *TokenDeleteTransaction) SetTransactionMemo(memo string) *TokenDeleteTransaction {
 	transaction._RequireNotFrozen()
-	transaction.Transaction.SetTransactionMemo(memo)
+	transaction.transaction.SetTransactionMemo(memo)
 	return transaction
 }
 
 // GetTransactionValidDuration returns the duration that this transaction is valid for.
 func (transaction *TokenDeleteTransaction) GetTransactionValidDuration() time.Duration {
-	return transaction.Transaction.GetTransactionValidDuration()
+	return transaction.transaction.GetTransactionValidDuration()
 }
 
 // SetTransactionValidDuration sets the valid duration for this TokenDeleteTransaction.
 func (transaction *TokenDeleteTransaction) SetTransactionValidDuration(duration time.Duration) *TokenDeleteTransaction {
 	transaction._RequireNotFrozen()
-	transaction.Transaction.SetTransactionValidDuration(duration)
+	transaction.transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
 
 // GetTransactionID gets the TransactionID for this	TokenDeleteTransaction.
 func (transaction *TokenDeleteTransaction) GetTransactionID() TransactionID {
-	return transaction.Transaction.GetTransactionID()
+	return transaction.transaction.GetTransactionID()
 }
 
 // SetTransactionID sets the TransactionID for this TokenDeleteTransaction.
 func (transaction *TokenDeleteTransaction) SetTransactionID(transactionID TransactionID) *TokenDeleteTransaction {
 	transaction._RequireNotFrozen()
 
-	transaction.Transaction.SetTransactionID(transactionID)
+	transaction.transaction.SetTransactionID(transactionID)
 	return transaction
 }
 
 // SetNodeTokenID sets the _Node TokenID for this TokenDeleteTransaction.
 func (transaction *TokenDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenDeleteTransaction {
 	transaction._RequireNotFrozen()
-	transaction.Transaction.SetNodeAccountIDs(nodeID)
+	transaction.transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (transaction *TokenDeleteTransaction) SetMaxRetry(count int) *TokenDeleteTransaction {
-	transaction.Transaction.SetMaxRetry(count)
+	transaction.transaction.SetMaxRetry(count)
 	return transaction
 }
 
-// AddSignature adds a signature to the Transaction.
+// AddSignature adds a signature to the transaction.
 func (transaction *TokenDeleteTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenDeleteTransaction {
 	transaction._RequireOneNodeAccountID()
 
@@ -426,6 +426,6 @@ func (transaction *TokenDeleteTransaction) _GetLogID() string {
 }
 
 func (transaction *TokenDeleteTransaction) SetLogLevel(level LogLevel) *TokenDeleteTransaction {
-	transaction.Transaction.SetLogLevel(level)
+	transaction.transaction.SetLogLevel(level)
 	return transaction
 }

@@ -41,7 +41,7 @@ import (
 // accounts, and for any receiving accounts that have receiverSigRequired == true. The signatures
 // are in the same order as the accounts, skipping those accounts that don't need a signature.
 type TransferTransaction struct {
-	Transaction
+	transaction
 	tokenTransfers map[TokenID]*_TokenTransfer
 	hbarTransfers  []*_HbarTransfer
 	nftTransfers   map[TokenID][]*TokenNftTransfer
@@ -59,7 +59,7 @@ type TransferTransaction struct {
 // are in the same order as the accounts, skipping those accounts that don't need a signature.
 func NewTransferTransaction() *TransferTransaction {
 	transaction := TransferTransaction{
-		Transaction:    _NewTransaction(),
+		transaction:    _NewTransaction(),
 		tokenTransfers: make(map[TokenID]*_TokenTransfer),
 		hbarTransfers:  make([]*_HbarTransfer, 0),
 		nftTransfers:   make(map[TokenID][]*TokenNftTransfer),
@@ -70,7 +70,7 @@ func NewTransferTransaction() *TransferTransaction {
 	return &transaction
 }
 
-func _TransferTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) *TransferTransaction {
+func _TransferTransactionFromProtobuf(transaction transaction, pb *services.TransactionBody) *TransferTransaction {
 	tokenTransfers := make(map[TokenID]*_TokenTransfer)
 	nftTransfers := make(map[TokenID][]*TokenNftTransfer)
 
@@ -92,7 +92,7 @@ func _TransferTransactionFromProtobuf(transaction Transaction, pb *services.Tran
 	}
 
 	return &TransferTransaction{
-		Transaction:    transaction,
+		transaction:    transaction,
 		hbarTransfers:  _HbarTransferFromProtobuf(pb.GetCryptoTransfer().GetTransfers().GetAccountAmounts()),
 		tokenTransfers: tokenTransfers,
 		nftTransfers:   nftTransfers,
@@ -101,7 +101,7 @@ func _TransferTransactionFromProtobuf(transaction Transaction, pb *services.Tran
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (transaction *TransferTransaction) SetGrpcDeadline(deadline *time.Duration) *TransferTransaction {
-	transaction.Transaction.SetGrpcDeadline(deadline)
+	transaction.transaction.SetGrpcDeadline(deadline)
 	return transaction
 }
 
@@ -592,7 +592,7 @@ func (transaction *TransferTransaction) _ConstructScheduleProtobuf() (*services.
 
 	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.transactionFee,
-		Memo:           transaction.Transaction.memo,
+		Memo:           transaction.transaction.memo,
 		Data: &services.SchedulableTransactionBody_CryptoTransfer{
 			CryptoTransfer: body,
 		},
@@ -605,7 +605,7 @@ func _TransferTransactionGetMethod(request interface{}, channel *_Channel) _Meth
 	}
 }
 
-// AddSignature adds a signature to the Transaction.
+// AddSignature adds a signature to the transaction.
 func (transaction *TransferTransaction) AddSignature(publicKey PublicKey, signature []byte) *TransferTransaction {
 	transaction._RequireOneNodeAccountID()
 
@@ -671,7 +671,7 @@ func (transaction *TransferTransaction) SignWithOperator(
 	return transaction.SignWith(client.operator.publicKey, client.operator.signer), nil
 }
 
-// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
+// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
 // with the publicKey as the map key.
 func (transaction *TransferTransaction) SignWith(
 	publicKey PublicKey,
@@ -684,7 +684,7 @@ func (transaction *TransferTransaction) SignWith(
 	return transaction
 }
 
-// Execute executes the Transaction with the provided client
+// Execute executes the transaction with the provided client
 func (transaction *TransferTransaction) Execute(
 	client *Client,
 ) (TransactionResponse, error) {
@@ -714,7 +714,7 @@ func (transaction *TransferTransaction) Execute(
 
 	resp, err := _Execute(
 		client,
-		&transaction.Transaction,
+		&transaction.transaction,
 		_TransactionShouldRetry,
 		_TransactionMakeRequest,
 		_TransactionAdvanceRequest,
@@ -833,7 +833,7 @@ func (transaction *TransferTransaction) _Build() *services.TransactionBody {
 
 	return &services.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
-		Memo:                     transaction.Transaction.memo,
+		Memo:                     transaction.transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
 		TransactionID:            transaction.transactionID._ToProtobuf(),
 		Data: &services.TransactionBody_CryptoTransfer{
@@ -861,80 +861,80 @@ func (transaction *TransferTransaction) FreezeWith(client *Client) (*TransferTra
 	}
 	body := transaction._Build()
 
-	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
+	return transaction, _TransactionFreezeWith(&transaction.transaction, client, body)
 }
 
 // GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *TransferTransaction) GetMaxTransactionFee() Hbar {
-	return transaction.Transaction.GetMaxTransactionFee()
+	return transaction.transaction.GetMaxTransactionFee()
 }
 
 // SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *TransferTransaction) SetMaxTransactionFee(fee Hbar) *TransferTransaction {
 	transaction._RequireNotFrozen()
-	transaction.Transaction.SetMaxTransactionFee(fee)
+	transaction.transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
 
 // SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
 func (transaction *TransferTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *TransferTransaction {
 	transaction._RequireNotFrozen()
-	transaction.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	transaction.transaction.SetRegenerateTransactionID(regenerateTransactionID)
 	return transaction
 }
 
 // GetRegenerateTransactionID returns true if transaction ID regeneration is enabled.
 func (transaction *TransferTransaction) GetRegenerateTransactionID() bool {
-	return transaction.Transaction.GetRegenerateTransactionID()
+	return transaction.transaction.GetRegenerateTransactionID()
 }
 
 // GetTransactionMemo returns the memo for this	TransferTransaction.
 func (transaction *TransferTransaction) GetTransactionMemo() string {
-	return transaction.Transaction.GetTransactionMemo()
+	return transaction.transaction.GetTransactionMemo()
 }
 
 // SetTransactionMemo sets the memo for this TransferTransaction.
 func (transaction *TransferTransaction) SetTransactionMemo(memo string) *TransferTransaction {
 	transaction._RequireNotFrozen()
-	transaction.Transaction.SetTransactionMemo(memo)
+	transaction.transaction.SetTransactionMemo(memo)
 	return transaction
 }
 
 // GetTransactionValidDuration returns the duration that this transaction is valid for.
 func (transaction *TransferTransaction) GetTransactionValidDuration() time.Duration {
-	return transaction.Transaction.GetTransactionValidDuration()
+	return transaction.transaction.GetTransactionValidDuration()
 }
 
 // SetTransactionValidDuration sets the valid duration for this TransferTransaction.
 func (transaction *TransferTransaction) SetTransactionValidDuration(duration time.Duration) *TransferTransaction {
 	transaction._RequireNotFrozen()
-	transaction.Transaction.SetTransactionValidDuration(duration)
+	transaction.transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
 
 // GetTransactionID gets the TransactionID for this TransferTransaction.
 func (transaction *TransferTransaction) GetTransactionID() TransactionID {
-	return transaction.Transaction.GetTransactionID()
+	return transaction.transaction.GetTransactionID()
 }
 
 // SetTransactionID sets the TransactionID for this TransferTransaction.
 func (transaction *TransferTransaction) SetTransactionID(transactionID TransactionID) *TransferTransaction {
 	transaction._RequireNotFrozen()
 
-	transaction.Transaction.SetTransactionID(transactionID)
+	transaction.transaction.SetTransactionID(transactionID)
 	return transaction
 }
 
 // SetNodeTokenID sets the _Node TokenID for this TransferTransaction.
 func (transaction *TransferTransaction) SetNodeAccountIDs(nodeID []AccountID) *TransferTransaction {
 	transaction._RequireNotFrozen()
-	transaction.Transaction.SetNodeAccountIDs(nodeID)
+	transaction.transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (transaction *TransferTransaction) SetMaxRetry(count int) *TransferTransaction {
-	transaction.Transaction.SetMaxRetry(count)
+	transaction.transaction.SetMaxRetry(count)
 	return transaction
 }
 
@@ -985,6 +985,6 @@ func (transaction *TransferTransaction) _GetLogID() string {
 }
 
 func (transaction *TransferTransaction) SetLogLevel(level LogLevel) *TransferTransaction {
-	transaction.Transaction.SetLogLevel(level)
+	transaction.transaction.SetLogLevel(level)
 	return transaction
 }
