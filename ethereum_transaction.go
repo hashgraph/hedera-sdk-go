@@ -30,19 +30,19 @@ import (
 )
 
 // EthereumTransaction is used to create a EthereumTransaction transaction which can be used to construct and execute
-// a Ethereum Transaction.
+// a Ethereum transaction.
 type EthereumTransaction struct {
-	Transaction
+	transaction
 	ethereumData  []byte
 	callData      *FileID
 	MaxGasAllowed int64
 }
 
 // NewEthereumTransaction creates a EthereumTransaction transaction which can be used to construct and execute
-// a Ethereum Transaction.
+// a Ethereum transaction.
 func NewEthereumTransaction() *EthereumTransaction {
 	transaction := EthereumTransaction{
-		Transaction: _NewTransaction(),
+		transaction: _NewTransaction(),
 	}
 
 	transaction._SetDefaultMaxTransactionFee(NewHbar(2))
@@ -50,9 +50,9 @@ func NewEthereumTransaction() *EthereumTransaction {
 	return &transaction
 }
 
-func _EthereumTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) *EthereumTransaction {
+func _EthereumTransactionFromProtobuf(transaction transaction, pb *services.TransactionBody) *EthereumTransaction {
 	return &EthereumTransaction{
-		Transaction:   transaction,
+		transaction:   transaction,
 		ethereumData:  pb.GetEthereumTransaction().EthereumData,
 		callData:      _FileIDFromProtobuf(pb.GetEthereumTransaction().CallData),
 		MaxGasAllowed: pb.GetEthereumTransaction().MaxGasAllowance,
@@ -61,7 +61,7 @@ func _EthereumTransactionFromProtobuf(transaction Transaction, pb *services.Tran
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (transaction *EthereumTransaction) SetGrpcDeadline(deadline *time.Duration) *EthereumTransaction {
-	transaction.Transaction.SetGrpcDeadline(deadline)
+	transaction.transaction.SetGrpcDeadline(deadline)
 	return transaction
 }
 
@@ -158,7 +158,7 @@ func (transaction *EthereumTransaction) _Build() *services.TransactionBody {
 		TransactionID:            transaction.transactionID._ToProtobuf(),
 		TransactionFee:           transaction.transactionFee,
 		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
-		Memo:                     transaction.Transaction.memo,
+		Memo:                     transaction.transaction.memo,
 		Data: &services.TransactionBody_EthereumTransaction{
 			EthereumTransaction: body,
 		},
@@ -208,7 +208,7 @@ func (transaction *EthereumTransaction) SignWithOperator(
 	return transaction.SignWith(client.operator.publicKey, client.operator.signer), nil
 }
 
-// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
+// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
 // with the publicKey as the map key.
 func (transaction *EthereumTransaction) SignWith(
 	publicKey PublicKey,
@@ -221,7 +221,7 @@ func (transaction *EthereumTransaction) SignWith(
 	return transaction
 }
 
-// Execute executes the Transaction with the provided client
+// Execute executes the transaction with the provided client
 func (transaction *EthereumTransaction) Execute(
 	client *Client,
 ) (TransactionResponse, error) {
@@ -255,7 +255,7 @@ func (transaction *EthereumTransaction) Execute(
 
 	resp, err := _Execute(
 		client,
-		&transaction.Transaction,
+		&transaction.transaction,
 		_TransactionShouldRetry,
 		_TransactionMakeRequest,
 		_TransactionAdvanceRequest,
@@ -304,84 +304,84 @@ func (transaction *EthereumTransaction) FreezeWith(client *Client) (*EthereumTra
 		return &EthereumTransaction{}, err
 	}
 
-	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
+	return transaction, _TransactionFreezeWith(&transaction.transaction, client, body)
 }
 
 // GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *EthereumTransaction) GetMaxTransactionFee() Hbar {
-	return transaction.Transaction.GetMaxTransactionFee()
+	return transaction.transaction.GetMaxTransactionFee()
 }
 
 // SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *EthereumTransaction) SetMaxTransactionFee(fee Hbar) *EthereumTransaction {
 	transaction._RequireNotFrozen()
-	transaction.Transaction.SetMaxTransactionFee(fee)
+	transaction.transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
 
 // SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
 func (transaction *EthereumTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *EthereumTransaction {
 	transaction._RequireNotFrozen()
-	transaction.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	transaction.transaction.SetRegenerateTransactionID(regenerateTransactionID)
 	return transaction
 }
 
 // GetRegenerateTransactionID returns true if transaction ID regeneration is enabled.
 func (transaction *EthereumTransaction) GetRegenerateTransactionID() bool {
-	return transaction.Transaction.GetRegenerateTransactionID()
+	return transaction.transaction.GetRegenerateTransactionID()
 }
 
 // GetTransactionMemo returns the memo for this EthereumTransaction.
 func (transaction *EthereumTransaction) GetTransactionMemo() string {
-	return transaction.Transaction.GetTransactionMemo()
+	return transaction.transaction.GetTransactionMemo()
 }
 
 // SetTransactionMemo sets the memo for this EthereumTransaction.
 func (transaction *EthereumTransaction) SetTransactionMemo(memo string) *EthereumTransaction {
 	transaction._RequireNotFrozen()
-	transaction.Transaction.SetTransactionMemo(memo)
+	transaction.transaction.SetTransactionMemo(memo)
 	return transaction
 }
 
 // GetTransactionValidDuration returns the duration that this transaction is valid for.
 func (transaction *EthereumTransaction) GetTransactionValidDuration() time.Duration {
-	return transaction.Transaction.GetTransactionValidDuration()
+	return transaction.transaction.GetTransactionValidDuration()
 }
 
 // SetTransactionValidDuration sets the valid duration for this EthereumTransaction.
 func (transaction *EthereumTransaction) SetTransactionValidDuration(duration time.Duration) *EthereumTransaction {
 	transaction._RequireNotFrozen()
-	transaction.Transaction.SetTransactionValidDuration(duration)
+	transaction.transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
 
 // GetTransactionID gets the TransactionID for this	EthereumTransaction.
 func (transaction *EthereumTransaction) GetTransactionID() TransactionID {
-	return transaction.Transaction.GetTransactionID()
+	return transaction.transaction.GetTransactionID()
 }
 
 // SetTransactionID sets the TransactionID for this EthereumTransaction.
 func (transaction *EthereumTransaction) SetTransactionID(transactionID TransactionID) *EthereumTransaction {
 	transaction._RequireNotFrozen()
 
-	transaction.Transaction.SetTransactionID(transactionID)
+	transaction.transaction.SetTransactionID(transactionID)
 	return transaction
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for this EthereumTransaction.
 func (transaction *EthereumTransaction) SetNodeAccountIDs(nodeID []AccountID) *EthereumTransaction {
 	transaction._RequireNotFrozen()
-	transaction.Transaction.SetNodeAccountIDs(nodeID)
+	transaction.transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (transaction *EthereumTransaction) SetMaxRetry(count int) *EthereumTransaction {
-	transaction.Transaction.SetMaxRetry(count)
+	transaction.transaction.SetMaxRetry(count)
 	return transaction
 }
 
-// AddSignature adds a signature to the Transaction.
+// AddSignature adds a signature to the transaction.
 func (transaction *EthereumTransaction) AddSignature(publicKey PublicKey, signature []byte) *EthereumTransaction {
 	transaction._RequireOneNodeAccountID()
 

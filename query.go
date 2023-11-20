@@ -30,6 +30,7 @@ import (
 
 // Query is the struct used to build queries.
 type Query struct {
+	executable
 	pb       *services.Query
 	pbHeader *services.QueryHeader //nolint
 
@@ -49,6 +50,13 @@ type Query struct {
 	timestamp    time.Time
 	logLevel     *LogLevel
 }
+
+// -------- Executable functions ---------- 
+
+func (this *Query) Execute(client *Client) (TransactionResponse, error){
+	return _Execute(client, this.e)
+}
+
 
 func _NewQuery(isPaymentRequired bool, header *services.QueryHeader) Query {
 	minBackoff := 250 * time.Millisecond
