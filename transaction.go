@@ -38,11 +38,19 @@ import (
 // Transaction contains the protobuf of a prepared transaction which can be signed and executed.
 
 type ITransaction interface {
-	_ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error)
+	Executable
+
+	Sign(privateKey PrivateKey) ITransaction
+	SignWithOperator(client *Client) (ITransaction, error)
+	SignWith(publicKey PublicKey, signer TransactionSigner) ITransaction
+	AddSignature(publicKey PublicKey, signature []byte) ITransaction
+	Freeze() (ITransaction, error)
+	FreezeWith(client *Client) (ITransaction, error)
 }
 
 // Transaction is base struct for all transactions that may be built and submitted to Hedera.
 type Transaction struct {
+	executable
 	maxRetry int
 
 	transactionFee           uint64
@@ -51,21 +59,15 @@ type Transaction struct {
 	transactionValidDuration *time.Duration
 	transactionID            TransactionID
 
-	transactionIDs     *_LockableSlice
 	transactions       *_LockableSlice
 	signedTransactions *_LockableSlice
-	nodeAccountIDs     *_LockableSlice
 
 	publicKeys         []PublicKey
 	transactionSigners []TransactionSigner
 
 	freezeError error
 
-	maxBackoff              *time.Duration
-	minBackoff              *time.Duration
 	regenerateTransactionID bool
-	grpcDeadline            *time.Duration
-	logLevel                *LogLevel
 }
 
 func _NewTransaction() Transaction {
@@ -75,14 +77,14 @@ func _NewTransaction() Transaction {
 	return Transaction{
 		maxRetry:                 10,
 		transactionValidDuration: &duration,
-		transactionIDs:           _NewLockableSlice(),
 		transactions:             _NewLockableSlice(),
 		signedTransactions:       _NewLockableSlice(),
-		nodeAccountIDs:           _NewLockableSlice(),
 		freezeError:              nil,
 		regenerateTransactionID:  true,
-		minBackoff:               &minBackoff,
-		maxBackoff:               &maxBackoff,
+		executable: executable{transactionIDs: _NewLockableSlice(),
+			nodeAccountIDs: _NewLockableSlice(),
+			minBackoff:     &minBackoff,
+			maxBackoff:     &maxBackoff},
 	}
 }
 
@@ -110,16 +112,16 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 
 	tx := Transaction{
 		maxRetry:                10,
-		transactionIDs:          _NewLockableSlice(),
 		transactions:            transactions,
 		signedTransactions:      _NewLockableSlice(),
-		nodeAccountIDs:          _NewLockableSlice(),
 		publicKeys:              make([]PublicKey, 0),
 		transactionSigners:      make([]TransactionSigner, 0),
 		freezeError:             nil,
 		regenerateTransactionID: true,
-		minBackoff:              &minBackoff,
-		maxBackoff:              &maxBackoff,
+		executable: executable{transactionIDs: _NewLockableSlice(),
+			nodeAccountIDs: _NewLockableSlice(),
+			minBackoff:     &minBackoff,
+			maxBackoff:     &maxBackoff},
 	}
 
 	comp, err := _TransactionCompare(&list)
@@ -561,7 +563,7 @@ func (this *Transaction) _KeyAlreadySigned(
 	return false
 }
 
-func _TransactionShouldRetry(_ interface{}, response interface{}) _ExecutionState {
+func (this *Transaction) shouldRetry(_ interface{}, response interface{}) _ExecutionState {
 	status := Status(response.(*services.TransactionResponse).NodeTransactionPrecheckCode)
 	switch status {
 	case StatusPlatformTransactionNotCreated, StatusPlatformNotActive, StatusBusy:
@@ -575,7 +577,7 @@ func _TransactionShouldRetry(_ interface{}, response interface{}) _ExecutionStat
 	return executionStateError
 }
 
-func _TransactionMakeRequest(request interface{}) interface{} {
+func (this *Transaction) makeRequest(request interface{}) interface{} {
 	transaction := request.(*Transaction)
 	index := transaction.nodeAccountIDs._Length()*transaction.transactionIDs.index + transaction.nodeAccountIDs.index
 	tx, _ := transaction._BuildTransaction(index)
@@ -583,16 +585,16 @@ func _TransactionMakeRequest(request interface{}) interface{} {
 	return tx
 }
 
-func _TransactionAdvanceRequest(request interface{}) {
+func (this *Transaction) advanceRequest(request interface{}) {
 	request.(*Transaction).nodeAccountIDs._Advance()
 	request.(*Transaction).signedTransactions._Advance()
 }
 
-func _TransactionGetNodeAccountID(request interface{}) AccountID {
+func (this *Transaction) getNodeAccountID(request interface{}) AccountID {
 	return request.(*Transaction).nodeAccountIDs._GetCurrent().(AccountID)
 }
 
-func _TransactionMapStatusError(
+func (this *Transaction)mapStatusError(
 	request interface{},
 	response interface{},
 ) error {
@@ -603,7 +605,7 @@ func _TransactionMapStatusError(
 	}
 }
 
-func _TransactionMapResponse(request interface{}, _ interface{}, nodeID AccountID, protoRequest interface{}) (interface{}, error) {
+func (this *Transaction )mapResponse(request interface{}, _ interface{}, nodeID AccountID, protoRequest interface{}) (interface{}, error) {
 	hash := sha512.New384()
 	_, err := hash.Write(protoRequest.(*services.Transaction).SignedTransactionBytes)
 	if err != nil {
@@ -888,6 +890,174 @@ func (this *Transaction) SetMaxRetry(count int) *Transaction {
 	this.maxRetry = count
 	return this
 }
+
+func (this *Transaction) Sign(privateKey PrivateKey) ITransaction {
+	return this.SignWith(privateKey.PublicKey(), privateKey.Sign)
+}
+func (this *Transaction) SignWithOperator(client *Client) (ITransaction, error) {
+	// If the transaction is not signed by the _Operator, we need
+	// to sign the transaction with the _Operator
+
+	if client == nil {
+		return nil, errNoClientProvided
+	} else if client.operator == nil {
+		return nil, errClientOperatorSigning
+	}
+
+	if !this._IsFrozen() {
+		_, err := this.FreezeWith(client)
+		if err != nil {
+			return this, err
+		}
+	}
+	return this.SignWith(client.operator.publicKey, client.operator.signer), nil
+}
+func (this *Transaction) SignWith(publicKey PublicKey, signer TransactionSigner) ITransaction {
+	if !this._KeyAlreadySigned(publicKey) {
+		this._SignWith(publicKey, signer)
+	}
+
+	return this
+}
+func (this *Transaction) AddSignature(publicKey PublicKey, signature []byte) ITransaction {
+	this._RequireOneNodeAccountID()
+
+	if this._KeyAlreadySigned(publicKey) {
+		return this
+	}
+
+	if this.signedTransactions._Length() == 0 {
+		return this
+	}
+
+	this.transactions = _NewLockableSlice()
+	this.publicKeys = append(this.publicKeys, publicKey)
+	this.transactionSigners = append(this.transactionSigners, nil)
+	this.transactionIDs.locked = true
+
+	for index := 0; index < this.signedTransactions._Length(); index++ {
+		var temp *services.SignedTransaction
+		switch t := this.signedTransactions._Get(index).(type) { //nolint
+		case *services.SignedTransaction:
+			temp = t
+		}
+		temp.SigMap.SigPair = append(
+			temp.SigMap.SigPair,
+			publicKey._ToSignaturePairProtobuf(signature),
+		)
+		this.signedTransactions._Set(index, temp)
+	}
+
+	return this
+}
+func (this *Transaction) Freeze() (ITransaction, error) {
+	return this.FreezeWith(nil)
+}
+func (this *Transaction) FreezeWith(client *Client) (ITransaction, error) {
+	if this._IsFrozen() {
+		return this, nil
+	}
+
+	this._InitFee(client)
+	if err := this._InitTransactionID(client); err != nil {
+		return this, err
+	}
+	// TODO: See how to implemnent validation. It can be implemented inside the `build()` function
+	// inside each instance
+	// err := this._ValidateNetworkOnIDs(client)
+	// if err != nil {
+	// 	return &Transaction{}, err
+	// }
+	body := this.e.build()
+
+	return this, _TransactionFreezeWith(this, client, body)
+}
+
+// ------------ Executable Functions ------------
+func (this *Transaction) Execute(client *Client) (TransactionResponse, error) {
+	if client == nil {
+		return TransactionResponse{}, errNoClientProvided
+	}
+
+	if this.freezeError != nil {
+		return TransactionResponse{}, this.freezeError
+	}
+
+	if !this._IsFrozen() {
+		_, err := this.FreezeWith(client)
+		if err != nil {
+			return TransactionResponse{}, err
+		}
+	}
+
+	transactionID := this.transactionIDs._GetCurrent().(TransactionID)
+
+	if !client.GetOperatorAccountID()._IsZero() && client.GetOperatorAccountID()._Equals(*transactionID.AccountID) {
+		this.SignWith(
+			client.GetOperatorPublicKey(),
+			client.operator.signer,
+		)
+	}
+
+	resp, err := _Execute(
+		client,
+		this.e,
+	)
+
+	if err != nil {
+		return TransactionResponse{
+			TransactionID:  this.GetTransactionID(),
+			NodeID:         resp.(TransactionResponse).NodeID,
+			ValidateStatus: true,
+		}, err
+	}
+
+	return TransactionResponse{
+		TransactionID:  this.GetTransactionID(),
+		NodeID:         resp.(TransactionResponse).NodeID,
+		Hash:           resp.(TransactionResponse).Hash,
+		ValidateStatus: true,
+	}, nil
+}
+
+func (this *Transaction) GetMaxBackoff() time.Duration {
+	if this.maxBackoff != nil {
+		return *this.maxBackoff
+	}
+	// TODO: Set Constant for '8' = DEFAULT_MAX_BACKOFF
+	return 8 * time.Second
+}
+
+func (this *Transaction) GetMinBackoff() time.Duration {
+	if this.minBackoff != nil {
+		return *this.minBackoff
+	}
+	// TODO: Set Constant for '250' = DEFAULT_MIN_BACKOFF
+
+	return 250 * time.Millisecond
+}
+
+// Building empty object as "default" implementation. All inhertents must implement their own implementation.
+func (this *Transaction) build() *services.TransactionBody{
+	return &services.TransactionBody{}
+}
+
+// Building empty object as "default" implementation. All inhertents must implement their own implementation.
+func (this *Transaction) buildScheduled() (*services.SchedulableTransactionBody, error){
+	return &services.SchedulableTransactionBody{}, nil
+}
+
+// Building empty object as "default" implementation. All inhertents must implement their own implementation.
+func (this *Transaction) getMethod(*_Channel) _Method{
+	return _Method{}
+}
+
+// Building empty object as "default" implementation. All inhertents must implement their own implementation.
+func (this *Transaction) getName() string{
+	return "Transaction"
+}
+
+
 
 func TransactionSign(transaction interface{}, privateKey PrivateKey) (interface{}, error) { // nolint
 	switch i := transaction.(type) {
