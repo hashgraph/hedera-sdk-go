@@ -409,37 +409,37 @@ func (transaction *ContractExecuteTransaction) SetMaxRetry(count int) *ContractE
 }
 
 // AddSignature adds a signature to the Transaction.
-func (transaction *ContractExecuteTransaction) AddSignature(publicKey PublicKey, signature []byte) *ContractExecuteTransaction {
-	transaction._RequireOneNodeAccountID()
+// func (transaction *ContractExecuteTransaction) AddSignature(publicKey PublicKey, signature []byte) *ContractExecuteTransaction {
+// 	transaction._RequireOneNodeAccountID()
 
-	if transaction._KeyAlreadySigned(publicKey) {
-		return transaction
-	}
+// 	if transaction._KeyAlreadySigned(publicKey) {
+// 		return transaction
+// 	}
 
-	if transaction.signedTransactions._Length() == 0 {
-		return transaction
-	}
+// 	if transaction.signedTransactions._Length() == 0 {
+// 		return transaction
+// 	}
 
-	transaction.transactions = _NewLockableSlice()
-	transaction.publicKeys = append(transaction.publicKeys, publicKey)
-	transaction.transactionSigners = append(transaction.transactionSigners, nil)
-	transaction.transactionIDs.locked = true
+// 	transaction.transactions = _NewLockableSlice()
+// 	transaction.publicKeys = append(transaction.publicKeys, publicKey)
+// 	transaction.transactionSigners = append(transaction.transactionSigners, nil)
+// 	transaction.transactionIDs.locked = true
 
-	for index := 0; index < transaction.signedTransactions._Length(); index++ {
-		var temp *services.SignedTransaction
-		switch t := transaction.signedTransactions._Get(index).(type) { //nolint
-		case *services.SignedTransaction:
-			temp = t
-		}
-		temp.SigMap.SigPair = append(
-			temp.SigMap.SigPair,
-			publicKey._ToSignaturePairProtobuf(signature),
-		)
-		transaction.signedTransactions._Set(index, temp)
-	}
+// 	for index := 0; index < transaction.signedTransactions._Length(); index++ {
+// 		var temp *services.SignedTransaction
+// 		switch t := transaction.signedTransactions._Get(index).(type) { //nolint
+// 		case *services.SignedTransaction:
+// 			temp = t
+// 		}
+// 		temp.SigMap.SigPair = append(
+// 			temp.SigMap.SigPair,
+// 			publicKey._ToSignaturePairProtobuf(signature),
+// 		)
+// 		transaction.signedTransactions._Set(index, temp)
+// 	}
 
-	return transaction
-}
+// 	return transaction
+// }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
 // Every retry attempt will increase the wait time exponentially until it reaches this time.

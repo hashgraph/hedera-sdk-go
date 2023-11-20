@@ -49,6 +49,37 @@ const (
 	executionStateExpired  _ExecutionState = 3
 )
 
+type Executable interface {
+	Execute(client *Client) (TransactionResponse, error)
+	GetMaxBackoff() time.Duration
+	GetMinBackoff() time.Duration
+	GetGrpcDeadline() *time.Duration
+	GetMaxRetry() int
+	GetNodeAccountIDs() []AccountID
+	GetLogLevel() *LogLevel
+
+	shouldRetry(interface{}, interface{}) _ExecutionState
+	makeRequest(interface{}) interface{}
+	advanceRequest(interface{})
+	getNodeAccountID(interface{}) AccountID
+	getMethod(*_Channel) _Method
+	mapStatusError(interface{}, interface{}) error
+	mapResponse(interface{}, interface{}, AccountID, interface{}) (interface{}, error)
+	getName() string
+	build() *services.TransactionBody
+	buildScheduled() (*services.SchedulableTransactionBody, error)
+}
+
+type executable struct {
+	e              Executable
+	transactionIDs *_LockableSlice
+	nodeAccountIDs *_LockableSlice
+	maxBackoff     *time.Duration
+	minBackoff     *time.Duration
+	grpcDeadline   *time.Duration
+	logLevel       *LogLevel
+}
+
 type _Method struct {
 	query func(
 		context.Context,
@@ -91,63 +122,47 @@ func getTransactionIDAndMessage(request interface{}) (string, string) {
 	}
 }
 
-func _Execute( // nolint
-	client *Client,
-	request interface{},
-	shouldRetry func(interface{}, interface{}) _ExecutionState,
-	makeRequest func(interface{}) interface{},
-	advanceRequest func(interface{}),
-	getNodeAccountID func(interface{}) AccountID,
-	getMethod func(interface{}, *_Channel) _Method,
-	mapStatusError func(interface{}, interface{}) error,
-	mapResponse func(interface{}, interface{}, AccountID, interface{}) (interface{}, error),
-	logID string,
-	deadline *time.Duration,
-	maxBackoff *time.Duration,
-	minBackoff *time.Duration,
-	maxRetry int,
-) (interface{}, error) {
+func _Execute(client *Client, e Executable) (interface{}, error){
 	var maxAttempts int
 	backOff := backoff.NewExponentialBackOff()
-	backOff.InitialInterval = *minBackoff
-	backOff.MaxInterval = *maxBackoff
+	backOff.InitialInterval = e.GetMinBackoff()
+	backOff.MaxInterval = e.GetMaxBackoff()
 	backOff.Multiplier = 2
 
 	if client.maxAttempts != nil {
 		maxAttempts = *client.maxAttempts
 	} else {
-		maxAttempts = maxRetry
+		maxAttempts = e.GetMaxRetry()
 	}
 
-	currentBackoff := minBackoff
+	currentBackoff := e.GetMinBackoff()
 
 	var attempt int64
 	var errPersistent error
 	var marshaledRequest []byte
 
-	txLogger := getLogger(request, client.logger)
-	txID, msg := getTransactionIDAndMessage(request)
+	txLogger := getLogger(e, client.logger)
+	txID, msg := getTransactionIDAndMessage(e)
 
-	for attempt = int64(0); attempt < int64(maxAttempts); attempt, *currentBackoff = attempt+1, *currentBackoff*2 {
+	for attempt = int64(0); attempt < int64(maxAttempts); attempt, currentBackoff = attempt+1, currentBackoff*2 {
 		var protoRequest interface{}
 		var node *_Node
 
-		if transaction, ok := request.(*Transaction); ok {
+		if transaction, ok := e.(*Transaction); ok {
 			if attempt > 0 && transaction.nodeAccountIDs._Length() > 1 {
-				advanceRequest(request)
+				e.advanceRequest(e);
 			}
-
-			protoRequest = makeRequest(request)
-			nodeAccountID := getNodeAccountID(request)
+            protoRequest = e.makeRequest(e)
+			nodeAccountID := e.getNodeAccountID(e)
 			if node, ok = client.network._GetNodeForAccountID(nodeAccountID); !ok {
 				return TransactionResponse{}, ErrInvalidNodeAccountIDSet{nodeAccountID}
 			}
 
 			marshaledRequest, _ = protobuf.Marshal(protoRequest.(*services.Transaction))
-		} else if query, ok := request.(*Query); ok {
+		} else if query, ok := e.(*Query); ok {
 			if query.nodeAccountIDs.locked && query.nodeAccountIDs._Length() > 0 {
-				protoRequest = makeRequest(request)
-				nodeAccountID := getNodeAccountID(request)
+				protoRequest = e.makeRequest(e)
+				nodeAccountID := e.getNodeAccountID(e)
 				if node, ok = client.network._GetNodeForAccountID(nodeAccountID); !ok {
 					return &services.Response{}, ErrInvalidNodeAccountIDSet{nodeAccountID}
 				}
@@ -171,22 +186,22 @@ func _Execute( // nolint
 					}
 				}
 				query.nodeAccountIDs._Set(0, node.accountID)
-				protoRequest = makeRequest(request)
+				protoRequest = e.makeRequest(e)
 			}
 			marshaledRequest, _ = protobuf.Marshal(protoRequest.(*services.Query))
 		}
 
 		node._InUse()
 
-		txLogger.Trace("executing", "requestId", logID, "nodeAccountID", node.accountID.String(), "nodeIPAddress", node.address._String(), "Request Proto", hex.EncodeToString(marshaledRequest))
+		txLogger.Trace("executing", "requestId", e.getName(), "nodeAccountID", node.accountID.String(), "nodeIPAddress", node.address._String(), "Request Proto", hex.EncodeToString(marshaledRequest))
 
 		if !node._IsHealthy() {
-			txLogger.Trace("node is unhealthy, waiting before continuing", "requestId", logID, "delay", node._Wait().String())
-			_DelayForAttempt(logID, backOff.NextBackOff(), attempt, txLogger)
+			txLogger.Trace("node is unhealthy, waiting before continuing", "requestId", e.getName(), "delay", node._Wait().String())
+			_DelayForAttempt(e.getName(), backOff.NextBackOff(), attempt, txLogger)
 			continue
 		}
 
-		txLogger.Trace("updating node account ID index", "requestId", logID)
+		txLogger.Trace("updating node account ID index", "requestId", e.getName())
 
 		channel, err := node._GetChannel(txLogger)
 		if err != nil {
@@ -194,20 +209,20 @@ func _Execute( // nolint
 			continue
 		}
 
-		advanceRequest(request)
+		e.advanceRequest(e)
 
-		method := getMethod(request, channel)
+		method := e.getMethod(channel)
 
 		var resp interface{}
 
 		ctx := context.TODO()
 		var cancel context.CancelFunc
-		if deadline != nil {
-			grpcDeadline := time.Now().Add(*deadline)
+		if e.GetGrpcDeadline() != nil {
+			grpcDeadline := time.Now().Add(*e.GetGrpcDeadline())
 			ctx, cancel = context.WithDeadline(ctx, grpcDeadline)
 		}
 
-		txLogger.Trace("executing gRPC call", "requestId", logID)
+		txLogger.Trace("executing gRPC call", "requestId", e.getName())
 
 		var marshaledResponse []byte
 		if method.query != nil {
@@ -227,7 +242,7 @@ func _Execute( // nolint
 		}
 		if err != nil {
 			errPersistent = err
-			if _ExecutableDefaultRetryHandler(logID, err, txLogger) {
+			if _ExecutableDefaultRetryHandler(e.getName(), err, txLogger) {
 				client.network._IncreaseBackoff(node)
 				continue
 			}
@@ -235,7 +250,7 @@ func _Execute( // nolint
 				errPersistent = errors.New("error")
 			}
 
-			if _, ok := request.(*Transaction); ok {
+			if _, ok := e.(*Transaction); ok {
 				return TransactionResponse{}, errors.Wrapf(errPersistent, "retry %d/%d", attempt, maxAttempts)
 			}
 
@@ -246,22 +261,22 @@ func _Execute( // nolint
 
 		txLogger.Trace(
 			msg,
-			"requestID", logID,
+			"requestID", e.getName(),
 			"nodeID", node.accountID.String(),
 			"nodeAddress", node.address._String(),
 			"nodeIsHealthy", strconv.FormatBool(node._IsHealthy()),
 			"network", client.GetLedgerID().String(),
-			"status", mapStatusError(request, resp).Error(),
+			"status",e.mapStatusError(e, resp).Error(),
 			"txID", txID,
 		)
 
-		switch shouldRetry(request, resp) {
+		switch e.shouldRetry(e, resp) {
 		case executionStateRetry:
-			errPersistent = mapStatusError(request, resp)
-			_DelayForAttempt(logID, backOff.NextBackOff(), attempt, txLogger)
+			errPersistent = e.mapStatusError(e, resp)
+			_DelayForAttempt(e.getName(), backOff.NextBackOff(), attempt, txLogger)
 			continue
 		case executionStateExpired:
-			if transaction, ok := request.(*Transaction); ok {
+			if transaction, ok := e.(*Transaction); ok {
 				if !client.GetOperatorAccountID()._IsZero() && transaction.regenerateTransactionID && !transaction.transactionIDs.locked {
 					txLogger.Trace("received `TRANSACTION_EXPIRED` with transaction ID regeneration enabled; regenerating", "requestId", logID)
 					transaction.transactionIDs._Set(transaction.transactionIDs.index, TransactionIDGenerate(client.GetOperatorAccountID()))
@@ -270,20 +285,20 @@ func _Execute( // nolint
 					}
 					continue
 				} else {
-					return TransactionResponse{}, mapStatusError(request, resp)
+					return TransactionResponse{}, e.mapStatusError(e, resp)
 				}
 			} else {
-				return &services.Response{}, mapStatusError(request, resp)
+				return &services.Response{}, e.mapStatusError(e, resp)
 			}
 		case executionStateError:
-			if _, ok := request.(*Transaction); ok {
-				return TransactionResponse{}, mapStatusError(request, resp)
+			if _, ok := e.(*Transaction); ok {
+				return TransactionResponse{}, e.mapStatusError(e, resp)
 			}
 
-			return &services.Response{}, mapStatusError(request, resp)
+			return &services.Response{}, e.mapStatusError(e, resp)
 		case executionStateFinished:
 			txLogger.Trace("finished", "Response Proto", hex.EncodeToString(marshaledResponse))
-			return mapResponse(request, resp, node.accountID, protoRequest)
+			return e.mapResponse(e, resp, node.accountID, protoRequest)
 		}
 	}
 
@@ -291,12 +306,13 @@ func _Execute( // nolint
 		errPersistent = errors.New("error")
 	}
 
-	if _, ok := request.(*Transaction); ok {
+	if _, ok := e.(*Transaction); ok {
 		return TransactionResponse{}, errors.Wrapf(errPersistent, "retry %d/%d", attempt, maxAttempts)
 	}
 
 	return &services.Response{}, errPersistent
 }
+
 
 func _DelayForAttempt(logID string, backoff time.Duration, attempt int64, logger Logger) {
 	logger.Trace("retrying request attempt", "requestId", logID, "delay", backoff, "attempt", attempt+1)
