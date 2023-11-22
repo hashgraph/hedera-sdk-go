@@ -30,7 +30,7 @@ import (
 // AccountStakersQuery gets all of the accounts that are proxy staking to this account. For each of  them, the amount
 // currently staked will be given. This is not yet implemented, but will be in a future version of the API.
 type AccountStakersQuery struct {
-	Query
+	query
 	accountID *AccountID
 }
 
@@ -42,13 +42,13 @@ type AccountStakersQuery struct {
 func NewAccountStakersQuery() *AccountStakersQuery {
 	header := services.QueryHeader{}
 	return &AccountStakersQuery{
-		Query: _NewQuery(true, &header),
+		query: _NewQuery(true, &header),
 	}
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (query *AccountStakersQuery) SetGrpcDeadline(deadline *time.Duration) *AccountStakersQuery {
-	query.Query.SetGrpcDeadline(deadline)
+	query.query.SetGrpcDeadline(deadline)
 	return query
 }
 
@@ -105,7 +105,7 @@ func (query *AccountStakersQuery) GetCost(client *Client) (Hbar, error) {
 	if err != nil {
 		return Hbar{}, err
 	}
-	if query.Query.nodeAccountIDs.locked {
+	if query.query.nodeAccountIDs.locked {
 		for range query.nodeAccountIDs.slice {
 			paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 			if err != nil {
@@ -124,14 +124,14 @@ func (query *AccountStakersQuery) GetCost(client *Client) (Hbar, error) {
 
 	resp, err := _Execute(
 		client,
-		&query.Query,
+		&query.query,
 		_AccountStakersQueryShouldRetry,
 		_CostQueryMakeRequest,
 		_CostQueryAdvanceRequest,
-		_QueryGetNodeAccountID,
+		getNodeAccountID,
 		_AccountStakersQueryGetMethod,
 		_AccountStakersQueryMapStatusError,
-		_QueryMapResponse,
+		mapResponse,
 		query._GetLogID(),
 		query.grpcDeadline,
 		query.maxBackoff,
@@ -148,7 +148,7 @@ func (query *AccountStakersQuery) GetCost(client *Client) (Hbar, error) {
 }
 
 func _AccountStakersQueryShouldRetry(_ interface{}, response interface{}) _ExecutionState {
-	return _QueryShouldRetry(Status(response.(*services.Response).GetCryptoGetProxyStakers().Header.NodeTransactionPrecheckCode))
+	return shouldRetry(Status(response.(*services.Response).GetCryptoGetProxyStakers().Header.NodeTransactionPrecheckCode))
 }
 
 func _AccountStakersQueryMapStatusError(_ interface{}, response interface{}) error {
@@ -208,7 +208,7 @@ func (query *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) {
 	query.paymentTransactions = make([]*services.Transaction, 0)
 
 	if query.nodeAccountIDs.locked {
-		err = _QueryGeneratePayments(&query.Query, client, cost)
+		err = _QueryGeneratePayments(&query.query, client, cost)
 		if err != nil {
 			return []Transfer{}, err
 		}
@@ -228,14 +228,14 @@ func (query *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) {
 
 	resp, err := _Execute(
 		client,
-		&query.Query,
+		&query.query,
 		_AccountStakersQueryShouldRetry,
-		_QueryMakeRequest,
-		_QueryAdvanceRequest,
-		_QueryGetNodeAccountID,
+		makeRequest,
+		advanceRequest,
+		getNodeAccountID,
 		_AccountStakersQueryGetMethod,
 		_AccountStakersQueryMapStatusError,
-		_QueryMapResponse,
+		mapResponse,
 		query._GetLogID(),
 		query.grpcDeadline,
 		query.maxBackoff,
@@ -269,25 +269,25 @@ func (query *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) {
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.
 func (query *AccountStakersQuery) SetMaxQueryPayment(maxPayment Hbar) *AccountStakersQuery {
-	query.Query.SetMaxQueryPayment(maxPayment)
+	query.query.SetMaxQueryPayment(maxPayment)
 	return query
 }
 
 // SetQueryPayment sets the payment amount for this Query.
 func (query *AccountStakersQuery) SetQueryPayment(paymentAmount Hbar) *AccountStakersQuery {
-	query.Query.SetQueryPayment(paymentAmount)
+	query.query.SetQueryPayment(paymentAmount)
 	return query
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for this AccountStakersQuery.
 func (query *AccountStakersQuery) SetNodeAccountIDs(accountID []AccountID) *AccountStakersQuery {
-	query.Query.SetNodeAccountIDs(accountID)
+	query.query.SetNodeAccountIDs(accountID)
 	return query
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (query *AccountStakersQuery) SetMaxRetry(count int) *AccountStakersQuery {
-	query.Query.SetMaxRetry(count)
+	query.query.SetMaxRetry(count)
 	return query
 }
 
@@ -347,6 +347,6 @@ func (query *AccountStakersQuery) SetPaymentTransactionID(transactionID Transact
 }
 
 func (query *AccountStakersQuery) SetLogLevel(level LogLevel) *AccountStakersQuery {
-	query.Query.SetLogLevel(level)
+	query.query.SetLogLevel(level)
 	return query
 }

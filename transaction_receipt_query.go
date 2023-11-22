@@ -34,7 +34,7 @@ import (
 // submitted, the receipt is unknown.  This query is free (the payment field is left empty). No
 // State proof is available for this response
 type TransactionReceiptQuery struct {
-	Query
+	query
 	transactionID *TransactionID
 	childReceipts *bool
 	duplicates    *bool
@@ -50,13 +50,13 @@ type TransactionReceiptQuery struct {
 func NewTransactionReceiptQuery() *TransactionReceiptQuery {
 	header := services.QueryHeader{}
 	return &TransactionReceiptQuery{
-		Query: _NewQuery(false, &header),
+		query: _NewQuery(false, &header),
 	}
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (query *TransactionReceiptQuery) SetGrpcDeadline(deadline *time.Duration) *TransactionReceiptQuery {
-	query.Query.SetGrpcDeadline(deadline)
+	query.query.SetGrpcDeadline(deadline)
 	return query
 }
 
@@ -163,14 +163,14 @@ func (query *TransactionReceiptQuery) GetCost(client *Client) (Hbar, error) {
 
 	resp, err := _Execute(
 		client,
-		&query.Query,
+		&query.query,
 		_TransactionReceiptQueryShouldRetry,
 		_CostQueryMakeRequest,
 		_CostQueryAdvanceRequest,
-		_QueryGetNodeAccountID,
+		getNodeAccountID,
 		_TransactionReceiptQueryGetMethod,
 		_TransactionReceiptQueryMapStatusError,
-		_QueryMapResponse,
+		mapResponse,
 		query._GetLogID(),
 		query.grpcDeadline,
 		query.maxBackoff,
@@ -246,7 +246,7 @@ func (query *TransactionReceiptQuery) GetTransactionID() TransactionID {
 
 // SetNodeAccountIDs sets the _Node AccountID for this TransactionReceiptQuery.
 func (query *TransactionReceiptQuery) SetNodeAccountIDs(accountID []AccountID) *TransactionReceiptQuery {
-	query.Query.SetNodeAccountIDs(accountID)
+	query.query.SetNodeAccountIDs(accountID)
 	return query
 }
 
@@ -264,7 +264,7 @@ func (query *TransactionReceiptQuery) SetMaxQueryPayment(queryMaxPayment Hbar) *
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (query *TransactionReceiptQuery) SetMaxRetry(count int) *TransactionReceiptQuery {
-	query.Query.SetMaxRetry(count)
+	query.query.SetMaxRetry(count)
 	return query
 }
 
@@ -334,14 +334,14 @@ func (query *TransactionReceiptQuery) Execute(client *Client) (TransactionReceip
 
 	resp, err := _Execute(
 		client,
-		&query.Query,
+		&query.query,
 		_TransactionReceiptQueryShouldRetry,
-		_QueryMakeRequest,
-		_QueryAdvanceRequest,
-		_QueryGetNodeAccountID,
+		makeRequest,
+		advanceRequest,
+		getNodeAccountID,
 		_TransactionReceiptQueryGetMethod,
 		_TransactionReceiptQueryMapStatusError,
-		_QueryMapResponse,
+		mapResponse,
 		query._GetLogID(),
 		query.grpcDeadline,
 		query.maxBackoff,
@@ -372,6 +372,6 @@ func (query *TransactionReceiptQuery) SetPaymentTransactionID(transactionID Tran
 }
 
 func (query *TransactionReceiptQuery) SetLogLevel(level LogLevel) *TransactionReceiptQuery {
-	query.Query.SetLogLevel(level)
+	query.query.SetLogLevel(level)
 	return query
 }

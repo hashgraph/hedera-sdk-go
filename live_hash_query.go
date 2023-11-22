@@ -29,7 +29,7 @@ import (
 
 // LiveHashQuery Requests a livehash associated to an account.
 type LiveHashQuery struct {
-	Query
+	query
 	accountID *AccountID
 	hash      []byte
 }
@@ -38,13 +38,13 @@ type LiveHashQuery struct {
 func NewLiveHashQuery() *LiveHashQuery {
 	header := services.QueryHeader{}
 	return &LiveHashQuery{
-		Query: _NewQuery(true, &header),
+		query: _NewQuery(true, &header),
 	}
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (query *LiveHashQuery) SetGrpcDeadline(deadline *time.Duration) *LiveHashQuery {
-	query.Query.SetGrpcDeadline(deadline)
+	query.query.SetGrpcDeadline(deadline)
 	return query
 }
 
@@ -135,14 +135,14 @@ func (query *LiveHashQuery) GetCost(client *Client) (Hbar, error) {
 
 	resp, err := _Execute(
 		client,
-		&query.Query,
+		&query.query,
 		_LiveHashQueryShouldRetry,
 		_CostQueryMakeRequest,
 		_CostQueryAdvanceRequest,
-		_QueryGetNodeAccountID,
+		getNodeAccountID,
 		_LiveHashQueryGetMethod,
 		_LiveHashQueryMapStatusError,
-		_QueryMapResponse,
+		mapResponse,
 		query._GetLogID(),
 		query.grpcDeadline,
 		query.maxBackoff,
@@ -159,7 +159,7 @@ func (query *LiveHashQuery) GetCost(client *Client) (Hbar, error) {
 }
 
 func _LiveHashQueryShouldRetry(_ interface{}, response interface{}) _ExecutionState {
-	return _QueryShouldRetry(Status(response.(*services.Response).GetCryptoGetLiveHash().Header.NodeTransactionPrecheckCode))
+	return shouldRetry(Status(response.(*services.Response).GetCryptoGetLiveHash().Header.NodeTransactionPrecheckCode))
 }
 
 func _LiveHashQueryMapStatusError(_ interface{}, response interface{}) error {
@@ -220,7 +220,7 @@ func (query *LiveHashQuery) Execute(client *Client) (LiveHash, error) {
 	query.paymentTransactions = make([]*services.Transaction, 0)
 
 	if query.nodeAccountIDs.locked {
-		err = _QueryGeneratePayments(&query.Query, client, cost)
+		err = _QueryGeneratePayments(&query.query, client, cost)
 		if err != nil {
 			return LiveHash{}, err
 		}
@@ -240,14 +240,14 @@ func (query *LiveHashQuery) Execute(client *Client) (LiveHash, error) {
 
 	resp, err := _Execute(
 		client,
-		&query.Query,
+		&query.query,
 		_LiveHashQueryShouldRetry,
-		_QueryMakeRequest,
-		_QueryAdvanceRequest,
-		_QueryGetNodeAccountID,
+		makeRequest,
+		advanceRequest,
+		getNodeAccountID,
 		_LiveHashQueryGetMethod,
 		_LiveHashQueryMapStatusError,
-		_QueryMapResponse,
+		mapResponse,
 		query._GetLogID(),
 		query.grpcDeadline,
 		query.maxBackoff,
@@ -269,19 +269,19 @@ func (query *LiveHashQuery) Execute(client *Client) (LiveHash, error) {
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.
 func (query *LiveHashQuery) SetMaxQueryPayment(maxPayment Hbar) *LiveHashQuery {
-	query.Query.SetMaxQueryPayment(maxPayment)
+	query.query.SetMaxQueryPayment(maxPayment)
 	return query
 }
 
 // SetQueryPayment sets the payment amount for this Query.
 func (query *LiveHashQuery) SetQueryPayment(paymentAmount Hbar) *LiveHashQuery {
-	query.Query.SetQueryPayment(paymentAmount)
+	query.query.SetQueryPayment(paymentAmount)
 	return query
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for this LiveHashQuery.
 func (query *LiveHashQuery) SetNodeAccountIDs(accountID []AccountID) *LiveHashQuery {
-	query.Query.SetNodeAccountIDs(accountID)
+	query.query.SetNodeAccountIDs(accountID)
 	return query
 }
 
@@ -342,16 +342,16 @@ func (query *LiveHashQuery) SetPaymentTransactionID(transactionID TransactionID)
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (query *LiveHashQuery) SetMaxRetry(count int) *LiveHashQuery {
-	query.Query.SetMaxRetry(count)
+	query.query.SetMaxRetry(count)
 	return query
 }
 
 // GetMaxRetry returns the max number of errors before execution will fail.
 func (query *LiveHashQuery) GetMaxRetry() int {
-	return query.Query.maxRetry
+	return query.query.maxRetry
 }
 
 func (query *LiveHashQuery) SetLogLevel(level LogLevel) *LiveHashQuery {
-	query.Query.SetLogLevel(level)
+	query.query.SetLogLevel(level)
 	return query
 }

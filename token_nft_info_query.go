@@ -31,7 +31,7 @@ import (
 // Applicable only to tokens of type NON_FUNGIBLE_UNIQUE.
 // Gets info on a NFT for a given TokenID (of type NON_FUNGIBLE_UNIQUE) and serial number
 type TokenNftInfoQuery struct {
-	Query
+	query
 	nftID *NftID
 }
 
@@ -41,14 +41,14 @@ type TokenNftInfoQuery struct {
 func NewTokenNftInfoQuery() *TokenNftInfoQuery {
 	header := services.QueryHeader{}
 	return &TokenNftInfoQuery{
-		Query: _NewQuery(true, &header),
+		query: _NewQuery(true, &header),
 		nftID: nil,
 	}
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (query *TokenNftInfoQuery) SetGrpcDeadline(deadline *time.Duration) *TokenNftInfoQuery {
-	query.Query.SetGrpcDeadline(deadline)
+	query.query.SetGrpcDeadline(deadline)
 	return query
 }
 
@@ -182,14 +182,14 @@ func (query *TokenNftInfoQuery) GetCost(client *Client) (Hbar, error) {
 	var resp interface{}
 	resp, err = _Execute(
 		client,
-		&query.Query,
+		&query.query,
 		_TokenNftInfoQueryShouldRetry,
 		_CostQueryMakeRequest,
 		_CostQueryAdvanceRequest,
-		_QueryGetNodeAccountID,
+		getNodeAccountID,
 		_TokenNftInfoQueryGetMethod,
 		_TokenNftInfoQueryMapStatusError,
-		_QueryMapResponse,
+		mapResponse,
 		query._GetLogID(),
 		query.grpcDeadline,
 		query.maxBackoff,
@@ -205,7 +205,7 @@ func (query *TokenNftInfoQuery) GetCost(client *Client) (Hbar, error) {
 }
 
 func _TokenNftInfoQueryShouldRetry(_ interface{}, response interface{}) _ExecutionState {
-	return _QueryShouldRetry(Status(response.(*services.Response).GetTokenGetNftInfo().Header.NodeTransactionPrecheckCode))
+	return shouldRetry(Status(response.(*services.Response).GetTokenGetNftInfo().Header.NodeTransactionPrecheckCode))
 }
 
 func _TokenNftInfoQueryMapStatusError(_ interface{}, response interface{}) error {
@@ -266,7 +266,7 @@ func (query *TokenNftInfoQuery) Execute(client *Client) ([]TokenNftInfo, error) 
 	query.paymentTransactions = make([]*services.Transaction, 0)
 
 	if query.nodeAccountIDs.locked {
-		err = _QueryGeneratePayments(&query.Query, client, cost)
+		err = _QueryGeneratePayments(&query.query, client, cost)
 		if err != nil {
 			return []TokenNftInfo{}, err
 		}
@@ -288,14 +288,14 @@ func (query *TokenNftInfoQuery) Execute(client *Client) ([]TokenNftInfo, error) 
 	tokenInfos := make([]TokenNftInfo, 0)
 	resp, err = _Execute(
 		client,
-		&query.Query,
+		&query.query,
 		_TokenNftInfoQueryShouldRetry,
-		_QueryMakeRequest,
-		_QueryAdvanceRequest,
-		_QueryGetNodeAccountID,
+		makeRequest,
+		advanceRequest,
+		getNodeAccountID,
 		_TokenNftInfoQueryGetMethod,
 		_TokenNftInfoQueryMapStatusError,
-		_QueryMapResponse,
+		mapResponse,
 		query._GetLogID(),
 		query.grpcDeadline,
 		query.maxBackoff,
@@ -313,25 +313,25 @@ func (query *TokenNftInfoQuery) Execute(client *Client) ([]TokenNftInfo, error) 
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.
 func (query *TokenNftInfoQuery) SetMaxQueryPayment(maxPayment Hbar) *TokenNftInfoQuery {
-	query.Query.SetMaxQueryPayment(maxPayment)
+	query.query.SetMaxQueryPayment(maxPayment)
 	return query
 }
 
 // SetQueryPayment sets the payment amount for this Query.
 func (query *TokenNftInfoQuery) SetQueryPayment(paymentAmount Hbar) *TokenNftInfoQuery {
-	query.Query.SetQueryPayment(paymentAmount)
+	query.query.SetQueryPayment(paymentAmount)
 	return query
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for this TokenNftInfoQuery.
 func (query *TokenNftInfoQuery) SetNodeAccountIDs(accountID []AccountID) *TokenNftInfoQuery {
-	query.Query.SetNodeAccountIDs(accountID)
+	query.query.SetNodeAccountIDs(accountID)
 	return query
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (query *TokenNftInfoQuery) SetMaxRetry(count int) *TokenNftInfoQuery {
-	query.Query.SetMaxRetry(count)
+	query.query.SetMaxRetry(count)
 	return query
 }
 
@@ -391,6 +391,6 @@ func (query *TokenNftInfoQuery) SetPaymentTransactionID(transactionID Transactio
 }
 
 func (query *TokenNftInfoQuery) SetLogLevel(level LogLevel) *TokenNftInfoQuery {
-	query.Query.SetLogLevel(level)
+	query.query.SetLogLevel(level)
 	return query
 }

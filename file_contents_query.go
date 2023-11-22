@@ -29,7 +29,7 @@ import (
 
 // FileContentsQuery retrieves the contents of a file.
 type FileContentsQuery struct {
-	Query
+	query
 	fileID *FileID
 }
 
@@ -37,13 +37,13 @@ type FileContentsQuery struct {
 func NewFileContentsQuery() *FileContentsQuery {
 	header := services.QueryHeader{}
 	return &FileContentsQuery{
-		Query: _NewQuery(true, &header),
+		query: _NewQuery(true, &header),
 	}
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (query *FileContentsQuery) SetGrpcDeadline(deadline *time.Duration) *FileContentsQuery {
-	query.Query.SetGrpcDeadline(deadline)
+	query.query.SetGrpcDeadline(deadline)
 	return query
 }
 
@@ -120,14 +120,14 @@ func (query *FileContentsQuery) GetCost(client *Client) (Hbar, error) {
 
 	resp, err := _Execute(
 		client,
-		&query.Query,
+		&query.query,
 		_FileContentsQueryShouldRetry,
 		_CostQueryMakeRequest,
 		_CostQueryAdvanceRequest,
-		_QueryGetNodeAccountID,
+		getNodeAccountID,
 		_FileContentsQueryGetMethod,
 		_FileContentsQueryMapStatusError,
-		_QueryMapResponse,
+		mapResponse,
 		query._GetLogID(),
 		query.grpcDeadline,
 		query.maxBackoff,
@@ -144,7 +144,7 @@ func (query *FileContentsQuery) GetCost(client *Client) (Hbar, error) {
 }
 
 func _FileContentsQueryShouldRetry(_ interface{}, response interface{}) _ExecutionState {
-	return _QueryShouldRetry(Status(response.(*services.Response).GetFileGetContents().Header.NodeTransactionPrecheckCode))
+	return shouldRetry(Status(response.(*services.Response).GetFileGetContents().Header.NodeTransactionPrecheckCode))
 }
 
 func _FileContentsQueryMapStatusError(_ interface{}, response interface{}) error {
@@ -205,7 +205,7 @@ func (query *FileContentsQuery) Execute(client *Client) ([]byte, error) {
 	query.paymentTransactions = make([]*services.Transaction, 0)
 
 	if query.nodeAccountIDs.locked {
-		err = _QueryGeneratePayments(&query.Query, client, cost)
+		err = _QueryGeneratePayments(&query.query, client, cost)
 		if err != nil {
 			return []byte{}, err
 		}
@@ -225,14 +225,14 @@ func (query *FileContentsQuery) Execute(client *Client) ([]byte, error) {
 
 	resp, err := _Execute(
 		client,
-		&query.Query,
+		&query.query,
 		_FileContentsQueryShouldRetry,
-		_QueryMakeRequest,
-		_QueryAdvanceRequest,
-		_QueryGetNodeAccountID,
+		makeRequest,
+		advanceRequest,
+		getNodeAccountID,
 		_FileContentsQueryGetMethod,
 		_FileContentsQueryMapStatusError,
-		_QueryMapResponse,
+		mapResponse,
 		query._GetLogID(),
 		query.grpcDeadline,
 		query.maxBackoff,
@@ -249,25 +249,25 @@ func (query *FileContentsQuery) Execute(client *Client) ([]byte, error) {
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.
 func (query *FileContentsQuery) SetMaxQueryPayment(maxPayment Hbar) *FileContentsQuery {
-	query.Query.SetMaxQueryPayment(maxPayment)
+	query.query.SetMaxQueryPayment(maxPayment)
 	return query
 }
 
 // SetQueryPayment sets the payment amount for this Query.
 func (query *FileContentsQuery) SetQueryPayment(paymentAmount Hbar) *FileContentsQuery {
-	query.Query.SetQueryPayment(paymentAmount)
+	query.query.SetQueryPayment(paymentAmount)
 	return query
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for this FileContentsQuery.
 func (query *FileContentsQuery) SetNodeAccountIDs(accountID []AccountID) *FileContentsQuery {
-	query.Query.SetNodeAccountIDs(accountID)
+	query.query.SetNodeAccountIDs(accountID)
 	return query
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (query *FileContentsQuery) SetMaxRetry(count int) *FileContentsQuery {
-	query.Query.SetMaxRetry(count)
+	query.query.SetMaxRetry(count)
 	return query
 }
 
@@ -327,6 +327,6 @@ func (query *FileContentsQuery) SetPaymentTransactionID(transactionID Transactio
 }
 
 func (query *FileContentsQuery) SetLogLevel(level LogLevel) *FileContentsQuery {
-	query.Query.SetLogLevel(level)
+	query.query.SetLogLevel(level)
 	return query
 }

@@ -29,7 +29,7 @@ import (
 
 // TokenInfoQuery Used get information about Token instance
 type TokenInfoQuery struct {
-	Query
+	query
 	tokenID *TokenID
 }
 
@@ -37,13 +37,13 @@ type TokenInfoQuery struct {
 func NewTokenInfoQuery() *TokenInfoQuery {
 	header := services.QueryHeader{}
 	return &TokenInfoQuery{
-		Query: _NewQuery(true, &header),
+		query: _NewQuery(true, &header),
 	}
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (query *TokenInfoQuery) SetGrpcDeadline(deadline *time.Duration) *TokenInfoQuery {
-	query.Query.SetGrpcDeadline(deadline)
+	query.query.SetGrpcDeadline(deadline)
 	return query
 }
 
@@ -119,14 +119,14 @@ func (query *TokenInfoQuery) GetCost(client *Client) (Hbar, error) {
 
 	resp, err := _Execute(
 		client,
-		&query.Query,
+		&query.query,
 		_TokenInfoQueryShouldRetry,
 		_CostQueryMakeRequest,
 		_CostQueryAdvanceRequest,
-		_QueryGetNodeAccountID,
+		getNodeAccountID,
 		_TokenInfoQueryGetMethod,
 		_TokenInfoQueryMapStatusError,
-		_QueryMapResponse,
+		mapResponse,
 		query._GetLogID(),
 		query.grpcDeadline,
 		query.maxBackoff,
@@ -143,7 +143,7 @@ func (query *TokenInfoQuery) GetCost(client *Client) (Hbar, error) {
 }
 
 func _TokenInfoQueryShouldRetry(_ interface{}, response interface{}) _ExecutionState {
-	return _QueryShouldRetry(Status(response.(*services.Response).GetTokenGetInfo().Header.NodeTransactionPrecheckCode))
+	return shouldRetry(Status(response.(*services.Response).GetTokenGetInfo().Header.NodeTransactionPrecheckCode))
 }
 
 func _TokenInfoQueryMapStatusError(_ interface{}, response interface{}) error {
@@ -204,7 +204,7 @@ func (query *TokenInfoQuery) Execute(client *Client) (TokenInfo, error) {
 	query.paymentTransactions = make([]*services.Transaction, 0)
 
 	if query.nodeAccountIDs.locked {
-		err = _QueryGeneratePayments(&query.Query, client, cost)
+		err = _QueryGeneratePayments(&query.query, client, cost)
 		if err != nil {
 			return TokenInfo{}, err
 		}
@@ -224,14 +224,14 @@ func (query *TokenInfoQuery) Execute(client *Client) (TokenInfo, error) {
 
 	resp, err := _Execute(
 		client,
-		&query.Query,
+		&query.query,
 		_TokenInfoQueryShouldRetry,
-		_QueryMakeRequest,
-		_QueryAdvanceRequest,
-		_QueryGetNodeAccountID,
+		makeRequest,
+		advanceRequest,
+		getNodeAccountID,
 		_TokenInfoQueryGetMethod,
 		_TokenInfoQueryMapStatusError,
-		_QueryMapResponse,
+		mapResponse,
 		query._GetLogID(),
 		query.grpcDeadline,
 		query.maxBackoff,
@@ -250,25 +250,25 @@ func (query *TokenInfoQuery) Execute(client *Client) (TokenInfo, error) {
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.
 func (query *TokenInfoQuery) SetMaxQueryPayment(maxPayment Hbar) *TokenInfoQuery {
-	query.Query.SetMaxQueryPayment(maxPayment)
+	query.query.SetMaxQueryPayment(maxPayment)
 	return query
 }
 
 // SetQueryPayment sets the payment amount for this Query.
 func (query *TokenInfoQuery) SetQueryPayment(paymentAmount Hbar) *TokenInfoQuery {
-	query.Query.SetQueryPayment(paymentAmount)
+	query.query.SetQueryPayment(paymentAmount)
 	return query
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for this TokenInfoQuery.
 func (query *TokenInfoQuery) SetNodeAccountIDs(accountID []AccountID) *TokenInfoQuery {
-	query.Query.SetNodeAccountIDs(accountID)
+	query.query.SetNodeAccountIDs(accountID)
 	return query
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (query *TokenInfoQuery) SetMaxRetry(count int) *TokenInfoQuery {
-	query.Query.SetMaxRetry(count)
+	query.query.SetMaxRetry(count)
 	return query
 }
 
@@ -328,6 +328,6 @@ func (query *TokenInfoQuery) SetPaymentTransactionID(transactionID TransactionID
 }
 
 func (query *TokenInfoQuery) SetLogLevel(level LogLevel) *TokenInfoQuery {
-	query.Query.SetLogLevel(level)
+	query.query.SetLogLevel(level)
 	return query
 }

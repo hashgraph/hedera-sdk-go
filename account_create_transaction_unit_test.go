@@ -1,6 +1,3 @@
-//go:build all || unit
-// +build all unit
-
 package hedera
 
 /*-
@@ -319,7 +316,7 @@ func TestUnitAccountCreateTransactionCoverage(t *testing.T) {
 		Freeze()
 	require.NoError(t, err)
 
-	transaction._ValidateNetworkOnIDs(client)
+	transaction.validateNetworkOnIDs(client)
 
 	_, err = transaction.Schedule()
 	require.NoError(t, err)

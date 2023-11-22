@@ -29,7 +29,7 @@ import (
 
 // ScheduleInfoQuery Gets information about a schedule in the network's action queue.
 type ScheduleInfoQuery struct {
-	Query
+	query
 	scheduleID *ScheduleID
 }
 
@@ -37,13 +37,13 @@ type ScheduleInfoQuery struct {
 func NewScheduleInfoQuery() *ScheduleInfoQuery {
 	header := services.QueryHeader{}
 	return &ScheduleInfoQuery{
-		Query: _NewQuery(true, &header),
+		query: _NewQuery(true, &header),
 	}
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (query *ScheduleInfoQuery) SetGrpcDeadline(deadline *time.Duration) *ScheduleInfoQuery {
-	query.Query.SetGrpcDeadline(deadline)
+	query.query.SetGrpcDeadline(deadline)
 	return query
 }
 
@@ -120,14 +120,14 @@ func (query *ScheduleInfoQuery) GetCost(client *Client) (Hbar, error) {
 
 	resp, err := _Execute(
 		client,
-		&query.Query,
+		&query.query,
 		_ScheduleInfoQueryShouldRetry,
 		_CostQueryMakeRequest,
 		_CostQueryAdvanceRequest,
-		_QueryGetNodeAccountID,
+		getNodeAccountID,
 		_ScheduleInfoQueryGetMethod,
 		_ScheduleInfoQueryMapStatusError,
-		_QueryMapResponse,
+		mapResponse,
 		query._GetLogID(),
 		query.grpcDeadline,
 		query.maxBackoff,
@@ -144,7 +144,7 @@ func (query *ScheduleInfoQuery) GetCost(client *Client) (Hbar, error) {
 }
 
 func _ScheduleInfoQueryShouldRetry(_ interface{}, response interface{}) _ExecutionState {
-	return _QueryShouldRetry(Status(response.(*services.Response).GetScheduleGetInfo().Header.NodeTransactionPrecheckCode))
+	return shouldRetry(Status(response.(*services.Response).GetScheduleGetInfo().Header.NodeTransactionPrecheckCode))
 }
 
 func _ScheduleInfoQueryMapStatusError(_ interface{}, response interface{}) error {
@@ -205,7 +205,7 @@ func (query *ScheduleInfoQuery) Execute(client *Client) (ScheduleInfo, error) {
 	query.paymentTransactions = make([]*services.Transaction, 0)
 
 	if query.nodeAccountIDs.locked {
-		err = _QueryGeneratePayments(&query.Query, client, cost)
+		err = _QueryGeneratePayments(&query.query, client, cost)
 		if err != nil {
 			return ScheduleInfo{}, err
 		}
@@ -225,14 +225,14 @@ func (query *ScheduleInfoQuery) Execute(client *Client) (ScheduleInfo, error) {
 
 	resp, err := _Execute(
 		client,
-		&query.Query,
+		&query.query,
 		_ScheduleInfoQueryShouldRetry,
-		_QueryMakeRequest,
-		_QueryAdvanceRequest,
-		_QueryGetNodeAccountID,
+		makeRequest,
+		advanceRequest,
+		getNodeAccountID,
 		_ScheduleInfoQueryGetMethod,
 		_ScheduleInfoQueryMapStatusError,
-		_QueryMapResponse,
+		mapResponse,
 		query._GetLogID(),
 		query.grpcDeadline,
 		query.maxBackoff,
@@ -249,30 +249,30 @@ func (query *ScheduleInfoQuery) Execute(client *Client) (ScheduleInfo, error) {
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.
 func (query *ScheduleInfoQuery) SetMaxQueryPayment(maxPayment Hbar) *ScheduleInfoQuery {
-	query.Query.SetMaxQueryPayment(maxPayment)
+	query.query.SetMaxQueryPayment(maxPayment)
 	return query
 }
 
 // SetQueryPayment sets the payment amount for this Query.
 func (query *ScheduleInfoQuery) SetQueryPayment(paymentAmount Hbar) *ScheduleInfoQuery {
-	query.Query.SetQueryPayment(paymentAmount)
+	query.query.SetQueryPayment(paymentAmount)
 	return query
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for this ScheduleInfoQuery.
 func (query *ScheduleInfoQuery) SetNodeAccountIDs(accountID []AccountID) *ScheduleInfoQuery {
-	query.Query.SetNodeAccountIDs(accountID)
+	query.query.SetNodeAccountIDs(accountID)
 	return query
 }
 
 // GetNodeAccountIDs returns the _Node AccountID for this ScheduleInfoQuery.
 func (query *ScheduleInfoQuery) GetNodeAccountIDs() []AccountID {
-	return query.Query.GetNodeAccountIDs()
+	return query.query.GetNodeAccountIDs()
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (query *ScheduleInfoQuery) SetMaxRetry(count int) *ScheduleInfoQuery {
-	query.Query.SetMaxRetry(count)
+	query.query.SetMaxRetry(count)
 	return query
 }
 
@@ -331,6 +331,6 @@ func (query *ScheduleInfoQuery) SetPaymentTransactionID(transactionID Transactio
 }
 
 func (query *ScheduleInfoQuery) SetLogLevel(level LogLevel) *ScheduleInfoQuery {
-	query.Query.SetLogLevel(level)
+	query.query.SetLogLevel(level)
 	return query
 }

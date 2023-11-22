@@ -30,7 +30,7 @@ import (
 // AccountBalanceQuery gets the balance of a CryptoCurrency account. This returns only the balance, so it is a smaller
 // and faster reply than AccountInfoQuery, which returns the balance plus additional information.
 type AccountBalanceQuery struct {
-	Query
+	query
 	accountID  *AccountID
 	contractID *ContractID
 	timestamp  time.Time
@@ -43,13 +43,13 @@ type AccountBalanceQuery struct {
 func NewAccountBalanceQuery() *AccountBalanceQuery {
 	header := services.QueryHeader{}
 	return &AccountBalanceQuery{
-		Query: _NewQuery(false, &header),
+		query: _NewQuery(false, &header),
 	}
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (query *AccountBalanceQuery) SetGrpcDeadline(deadline *time.Duration) *AccountBalanceQuery {
-	query.Query.SetGrpcDeadline(deadline)
+	query.query.SetGrpcDeadline(deadline)
 	return query
 }
 
@@ -152,14 +152,14 @@ func (query *AccountBalanceQuery) GetCost(client *Client) (Hbar, error) {
 	}
 	resp, err := _Execute(
 		client,
-		&query.Query,
+		&query.query,
 		_AccountBalanceQueryShouldRetry,
 		_CostQueryMakeRequest,
 		_CostQueryAdvanceRequest,
-		_QueryGetNodeAccountID,
+		getNodeAccountID,
 		_AccountBalanceQueryGetMethod,
 		_AccountBalanceQueryMapStatusError,
-		_QueryMapResponse,
+		mapResponse,
 		query._GetLogID(),
 		query.grpcDeadline,
 		query.maxBackoff,
@@ -176,7 +176,7 @@ func (query *AccountBalanceQuery) GetCost(client *Client) (Hbar, error) {
 }
 
 func _AccountBalanceQueryShouldRetry(_ interface{}, response interface{}) _ExecutionState {
-	return _QueryShouldRetry(Status(response.(*services.Response).GetCryptogetAccountBalance().Header.NodeTransactionPrecheckCode))
+	return shouldRetry(Status(response.(*services.Response).GetCryptogetAccountBalance().Header.NodeTransactionPrecheckCode))
 }
 
 func _AccountBalanceQueryMapStatusError(_ interface{}, response interface{}) error {
@@ -216,14 +216,14 @@ func (query *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error
 
 	resp, err := _Execute(
 		client,
-		&query.Query,
+		&query.query,
 		_AccountBalanceQueryShouldRetry,
-		_QueryMakeRequest,
-		_QueryAdvanceRequest,
-		_QueryGetNodeAccountID,
+		makeRequest,
+		advanceRequest,
+		getNodeAccountID,
 		_AccountBalanceQueryGetMethod,
 		_AccountBalanceQueryMapStatusError,
-		_QueryMapResponse,
+		mapResponse,
 		query._GetLogID(),
 		query.grpcDeadline,
 		query.maxBackoff,
@@ -240,25 +240,25 @@ func (query *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.
 func (query *AccountBalanceQuery) SetMaxQueryPayment(maxPayment Hbar) *AccountBalanceQuery {
-	query.Query.SetMaxQueryPayment(maxPayment)
+	query.query.SetMaxQueryPayment(maxPayment)
 	return query
 }
 
 // SetQueryPayment sets the payment amount for this Query.
 func (query *AccountBalanceQuery) SetQueryPayment(paymentAmount Hbar) *AccountBalanceQuery {
-	query.Query.SetQueryPayment(paymentAmount)
+	query.query.SetQueryPayment(paymentAmount)
 	return query
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for this AccountBalanceQuery.
 func (query *AccountBalanceQuery) SetNodeAccountIDs(accountID []AccountID) *AccountBalanceQuery {
-	query.Query.SetNodeAccountIDs(accountID)
+	query.query.SetNodeAccountIDs(accountID)
 	return query
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (query *AccountBalanceQuery) SetMaxRetry(count int) *AccountBalanceQuery {
-	query.Query.SetMaxRetry(count)
+	query.query.SetMaxRetry(count)
 	return query
 }
 
@@ -314,6 +314,6 @@ func (query *AccountBalanceQuery) SetPaymentTransactionID(transactionID Transact
 }
 
 func (query *AccountBalanceQuery) SetLogLevel(level LogLevel) *AccountBalanceQuery {
-	query.Query.SetLogLevel(level)
+	query.query.SetLogLevel(level)
 	return query
 }

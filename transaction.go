@@ -53,7 +53,6 @@ type Transaction interface {
 	FreezeWith(client *Client) (Transaction, error)
 }
 
-
 // transaction is base struct for all transactions that may be built and submitted to Hedera.
 type transaction struct {
 	executable
@@ -589,7 +588,7 @@ func (this *transaction) getNodeAccountID(request interface{}) AccountID {
 	return request.(*transaction).nodeAccountIDs._GetCurrent().(AccountID)
 }
 
-func (this *transaction)mapStatusError(
+func (this *transaction) mapStatusError(
 	request interface{},
 	response interface{},
 ) error {
@@ -600,7 +599,7 @@ func (this *transaction)mapStatusError(
 	}
 }
 
-func (this *transaction )mapResponse(request interface{}, _ interface{}, nodeID AccountID, protoRequest interface{}) (interface{}, error) {
+func (this *transaction) mapResponse(request interface{}, _ interface{}, nodeID AccountID, protoRequest interface{}) (interface{}, error) {
 	hash := sha512.New384()
 	_, err := hash.Write(protoRequest.(*services.Transaction).SignedTransactionBytes)
 	if err != nil {
@@ -855,8 +854,6 @@ func (this *transaction) SetTransactionID(transactionID TransactionID) *transact
 	return this
 }
 
-
-
 // SetNodeAccountIDs sets the node AccountID for this transaction.
 func (this *transaction) SetNodeAccountIDs(nodeAccountIDs []AccountID) *transaction {
 	for _, nodeAccountID := range nodeAccountIDs {
@@ -1001,31 +998,29 @@ func (this *transaction) Execute(client *Client) (TransactionResponse, error) {
 }
 
 // Building empty object as "default" implementation. All inhertents must implement their own implementation.
-func (this *transaction) build() *services.TransactionBody{
+func (this *transaction) build() *services.TransactionBody {
 	return &services.TransactionBody{}
 }
 
 // Building empty object as "default" implementation. All inhertents must implement their own implementation.
-func (this *transaction) buildScheduled() (*services.SchedulableTransactionBody, error){
+func (this *transaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{}, nil
 }
 
 // Building empty object as "default" implementation. All inhertents must implement their own implementation.
-func (this *transaction) getMethod(*_Channel) _Method{
+func (this *transaction) getMethod(*_Channel) _Method {
 	return _Method{}
 }
 
 // Building empty object as "default" implementation. All inhertents must implement their own implementation.
-func (this *transaction) getName() string{
+func (this *transaction) getName() string {
 	return "transaction"
 }
 
 // Building empty object as "default" implementation. All inhertents must implement their own implementation.
-func (this *transaction) validateNetworkOnIDs(client *Client) error{
+func (this *transaction) validateNetworkOnIDs(client *Client) error {
 	return errors.New("Function not implemented")
 }
-
-
 
 func TransactionSign(transaction interface{}, privateKey PrivateKey) (interface{}, error) { // nolint
 	switch i := transaction.(type) {
@@ -4841,9 +4836,4 @@ func TransactionExecute(transaction interface{}, client *Client) (TransactionRes
 	default:
 		return TransactionResponse{}, errors.New("(BUG) non-exhaustive switch statement")
 	}
-}
-
-func (transaction *transaction) SetLogLevel(level LogLevel) *transaction {
-	transaction.logLevel = &level
-	return transaction
 }
