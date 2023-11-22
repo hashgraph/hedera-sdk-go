@@ -157,7 +157,7 @@ func (scheduleInfo *ScheduleInfo) GetScheduledTransaction() (ITransaction, error
 		Memo:           pb.Memo,
 	}
 
-	tx := Transaction{
+	tx := transaction{
 		transactionFee: pb.GetTransactionFee(),
 		memo:           pb.GetMemo(),
 	}
