@@ -449,17 +449,6 @@ func (this *transaction) GetTransactionHashPerNode() (map[AccountID][]byte, erro
 	return transactionHash, nil
 }
 
-// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (this *transaction) SetGrpcDeadline(deadline *time.Duration) *transaction {
-	this.grpcDeadline = deadline
-	return this
-}
-
-// GetGrpcDeadline returns the grpc deadline
-func (this *transaction) GetGrpcDeadline() *time.Duration {
-	return this.grpcDeadline
-}
-
 // Sets the maxTransaction fee based on priority:
 // 1. Explicitly set for this transaction
 // 2. Client has a default value set for all transactions
@@ -866,16 +855,7 @@ func (this *transaction) SetTransactionID(transactionID TransactionID) *transact
 	return this
 }
 
-// GetNodeAccountID returns the node AccountID for this transaction.
-func (this *transaction) GetNodeAccountIDs() (nodeAccountIDs []AccountID) {
-	nodeAccountIDs = []AccountID{}
 
-	for _, value := range this.nodeAccountIDs.slice {
-		nodeAccountIDs = append(nodeAccountIDs, value.(AccountID))
-	}
-
-	return nodeAccountIDs
-}
 
 // SetNodeAccountIDs sets the node AccountID for this transaction.
 func (this *transaction) SetNodeAccountIDs(nodeAccountIDs []AccountID) *transaction {
@@ -884,11 +864,6 @@ func (this *transaction) SetNodeAccountIDs(nodeAccountIDs []AccountID) *transact
 	}
 	this.nodeAccountIDs._SetLocked(true)
 	return this
-}
-
-// GetMaxRetry returns the max number of errors before execution will fail.
-func (this *transaction) GetMaxRetry() int {
-	return this.maxRetry
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
@@ -968,12 +943,11 @@ func (this *transaction) FreezeWith(client *Client) (Transaction, error) {
 	if err := this._InitTransactionID(client); err != nil {
 		return this, err
 	}
-	// TODO: See how to implemnent validation. It can be implemented inside the `build()` function
-	// inside each instance
-	// err := this._ValidateNetworkOnIDs(client)
-	// if err != nil {
-	// 	return &transaction{}, err
-	// }
+
+	err := this.validateNetworkOnIDs(client)
+	if err != nil {
+		return &transaction{}, err
+	}
 	body := this.e.build()
 
 	return this, _TransactionFreezeWith(this, client, body)
@@ -1026,23 +1000,6 @@ func (this *transaction) Execute(client *Client) (TransactionResponse, error) {
 	}, nil
 }
 
-func (this *transaction) GetMaxBackoff() time.Duration {
-	if this.maxBackoff != nil {
-		return *this.maxBackoff
-	}
-	// TODO: Set Constant for '8' = DEFAULT_MAX_BACKOFF
-	return 8 * time.Second
-}
-
-func (this *transaction) GetMinBackoff() time.Duration {
-	if this.minBackoff != nil {
-		return *this.minBackoff
-	}
-	// TODO: Set Constant for '250' = DEFAULT_MIN_BACKOFF
-
-	return 250 * time.Millisecond
-}
-
 // Building empty object as "default" implementation. All inhertents must implement their own implementation.
 func (this *transaction) build() *services.TransactionBody{
 	return &services.TransactionBody{}
@@ -1061,6 +1018,11 @@ func (this *transaction) getMethod(*_Channel) _Method{
 // Building empty object as "default" implementation. All inhertents must implement their own implementation.
 func (this *transaction) getName() string{
 	return "transaction"
+}
+
+// Building empty object as "default" implementation. All inhertents must implement their own implementation.
+func (this *transaction) validateNetworkOnIDs(client *Client) error{
+	return errors.New("Function not implemented")
 }
 
 
@@ -4884,8 +4846,4 @@ func TransactionExecute(transaction interface{}, client *Client) (TransactionRes
 func (transaction *transaction) SetLogLevel(level LogLevel) *transaction {
 	transaction.logLevel = &level
 	return transaction
-}
-
-func (transaction *transaction) GetLogLevel() *LogLevel {
-	return transaction.logLevel
 }

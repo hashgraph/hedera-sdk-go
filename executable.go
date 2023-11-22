@@ -50,12 +50,13 @@ const (
 )
 
 type Executable interface {
-	GetMaxBackoff() time.Duration
+	GetMaxBackoff() time.Duration 
 	GetMinBackoff() time.Duration
-	GetGrpcDeadline() *time.Duration
+	GetGrpcDeadline() time.Duration
 	GetMaxRetry() int
 	GetNodeAccountIDs() []AccountID
 	GetLogLevel() *LogLevel
+
 
 	shouldRetry(interface{}, interface{}) _ExecutionState
 	makeRequest(interface{}) interface{}
@@ -67,6 +68,7 @@ type Executable interface {
 	getName() string
 	build() *services.TransactionBody
 	buildScheduled() (*services.SchedulableTransactionBody, error)
+	validateNetworkOnIDs(client *Client) error
 }
 
 type executable struct {
@@ -76,6 +78,7 @@ type executable struct {
 	maxBackoff     *time.Duration
 	minBackoff     *time.Duration
 	grpcDeadline   *time.Duration
+	maxRetry       int
 	logLevel       *LogLevel
 }
 
@@ -91,6 +94,93 @@ type _Method struct {
 		...grpc.CallOption,
 	) (*services.TransactionResponse, error)
 }
+
+
+func (this *executable) GetMaxBackoff() time.Duration {
+	if this.maxBackoff != nil {
+		return *this.maxBackoff
+	}
+
+	return 8 * time.Second
+}
+
+func (this *executable) GetMinBackoff() time.Duration {
+	if this.minBackoff != nil {
+		return *this.minBackoff
+	}
+
+	return 250 * time.Millisecond
+}
+
+func (this *executable) SetMaxBackoff(max time.Duration) *executable {
+	if max.Nanoseconds() < 0 {
+		panic("maxBackoff must be a positive duration")
+	} else if max.Nanoseconds() < this.minBackoff.Nanoseconds() {
+		panic("maxBackoff must be greater than or equal to minBackoff")
+	}
+	this.maxBackoff = &max
+	return this
+}
+
+func (this *executable) SetMinBackoff(max time.Duration) *executable{
+	if max.Nanoseconds() < 0 {
+		panic("maxBackoff must be a positive duration")
+	} else if max.Nanoseconds() < this.minBackoff.Nanoseconds() {
+		panic("maxBackoff must be greater than or equal to minBackoff")
+	}
+	this.maxBackoff = &max
+	return this
+}
+
+// GetGrpcDeadline returns the grpc deadline
+func (this *executable) GetGrpcDeadline() time.Duration {
+	return *this.grpcDeadline
+}
+
+// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
+func (this *executable) SetGrpcDeadline(deadline *time.Duration) *executable {
+	this.grpcDeadline = deadline
+	return this
+}
+
+// GetMaxRetry returns the max number of errors before execution will fail.
+func (this *executable) GetMaxRetry() int{
+	return this.maxRetry
+}
+
+func (this *executable) SetMaxRetry(max int) *executable {
+	this.maxRetry = max
+	return this
+}
+
+// GetNodeAccountID returns the node AccountID for this transaction.
+func (this *executable) GetNodeAccountIDs() []AccountID{
+	nodeAccountIDs := []AccountID{}
+
+	for _, value := range this.nodeAccountIDs.slice {
+		nodeAccountIDs = append(nodeAccountIDs, value.(AccountID))
+	}
+
+	return nodeAccountIDs
+}
+
+func (this *executable) SetNodeAccountIDs(nodeAccountIDs []AccountID) *executable{
+	for _, nodeAccountID := range nodeAccountIDs {
+		this.nodeAccountIDs._Push(nodeAccountID)
+	}
+	this.nodeAccountIDs._SetLocked(true)
+	return this
+}
+
+func (this *transaction) GetLogLevel() *LogLevel {
+	return this.logLevel
+}
+
+func (this *executable) SetLogLevel(level LogLevel) *executable{
+	this.logLevel = &level
+	return this
+}
+
 
 func getLogger(request interface{}, clientLogger Logger) Logger {
 	switch req := request.(type) {
@@ -216,6 +306,7 @@ func _Execute(client *Client, e Executable) (interface{}, error){
 
 		ctx := context.TODO()
 		var cancel context.CancelFunc
+
 		if e.GetGrpcDeadline() != nil {
 			grpcDeadline := time.Now().Add(*e.GetGrpcDeadline())
 			ctx, cancel = context.WithDeadline(ctx, grpcDeadline)
@@ -277,7 +368,7 @@ func _Execute(client *Client, e Executable) (interface{}, error){
 		case executionStateExpired:
 			if transaction, ok := e.(*transaction); ok {
 				if !client.GetOperatorAccountID()._IsZero() && transaction.regenerateTransactionID && !transaction.transactionIDs.locked {
-					txLogger.Trace("received `TRANSACTION_EXPIRED` with transaction ID regeneration enabled; regenerating", "requestId", logID)
+					txLogger.Trace("received `TRANSACTION_EXPIRED` with transaction ID regeneration enabled; regenerating", "requestId", e.getName())
 					transaction.transactionIDs._Set(transaction.transactionIDs.index, TransactionIDGenerate(client.GetOperatorAccountID()))
 					if err != nil {
 						panic(err)
