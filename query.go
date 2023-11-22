@@ -51,10 +51,23 @@ type Query struct {
 	logLevel     *LogLevel
 }
 
+type query struct {
+	executable
+	pb       *services.Query
+	pbHeader *services.QueryHeader //nolint
+
+	paymentTransactionIDs *_LockableSlice
+	nodeAccountIDs        *_LockableSlice
+	maxQueryPayment       Hbar
+	queryPayment          Hbar
+	maxRetry              int
+
+	paymentTransactions []*services.Transaction
+
+	isPaymentRequired bool
+}
+
 // -------- Executable functions ---------- 
-
-
-
 
 func _NewQuery(isPaymentRequired bool, header *services.QueryHeader) Query {
 	minBackoff := 250 * time.Millisecond
