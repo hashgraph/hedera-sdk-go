@@ -50,7 +50,6 @@ const (
 )
 
 type Executable interface {
-	Execute(client *Client) (TransactionResponse, error)
 	GetMaxBackoff() time.Duration
 	GetMinBackoff() time.Duration
 	GetGrpcDeadline() *time.Duration
@@ -95,7 +94,7 @@ type _Method struct {
 
 func getLogger(request interface{}, clientLogger Logger) Logger {
 	switch req := request.(type) {
-	case *Transaction:
+	case *transaction:
 		if req.logLevel != nil {
 			return clientLogger.SubLoggerWithLevel(*req.logLevel)
 		}
@@ -109,8 +108,8 @@ func getLogger(request interface{}, clientLogger Logger) Logger {
 
 func getTransactionIDAndMessage(request interface{}) (string, string) {
 	switch req := request.(type) {
-	case *Transaction:
-		return req.GetTransactionID().String(), "Transaction status received"
+	case *transaction:
+		return req.GetTransactionID().String(), "transaction status received"
 	case *Query:
 		txID := req.GetPaymentTransactionID().String()
 		if txID == "" {
@@ -148,7 +147,7 @@ func _Execute(client *Client, e Executable) (interface{}, error){
 		var protoRequest interface{}
 		var node *_Node
 
-		if transaction, ok := e.(*Transaction); ok {
+		if transaction, ok := e.(*transaction); ok {
 			if attempt > 0 && transaction.nodeAccountIDs._Length() > 1 {
 				e.advanceRequest(e);
 			}
@@ -250,7 +249,7 @@ func _Execute(client *Client, e Executable) (interface{}, error){
 				errPersistent = errors.New("error")
 			}
 
-			if _, ok := e.(*Transaction); ok {
+			if _, ok := e.(*transaction); ok {
 				return TransactionResponse{}, errors.Wrapf(errPersistent, "retry %d/%d", attempt, maxAttempts)
 			}
 
@@ -276,7 +275,7 @@ func _Execute(client *Client, e Executable) (interface{}, error){
 			_DelayForAttempt(e.getName(), backOff.NextBackOff(), attempt, txLogger)
 			continue
 		case executionStateExpired:
-			if transaction, ok := e.(*Transaction); ok {
+			if transaction, ok := e.(*transaction); ok {
 				if !client.GetOperatorAccountID()._IsZero() && transaction.regenerateTransactionID && !transaction.transactionIDs.locked {
 					txLogger.Trace("received `TRANSACTION_EXPIRED` with transaction ID regeneration enabled; regenerating", "requestId", logID)
 					transaction.transactionIDs._Set(transaction.transactionIDs.index, TransactionIDGenerate(client.GetOperatorAccountID()))
@@ -291,7 +290,7 @@ func _Execute(client *Client, e Executable) (interface{}, error){
 				return &services.Response{}, e.mapStatusError(e, resp)
 			}
 		case executionStateError:
-			if _, ok := e.(*Transaction); ok {
+			if _, ok := e.(*transaction); ok {
 				return TransactionResponse{}, e.mapStatusError(e, resp)
 			}
 
@@ -306,7 +305,7 @@ func _Execute(client *Client, e Executable) (interface{}, error){
 		errPersistent = errors.New("error")
 	}
 
-	if _, ok := e.(*Transaction); ok {
+	if _, ok := e.(*transaction); ok {
 		return TransactionResponse{}, errors.Wrapf(errPersistent, "retry %d/%d", attempt, maxAttempts)
 	}
 

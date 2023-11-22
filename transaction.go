@@ -44,6 +44,7 @@ type ITransaction interface {
 type Transaction interface {
 	Executable
 
+	Execute(client *Client) (TransactionResponse, error)
 	Sign(privateKey PrivateKey) Transaction
 	SignWithOperator(client *Client) (Transaction, error)
 	SignWith(publicKey PublicKey, signer TransactionSigner) Transaction

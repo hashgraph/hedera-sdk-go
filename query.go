@@ -53,9 +53,7 @@ type Query struct {
 
 // -------- Executable functions ---------- 
 
-func (this *Query) Execute(client *Client) (TransactionResponse, error){
-	return _Execute(client, this.e)
-}
+
 
 
 func _NewQuery(isPaymentRequired bool, header *services.QueryHeader) Query {
