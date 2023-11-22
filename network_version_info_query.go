@@ -29,7 +29,7 @@ import (
 
 // NetworkVersionInfoQuery is the query to be executed that would return the current version of the network's protobuf and services.
 type NetworkVersionInfoQuery struct {
-	Query
+	query
 }
 
 // NewNetworkVersionQuery creates a NetworkVersionInfoQuery builder which can be used to construct and execute a
@@ -37,13 +37,13 @@ type NetworkVersionInfoQuery struct {
 func NewNetworkVersionQuery() *NetworkVersionInfoQuery {
 	header := services.QueryHeader{}
 	return &NetworkVersionInfoQuery{
-		Query: _NewQuery(true, &header),
+		query: _NewQuery(true, &header),
 	}
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (query *NetworkVersionInfoQuery) SetGrpcDeadline(deadline *time.Duration) *NetworkVersionInfoQuery {
-	query.Query.SetGrpcDeadline(deadline)
+	query.query.SetGrpcDeadline(deadline)
 	return query
 }
 
@@ -63,14 +63,14 @@ func (query *NetworkVersionInfoQuery) GetCost(client *Client) (Hbar, error) {
 
 	resp, err := _Execute(
 		client,
-		&query.Query,
+		&query.query,
 		_NetworkVersionInfoQueryShouldRetry,
 		_CostQueryMakeRequest,
 		_CostQueryAdvanceRequest,
-		_QueryGetNodeAccountID,
+		getNodeAccountID,
 		_NetworkVersionInfoQueryGetMethod,
 		_NetworkVersionInfoQueryMapStatusError,
-		_QueryMapResponse,
+		mapResponse,
 		query._GetLogID(),
 		query.grpcDeadline,
 		query.maxBackoff,
@@ -87,7 +87,7 @@ func (query *NetworkVersionInfoQuery) GetCost(client *Client) (Hbar, error) {
 }
 
 func _NetworkVersionInfoQueryShouldRetry(_ interface{}, response interface{}) _ExecutionState {
-	return _QueryShouldRetry(Status(response.(*services.Response).GetNetworkGetVersionInfo().Header.NodeTransactionPrecheckCode))
+	return shouldRetry(Status(response.(*services.Response).GetNetworkGetVersionInfo().Header.NodeTransactionPrecheckCode))
 }
 
 func _NetworkVersionInfoQueryMapStatusError(_ interface{}, response interface{}) error {
@@ -143,7 +143,7 @@ func (query *NetworkVersionInfoQuery) Execute(client *Client) (NetworkVersionInf
 	query.paymentTransactions = make([]*services.Transaction, 0)
 
 	if query.nodeAccountIDs.locked {
-		err = _QueryGeneratePayments(&query.Query, client, cost)
+		err = _QueryGeneratePayments(&query.query, client, cost)
 		if err != nil {
 			return NetworkVersionInfo{}, err
 		}
@@ -166,14 +166,14 @@ func (query *NetworkVersionInfoQuery) Execute(client *Client) (NetworkVersionInf
 
 	resp, err := _Execute(
 		client,
-		&query.Query,
+		&query.query,
 		_NetworkVersionInfoQueryShouldRetry,
-		_QueryMakeRequest,
-		_QueryAdvanceRequest,
-		_QueryGetNodeAccountID,
+		makeRequest,
+		advanceRequest,
+		getNodeAccountID,
 		_NetworkVersionInfoQueryGetMethod,
 		_NetworkVersionInfoQueryMapStatusError,
-		_QueryMapResponse,
+		mapResponse,
 		query._GetLogID(),
 		query.grpcDeadline,
 		query.maxBackoff,
@@ -190,25 +190,25 @@ func (query *NetworkVersionInfoQuery) Execute(client *Client) (NetworkVersionInf
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.
 func (query *NetworkVersionInfoQuery) SetMaxQueryPayment(maxPayment Hbar) *NetworkVersionInfoQuery {
-	query.Query.SetMaxQueryPayment(maxPayment)
+	query.query.SetMaxQueryPayment(maxPayment)
 	return query
 }
 
 // SetQueryPayment sets the payment amount for this Query.
 func (query *NetworkVersionInfoQuery) SetQueryPayment(paymentAmount Hbar) *NetworkVersionInfoQuery {
-	query.Query.SetQueryPayment(paymentAmount)
+	query.query.SetQueryPayment(paymentAmount)
 	return query
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for this NetworkVersionInfoQuery.
 func (query *NetworkVersionInfoQuery) SetNodeAccountIDs(accountID []AccountID) *NetworkVersionInfoQuery {
-	query.Query.SetNodeAccountIDs(accountID)
+	query.query.SetNodeAccountIDs(accountID)
 	return query
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (query *NetworkVersionInfoQuery) SetMaxRetry(count int) *NetworkVersionInfoQuery {
-	query.Query.SetMaxRetry(count)
+	query.query.SetMaxRetry(count)
 	return query
 }
 
@@ -268,6 +268,6 @@ func (query *NetworkVersionInfoQuery) SetPaymentTransactionID(transactionID Tran
 }
 
 func (query *NetworkVersionInfoQuery) SetLogLevel(level LogLevel) *NetworkVersionInfoQuery {
-	query.Query.SetLogLevel(level)
+	query.query.SetLogLevel(level)
 	return query
 }

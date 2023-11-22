@@ -31,7 +31,7 @@ import (
 // Get all the information about an account, including the balance. This does not get the list of
 // account records.
 type AccountInfoQuery struct {
-	Query
+	query
 	accountID *AccountID
 }
 
@@ -41,13 +41,13 @@ type AccountInfoQuery struct {
 func NewAccountInfoQuery() *AccountInfoQuery {
 	header := services.QueryHeader{}
 	return &AccountInfoQuery{
-		Query: _NewQuery(true, &header),
+		query: _NewQuery(true, &header),
 	}
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (query *AccountInfoQuery) SetGrpcDeadline(deadline *time.Duration) *AccountInfoQuery {
-	query.Query.SetGrpcDeadline(deadline)
+	query.query.SetGrpcDeadline(deadline)
 	return query
 }
 
@@ -95,7 +95,7 @@ func (query *AccountInfoQuery) _Build() *services.Query_CryptoGetInfo {
 }
 
 func _AccountInfoQueryShouldRetry(_ interface{}, response interface{}) _ExecutionState {
-	return _QueryShouldRetry(Status(response.(*services.Response).GetCryptoGetInfo().Header.NodeTransactionPrecheckCode))
+	return shouldRetry(Status(response.(*services.Response).GetCryptoGetInfo().Header.NodeTransactionPrecheckCode))
 }
 
 func _AccountInfoQueryMapStatusError(_ interface{}, response interface{}) error {
@@ -148,14 +148,14 @@ func (query *AccountInfoQuery) GetCost(client *Client) (Hbar, error) {
 
 	resp, err := _Execute(
 		client,
-		&query.Query,
+		&query.query,
 		_AccountInfoQueryShouldRetry,
 		_CostQueryMakeRequest,
 		_CostQueryAdvanceRequest,
-		_QueryGetNodeAccountID,
+		getNodeAccountID,
 		_AccountInfoQueryGetMethod,
 		_AccountInfoQueryMapStatusError,
-		_QueryMapResponse,
+		mapResponse,
 		query._GetLogID(),
 		query.grpcDeadline,
 		query.maxBackoff,
@@ -174,7 +174,7 @@ func (query *AccountInfoQuery) GetCost(client *Client) (Hbar, error) {
 
 // SetNodeAccountIDs sets the _Node AccountID for this AccountInfoQuery.
 func (query *AccountInfoQuery) SetNodeAccountIDs(accountID []AccountID) *AccountInfoQuery {
-	query.Query.SetNodeAccountIDs(accountID)
+	query.query.SetNodeAccountIDs(accountID)
 	return query
 }
 
@@ -192,7 +192,7 @@ func (query *AccountInfoQuery) SetMaxQueryPayment(queryMaxPayment Hbar) *Account
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (query *AccountInfoQuery) SetMaxRetry(count int) *AccountInfoQuery {
-	query.Query.SetMaxRetry(count)
+	query.query.SetMaxRetry(count)
 	return query
 }
 
@@ -241,7 +241,7 @@ func (query *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
 
 	query.paymentTransactions = make([]*services.Transaction, 0)
 	if query.nodeAccountIDs.locked {
-		err = _QueryGeneratePayments(&query.Query, client, cost)
+		err = _QueryGeneratePayments(&query.query, client, cost)
 		if err != nil {
 			return AccountInfo{}, err
 		}
@@ -261,14 +261,14 @@ func (query *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
 
 	resp, err := _Execute(
 		client,
-		&query.Query,
+		&query.query,
 		_AccountInfoQueryShouldRetry,
-		_QueryMakeRequest,
-		_QueryAdvanceRequest,
-		_QueryGetNodeAccountID,
+		makeRequest,
+		advanceRequest,
+		getNodeAccountID,
 		_AccountInfoQueryGetMethod,
 		_AccountInfoQueryMapStatusError,
-		_QueryMapResponse,
+		mapResponse,
 		query._GetLogID(),
 		query.grpcDeadline,
 		query.maxBackoff,
@@ -338,6 +338,6 @@ func (query *AccountInfoQuery) SetPaymentTransactionID(transactionID Transaction
 }
 
 func (query *AccountInfoQuery) SetLogLevel(level LogLevel) *AccountInfoQuery {
-	query.Query.SetLogLevel(level)
+	query.query.SetLogLevel(level)
 	return query
 }

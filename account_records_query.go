@@ -30,7 +30,7 @@ import (
 // AccountRecordsQuery gets all of the records for an account for any transfers into it and out of
 // it, that were above the threshold, during the last 25 hours.
 type AccountRecordsQuery struct {
-	Query
+	query
 	accountID *AccountID
 }
 
@@ -42,13 +42,13 @@ type AccountRecordsQuery struct {
 func NewAccountRecordsQuery() *AccountRecordsQuery {
 	header := services.QueryHeader{}
 	return &AccountRecordsQuery{
-		Query: _NewQuery(true, &header),
+		query: _NewQuery(true, &header),
 	}
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (query *AccountRecordsQuery) SetGrpcDeadline(deadline *time.Duration) *AccountRecordsQuery {
-	query.Query.SetGrpcDeadline(deadline)
+	query.query.SetGrpcDeadline(deadline)
 	return query
 }
 
@@ -125,14 +125,14 @@ func (query *AccountRecordsQuery) GetCost(client *Client) (Hbar, error) {
 
 	resp, err := _Execute(
 		client,
-		&query.Query,
+		&query.query,
 		_AccountRecordsQueryShouldRetry,
 		_CostQueryMakeRequest,
 		_CostQueryAdvanceRequest,
-		_QueryGetNodeAccountID,
+		getNodeAccountID,
 		_AccountRecordsQueryGetMethod,
 		_AccountRecordsQueryMapStatusError,
-		_QueryMapResponse,
+		mapResponse,
 		query._GetLogID(),
 		query.grpcDeadline,
 		query.maxBackoff,
@@ -149,7 +149,7 @@ func (query *AccountRecordsQuery) GetCost(client *Client) (Hbar, error) {
 }
 
 func _AccountRecordsQueryShouldRetry(_ interface{}, response interface{}) _ExecutionState {
-	return _QueryShouldRetry(Status(response.(*services.Response).GetCryptoGetAccountRecords().Header.NodeTransactionPrecheckCode))
+	return shouldRetry(Status(response.(*services.Response).GetCryptoGetAccountRecords().Header.NodeTransactionPrecheckCode))
 }
 
 func _AccountRecordsQueryMapStatusError(_ interface{}, response interface{}) error {
@@ -210,7 +210,7 @@ func (query *AccountRecordsQuery) Execute(client *Client) ([]TransactionRecord, 
 	query.paymentTransactions = make([]*services.Transaction, 0)
 
 	if query.nodeAccountIDs.locked {
-		err = _QueryGeneratePayments(&query.Query, client, cost)
+		err = _QueryGeneratePayments(&query.query, client, cost)
 		if err != nil {
 			return []TransactionRecord{}, err
 		}
@@ -234,14 +234,14 @@ func (query *AccountRecordsQuery) Execute(client *Client) ([]TransactionRecord, 
 
 	resp, err := _Execute(
 		client,
-		&query.Query,
+		&query.query,
 		_AccountRecordsQueryShouldRetry,
-		_QueryMakeRequest,
-		_QueryAdvanceRequest,
-		_QueryGetNodeAccountID,
+		makeRequest,
+		advanceRequest,
+		getNodeAccountID,
 		_AccountRecordsQueryGetMethod,
 		_AccountRecordsQueryMapStatusError,
-		_QueryMapResponse,
+		mapResponse,
 		query._GetLogID(),
 		query.grpcDeadline,
 		query.maxBackoff,
@@ -263,25 +263,25 @@ func (query *AccountRecordsQuery) Execute(client *Client) ([]TransactionRecord, 
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.
 func (query *AccountRecordsQuery) SetMaxQueryPayment(maxPayment Hbar) *AccountRecordsQuery {
-	query.Query.SetMaxQueryPayment(maxPayment)
+	query.query.SetMaxQueryPayment(maxPayment)
 	return query
 }
 
 // SetQueryPayment sets the payment amount for this Query.
 func (query *AccountRecordsQuery) SetQueryPayment(paymentAmount Hbar) *AccountRecordsQuery {
-	query.Query.SetQueryPayment(paymentAmount)
+	query.query.SetQueryPayment(paymentAmount)
 	return query
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for this AccountRecordsQuery.
 func (query *AccountRecordsQuery) SetNodeAccountIDs(accountID []AccountID) *AccountRecordsQuery {
-	query.Query.SetNodeAccountIDs(accountID)
+	query.query.SetNodeAccountIDs(accountID)
 	return query
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (query *AccountRecordsQuery) SetMaxRetry(count int) *AccountRecordsQuery {
-	query.Query.SetMaxRetry(count)
+	query.query.SetMaxRetry(count)
 	return query
 }
 
@@ -340,6 +340,6 @@ func (query *AccountRecordsQuery) SetPaymentTransactionID(transactionID Transact
 }
 
 func (query *AccountRecordsQuery) SetLogLevel(level LogLevel) *AccountRecordsQuery {
-	query.Query.SetLogLevel(level)
+	query.query.SetLogLevel(level)
 	return query
 }

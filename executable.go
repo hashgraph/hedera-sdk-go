@@ -52,7 +52,7 @@ const (
 type Executable interface {
 	GetMaxBackoff() time.Duration 
 	GetMinBackoff() time.Duration
-	GetGrpcDeadline() time.Duration
+	GetGrpcDeadline() *time.Duration
 	GetMaxRetry() int
 	GetNodeAccountIDs() []AccountID
 	GetLogLevel() *LogLevel
@@ -133,8 +133,8 @@ func (this *executable) SetMinBackoff(max time.Duration) *executable{
 }
 
 // GetGrpcDeadline returns the grpc deadline
-func (this *executable) GetGrpcDeadline() time.Duration {
-	return *this.grpcDeadline
+func (this *executable) GetGrpcDeadline() *time.Duration {
+	return this.grpcDeadline
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
@@ -172,7 +172,7 @@ func (this *executable) SetNodeAccountIDs(nodeAccountIDs []AccountID) *executabl
 	return this
 }
 
-func (this *transaction) GetLogLevel() *LogLevel {
+func (this *executable) GetLogLevel() *LogLevel {
 	return this.logLevel
 }
 
@@ -188,7 +188,7 @@ func getLogger(request interface{}, clientLogger Logger) Logger {
 		if req.logLevel != nil {
 			return clientLogger.SubLoggerWithLevel(*req.logLevel)
 		}
-	case *Query:
+	case *query:
 		if req.logLevel != nil {
 			return clientLogger.SubLoggerWithLevel(*req.logLevel)
 		}
@@ -200,7 +200,7 @@ func getTransactionIDAndMessage(request interface{}) (string, string) {
 	switch req := request.(type) {
 	case *transaction:
 		return req.GetTransactionID().String(), "transaction status received"
-	case *Query:
+	case *query:
 		txID := req.GetPaymentTransactionID().String()
 		if txID == "" {
 			txID = "None"
@@ -248,7 +248,7 @@ func _Execute(client *Client, e Executable) (interface{}, error){
 			}
 
 			marshaledRequest, _ = protobuf.Marshal(protoRequest.(*services.Transaction))
-		} else if query, ok := e.(*Query); ok {
+		} else if query, ok := e.(*query); ok {
 			if query.nodeAccountIDs.locked && query.nodeAccountIDs._Length() > 0 {
 				protoRequest = e.makeRequest(e)
 				nodeAccountID := e.getNodeAccountID(e)

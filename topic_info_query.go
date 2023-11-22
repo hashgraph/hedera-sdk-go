@@ -29,7 +29,7 @@ import (
 
 // TopicInfo is the Query for retrieving information about a topic stored on the Hedera network.
 type TopicInfoQuery struct {
-	Query
+	query
 	topicID *TopicID
 }
 
@@ -39,13 +39,13 @@ type TopicInfoQuery struct {
 func NewTopicInfoQuery() *TopicInfoQuery {
 	header := services.QueryHeader{}
 	return &TopicInfoQuery{
-		Query: _NewQuery(true, &header),
+		query: _NewQuery(true, &header),
 	}
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (query *TopicInfoQuery) SetGrpcDeadline(deadline *time.Duration) *TopicInfoQuery {
-	query.Query.SetGrpcDeadline(deadline)
+	query.query.SetGrpcDeadline(deadline)
 	return query
 }
 
@@ -122,14 +122,14 @@ func (query *TopicInfoQuery) GetCost(client *Client) (Hbar, error) {
 
 	resp, err := _Execute(
 		client,
-		&query.Query,
+		&query.query,
 		_TopicInfoQueryShouldRetry,
 		_CostQueryMakeRequest,
 		_CostQueryAdvanceRequest,
-		_QueryGetNodeAccountID,
+		getNodeAccountID,
 		_TopicInfoQueryGetMethod,
 		_TopicInfoQueryMapStatusError,
-		_QueryMapResponse,
+		mapResponse,
 		query._GetLogID(),
 		query.grpcDeadline,
 		query.maxBackoff,
@@ -146,7 +146,7 @@ func (query *TopicInfoQuery) GetCost(client *Client) (Hbar, error) {
 }
 
 func _TopicInfoQueryShouldRetry(_ interface{}, response interface{}) _ExecutionState {
-	return _QueryShouldRetry(Status(response.(*services.Response).GetConsensusGetTopicInfo().Header.NodeTransactionPrecheckCode))
+	return shouldRetry(Status(response.(*services.Response).GetConsensusGetTopicInfo().Header.NodeTransactionPrecheckCode))
 }
 
 func _TopicInfoQueryMapStatusError(_ interface{}, response interface{}) error {
@@ -207,7 +207,7 @@ func (query *TopicInfoQuery) Execute(client *Client) (TopicInfo, error) {
 	query.paymentTransactions = make([]*services.Transaction, 0)
 
 	if query.nodeAccountIDs.locked {
-		err = _QueryGeneratePayments(&query.Query, client, cost)
+		err = _QueryGeneratePayments(&query.query, client, cost)
 		if err != nil {
 			return TopicInfo{}, err
 		}
@@ -227,14 +227,14 @@ func (query *TopicInfoQuery) Execute(client *Client) (TopicInfo, error) {
 
 	resp, err := _Execute(
 		client,
-		&query.Query,
+		&query.query,
 		_TopicInfoQueryShouldRetry,
-		_QueryMakeRequest,
-		_QueryAdvanceRequest,
-		_QueryGetNodeAccountID,
+		makeRequest,
+		advanceRequest,
+		getNodeAccountID,
 		_TopicInfoQueryGetMethod,
 		_TopicInfoQueryMapStatusError,
-		_QueryMapResponse,
+		mapResponse,
 		query._GetLogID(),
 		query.grpcDeadline,
 		query.maxBackoff,
@@ -251,25 +251,25 @@ func (query *TopicInfoQuery) Execute(client *Client) (TopicInfo, error) {
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.
 func (query *TopicInfoQuery) SetMaxQueryPayment(maxPayment Hbar) *TopicInfoQuery {
-	query.Query.SetMaxQueryPayment(maxPayment)
+	query.query.SetMaxQueryPayment(maxPayment)
 	return query
 }
 
 // SetQueryPayment sets the payment amount for this Query.
 func (query *TopicInfoQuery) SetQueryPayment(paymentAmount Hbar) *TopicInfoQuery {
-	query.Query.SetQueryPayment(paymentAmount)
+	query.query.SetQueryPayment(paymentAmount)
 	return query
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for this TopicInfoQuery.
 func (query *TopicInfoQuery) SetNodeAccountIDs(accountID []AccountID) *TopicInfoQuery {
-	query.Query.SetNodeAccountIDs(accountID)
+	query.query.SetNodeAccountIDs(accountID)
 	return query
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (query *TopicInfoQuery) SetMaxRetry(count int) *TopicInfoQuery {
-	query.Query.SetMaxRetry(count)
+	query.query.SetMaxRetry(count)
 	return query
 }
 
@@ -328,6 +328,6 @@ func (query *TopicInfoQuery) SetPaymentTransactionID(transactionID TransactionID
 }
 
 func (query *TopicInfoQuery) SetLogLevel(level LogLevel) *TopicInfoQuery {
-	query.Query.SetLogLevel(level)
+	query.query.SetLogLevel(level)
 	return query
 }

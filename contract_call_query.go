@@ -36,7 +36,7 @@ import (
 // purely read the state and don't change it. It is faster and cheaper than a ContractExecuteTransaction, because it is
 // purely local to a single  _Node.
 type ContractCallQuery struct {
-	Query
+	query
 	contractID         *ContractID
 	gas                uint64
 	maxResultSize      uint64
@@ -51,13 +51,13 @@ func NewContractCallQuery() *ContractCallQuery {
 	query := _NewQuery(true, &header)
 
 	return &ContractCallQuery{
-		Query: query,
+		query: query,
 	}
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (query *ContractCallQuery) SetGrpcDeadline(deadline *time.Duration) *ContractCallQuery {
-	query.Query.SetGrpcDeadline(deadline)
+	query.query.SetGrpcDeadline(deadline)
 	return query
 }
 
@@ -205,14 +205,14 @@ func (query *ContractCallQuery) GetCost(client *Client) (Hbar, error) {
 
 	resp, err := _Execute(
 		client,
-		&query.Query,
+		&query.query,
 		_ContractCallQueryShouldRetry,
 		_CostQueryMakeRequest,
 		_CostQueryAdvanceRequest,
-		_QueryGetNodeAccountID,
+		getNodeAccountID,
 		_ContractCallQueryGetMethod,
 		_ContractCallQueryMapStatusError,
-		_QueryMapResponse,
+		mapResponse,
 		query._GetLogID(),
 		query.grpcDeadline,
 		query.maxBackoff,
@@ -229,7 +229,7 @@ func (query *ContractCallQuery) GetCost(client *Client) (Hbar, error) {
 }
 
 func _ContractCallQueryShouldRetry(_ interface{}, response interface{}) _ExecutionState {
-	return _QueryShouldRetry(Status(response.(*services.Response).GetContractCallLocal().Header.NodeTransactionPrecheckCode))
+	return shouldRetry(Status(response.(*services.Response).GetContractCallLocal().Header.NodeTransactionPrecheckCode))
 }
 
 func _ContractCallQueryMapStatusError(_ interface{}, response interface{}) error {
@@ -290,7 +290,7 @@ func (query *ContractCallQuery) Execute(client *Client) (ContractFunctionResult,
 	query.paymentTransactions = make([]*services.Transaction, 0)
 
 	if query.nodeAccountIDs.locked {
-		err = _QueryGeneratePayments(&query.Query, client, cost)
+		err = _QueryGeneratePayments(&query.query, client, cost)
 		if err != nil {
 			return ContractFunctionResult{}, err
 		}
@@ -310,14 +310,14 @@ func (query *ContractCallQuery) Execute(client *Client) (ContractFunctionResult,
 
 	resp, err := _Execute(
 		client,
-		&query.Query,
+		&query.query,
 		_ContractCallQueryShouldRetry,
-		_QueryMakeRequest,
-		_QueryAdvanceRequest,
-		_QueryGetNodeAccountID,
+		makeRequest,
+		advanceRequest,
+		getNodeAccountID,
 		_ContractCallQueryGetMethod,
 		_ContractCallQueryMapStatusError,
-		_QueryMapResponse,
+		mapResponse,
 		query._GetLogID(),
 		query.grpcDeadline,
 		query.maxBackoff,
@@ -334,25 +334,25 @@ func (query *ContractCallQuery) Execute(client *Client) (ContractFunctionResult,
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.
 func (query *ContractCallQuery) SetMaxQueryPayment(maxPayment Hbar) *ContractCallQuery {
-	query.Query.SetMaxQueryPayment(maxPayment)
+	query.query.SetMaxQueryPayment(maxPayment)
 	return query
 }
 
 // SetQueryPayment sets the payment amount for this Query.
 func (query *ContractCallQuery) SetQueryPayment(paymentAmount Hbar) *ContractCallQuery {
-	query.Query.SetQueryPayment(paymentAmount)
+	query.query.SetQueryPayment(paymentAmount)
 	return query
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for this ContractCallQuery.
 func (query *ContractCallQuery) SetNodeAccountIDs(accountID []AccountID) *ContractCallQuery {
-	query.Query.SetNodeAccountIDs(accountID)
+	query.query.SetNodeAccountIDs(accountID)
 	return query
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (query *ContractCallQuery) SetMaxRetry(count int) *ContractCallQuery {
-	query.Query.SetMaxRetry(count)
+	query.query.SetMaxRetry(count)
 	return query
 }
 
@@ -412,6 +412,6 @@ func (query *ContractCallQuery) SetPaymentTransactionID(transactionID Transactio
 }
 
 func (query *ContractCallQuery) SetLogLevel(level LogLevel) *ContractCallQuery {
-	query.Query.SetLogLevel(level)
+	query.query.SetLogLevel(level)
 	return query
 }

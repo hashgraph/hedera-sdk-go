@@ -33,7 +33,7 @@ import (
 // fileInfo field will be non-empty, the deleted field will be true, its size will be 0,
 // and its contents will be empty. Note that each file has a FileID, but does not have a filename.
 type FileInfoQuery struct {
-	Query
+	query
 	fileID *FileID
 }
 
@@ -41,13 +41,13 @@ type FileInfoQuery struct {
 func NewFileInfoQuery() *FileInfoQuery {
 	header := services.QueryHeader{}
 	return &FileInfoQuery{
-		Query: _NewQuery(true, &header),
+		query: _NewQuery(true, &header),
 	}
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (query *FileInfoQuery) SetGrpcDeadline(deadline *time.Duration) *FileInfoQuery {
-	query.Query.SetGrpcDeadline(deadline)
+	query.query.SetGrpcDeadline(deadline)
 	return query
 }
 
@@ -124,14 +124,14 @@ func (query *FileInfoQuery) GetCost(client *Client) (Hbar, error) {
 
 	resp, err := _Execute(
 		client,
-		&query.Query,
+		&query.query,
 		_FileInfoQueryShouldRetry,
 		_CostQueryMakeRequest,
 		_CostQueryAdvanceRequest,
-		_QueryGetNodeAccountID,
+		getNodeAccountID,
 		_FileInfoQueryGetMethod,
 		_FileInfoQueryMapStatusError,
-		_QueryMapResponse,
+		mapResponse,
 		query._GetLogID(),
 		query.grpcDeadline,
 		query.maxBackoff,
@@ -148,7 +148,7 @@ func (query *FileInfoQuery) GetCost(client *Client) (Hbar, error) {
 }
 
 func _FileInfoQueryShouldRetry(_ interface{}, response interface{}) _ExecutionState {
-	return _QueryShouldRetry(Status(response.(*services.Response).GetFileGetInfo().Header.NodeTransactionPrecheckCode))
+	return shouldRetry(Status(response.(*services.Response).GetFileGetInfo().Header.NodeTransactionPrecheckCode))
 }
 
 func _FileInfoQueryMapStatusError(_ interface{}, response interface{}) error {
@@ -209,7 +209,7 @@ func (query *FileInfoQuery) Execute(client *Client) (FileInfo, error) {
 	query.paymentTransactions = make([]*services.Transaction, 0)
 
 	if query.nodeAccountIDs.locked {
-		err = _QueryGeneratePayments(&query.Query, client, cost)
+		err = _QueryGeneratePayments(&query.query, client, cost)
 		if err != nil {
 			if err != nil {
 				return FileInfo{}, err
@@ -233,14 +233,14 @@ func (query *FileInfoQuery) Execute(client *Client) (FileInfo, error) {
 
 	resp, err := _Execute(
 		client,
-		&query.Query,
+		&query.query,
 		_FileInfoQueryShouldRetry,
-		_QueryMakeRequest,
-		_QueryAdvanceRequest,
-		_QueryGetNodeAccountID,
+		makeRequest,
+		advanceRequest,
+		getNodeAccountID,
 		_FileInfoQueryGetMethod,
 		_FileInfoQueryMapStatusError,
-		_QueryMapResponse,
+		mapResponse,
 		query._GetLogID(),
 		query.grpcDeadline,
 		query.maxBackoff,
@@ -262,30 +262,30 @@ func (query *FileInfoQuery) Execute(client *Client) (FileInfo, error) {
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.
 func (query *FileInfoQuery) SetMaxQueryPayment(maxPayment Hbar) *FileInfoQuery {
-	query.Query.SetMaxQueryPayment(maxPayment)
+	query.query.SetMaxQueryPayment(maxPayment)
 	return query
 }
 
 // SetQueryPayment sets the payment amount for this Query.
 func (query *FileInfoQuery) SetQueryPayment(paymentAmount Hbar) *FileInfoQuery {
-	query.Query.SetQueryPayment(paymentAmount)
+	query.query.SetQueryPayment(paymentAmount)
 	return query
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for this FileInfoQuery.
 func (query *FileInfoQuery) SetNodeAccountIDs(accountID []AccountID) *FileInfoQuery {
-	query.Query.SetNodeAccountIDs(accountID)
+	query.query.SetNodeAccountIDs(accountID)
 	return query
 }
 
 // GetNodeAccountIDs returns the _Node AccountID for this FileInfoQuery.
 func (query *FileInfoQuery) GetNodeAccountIDs() []AccountID {
-	return query.Query.GetNodeAccountIDs()
+	return query.query.GetNodeAccountIDs()
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (query *FileInfoQuery) SetMaxRetry(count int) *FileInfoQuery {
-	query.Query.SetMaxRetry(count)
+	query.query.SetMaxRetry(count)
 	return query
 }
 
@@ -345,6 +345,6 @@ func (query *FileInfoQuery) SetPaymentTransactionID(transactionID TransactionID)
 }
 
 func (query *FileInfoQuery) SetLogLevel(level LogLevel) *FileInfoQuery {
-	query.Query.SetLogLevel(level)
+	query.query.SetLogLevel(level)
 	return query
 }

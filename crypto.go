@@ -865,7 +865,7 @@ func (pk PublicKey) Verify(message []byte, signature []byte) bool {
 	return false
 }
 
-func (pk PublicKey) VerifyTransaction(transaction Transaction) bool {
+func (pk PublicKey) VerifyTransaction(transaction transaction) bool {
 	if pk.ecdsaPublicKey != nil {
 		return pk.ecdsaPublicKey._VerifyTransaction(transaction)
 	}

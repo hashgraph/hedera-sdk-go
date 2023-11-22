@@ -272,7 +272,7 @@ func (this *AccountCreateTransaction) GetReceiverSignatureRequired() bool {
 func (this *AccountCreateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
 	this._RequireNotFrozen()
 
-	scheduled, err := this._ConstructScheduleProtobuf()
+	scheduled, err := this.buildScheduled()
 	if err != nil {
 		return nil, err
 	}
@@ -280,20 +280,8 @@ func (this *AccountCreateTransaction) Schedule() (*ScheduleCreateTransaction, er
 	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (this *AccountCreateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
-	body := this.buildProtoBody()
 
-	if this.alias != nil {
-		body.Alias = this.alias
-	}
-	return &services.SchedulableTransactionBody{
-		TransactionFee: this.transactionFee,
-		Memo:           this.transaction.memo,
-		Data: &services.SchedulableTransactionBody_CryptoCreateAccount{
-			CryptoCreateAccount: body,
-		},
-	}, nil
-}
+
 
 func _AccountCreateTransactionGetMethod(request interface{}, channel *_Channel) _Method {
 	return _Method{
@@ -477,6 +465,15 @@ func (this *AccountCreateTransaction) build() *services.TransactionBody {
 			CryptoCreateAccount: this.buildProtoBody(),
 		},
 	}
+}
+func (this *AccountCreateTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+	return &services.SchedulableTransactionBody{
+		TransactionFee: this.transactionFee,
+		Memo:           this.transaction.memo,
+		Data: &services.SchedulableTransactionBody_CryptoCreateAccount{
+			CryptoCreateAccount: this.buildProtoBody(),
+		},
+	}, nil
 }
 
 func (this *AccountCreateTransaction) buildProtoBody() *services.CryptoCreateTransactionBody {

@@ -36,7 +36,7 @@ import (
 // gives the details of that transfer. If the transaction didn't return anything that should be in
 // the record, then the results field will be set to nothing.
 type TransactionRecordQuery struct {
-	Query
+	query
 	transactionID       *TransactionID
 	includeChildRecords *bool
 	duplicates          *bool
@@ -53,13 +53,13 @@ type TransactionRecordQuery struct {
 func NewTransactionRecordQuery() *TransactionRecordQuery {
 	header := services.QueryHeader{}
 	return &TransactionRecordQuery{
-		Query: _NewQuery(true, &header),
+		query: _NewQuery(true, &header),
 	}
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (query *TransactionRecordQuery) SetGrpcDeadline(deadline *time.Duration) *TransactionRecordQuery {
-	query.Query.SetGrpcDeadline(deadline)
+	query.query.SetGrpcDeadline(deadline)
 	return query
 }
 
@@ -164,14 +164,14 @@ func (query *TransactionRecordQuery) GetCost(client *Client) (Hbar, error) {
 
 	resp, err := _Execute(
 		client,
-		&query.Query,
+		&query.query,
 		_TransactionRecordQueryShouldRetry,
 		_CostQueryMakeRequest,
 		_CostQueryAdvanceRequest,
-		_QueryGetNodeAccountID,
+		getNodeAccountID,
 		_TransactionRecordQueryGetMethod,
 		_TransactionRecordQueryMapStatusError,
-		_QueryMapResponse,
+		mapResponse,
 		query._GetLogID(),
 		query.grpcDeadline,
 		query.maxBackoff,
@@ -254,7 +254,7 @@ func (query *TransactionRecordQuery) GetTransactionID() TransactionID {
 
 // SetNodeAccountIDs sets the _Node AccountID for this TransactionRecordQuery.
 func (query *TransactionRecordQuery) SetNodeAccountIDs(accountID []AccountID) *TransactionRecordQuery {
-	query.Query.SetNodeAccountIDs(accountID)
+	query.query.SetNodeAccountIDs(accountID)
 	return query
 }
 
@@ -272,7 +272,7 @@ func (query *TransactionRecordQuery) SetMaxQueryPayment(queryMaxPayment Hbar) *T
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (query *TransactionRecordQuery) SetMaxRetry(count int) *TransactionRecordQuery {
-	query.Query.SetMaxRetry(count)
+	query.query.SetMaxRetry(count)
 	return query
 }
 
@@ -363,7 +363,7 @@ func (query *TransactionRecordQuery) Execute(client *Client) (TransactionRecord,
 	query.paymentTransactions = make([]*services.Transaction, 0)
 
 	if query.nodeAccountIDs.locked {
-		err = _QueryGeneratePayments(&query.Query, client, cost)
+		err = _QueryGeneratePayments(&query.query, client, cost)
 		if err != nil {
 			return TransactionRecord{}, err
 		}
@@ -383,14 +383,14 @@ func (query *TransactionRecordQuery) Execute(client *Client) (TransactionRecord,
 
 	resp, err := _Execute(
 		client,
-		&query.Query,
+		&query.query,
 		_TransactionRecordQueryShouldRetry,
-		_QueryMakeRequest,
-		_QueryAdvanceRequest,
-		_QueryGetNodeAccountID,
+		makeRequest,
+		advanceRequest,
+		getNodeAccountID,
 		_TransactionRecordQueryGetMethod,
 		_TransactionRecordQueryMapStatusError,
-		_QueryMapResponse,
+		mapResponse,
 		query._GetLogID(),
 		query.grpcDeadline,
 		query.maxBackoff,
@@ -423,6 +423,6 @@ func (query *TransactionRecordQuery) SetPaymentTransactionID(transactionID Trans
 }
 
 func (query *TransactionRecordQuery) SetLogLevel(level LogLevel) *TransactionRecordQuery {
-	query.Query.SetLogLevel(level)
+	query.query.SetLogLevel(level)
 	return query
 }
