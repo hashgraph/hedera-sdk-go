@@ -48,123 +48,74 @@ func NewAccountBalanceQuery() *AccountBalanceQuery {
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (query *AccountBalanceQuery) SetGrpcDeadline(deadline *time.Duration) *AccountBalanceQuery {
-	query.query.SetGrpcDeadline(deadline)
-	return query
+func (this *AccountBalanceQuery) SetGrpcDeadline(deadline *time.Duration) *AccountBalanceQuery {
+	this.query.SetGrpcDeadline(deadline)
+	return this
 }
 
 // SetAccountID sets the AccountID for which you wish to query the balance.
 //
 // Note: you can only query an Account or Contract but not both -- if a Contract ID or Account ID has already been set,
 // it will be overwritten by this _Method.
-func (query *AccountBalanceQuery) SetAccountID(accountID AccountID) *AccountBalanceQuery {
-	query.accountID = &accountID
-	return query
+func (this *AccountBalanceQuery) SetAccountID(accountID AccountID) *AccountBalanceQuery {
+	this.accountID = &accountID
+	return this
 }
 
 // GetAccountID returns the AccountID for which you wish to query the balance.
-func (query *AccountBalanceQuery) GetAccountID() AccountID {
-	if query.accountID == nil {
+func (this *AccountBalanceQuery) GetAccountID() AccountID {
+	if this.accountID == nil {
 		return AccountID{}
 	}
 
-	return *query.accountID
+	return *this.accountID
 }
 
 // SetContractID sets the ContractID for which you wish to query the balance.
 //
 // Note: you can only query an Account or Contract but not both -- if a Contract ID or Account ID has already been set,
 // it will be overwritten by this _Method.
-func (query *AccountBalanceQuery) SetContractID(contractID ContractID) *AccountBalanceQuery {
-	query.contractID = &contractID
-	return query
+func (this *AccountBalanceQuery) SetContractID(contractID ContractID) *AccountBalanceQuery {
+	this.contractID = &contractID
+	return this
 }
 
 // GetContractID returns the ContractID for which you wish to query the balance.
-func (query *AccountBalanceQuery) GetContractID() ContractID {
-	if query.contractID == nil {
+func (this *AccountBalanceQuery) GetContractID() ContractID {
+	if this.contractID == nil {
 		return ContractID{}
 	}
 
-	return *query.contractID
-}
-
-func (query *AccountBalanceQuery) _ValidateNetworkOnIDs(client *Client) error {
-	if client == nil || !client.autoValidateChecksums {
-		return nil
-	}
-
-	if query.accountID != nil {
-		if err := query.accountID.ValidateChecksum(client); err != nil {
-			return err
-		}
-	}
-
-	if query.contractID != nil {
-		if err := query.contractID.ValidateChecksum(client); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (query *AccountBalanceQuery) _Build() *services.Query_CryptogetAccountBalance {
-	pb := services.CryptoGetAccountBalanceQuery{Header: &services.QueryHeader{}}
-
-	if query.accountID != nil {
-		pb.BalanceSource = &services.CryptoGetAccountBalanceQuery_AccountID{
-			AccountID: query.accountID._ToProtobuf(),
-		}
-	}
-
-	if query.contractID != nil {
-		pb.BalanceSource = &services.CryptoGetAccountBalanceQuery_ContractID{
-			ContractID: query.contractID._ToProtobuf(),
-		}
-	}
-
-	return &services.Query_CryptogetAccountBalance{
-		CryptogetAccountBalance: &pb,
-	}
+	return *this.contractID
 }
 
 // GetCost returns the fee that would be charged to get the requested information (if a cost was requested).
-func (query *AccountBalanceQuery) GetCost(client *Client) (Hbar, error) {
+func (this *AccountBalanceQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
 		return Hbar{}, errNoClientProvided
 	}
 
 	var err error
 
-	err = query._ValidateNetworkOnIDs(client)
+	err = this.validateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	query.timestamp = time.Now()
-	query.paymentTransactions = make([]*services.Transaction, 0)
+	this.timestamp = time.Now()
+	this.paymentTransactions = make([]*services.Transaction, 0)
 
-	pb := query._Build()
-	pb.CryptogetAccountBalance.Header = query.pbHeader
-	query.pb = &services.Query{
+	pb := this.build()
+	pb.CryptogetAccountBalance.Header = this.pbHeader
+	this.pb = &services.Query{
 		Query: pb,
 	}
+
+	this.pbHeader.ResponseType = services.ResponseType_COST_ANSWER
+	this.paymentTransactionIDs._Advance()
 	resp, err := _Execute(
 		client,
-		&query.query,
-		_AccountBalanceQueryShouldRetry,
-		_CostQueryMakeRequest,
-		_CostQueryAdvanceRequest,
-		getNodeAccountID,
-		_AccountBalanceQueryGetMethod,
-		_AccountBalanceQueryMapStatusError,
-		mapResponse,
-		query._GetLogID(),
-		query.grpcDeadline,
-		query.maxBackoff,
-		query.minBackoff,
-		query.maxRetry,
+		this.e,
 	)
 
 	if err != nil {
@@ -175,60 +126,36 @@ func (query *AccountBalanceQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func _AccountBalanceQueryShouldRetry(_ interface{}, response interface{}) _ExecutionState {
-	return shouldRetry(Status(response.(*services.Response).GetCryptogetAccountBalance().Header.NodeTransactionPrecheckCode))
-}
-
-func _AccountBalanceQueryMapStatusError(_ interface{}, response interface{}) error {
-	return ErrHederaPreCheckStatus{
-		Status: Status(response.(*services.Response).GetCryptogetAccountBalance().Header.NodeTransactionPrecheckCode),
-	}
-}
-
-func _AccountBalanceQueryGetMethod(_ interface{}, channel *_Channel) _Method {
-	return _Method{
-		query: channel._GetCrypto().CryptoGetBalance,
-	}
-}
-
 // Execute executes the Query with the provided client
-func (query *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error) {
+func (this *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error) {
 	if client == nil {
 		return AccountBalance{}, errNoClientProvided
 	}
 
 	var err error
 
-	err = query._ValidateNetworkOnIDs(client)
+	err = this.validateNetworkOnIDs(client)
 	if err != nil {
 		return AccountBalance{}, err
 	}
 
-	query.timestamp = time.Now()
+	this.timestamp = time.Now()
 
-	query.paymentTransactions = make([]*services.Transaction, 0)
+	this.paymentTransactions = make([]*services.Transaction, 0)
 
-	pb := query._Build()
-	pb.CryptogetAccountBalance.Header = query.pbHeader
-	query.pb = &services.Query{
+	pb := this.build()
+	pb.CryptogetAccountBalance.Header = this.pbHeader
+	this.pb = &services.Query{
 		Query: pb,
 	}
 
+	if this.isPaymentRequired && len(this.paymentTransactions) > 0 {
+		this.paymentTransactionIDs._Advance()
+	}
+	this.pbHeader.ResponseType = services.ResponseType_ANSWER_ONLY
 	resp, err := _Execute(
 		client,
-		&query.query,
-		_AccountBalanceQueryShouldRetry,
-		makeRequest,
-		advanceRequest,
-		getNodeAccountID,
-		_AccountBalanceQueryGetMethod,
-		_AccountBalanceQueryMapStatusError,
-		mapResponse,
-		query._GetLogID(),
-		query.grpcDeadline,
-		query.maxBackoff,
-		query.minBackoff,
-		query.maxRetry,
+		this.e,
 	)
 
 	if err != nil {
@@ -239,81 +166,125 @@ func (query *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.
-func (query *AccountBalanceQuery) SetMaxQueryPayment(maxPayment Hbar) *AccountBalanceQuery {
-	query.query.SetMaxQueryPayment(maxPayment)
-	return query
+func (this *AccountBalanceQuery) SetMaxQueryPayment(maxPayment Hbar) *AccountBalanceQuery {
+	this.query.SetMaxQueryPayment(maxPayment)
+	return this
 }
 
 // SetQueryPayment sets the payment amount for this Query.
-func (query *AccountBalanceQuery) SetQueryPayment(paymentAmount Hbar) *AccountBalanceQuery {
-	query.query.SetQueryPayment(paymentAmount)
-	return query
+func (this *AccountBalanceQuery) SetQueryPayment(paymentAmount Hbar) *AccountBalanceQuery {
+	this.query.SetQueryPayment(paymentAmount)
+	return this
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for this AccountBalanceQuery.
-func (query *AccountBalanceQuery) SetNodeAccountIDs(accountID []AccountID) *AccountBalanceQuery {
-	query.query.SetNodeAccountIDs(accountID)
-	return query
+func (this *AccountBalanceQuery) SetNodeAccountIDs(accountID []AccountID) *AccountBalanceQuery {
+	this.query.SetNodeAccountIDs(accountID)
+	return this
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
-func (query *AccountBalanceQuery) SetMaxRetry(count int) *AccountBalanceQuery {
-	query.query.SetMaxRetry(count)
-	return query
+func (this *AccountBalanceQuery) SetMaxRetry(count int) *AccountBalanceQuery {
+	this.query.SetMaxRetry(count)
+	return this
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries. Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (query *AccountBalanceQuery) SetMaxBackoff(max time.Duration) *AccountBalanceQuery {
-	if max.Nanoseconds() < 0 {
-		panic("maxBackoff must be a positive duration")
-	} else if max.Nanoseconds() < query.minBackoff.Nanoseconds() {
-		panic("maxBackoff must be greater than or equal to minBackoff")
-	}
-	query.maxBackoff = &max
-	return query
+func (this *AccountBalanceQuery) SetMaxBackoff(max time.Duration) *AccountBalanceQuery {
+	this.query.SetMaxBackoff(max)
+	return this
 }
 
 // GetMaxBackoff returns the maximum amount of time to wait between retries.
-func (query *AccountBalanceQuery) GetMaxBackoff() time.Duration {
-	if query.maxBackoff != nil {
-		return *query.maxBackoff
-	}
-
-	return 8 * time.Second
+func (this *AccountBalanceQuery) GetMaxBackoff() time.Duration {
+	return this.query.GetMaxBackoff()
 }
 
 // SetMinBackoff sets the minimum amount of time to wait between retries.
-func (query *AccountBalanceQuery) SetMinBackoff(min time.Duration) *AccountBalanceQuery {
-	if min.Nanoseconds() < 0 {
-		panic("minBackoff must be a positive duration")
-	} else if query.maxBackoff.Nanoseconds() < min.Nanoseconds() {
-		panic("minBackoff must be less than or equal to maxBackoff")
-	}
-	query.minBackoff = &min
-	return query
+func (this *AccountBalanceQuery) SetMinBackoff(min time.Duration) *AccountBalanceQuery {
+	this.query.SetMinBackoff(min)
+	return this
 }
 
 // GetMinBackoff returns the minimum amount of time to wait between retries.
-func (query *AccountBalanceQuery) GetMinBackoff() time.Duration {
-	if query.minBackoff != nil {
-		return *query.minBackoff
-	}
-
-	return 250 * time.Millisecond
+func (this *AccountBalanceQuery) GetMinBackoff() time.Duration {
+	return this.query.GetMinBackoff()
 }
 
-func (query *AccountBalanceQuery) _GetLogID() string {
-	timestamp := query.timestamp.UnixNano()
+func (this *AccountBalanceQuery) _GetLogID() string {
+	timestamp := this.timestamp.UnixNano()
 	return fmt.Sprintf("AccountBalanceQuery:%d", timestamp)
 }
 
 // SetPaymentTransactionID assigns the payment transaction id.
-func (query *AccountBalanceQuery) SetPaymentTransactionID(transactionID TransactionID) *AccountBalanceQuery {
-	query.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
-	return query
+func (this *AccountBalanceQuery) SetPaymentTransactionID(transactionID TransactionID) *AccountBalanceQuery {
+	this.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
+	return this
 }
 
-func (query *AccountBalanceQuery) SetLogLevel(level LogLevel) *AccountBalanceQuery {
-	query.query.SetLogLevel(level)
-	return query
+func (this *AccountBalanceQuery) SetLogLevel(level LogLevel) *AccountBalanceQuery {
+	this.query.SetLogLevel(level)
+	return this
+}
+
+// ---------- Parent functions specific implementation ----------
+
+func (this *AccountBalanceQuery) getMethod(_ interface{}, channel *_Channel) _Method {
+	return _Method{
+		query: channel._GetCrypto().CryptoGetBalance,
+	}
+}
+
+func (this *AccountBalanceQuery) mapStatusError(_ interface{}, response interface{}) error {
+	return ErrHederaPreCheckStatus{
+		Status: Status(response.(*services.Response).GetCryptogetAccountBalance().Header.NodeTransactionPrecheckCode),
+	}
+}
+
+func (this *AccountBalanceQuery) getName() string {
+	return "AccountBalanceQuery"
+}
+
+func (this *AccountBalanceQuery) build() *services.Query_CryptogetAccountBalance {
+	pb := services.CryptoGetAccountBalanceQuery{Header: &services.QueryHeader{}}
+
+	if this.accountID != nil {
+		pb.BalanceSource = &services.CryptoGetAccountBalanceQuery_AccountID{
+			AccountID: this.accountID._ToProtobuf(),
+		}
+	}
+
+	if this.contractID != nil {
+		pb.BalanceSource = &services.CryptoGetAccountBalanceQuery_ContractID{
+			ContractID: this.contractID._ToProtobuf(),
+		}
+	}
+
+	return &services.Query_CryptogetAccountBalance{
+		CryptogetAccountBalance: &pb,
+	}
+}
+
+func (this *AccountBalanceQuery) validateNetworkOnIDs(client *Client) error {
+	if client == nil || !client.autoValidateChecksums {
+		return nil
+	}
+
+	if this.accountID != nil {
+		if err := this.accountID.ValidateChecksum(client); err != nil {
+			return err
+		}
+	}
+
+	if this.contractID != nil {
+		if err := this.contractID.ValidateChecksum(client); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (this *AccountBalanceQuery) getQueryStatus(response interface{}) Status {
+	return Status(response.(*services.Response).GetCryptogetAccountBalance().Header.NodeTransactionPrecheckCode)
 }
