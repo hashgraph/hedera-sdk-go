@@ -62,34 +62,6 @@ func (this *FileContentsQuery) GetFileID() FileID {
 	return *this.fileID
 }
 
-func (this *FileContentsQuery) validateNetworkOnIDs(client *Client) error {
-	if client == nil || !client.autoValidateChecksums {
-		return nil
-	}
-
-	if this.fileID != nil {
-		if err := this.fileID.ValidateChecksum(client); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (this *FileContentsQuery) build() *services.Query_FileGetContents {
-	body := &services.FileGetContentsQuery{
-		Header: &services.QueryHeader{},
-	}
-
-	if this.fileID != nil {
-		body.FileID = this.fileID._ToProtobuf()
-	}
-
-	return &services.Query_FileGetContents{
-		FileGetContents: body,
-	}
-}
-
 // GetCost returns the fee that would be charged to get the requested information (if a cost was requested).
 func (this *FileContentsQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
@@ -132,22 +104,6 @@ func (this *FileContentsQuery) GetCost(client *Client) (Hbar, error) {
 
 	cost := int64(resp.(*services.Response).GetFileGetContents().Header.Cost)
 	return HbarFromTinybar(cost), nil
-}
-
-func (this *FileContentsQuery) mapStatusError(_ interface{}, response interface{}) error {
-	return ErrHederaPreCheckStatus{
-		Status: Status(response.(*services.Response).GetFileGetContents().Header.NodeTransactionPrecheckCode),
-	}
-}
-
-func (this *FileContentsQuery) getMethod(_ interface{}, channel *_Channel) _Method {
-	return _Method{
-		query: channel._GetFile().GetFileContent,
-	}
-}
-// Get the name of the query
-func (this *FileContentsQuery) getName() string {
-	return "FileContentsQuery"
 }
 
 // Execute executes the Query with the provided client
@@ -213,7 +169,6 @@ func (this *FileContentsQuery) Execute(client *Client) ([]byte, error) {
 	this.pb = &services.Query{
 		Query: pb,
 	}
-
 
 	if this.isPaymentRequired && len(this.paymentTransactions) > 0 {
 		this.paymentTransactionIDs._Advance()
@@ -297,6 +252,52 @@ func (this *FileContentsQuery) SetLogLevel(level LogLevel) *FileContentsQuery {
 	return this
 }
 
-func (this *FileContentsQuery) getQueryStatus(response interface{}) (Status) {
+// ---------- Parent functions specific implementation ----------
+
+func (this *FileContentsQuery) getMethod(_ interface{}, channel *_Channel) _Method {
+	return _Method{
+		query: channel._GetFile().GetFileContent,
+	}
+}
+
+func (this *FileContentsQuery) mapStatusError(_ interface{}, response interface{}) error {
+	return ErrHederaPreCheckStatus{
+		Status: Status(response.(*services.Response).GetFileGetContents().Header.NodeTransactionPrecheckCode),
+	}
+}
+
+// Get the name of the query
+func (this *FileContentsQuery) getName() string {
+	return "FileContentsQuery"
+}
+func (this *FileContentsQuery) build() *services.Query_FileGetContents {
+	body := &services.FileGetContentsQuery{
+		Header: &services.QueryHeader{},
+	}
+
+	if this.fileID != nil {
+		body.FileID = this.fileID._ToProtobuf()
+	}
+
+	return &services.Query_FileGetContents{
+		FileGetContents: body,
+	}
+}
+
+func (this *FileContentsQuery) validateNetworkOnIDs(client *Client) error {
+	if client == nil || !client.autoValidateChecksums {
+		return nil
+	}
+
+	if this.fileID != nil {
+		if err := this.fileID.ValidateChecksum(client); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (this *FileContentsQuery) getQueryStatus(response interface{}) Status {
 	return Status(response.(*services.Response).GetFileGetContents().Header.NodeTransactionPrecheckCode)
 }

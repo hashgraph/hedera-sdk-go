@@ -239,19 +239,6 @@ func (this *query) buildScheduled() (*services.SchedulableTransactionBody, error
 }
 
 // ----------- Next methods should be overridden in each subclass -----------------
-func (this *query) getName() string {
-	return "Query"
-}
-
-// NOTE: Should be implemented in every inheritor.
-func (this *query) build() *services.TransactionBody {
-	return nil
-}
-
-// NOTE: Should be implemented in every inheritor.
-func (this *query) validateNetworkOnIDs(client *Client) error {
-	return errors.New("Not implemented")
-}
 
 // NOTE: Should be implemented in every inheritor. Example:
 //
@@ -269,7 +256,17 @@ func (this *query) getMethod(*_Channel) _Method {
 func (this *query) mapStatusError(interface{}, interface{}) error{
 	return errors.New("Not implemented")
 }
-
+func (this *query) getName() string {
+	return "Query"
+}
+// NOTE: Should be implemented in every inheritor.
+func (this *query) build() *services.TransactionBody {
+	return nil
+}
+// NOTE: Should be implemented in every inheritor.
+func (this *query) validateNetworkOnIDs(client *Client) error {
+	return errors.New("Not implemented")
+}
 func (this *query) getQueryStatus(response interface{}) (Status) {
 	return Status(1)
 }
