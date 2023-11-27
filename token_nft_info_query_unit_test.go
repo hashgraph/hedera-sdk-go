@@ -46,7 +46,7 @@ func TestUnitTokenNftGetInfoByNftIDValidate(t *testing.T) {
 	nftInfo := NewTokenNftInfoQuery().
 		SetNftID(nftID)
 
-	err = nftInfo._ValidateNetworkOnIDs(client)
+	err = nftInfo.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 }
 
@@ -63,7 +63,7 @@ func TestUnitTokenNftGetInfoByNftIDValidateWrong(t *testing.T) {
 	nftInfo := NewTokenNftInfoQuery().
 		SetNftID(nftID)
 
-	err = nftInfo._ValidateNetworkOnIDs(client)
+	err = nftInfo.validateNetworkOnIDs(client)
 	require.Error(t, err)
 	if err != nil {
 		require.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
@@ -118,7 +118,7 @@ func TestUnitTokenNftInfoQueryGet(t *testing.T) {
 		SetQueryPayment(NewHbar(3)).
 		SetGrpcDeadline(&deadline)
 
-	err = query._ValidateNetworkOnIDs(client)
+	err = query.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 
 	// Some assertions like SetStart, SetEnd, etc. are missing, because those fucntions are deprecated and empty
