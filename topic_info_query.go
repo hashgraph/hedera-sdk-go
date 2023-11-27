@@ -38,103 +38,69 @@ type TopicInfoQuery struct {
 //	Get Topic Info Query.
 func NewTopicInfoQuery() *TopicInfoQuery {
 	header := services.QueryHeader{}
-	return &TopicInfoQuery{
+	result := TopicInfoQuery{
 		query: _NewQuery(true, &header),
 	}
+	
+	result.e = &result
+	return &result
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (query *TopicInfoQuery) SetGrpcDeadline(deadline *time.Duration) *TopicInfoQuery {
-	query.query.SetGrpcDeadline(deadline)
-	return query
+func (this *TopicInfoQuery) SetGrpcDeadline(deadline *time.Duration) *TopicInfoQuery {
+	this.query.SetGrpcDeadline(deadline)
+	return this
 }
 
 // SetTopicID sets the topic to retrieve info about (the parameters and running state of).
-func (query *TopicInfoQuery) SetTopicID(topicID TopicID) *TopicInfoQuery {
-	query.topicID = &topicID
-	return query
+func (this *TopicInfoQuery) SetTopicID(topicID TopicID) *TopicInfoQuery {
+	this.topicID = &topicID
+	return this
 }
 
 // GetTopicID returns the TopicID for this TopicInfoQuery
-func (query *TopicInfoQuery) GetTopicID() TopicID {
-	if query.topicID == nil {
+func (this *TopicInfoQuery) GetTopicID() TopicID {
+	if this.topicID == nil {
 		return TopicID{}
 	}
 
-	return *query.topicID
-}
-
-func (query *TopicInfoQuery) _ValidateNetworkOnIDs(client *Client) error {
-	if client == nil || !client.autoValidateChecksums {
-		return nil
-	}
-
-	if query.topicID != nil {
-		if err := query.topicID.ValidateChecksum(client); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (query *TopicInfoQuery) _Build() *services.Query_ConsensusGetTopicInfo {
-	body := &services.ConsensusGetTopicInfoQuery{
-		Header: &services.QueryHeader{},
-	}
-
-	if query.topicID != nil {
-		body.TopicID = query.topicID._ToProtobuf()
-	}
-
-	return &services.Query_ConsensusGetTopicInfo{
-		ConsensusGetTopicInfo: body,
-	}
+	return *this.topicID
 }
 
 // GetCost returns the fee that would be charged to get the requested information (if a cost was requested).
-func (query *TopicInfoQuery) GetCost(client *Client) (Hbar, error) {
+func (this *TopicInfoQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
 		return Hbar{}, errNoClientProvided
 	}
 
 	var err error
 
-	err = query._ValidateNetworkOnIDs(client)
+	err = this.validateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	for range query.nodeAccountIDs.slice {
+	for range this.nodeAccountIDs.slice {
 		paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 		if err != nil {
 			return Hbar{}, err
 		}
-		query.paymentTransactions = append(query.paymentTransactions, paymentTransaction)
+		this.paymentTransactions = append(this.paymentTransactions, paymentTransaction)
 	}
 
-	pb := query._Build()
-	pb.ConsensusGetTopicInfo.Header = query.pbHeader
+	pb := this.build()
+	pb.ConsensusGetTopicInfo.Header = this.pbHeader
 
-	query.pb = &services.Query{
+	this.pb = &services.Query{
 		Query: pb,
 	}
 
+	this.pbHeader.ResponseType = services.ResponseType_COST_ANSWER
+	this.paymentTransactionIDs._Advance()
+
 	resp, err := _Execute(
 		client,
-		&query.query,
-		_TopicInfoQueryShouldRetry,
-		_CostQueryMakeRequest,
-		_CostQueryAdvanceRequest,
-		getNodeAccountID,
-		_TopicInfoQueryGetMethod,
-		_TopicInfoQueryMapStatusError,
-		mapResponse,
-		query._GetLogID(),
-		query.grpcDeadline,
-		query.maxBackoff,
-		query.minBackoff,
-		query.maxRetry,
+		this.e,
 	)
 
 	if err != nil {
@@ -145,50 +111,34 @@ func (query *TopicInfoQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func _TopicInfoQueryShouldRetry(_ interface{}, response interface{}) _ExecutionState {
-	return shouldRetry(Status(response.(*services.Response).GetConsensusGetTopicInfo().Header.NodeTransactionPrecheckCode))
-}
-
-func _TopicInfoQueryMapStatusError(_ interface{}, response interface{}) error {
-	return ErrHederaPreCheckStatus{
-		Status: Status(response.(*services.Response).GetConsensusGetTopicInfo().Header.NodeTransactionPrecheckCode),
-	}
-}
-
-func _TopicInfoQueryGetMethod(_ interface{}, channel *_Channel) _Method {
-	return _Method{
-		query: channel._GetTopic().GetTopicInfo,
-	}
-}
-
 // Execute executes the TopicInfoQuery using the provided client
-func (query *TopicInfoQuery) Execute(client *Client) (TopicInfo, error) {
+func (this *TopicInfoQuery) Execute(client *Client) (TopicInfo, error) {
 	if client == nil || client.operator == nil {
 		return TopicInfo{}, errNoClientProvided
 	}
 
 	var err error
 
-	err = query._ValidateNetworkOnIDs(client)
+	err = this.validateNetworkOnIDs(client)
 	if err != nil {
 		return TopicInfo{}, err
 	}
 
-	if !query.paymentTransactionIDs.locked {
-		query.paymentTransactionIDs._Clear()._Push(TransactionIDGenerate(client.operator.accountID))
+	if !this.paymentTransactionIDs.locked {
+		this.paymentTransactionIDs._Clear()._Push(TransactionIDGenerate(client.operator.accountID))
 	}
 
 	var cost Hbar
-	if query.queryPayment.tinybar != 0 {
-		cost = query.queryPayment
+	if this.queryPayment.tinybar != 0 {
+		cost = this.queryPayment
 	} else {
-		if query.maxQueryPayment.tinybar == 0 {
+		if this.maxQueryPayment.tinybar == 0 {
 			cost = client.GetDefaultMaxQueryPayment()
 		} else {
-			cost = query.maxQueryPayment
+			cost = this.maxQueryPayment
 		}
 
-		actualCost, err := query.GetCost(client)
+		actualCost, err := this.GetCost(client)
 		if err != nil {
 			return TopicInfo{}, err
 		}
@@ -204,42 +154,35 @@ func (query *TopicInfoQuery) Execute(client *Client) (TopicInfo, error) {
 		cost = actualCost
 	}
 
-	query.paymentTransactions = make([]*services.Transaction, 0)
+	this.paymentTransactions = make([]*services.Transaction, 0)
 
-	if query.nodeAccountIDs.locked {
-		err = _QueryGeneratePayments(&query.query, client, cost)
+	if this.nodeAccountIDs.locked {
+		err = this._QueryGeneratePayments(client, cost)
 		if err != nil {
 			return TopicInfo{}, err
 		}
 	} else {
-		paymentTransaction, err := _QueryMakePaymentTransaction(query.paymentTransactionIDs._GetCurrent().(TransactionID), AccountID{}, client.operator, cost)
+		paymentTransaction, err := _QueryMakePaymentTransaction(this.paymentTransactionIDs._GetCurrent().(TransactionID), AccountID{}, client.operator, cost)
 		if err != nil {
 			return TopicInfo{}, err
 		}
-		query.paymentTransactions = append(query.paymentTransactions, paymentTransaction)
+		this.paymentTransactions = append(this.paymentTransactions, paymentTransaction)
 	}
 
-	pb := query._Build()
-	pb.ConsensusGetTopicInfo.Header = query.pbHeader
-	query.pb = &services.Query{
+	pb := this.build()
+	pb.ConsensusGetTopicInfo.Header = this.pbHeader
+	this.pb = &services.Query{
 		Query: pb,
 	}
 
+	if this.isPaymentRequired && len(this.paymentTransactions) > 0 {
+		this.paymentTransactionIDs._Advance()
+	}
+	this.pbHeader.ResponseType = services.ResponseType_ANSWER_ONLY
+
 	resp, err := _Execute(
 		client,
-		&query.query,
-		_TopicInfoQueryShouldRetry,
-		makeRequest,
-		advanceRequest,
-		getNodeAccountID,
-		_TopicInfoQueryGetMethod,
-		_TopicInfoQueryMapStatusError,
-		mapResponse,
-		query._GetLogID(),
-		query.grpcDeadline,
-		query.maxBackoff,
-		query.minBackoff,
-		query.maxRetry,
+		this.e,
 	)
 
 	if err != nil {
@@ -250,84 +193,117 @@ func (query *TopicInfoQuery) Execute(client *Client) (TopicInfo, error) {
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.
-func (query *TopicInfoQuery) SetMaxQueryPayment(maxPayment Hbar) *TopicInfoQuery {
-	query.query.SetMaxQueryPayment(maxPayment)
-	return query
+func (this *TopicInfoQuery) SetMaxQueryPayment(maxPayment Hbar) *TopicInfoQuery {
+	this.query.SetMaxQueryPayment(maxPayment)
+	return this
 }
 
 // SetQueryPayment sets the payment amount for this Query.
-func (query *TopicInfoQuery) SetQueryPayment(paymentAmount Hbar) *TopicInfoQuery {
-	query.query.SetQueryPayment(paymentAmount)
-	return query
+func (this *TopicInfoQuery) SetQueryPayment(paymentAmount Hbar) *TopicInfoQuery {
+	this.query.SetQueryPayment(paymentAmount)
+	return this
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for this TopicInfoQuery.
-func (query *TopicInfoQuery) SetNodeAccountIDs(accountID []AccountID) *TopicInfoQuery {
-	query.query.SetNodeAccountIDs(accountID)
-	return query
+func (this *TopicInfoQuery) SetNodeAccountIDs(accountID []AccountID) *TopicInfoQuery {
+	this.query.SetNodeAccountIDs(accountID)
+	return this
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
-func (query *TopicInfoQuery) SetMaxRetry(count int) *TopicInfoQuery {
-	query.query.SetMaxRetry(count)
-	return query
+func (this *TopicInfoQuery) SetMaxRetry(count int) *TopicInfoQuery {
+	this.query.SetMaxRetry(count)
+	return this
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
 // Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (query *TopicInfoQuery) SetMaxBackoff(max time.Duration) *TopicInfoQuery {
-	if max.Nanoseconds() < 0 {
-		panic("maxBackoff must be a positive duration")
-	} else if max.Nanoseconds() < query.minBackoff.Nanoseconds() {
-		panic("maxBackoff must be greater than or equal to minBackoff")
-	}
-	query.maxBackoff = &max
-	return query
+func (this *TopicInfoQuery) SetMaxBackoff(max time.Duration) *TopicInfoQuery {
+	this.query.SetMaxBackoff(max)
+	return this
 }
 
 // GetMaxBackoff returns the maximum amount of time to wait between retries.
-func (query *TopicInfoQuery) GetMaxBackoff() time.Duration {
-	if query.maxBackoff != nil {
-		return *query.maxBackoff
-	}
-
-	return 8 * time.Second
+func (this *TopicInfoQuery) GetMaxBackoff() time.Duration {
+	return this.query.GetMaxBackoff()
 }
 
 // SetMinBackoff sets the minimum amount of time to wait between retries.
-func (query *TopicInfoQuery) SetMinBackoff(min time.Duration) *TopicInfoQuery {
-	if min.Nanoseconds() < 0 {
-		panic("minBackoff must be a positive duration")
-	} else if query.maxBackoff.Nanoseconds() < min.Nanoseconds() {
-		panic("minBackoff must be less than or equal to maxBackoff")
-	}
-	query.minBackoff = &min
-	return query
+func (this *TopicInfoQuery) SetMinBackoff(min time.Duration) *TopicInfoQuery {
+	this.query.SetMinBackoff(min)
+	return this
 }
 
 // GetMinBackoff returns the minimum amount of time to wait between retries.
-func (query *TopicInfoQuery) GetMinBackoff() time.Duration {
-	if query.minBackoff != nil {
-		return *query.minBackoff
-	}
-
-	return 250 * time.Millisecond
+func (this *TopicInfoQuery) GetMinBackoff() time.Duration {
+	return this.query.GetMinBackoff()
 }
 
-func (query *TopicInfoQuery) _GetLogID() string {
-	timestamp := query.timestamp.UnixNano()
-	if query.paymentTransactionIDs._Length() > 0 && query.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart != nil {
-		timestamp = query.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart.UnixNano()
+func (this *TopicInfoQuery) _GetLogID() string {
+	timestamp := this.timestamp.UnixNano()
+	if this.paymentTransactionIDs._Length() > 0 && this.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart != nil {
+		timestamp = this.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart.UnixNano()
 	}
 	return fmt.Sprintf("TopicInfoQuery:%d", timestamp)
 }
 
-func (query *TopicInfoQuery) SetPaymentTransactionID(transactionID TransactionID) *TopicInfoQuery {
-	query.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
-	return query
+func (this *TopicInfoQuery) SetPaymentTransactionID(transactionID TransactionID) *TopicInfoQuery {
+	this.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
+	return this
 }
 
-func (query *TopicInfoQuery) SetLogLevel(level LogLevel) *TopicInfoQuery {
-	query.query.SetLogLevel(level)
-	return query
+func (this *TopicInfoQuery) SetLogLevel(level LogLevel) *TopicInfoQuery {
+	this.query.SetLogLevel(level)
+	return this
 }
+
+// ---------- Parent functions specific implementation ----------
+
+func (this *TopicInfoQuery) getMethod(channel *_Channel) _Method {
+	return _Method{
+		query: channel._GetTopic().GetTopicInfo,
+	}
+}
+
+func (this *TopicInfoQuery) mapStatusError(_ interface{}, response interface{}) error {
+	return ErrHederaPreCheckStatus{
+		Status: Status(response.(*services.Response).GetConsensusGetTopicInfo().Header.NodeTransactionPrecheckCode),
+	}
+}
+
+func (this *TopicInfoQuery) getName() string {
+	return "TopicInfoQuery"
+}
+
+func (this *TopicInfoQuery) build() *services.Query_ConsensusGetTopicInfo {
+	body := &services.ConsensusGetTopicInfoQuery{
+		Header: &services.QueryHeader{},
+	}
+
+	if this.topicID != nil {
+		body.TopicID = this.topicID._ToProtobuf()
+	}
+
+	return &services.Query_ConsensusGetTopicInfo{
+		ConsensusGetTopicInfo: body,
+	}
+}
+
+func (this *TopicInfoQuery) validateNetworkOnIDs(client *Client) error {
+	if client == nil || !client.autoValidateChecksums {
+		return nil
+	}
+
+	if this.topicID != nil {
+		if err := this.topicID.ValidateChecksum(client); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (this *TopicInfoQuery) getQueryStatus(response interface{}) Status {
+	return Status(response.(*services.Response).GetConsensusGetTopicInfo().Header.NodeTransactionPrecheckCode)
+}
+
