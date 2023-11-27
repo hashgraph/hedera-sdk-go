@@ -36,103 +36,70 @@ type ScheduleInfoQuery struct {
 // NewScheduleInfoQuery creates ScheduleInfoQuery which gets information about a schedule in the network's action queue.
 func NewScheduleInfoQuery() *ScheduleInfoQuery {
 	header := services.QueryHeader{}
-	return &ScheduleInfoQuery{
+	result := ScheduleInfoQuery{
 		query: _NewQuery(true, &header),
 	}
+
+	result.e = &result
+	return &result
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (query *ScheduleInfoQuery) SetGrpcDeadline(deadline *time.Duration) *ScheduleInfoQuery {
-	query.query.SetGrpcDeadline(deadline)
-	return query
+func (this *ScheduleInfoQuery) SetGrpcDeadline(deadline *time.Duration) *ScheduleInfoQuery {
+	this.query.SetGrpcDeadline(deadline)
+	return this
 }
 
 // SetScheduleID Sets the id of the schedule to interrogate
-func (query *ScheduleInfoQuery) SetScheduleID(scheduleID ScheduleID) *ScheduleInfoQuery {
-	query.scheduleID = &scheduleID
-	return query
+func (this *ScheduleInfoQuery) SetScheduleID(scheduleID ScheduleID) *ScheduleInfoQuery {
+	this.scheduleID = &scheduleID
+	return this
 }
 
 // GetScheduleID returns the id of the schedule to interrogate
-func (query *ScheduleInfoQuery) GetScheduleID() ScheduleID {
-	if query.scheduleID == nil {
+func (this *ScheduleInfoQuery) GetScheduleID() ScheduleID {
+	if this.scheduleID == nil {
 		return ScheduleID{}
 	}
 
-	return *query.scheduleID
-}
-
-func (query *ScheduleInfoQuery) _ValidateNetworkOnIDs(client *Client) error {
-	if client == nil || !client.autoValidateChecksums {
-		return nil
-	}
-
-	if query.scheduleID != nil {
-		if err := query.scheduleID.ValidateChecksum(client); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (query *ScheduleInfoQuery) _Build() *services.Query_ScheduleGetInfo {
-	body := &services.ScheduleGetInfoQuery{
-		Header: &services.QueryHeader{},
-	}
-
-	if query.scheduleID != nil {
-		body.ScheduleID = query.scheduleID._ToProtobuf()
-	}
-
-	return &services.Query_ScheduleGetInfo{
-		ScheduleGetInfo: body,
-	}
+	return *this.scheduleID
 }
 
 // GetCost returns the fee that would be charged to get the requested information (if a cost was requested).
-func (query *ScheduleInfoQuery) GetCost(client *Client) (Hbar, error) {
+func (this *ScheduleInfoQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
 		return Hbar{}, errNoClientProvided
 	}
 
 	var err error
 
-	err = query._ValidateNetworkOnIDs(client)
+	err = this.validateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	for range query.nodeAccountIDs.slice {
+	for range this.nodeAccountIDs.slice {
 		paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 		if err != nil {
 			return Hbar{}, err
 		}
-		query.paymentTransactions = append(query.paymentTransactions, paymentTransaction)
+		this.paymentTransactions = append(this.paymentTransactions, paymentTransaction)
 	}
 
-	pb := query._Build()
-	pb.ScheduleGetInfo.Header = query.pbHeader
+	pb := this.build()
+	pb.ScheduleGetInfo.Header = this.pbHeader
 
-	query.pb = &services.Query{
+	this.pb = &services.Query{
 		Query: pb,
 	}
 
+	this.pbHeader.ResponseType = services.ResponseType_COST_ANSWER
+	this.paymentTransactionIDs._Advance()
+
+
 	resp, err := _Execute(
 		client,
-		&query.query,
-		_ScheduleInfoQueryShouldRetry,
-		_CostQueryMakeRequest,
-		_CostQueryAdvanceRequest,
-		getNodeAccountID,
-		_ScheduleInfoQueryGetMethod,
-		_ScheduleInfoQueryMapStatusError,
-		mapResponse,
-		query._GetLogID(),
-		query.grpcDeadline,
-		query.maxBackoff,
-		query.minBackoff,
-		query.maxRetry,
+		this.e,
 	)
 
 	if err != nil {
@@ -143,50 +110,34 @@ func (query *ScheduleInfoQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func _ScheduleInfoQueryShouldRetry(_ interface{}, response interface{}) _ExecutionState {
-	return shouldRetry(Status(response.(*services.Response).GetScheduleGetInfo().Header.NodeTransactionPrecheckCode))
-}
-
-func _ScheduleInfoQueryMapStatusError(_ interface{}, response interface{}) error {
-	return ErrHederaPreCheckStatus{
-		Status: Status(response.(*services.Response).GetScheduleGetInfo().Header.NodeTransactionPrecheckCode),
-	}
-}
-
-func _ScheduleInfoQueryGetMethod(_ interface{}, channel *_Channel) _Method {
-	return _Method{
-		query: channel._GetSchedule().GetScheduleInfo,
-	}
-}
-
 // Execute executes the Query with the provided client
-func (query *ScheduleInfoQuery) Execute(client *Client) (ScheduleInfo, error) {
+func (this *ScheduleInfoQuery) Execute(client *Client) (ScheduleInfo, error) {
 	if client == nil || client.operator == nil {
 		return ScheduleInfo{}, errNoClientProvided
 	}
 
 	var err error
 
-	err = query._ValidateNetworkOnIDs(client)
+	err = this.validateNetworkOnIDs(client)
 	if err != nil {
 		return ScheduleInfo{}, err
 	}
 
-	if !query.paymentTransactionIDs.locked {
-		query.paymentTransactionIDs._Clear()._Push(TransactionIDGenerate(client.operator.accountID))
+	if !this.paymentTransactionIDs.locked {
+		this.paymentTransactionIDs._Clear()._Push(TransactionIDGenerate(client.operator.accountID))
 	}
 
 	var cost Hbar
-	if query.queryPayment.tinybar != 0 {
-		cost = query.queryPayment
+	if this.queryPayment.tinybar != 0 {
+		cost = this.queryPayment
 	} else {
-		if query.maxQueryPayment.tinybar == 0 {
+		if this.maxQueryPayment.tinybar == 0 {
 			cost = client.GetDefaultMaxQueryPayment()
 		} else {
-			cost = query.maxQueryPayment
+			cost = this.maxQueryPayment
 		}
 
-		actualCost, err := query.GetCost(client)
+		actualCost, err := this.GetCost(client)
 		if err != nil {
 			return ScheduleInfo{}, err
 		}
@@ -202,42 +153,35 @@ func (query *ScheduleInfoQuery) Execute(client *Client) (ScheduleInfo, error) {
 		cost = actualCost
 	}
 
-	query.paymentTransactions = make([]*services.Transaction, 0)
+	this.paymentTransactions = make([]*services.Transaction, 0)
 
-	if query.nodeAccountIDs.locked {
-		err = _QueryGeneratePayments(&query.query, client, cost)
+	if this.nodeAccountIDs.locked {
+		err = this._QueryGeneratePayments(client, cost)
 		if err != nil {
 			return ScheduleInfo{}, err
 		}
 	} else {
-		paymentTransaction, err := _QueryMakePaymentTransaction(query.paymentTransactionIDs._GetCurrent().(TransactionID), AccountID{}, client.operator, cost)
+		paymentTransaction, err := _QueryMakePaymentTransaction(this.paymentTransactionIDs._GetCurrent().(TransactionID), AccountID{}, client.operator, cost)
 		if err != nil {
 			return ScheduleInfo{}, err
 		}
-		query.paymentTransactions = append(query.paymentTransactions, paymentTransaction)
+		this.paymentTransactions = append(this.paymentTransactions, paymentTransaction)
 	}
 
-	pb := query._Build()
-	pb.ScheduleGetInfo.Header = query.pbHeader
-	query.pb = &services.Query{
+	pb := this.build()
+	pb.ScheduleGetInfo.Header = this.pbHeader
+	this.pb = &services.Query{
 		Query: pb,
 	}
 
+	if this.isPaymentRequired && len(this.paymentTransactions) > 0 {
+		this.paymentTransactionIDs._Advance()
+	}
+	this.pbHeader.ResponseType = services.ResponseType_ANSWER_ONLY
+
 	resp, err := _Execute(
 		client,
-		&query.query,
-		_ScheduleInfoQueryShouldRetry,
-		makeRequest,
-		advanceRequest,
-		getNodeAccountID,
-		_ScheduleInfoQueryGetMethod,
-		_ScheduleInfoQueryMapStatusError,
-		mapResponse,
-		query._GetLogID(),
-		query.grpcDeadline,
-		query.maxBackoff,
-		query.minBackoff,
-		query.maxRetry,
+		this.e,
 	)
 
 	if err != nil {
@@ -248,89 +192,121 @@ func (query *ScheduleInfoQuery) Execute(client *Client) (ScheduleInfo, error) {
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.
-func (query *ScheduleInfoQuery) SetMaxQueryPayment(maxPayment Hbar) *ScheduleInfoQuery {
-	query.query.SetMaxQueryPayment(maxPayment)
-	return query
+func (this *ScheduleInfoQuery) SetMaxQueryPayment(maxPayment Hbar) *ScheduleInfoQuery {
+	this.query.SetMaxQueryPayment(maxPayment)
+	return this
 }
 
 // SetQueryPayment sets the payment amount for this Query.
-func (query *ScheduleInfoQuery) SetQueryPayment(paymentAmount Hbar) *ScheduleInfoQuery {
-	query.query.SetQueryPayment(paymentAmount)
-	return query
+func (this *ScheduleInfoQuery) SetQueryPayment(paymentAmount Hbar) *ScheduleInfoQuery {
+	this.query.SetQueryPayment(paymentAmount)
+	return this
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for this ScheduleInfoQuery.
-func (query *ScheduleInfoQuery) SetNodeAccountIDs(accountID []AccountID) *ScheduleInfoQuery {
-	query.query.SetNodeAccountIDs(accountID)
-	return query
+func (this *ScheduleInfoQuery) SetNodeAccountIDs(accountID []AccountID) *ScheduleInfoQuery {
+	this.query.SetNodeAccountIDs(accountID)
+	return this
 }
 
 // GetNodeAccountIDs returns the _Node AccountID for this ScheduleInfoQuery.
-func (query *ScheduleInfoQuery) GetNodeAccountIDs() []AccountID {
-	return query.query.GetNodeAccountIDs()
+func (this *ScheduleInfoQuery) GetNodeAccountIDs() []AccountID {
+	return this.query.GetNodeAccountIDs()
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
-func (query *ScheduleInfoQuery) SetMaxRetry(count int) *ScheduleInfoQuery {
-	query.query.SetMaxRetry(count)
-	return query
+func (this *ScheduleInfoQuery) SetMaxRetry(count int) *ScheduleInfoQuery {
+	this.query.SetMaxRetry(count)
+	return this
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
 // Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (query *ScheduleInfoQuery) SetMaxBackoff(max time.Duration) *ScheduleInfoQuery {
-	if max.Nanoseconds() < 0 {
-		panic("maxBackoff must be a positive duration")
-	} else if max.Nanoseconds() < query.minBackoff.Nanoseconds() {
-		panic("maxBackoff must be greater than or equal to minBackoff")
-	}
-	query.maxBackoff = &max
-	return query
+func (this *ScheduleInfoQuery) SetMaxBackoff(max time.Duration) *ScheduleInfoQuery {
+	this.query.SetMaxBackoff(max)
+	return this
 }
 
 // GetMaxBackoff returns the maximum amount of time to wait between retries.
-func (query *ScheduleInfoQuery) GetMaxBackoff() time.Duration {
-	if query.maxBackoff != nil {
-		return *query.maxBackoff
-	}
-
-	return 8 * time.Second
+func (this *ScheduleInfoQuery) GetMaxBackoff() time.Duration {
+	return this.query.GetMaxBackoff()
 }
 
 // SetMinBackoff sets the minimum amount of time to wait between retries.
-func (query *ScheduleInfoQuery) SetMinBackoff(min time.Duration) *ScheduleInfoQuery {
-	if min.Nanoseconds() < 0 {
-		panic("minBackoff must be a positive duration")
-	} else if query.maxBackoff.Nanoseconds() < min.Nanoseconds() {
-		panic("minBackoff must be less than or equal to maxBackoff")
-	}
-	query.minBackoff = &min
-	return query
+func (this *ScheduleInfoQuery) SetMinBackoff(min time.Duration) *ScheduleInfoQuery {
+	this.query.SetMinBackoff(min)
+	return this
 }
 
 // GetMinBackoff returns the minimum amount of time to wait between retries.
-func (query *ScheduleInfoQuery) GetMinBackoff() time.Duration {
-	if query.minBackoff != nil {
-		return *query.minBackoff
-	}
-
-	return 250 * time.Millisecond
+func (this *ScheduleInfoQuery) GetMinBackoff() time.Duration {
+	return this.GetMinBackoff()
 }
 
-func (query *ScheduleInfoQuery) _GetLogID() string {
-	timestamp := query.timestamp.UnixNano()
-	if query.paymentTransactionIDs._Length() > 0 && query.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart != nil {
-		timestamp = query.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart.UnixNano()
+func (this *ScheduleInfoQuery) _GetLogID() string {
+	timestamp := this.timestamp.UnixNano()
+	if this.paymentTransactionIDs._Length() > 0 && this.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart != nil {
+		timestamp = this.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart.UnixNano()
 	}
 	return fmt.Sprintf("ScheduleInfoQuery:%d", timestamp)
 }
 
-func (query *ScheduleInfoQuery) SetPaymentTransactionID(transactionID TransactionID) *ScheduleInfoQuery {
-	query.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
-	return query
+func (this *ScheduleInfoQuery) SetPaymentTransactionID(transactionID TransactionID) *ScheduleInfoQuery {
+	this.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
+	return this
 }
 
-func (query *ScheduleInfoQuery) SetLogLevel(level LogLevel) *ScheduleInfoQuery {
-	query.query.SetLogLevel(level)
-	return query
+func (this *ScheduleInfoQuery) SetLogLevel(level LogLevel) *ScheduleInfoQuery {
+	this.query.SetLogLevel(level)
+	return this
+}
+
+// ---------- Parent functions specific implementation ----------
+
+func (this *ScheduleInfoQuery) getMethod(channel *_Channel) _Method {
+	return _Method{
+		query: channel._GetSchedule().GetScheduleInfo,
+	}
+}
+
+func (this *ScheduleInfoQuery) mapStatusError(_ interface{}, response interface{}) error {
+	return ErrHederaPreCheckStatus{
+		Status: Status(response.(*services.Response).GetScheduleGetInfo().Header.NodeTransactionPrecheckCode),
+	}
+}
+
+func (this *ScheduleInfoQuery) getName() string {
+	return "ScheduleInfoQuery"
+}
+
+func (this *ScheduleInfoQuery) build() *services.Query_ScheduleGetInfo {
+	body := &services.ScheduleGetInfoQuery{
+		Header: &services.QueryHeader{},
+	}
+
+	if this.scheduleID != nil {
+		body.ScheduleID = this.scheduleID._ToProtobuf()
+	}
+
+	return &services.Query_ScheduleGetInfo{
+		ScheduleGetInfo: body,
+	}
+}
+
+func (this *ScheduleInfoQuery) validateNetworkOnIDs(client *Client) error {
+	if client == nil || !client.autoValidateChecksums {
+		return nil
+	}
+
+	if this.scheduleID != nil {
+		if err := this.scheduleID.ValidateChecksum(client); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (this *ScheduleInfoQuery) getQueryStatus(response interface{}) Status {
+	return Status(response.(*services.Response).GetScheduleGetInfo().Header.NodeTransactionPrecheckCode)
 }
