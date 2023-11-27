@@ -161,14 +161,14 @@ func (pk _Ed25519PublicKey) _Verify(message []byte, signature []byte) bool {
 	return ed25519.Verify(pk._Bytes(), message, signature)
 }
 
-func (pk _Ed25519PublicKey) _VerifyTransaction(transaction Transaction) bool {
-	if transaction.signedTransactions._Length() == 0 {
+func (pk _Ed25519PublicKey) _VerifyTransaction(trx transaction) bool {
+	if trx.signedTransactions._Length() == 0 {
 		return false
 	}
 
-	_, _ = transaction._BuildAllTransactions()
+	_, _ = trx._BuildAllTransactions()
 
-	for _, value := range transaction.signedTransactions.slice {
+	for _, value := range trx.signedTransactions.slice {
 		tx := value.(*services.SignedTransaction)
 		found := false
 		for _, sigPair := range tx.SigMap.GetSigPair() {

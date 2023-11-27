@@ -378,14 +378,14 @@ func (sk _Ed25519PrivateKey) _ToProtoKey() *services.Key {
 	return sk._PublicKey()._ToProtoKey()
 }
 
-func (sk _Ed25519PrivateKey) _SignTransaction(transaction *Transaction) ([]byte, error) {
-	transaction._RequireOneNodeAccountID()
+func (sk _Ed25519PrivateKey) _SignTransaction(trx *transaction) ([]byte, error) {
+	trx._RequireOneNodeAccountID()
 
-	if transaction.signedTransactions._Length() == 0 {
+	if trx.signedTransactions._Length() == 0 {
 		return make([]byte, 0), errTransactionRequiresSingleNodeAccountID
 	}
 
-	signature := sk._Sign(transaction.signedTransactions._Get(0).(*services.SignedTransaction).GetBodyBytes())
+	signature := sk._Sign(trx.signedTransactions._Get(0).(*services.SignedTransaction).GetBodyBytes())
 
 	publicKey := sk._PublicKey()
 	if publicKey == nil {
@@ -396,22 +396,22 @@ func (sk _Ed25519PrivateKey) _SignTransaction(transaction *Transaction) ([]byte,
 		ed25519PublicKey: publicKey,
 	}
 
-	if transaction._KeyAlreadySigned(wrappedPublicKey) {
+	if trx._KeyAlreadySigned(wrappedPublicKey) {
 		return []byte{}, nil
 	}
 
-	transaction.transactions = _NewLockableSlice()
-	transaction.publicKeys = append(transaction.publicKeys, wrappedPublicKey)
-	transaction.transactionSigners = append(transaction.transactionSigners, nil)
-	transaction.transactionIDs.locked = true
+	trx.transactions = _NewLockableSlice()
+	trx.publicKeys = append(trx.publicKeys, wrappedPublicKey)
+	trx.transactionSigners = append(trx.transactionSigners, nil)
+	trx.transactionIDs.locked = true
 
-	for index := 0; index < transaction.signedTransactions._Length(); index++ {
-		temp := transaction.signedTransactions._Get(index).(*services.SignedTransaction)
+	for index := 0; index < trx.signedTransactions._Length(); index++ {
+		temp := trx.signedTransactions._Get(index).(*services.SignedTransaction)
 		temp.SigMap.SigPair = append(
 			temp.SigMap.SigPair,
 			publicKey._ToSignaturePairProtobuf(signature),
 		)
-		transaction.signedTransactions._Set(index, temp)
+		trx.signedTransactions._Set(index, temp)
 	}
 
 	return signature, nil
