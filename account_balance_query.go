@@ -42,9 +42,12 @@ type AccountBalanceQuery struct {
 // instead of manually creating an instance of the struct.
 func NewAccountBalanceQuery() *AccountBalanceQuery {
 	header := services.QueryHeader{}
-	return &AccountBalanceQuery{
+	newQuery := AccountBalanceQuery{
 		query: _NewQuery(false, &header),
 	}
+	newQuery.e = &newQuery
+
+	return &newQuery
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
@@ -229,7 +232,7 @@ func (this *AccountBalanceQuery) SetLogLevel(level LogLevel) *AccountBalanceQuer
 
 // ---------- Parent functions specific implementation ----------
 
-func (this *AccountBalanceQuery) getMethod(_ interface{}, channel *_Channel) _Method {
+func (this *AccountBalanceQuery) getMethod(channel *_Channel) _Method {
 	return _Method{
 		query: channel._GetCrypto().CryptoGetBalance,
 	}

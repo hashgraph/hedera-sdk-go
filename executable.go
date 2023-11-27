@@ -66,8 +66,6 @@ type Executable interface {
 	mapStatusError(interface{}, interface{}) error
 	mapResponse(interface{}, interface{}, AccountID, interface{}) (interface{}, error)
 	getName() string
-	build() *services.TransactionBody
-	buildScheduled() (*services.SchedulableTransactionBody, error)
 	validateNetworkOnIDs(client *Client) error
 }
 

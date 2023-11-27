@@ -51,6 +51,7 @@ type Query interface {
 
 	Execute(client *Client) (TransactionResponse, error)
 
+	build() *services.TransactionBody
 	getQueryStatus (response interface{}) (Status)
 }
 
@@ -233,12 +234,7 @@ func (this *query) mapResponse(request interface{}, response interface{}, _ Acco
 	return response.(*services.Response), nil
 }
 
-// TODO: See whether we need this func to exist in the executable, because here we don't use it.
-func (this *query) buildScheduled() (*services.SchedulableTransactionBody, error) {
-	return nil, nil
-}
-
-// ----------- Next methods should be overridden in each subclass -----------------
+// ----------- Next methods should be overridden in each subclass ---------------
 
 // NOTE: Should be implemented in every inheritor. Example:
 //
