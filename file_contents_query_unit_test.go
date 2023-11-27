@@ -48,7 +48,7 @@ func TestUnitFileContentsQueryValidate(t *testing.T) {
 	fileContents := NewFileContentsQuery().
 		SetFileID(fileID)
 
-	err = fileContents._ValidateNetworkOnIDs(client)
+	err = fileContents.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 }
 
@@ -65,7 +65,7 @@ func TestUnitFileContentsQueryValidateWrong(t *testing.T) {
 	fileContents := NewFileContentsQuery().
 		SetFileID(fileID)
 
-	err = fileContents._ValidateNetworkOnIDs(client)
+	err = fileContents.validateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
@@ -182,7 +182,7 @@ func TestUnitFileContentsQueryCoverage(t *testing.T) {
 		SetQueryPayment(NewHbar(3)).
 		SetGrpcDeadline(&grpc)
 
-	err = query._ValidateNetworkOnIDs(client)
+	err = query.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 	query.GetNodeAccountIDs()
 	query.GetMaxBackoff()
