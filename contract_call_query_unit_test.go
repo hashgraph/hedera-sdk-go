@@ -47,7 +47,7 @@ func TestUnitContractCallQueryValidate(t *testing.T) {
 	contractCall := NewContractCallQuery().
 		SetContractID(contractID)
 
-	err = contractCall._ValidateNetworkOnIDs(client)
+	err = contractCall.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 }
 
@@ -64,7 +64,7 @@ func TestUnitContractCallQueryValidateWrong(t *testing.T) {
 	contractCall := NewContractCallQuery().
 		SetContractID(contractID)
 
-	err = contractCall._ValidateNetworkOnIDs(client)
+	err = contractCall.validateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())

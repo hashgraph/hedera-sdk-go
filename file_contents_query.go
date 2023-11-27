@@ -155,7 +155,7 @@ func (this *FileContentsQuery) Execute(client *Client) ([]byte, error) {
 	this.paymentTransactions = make([]*services.Transaction, 0)
 
 	if this.nodeAccountIDs.locked {
-		err = _QueryGeneratePayments(&this.query, client, cost)
+		err = this._QueryGeneratePayments(client, cost)
 		if err != nil {
 			return []byte{}, err
 		}
@@ -304,3 +304,5 @@ func (this *FileContentsQuery) validateNetworkOnIDs(client *Client) error {
 func (this *FileContentsQuery) getQueryStatus(response interface{}) Status {
 	return Status(response.(*services.Response).GetFileGetContents().Header.NodeTransactionPrecheckCode)
 }
+
+
