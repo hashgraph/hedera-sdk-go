@@ -36,46 +36,40 @@ type NetworkVersionInfoQuery struct {
 // Network Get Version Info Query containing the current version of the network's protobuf and services.
 func NewNetworkVersionQuery() *NetworkVersionInfoQuery {
 	header := services.QueryHeader{}
-	return &NetworkVersionInfoQuery{
+	result := NetworkVersionInfoQuery{
 		query: _NewQuery(true, &header),
 	}
+
+	result.e = &result
+	return &result
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (query *NetworkVersionInfoQuery) SetGrpcDeadline(deadline *time.Duration) *NetworkVersionInfoQuery {
-	query.query.SetGrpcDeadline(deadline)
-	return query
+func (this *NetworkVersionInfoQuery) SetGrpcDeadline(deadline *time.Duration) *NetworkVersionInfoQuery {
+	this.query.SetGrpcDeadline(deadline)
+	return this
 }
 
 // GetCost returns the fee that would be charged to get the requested information (if a cost was requested).
-func (query *NetworkVersionInfoQuery) GetCost(client *Client) (Hbar, error) {
+func (this *NetworkVersionInfoQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
 		return Hbar{}, errNoClientProvided
 	}
 	pb := services.Query_NetworkGetVersionInfo{
 		NetworkGetVersionInfo: &services.NetworkGetVersionInfoQuery{},
 	}
-	pb.NetworkGetVersionInfo.Header = query.pbHeader
+	pb.NetworkGetVersionInfo.Header = this.pbHeader
 
-	query.pb = &services.Query{
+	this.pb = &services.Query{
 		Query: &pb,
 	}
 
+	this.pbHeader.ResponseType = services.ResponseType_COST_ANSWER
+	this.paymentTransactionIDs._Advance()
+
 	resp, err := _Execute(
 		client,
-		&query.query,
-		_NetworkVersionInfoQueryShouldRetry,
-		_CostQueryMakeRequest,
-		_CostQueryAdvanceRequest,
-		getNodeAccountID,
-		_NetworkVersionInfoQueryGetMethod,
-		_NetworkVersionInfoQueryMapStatusError,
-		mapResponse,
-		query._GetLogID(),
-		query.grpcDeadline,
-		query.maxBackoff,
-		query.minBackoff,
-		query.maxRetry,
+		this.e,
 	)
 
 	if err != nil {
@@ -86,45 +80,29 @@ func (query *NetworkVersionInfoQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func _NetworkVersionInfoQueryShouldRetry(_ interface{}, response interface{}) _ExecutionState {
-	return shouldRetry(Status(response.(*services.Response).GetNetworkGetVersionInfo().Header.NodeTransactionPrecheckCode))
-}
-
-func _NetworkVersionInfoQueryMapStatusError(_ interface{}, response interface{}) error {
-	return ErrHederaPreCheckStatus{
-		Status: Status(response.(*services.Response).GetNetworkGetVersionInfo().Header.NodeTransactionPrecheckCode),
-	}
-}
-
-func _NetworkVersionInfoQueryGetMethod(_ interface{}, channel *_Channel) _Method {
-	return _Method{
-		query: channel._GetNetwork().GetVersionInfo,
-	}
-}
-
 // Execute executes the Query with the provided client
-func (query *NetworkVersionInfoQuery) Execute(client *Client) (NetworkVersionInfo, error) {
+func (this *NetworkVersionInfoQuery) Execute(client *Client) (NetworkVersionInfo, error) {
 	if client == nil || client.operator == nil {
 		return NetworkVersionInfo{}, errNoClientProvided
 	}
 
 	var err error
 
-	if !query.paymentTransactionIDs.locked {
-		query.paymentTransactionIDs._Clear()._Push(TransactionIDGenerate(client.operator.accountID))
+	if !this.paymentTransactionIDs.locked {
+		this.paymentTransactionIDs._Clear()._Push(TransactionIDGenerate(client.operator.accountID))
 	}
 
 	var cost Hbar
-	if query.queryPayment.tinybar != 0 {
-		cost = query.queryPayment
+	if this.queryPayment.tinybar != 0 {
+		cost = this.queryPayment
 	} else {
-		if query.maxQueryPayment.tinybar == 0 {
+		if this.maxQueryPayment.tinybar == 0 {
 			cost = client.GetDefaultMaxQueryPayment()
 		} else {
-			cost = query.maxQueryPayment
+			cost = this.maxQueryPayment
 		}
 
-		actualCost, err := query.GetCost(client)
+		actualCost, err := this.GetCost(client)
 		if err != nil {
 			return NetworkVersionInfo{}, err
 		}
@@ -140,45 +118,38 @@ func (query *NetworkVersionInfoQuery) Execute(client *Client) (NetworkVersionInf
 		cost = actualCost
 	}
 
-	query.paymentTransactions = make([]*services.Transaction, 0)
+	this.paymentTransactions = make([]*services.Transaction, 0)
 
-	if query.nodeAccountIDs.locked {
-		err = _QueryGeneratePayments(&query.query, client, cost)
+	if this.nodeAccountIDs.locked {
+		err = this._QueryGeneratePayments(client, cost)
 		if err != nil {
 			return NetworkVersionInfo{}, err
 		}
 	} else {
-		paymentTransaction, err := _QueryMakePaymentTransaction(query.paymentTransactionIDs._GetCurrent().(TransactionID), AccountID{}, client.operator, cost)
+		paymentTransaction, err := _QueryMakePaymentTransaction(this.paymentTransactionIDs._GetCurrent().(TransactionID), AccountID{}, client.operator, cost)
 		if err != nil {
 			return NetworkVersionInfo{}, err
 		}
-		query.paymentTransactions = append(query.paymentTransactions, paymentTransaction)
+		this.paymentTransactions = append(this.paymentTransactions, paymentTransaction)
 	}
 
 	pb := services.Query_NetworkGetVersionInfo{
 		NetworkGetVersionInfo: &services.NetworkGetVersionInfoQuery{},
 	}
-	pb.NetworkGetVersionInfo.Header = query.pbHeader
+	pb.NetworkGetVersionInfo.Header = this.pbHeader
 
-	query.pb = &services.Query{
+	this.pb = &services.Query{
 		Query: &pb,
 	}
 
+	if this.isPaymentRequired && len(this.paymentTransactions) > 0 {
+		this.paymentTransactionIDs._Advance()
+	}
+	this.pbHeader.ResponseType = services.ResponseType_ANSWER_ONLY
+
 	resp, err := _Execute(
 		client,
-		&query.query,
-		_NetworkVersionInfoQueryShouldRetry,
-		makeRequest,
-		advanceRequest,
-		getNodeAccountID,
-		_NetworkVersionInfoQueryGetMethod,
-		_NetworkVersionInfoQueryMapStatusError,
-		mapResponse,
-		query._GetLogID(),
-		query.grpcDeadline,
-		query.maxBackoff,
-		query.minBackoff,
-		query.maxRetry,
+		this.e,
 	)
 
 	if err != nil {
@@ -189,85 +160,88 @@ func (query *NetworkVersionInfoQuery) Execute(client *Client) (NetworkVersionInf
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.
-func (query *NetworkVersionInfoQuery) SetMaxQueryPayment(maxPayment Hbar) *NetworkVersionInfoQuery {
-	query.query.SetMaxQueryPayment(maxPayment)
-	return query
+func (this *NetworkVersionInfoQuery) SetMaxQueryPayment(maxPayment Hbar) *NetworkVersionInfoQuery {
+	this.query.SetMaxQueryPayment(maxPayment)
+	return this
 }
 
 // SetQueryPayment sets the payment amount for this Query.
-func (query *NetworkVersionInfoQuery) SetQueryPayment(paymentAmount Hbar) *NetworkVersionInfoQuery {
-	query.query.SetQueryPayment(paymentAmount)
-	return query
+func (this *NetworkVersionInfoQuery) SetQueryPayment(paymentAmount Hbar) *NetworkVersionInfoQuery {
+	this.query.SetQueryPayment(paymentAmount)
+	return this
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for this NetworkVersionInfoQuery.
-func (query *NetworkVersionInfoQuery) SetNodeAccountIDs(accountID []AccountID) *NetworkVersionInfoQuery {
-	query.query.SetNodeAccountIDs(accountID)
-	return query
+func (this *NetworkVersionInfoQuery) SetNodeAccountIDs(accountID []AccountID) *NetworkVersionInfoQuery {
+	this.query.SetNodeAccountIDs(accountID)
+	return this
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
-func (query *NetworkVersionInfoQuery) SetMaxRetry(count int) *NetworkVersionInfoQuery {
-	query.query.SetMaxRetry(count)
-	return query
+func (this *NetworkVersionInfoQuery) SetMaxRetry(count int) *NetworkVersionInfoQuery {
+	this.query.SetMaxRetry(count)
+	return this
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
 // Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (query *NetworkVersionInfoQuery) SetMaxBackoff(max time.Duration) *NetworkVersionInfoQuery {
-	if max.Nanoseconds() < 0 {
-		panic("maxBackoff must be a positive duration")
-	} else if max.Nanoseconds() < query.minBackoff.Nanoseconds() {
-		panic("maxBackoff must be greater than or equal to minBackoff")
-	}
-	query.maxBackoff = &max
-	return query
+func (this *NetworkVersionInfoQuery) SetMaxBackoff(max time.Duration) *NetworkVersionInfoQuery {
+	this.query.SetMaxBackoff(max)
+	return this
 }
 
 // GetMaxBackoff returns the maximum amount of time to wait between retries.
-func (query *NetworkVersionInfoQuery) GetMaxBackoff() time.Duration {
-	if query.maxBackoff != nil {
-		return *query.maxBackoff
-	}
-
-	return 8 * time.Second
+func (this *NetworkVersionInfoQuery) GetMaxBackoff() time.Duration {
+	return this.query.GetMaxBackoff()
 }
 
 // SetMinBackoff sets the minimum amount of time to wait between retries.
-func (query *NetworkVersionInfoQuery) SetMinBackoff(min time.Duration) *NetworkVersionInfoQuery {
-	if min.Nanoseconds() < 0 {
-		panic("minBackoff must be a positive duration")
-	} else if query.maxBackoff.Nanoseconds() < min.Nanoseconds() {
-		panic("minBackoff must be less than or equal to maxBackoff")
-	}
-	query.minBackoff = &min
-	return query
+func (this *NetworkVersionInfoQuery) SetMinBackoff(min time.Duration) *NetworkVersionInfoQuery {
+	this.query.SetMaxBackoff(min)
+	return this
 }
 
 // GetMinBackoff returns the minimum amount of time to wait between retries.
-func (query *NetworkVersionInfoQuery) GetMinBackoff() time.Duration {
-	if query.minBackoff != nil {
-		return *query.minBackoff
-	}
-
-	return 250 * time.Millisecond
+func (this *NetworkVersionInfoQuery) GetMinBackoff() time.Duration {
+	return this.query.GetMinBackoff()
 }
 
-func (query *NetworkVersionInfoQuery) _GetLogID() string {
-	timestamp := query.timestamp.UnixNano()
-	if query.paymentTransactionIDs._Length() > 0 && query.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart != nil {
-		timestamp = query.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart.UnixNano()
+func (this *NetworkVersionInfoQuery) _GetLogID() string {
+	timestamp := this.timestamp.UnixNano()
+	if this.paymentTransactionIDs._Length() > 0 && this.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart != nil {
+		timestamp = this.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart.UnixNano()
 	}
 	return fmt.Sprintf("NetworkVersionInfoQuery:%d", timestamp)
 }
 
 // SetPaymentTransactionID assigns the payment transaction id.
-func (query *NetworkVersionInfoQuery) SetPaymentTransactionID(transactionID TransactionID) *NetworkVersionInfoQuery {
-	query.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
-	return query
+func (this *NetworkVersionInfoQuery) SetPaymentTransactionID(transactionID TransactionID) *NetworkVersionInfoQuery {
+	this.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
+	return this
 }
 
-func (query *NetworkVersionInfoQuery) SetLogLevel(level LogLevel) *NetworkVersionInfoQuery {
-	query.query.SetLogLevel(level)
-	return query
+func (this *NetworkVersionInfoQuery) SetLogLevel(level LogLevel) *NetworkVersionInfoQuery {
+	this.query.SetLogLevel(level)
+	return this
+}
+
+// ---------- Parent functions specific implementation ----------
+
+func (this *NetworkVersionInfoQuery) getMethod(channel *_Channel) _Method {
+	return _Method{
+		query: channel._GetNetwork().GetVersionInfo,
+	}
+}
+
+func (this *NetworkVersionInfoQuery) mapStatusError(_ interface{}, response interface{}) error {
+	return ErrHederaPreCheckStatus{
+		Status: Status(response.(*services.Response).GetNetworkGetVersionInfo().Header.NodeTransactionPrecheckCode),
+	}
+}
+
+func (this *NetworkVersionInfoQuery) getName() string {
+	return "NetworkVersionInfoQuery"
+}
+func (this *NetworkVersionInfoQuery) getQueryStatus(response interface{}) Status {
+	return Status(response.(*services.Response).GetNetworkGetVersionInfo().Header.NodeTransactionPrecheckCode)
 }
