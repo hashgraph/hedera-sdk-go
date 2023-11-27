@@ -47,7 +47,7 @@ func TestUnitContractInfoQueryValidate(t *testing.T) {
 	contractInfoQuery := NewContractInfoQuery().
 		SetContractID(contractID)
 
-	err = contractInfoQuery._ValidateNetworkOnIDs(client)
+	err = contractInfoQuery.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 }
 
@@ -64,7 +64,7 @@ func TestUnitContractInfoQueryValidateWrong(t *testing.T) {
 	contractInfoQuery := NewContractInfoQuery().
 		SetContractID(contractID)
 
-	err = contractInfoQuery._ValidateNetworkOnIDs(client)
+	err = contractInfoQuery.validateNetworkOnIDs(client)
 	require.Error(t, err)
 	if err != nil {
 		require.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
@@ -241,7 +241,7 @@ func TestUnitContractInfoQueryCoverage(t *testing.T) {
 		SetQueryPayment(NewHbar(3)).
 		SetGrpcDeadline(&deadline)
 
-	err = query._ValidateNetworkOnIDs(client)
+	err = query.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 
 	require.Equal(t, nodeAccountID, query.GetNodeAccountIDs())
