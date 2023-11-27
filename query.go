@@ -43,6 +43,15 @@ type query struct {
 	paymentTransactions []*services.Transaction
 
 	isPaymentRequired bool
+	timestamp    time.Time
+}
+
+type Query interface {
+	Executable 
+
+	Execute(client *Client) (TransactionResponse, error)
+
+	getQueryStatus (response interface{}) (Status)
 }
 
 // -------- Executable functions ----------
@@ -120,20 +129,6 @@ func (this *query) shouldRetry(_ interface{}, response interface{}) _ExecutionSt
 	return executionStateError
 }
 
-func _CostQueryMakeRequest(request interface{}) interface{} {
-	query := request.(*query)
-	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
-		query.pbHeader.Payment = query.paymentTransactions[query.paymentTransactionIDs.index]
-	}
-	query.pbHeader.ResponseType = services.ResponseType_COST_ANSWER
-	return query.pb
-}
-
-func _CostQueryAdvanceRequest(request interface{}) {
-	query := request.(*query)
-	query.paymentTransactionIDs._Advance()
-	query.nodeAccountIDs._Advance()
-}
 
 func _QueryGeneratePayments(q *query, client *Client, cost Hbar) error {
 	for _, nodeID := range q.nodeAccountIDs.slice {
@@ -219,9 +214,6 @@ func (this *query) SetLogLevel(level LogLevel) *query {
 
 func (this *query) advanceRequest(request interface{}) {
 	query := request.(*query)
-	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
-		query.paymentTransactionIDs._Advance()
-	}
 	query.nodeAccountIDs._Advance()
 }
 func (this *query) getNodeAccountID(request interface{}) AccountID {
@@ -233,9 +225,17 @@ func (this *query) makeRequest(request interface{}) interface{} {
 	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
 		query.pbHeader.Payment = query.paymentTransactions[query.paymentTransactionIDs.index]
 	}
-	query.pbHeader.ResponseType = services.ResponseType_ANSWER_ONLY
 
 	return query.pb
+}
+
+func (this *query) mapResponse(request interface{}, response interface{}, _ AccountID, protoRequest interface{}) (interface{}, error) {
+	return response.(*services.Response), nil
+}
+
+// TODO: See whether we need this func to exist in the executable, because here we don't use it.
+func (this *query) buildScheduled() (*services.SchedulableTransactionBody, error) {
+	return nil, nil
 }
 
 // ----------- Next methods should be overridden in each subclass -----------------
@@ -249,11 +249,6 @@ func (this *query) build() *services.TransactionBody {
 }
 
 // NOTE: Should be implemented in every inheritor.
-func (this *query) buildScheduled() (*services.SchedulableTransactionBody, error) {
-	return nil, nil
-}
-
-// NOTE: Should be implemented in every inheritor.
 func (this *query) validateNetworkOnIDs(client *Client) error {
 	return errors.New("Not implemented")
 }
@@ -264,10 +259,6 @@ func (this *query) validateNetworkOnIDs(client *Client) error {
 //		Status: Status(response.(*services.Response).GetNetworkGetVersionInfo().Header.NodeTransactionPrecheckCode),
 //	}
 func (this *query) getMethod(*_Channel) _Method {
-	// NOTE: Should be implemented in every inheritor. Example:
-	// return ErrHederaPreCheckStatus{
-	// 	Status: Status(response.(*services.Response).GetNetworkGetVersionInfo().Header.NodeTransactionPrecheckCode),
-	// }
 	return _Method{}
 }
 
@@ -277,11 +268,6 @@ func (this *query) getMethod(*_Channel) _Method {
 // }
 func (this *query) mapStatusError(interface{}, interface{}) error{
 	return errors.New("Not implemented")
-}
-
-// NOTE: Should be implemented in every inheritor. Example:
-func (this *query) mapResponse(request interface{}, response interface{}, _ AccountID, protoRequest interface{}) (interface{}, error) {
-	return response.(*services.Response), nil
 }
 
 func (this *query) getQueryStatus(response interface{}) (Status) {
