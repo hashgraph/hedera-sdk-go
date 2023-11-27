@@ -47,7 +47,7 @@ func TestUnitScheduleInfoQueryValidate(t *testing.T) {
 	scheduleInfo := NewScheduleInfoQuery().
 		SetScheduleID(scheduleID)
 
-	err = scheduleInfo._ValidateNetworkOnIDs(client)
+	err = scheduleInfo.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 }
 
@@ -64,7 +64,7 @@ func TestUnitScheduleInfoQueryValidateWrong(t *testing.T) {
 	scheduleInfo := NewScheduleInfoQuery().
 		SetScheduleID(scheduleID)
 
-	err = scheduleInfo._ValidateNetworkOnIDs(client)
+	err = scheduleInfo.validateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
@@ -96,7 +96,7 @@ func TestUnitScheduleInfoQueryGet(t *testing.T) {
 	client.SetLedgerID(*NewLedgerIDTestnet())
 	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
-	err = query._ValidateNetworkOnIDs(client)
+	err = query.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 	require.Equal(t, scheduleID, query.GetScheduleID())
 	require.Equal(t, []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}, query.GetNodeAccountIDs())
@@ -149,7 +149,7 @@ func TestUnitScheduleInfoQueryCoverage(t *testing.T) {
 		SetQueryPayment(NewHbar(3)).
 		SetGrpcDeadline(&deadline)
 
-	err = query._ValidateNetworkOnIDs(client)
+	err = query.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 
 	require.Equal(t, nodeAccountID, query.GetNodeAccountIDs())
