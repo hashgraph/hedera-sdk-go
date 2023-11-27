@@ -41,103 +41,70 @@ type AccountRecordsQuery struct {
 // instead of manually creating an instance of the struct.
 func NewAccountRecordsQuery() *AccountRecordsQuery {
 	header := services.QueryHeader{}
-	return &AccountRecordsQuery{
+	result := AccountRecordsQuery{
 		query: _NewQuery(true, &header),
 	}
+	result.e = &result
+
+	return &result
+
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (query *AccountRecordsQuery) SetGrpcDeadline(deadline *time.Duration) *AccountRecordsQuery {
-	query.query.SetGrpcDeadline(deadline)
-	return query
+func (this *AccountRecordsQuery) SetGrpcDeadline(deadline *time.Duration) *AccountRecordsQuery {
+	this.query.SetGrpcDeadline(deadline)
+	return this
 }
 
 // SetAccountID sets the account ID for which the records should be retrieved.
-func (query *AccountRecordsQuery) SetAccountID(accountID AccountID) *AccountRecordsQuery {
-	query.accountID = &accountID
-	return query
+func (this *AccountRecordsQuery) SetAccountID(accountID AccountID) *AccountRecordsQuery {
+	this.accountID = &accountID
+	return this
 }
 
 // GetAccountID returns the account ID for which the records will be retrieved.
-func (query *AccountRecordsQuery) GetAccountID() AccountID {
-	if query.accountID == nil {
+func (this *AccountRecordsQuery) GetAccountID() AccountID {
+	if this.accountID == nil {
 		return AccountID{}
 	}
 
-	return *query.accountID
-}
-
-func (query *AccountRecordsQuery) _ValidateNetworkOnIDs(client *Client) error {
-	if client == nil || !client.autoValidateChecksums {
-		return nil
-	}
-
-	if query.accountID != nil {
-		if err := query.accountID.ValidateChecksum(client); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (query *AccountRecordsQuery) _Build() *services.Query_CryptoGetAccountRecords {
-	pb := services.Query_CryptoGetAccountRecords{
-		CryptoGetAccountRecords: &services.CryptoGetAccountRecordsQuery{
-			Header: &services.QueryHeader{},
-		},
-	}
-
-	if query.accountID != nil {
-		pb.CryptoGetAccountRecords.AccountID = query.accountID._ToProtobuf()
-	}
-
-	return &pb
+	return *this.accountID
 }
 
 // GetCost returns the fee that would be charged to get the requested information (if a cost was requested).
-func (query *AccountRecordsQuery) GetCost(client *Client) (Hbar, error) {
+func (this *AccountRecordsQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
 		return Hbar{}, errNoClientProvided
 	}
 
 	var err error
 
-	err = query._ValidateNetworkOnIDs(client)
+	err = this.validateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	for range query.nodeAccountIDs.slice {
+	for range this.nodeAccountIDs.slice {
 		paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 		if err != nil {
 			return Hbar{}, err
 		}
-		query.paymentTransactions = append(query.paymentTransactions, paymentTransaction)
+		this.paymentTransactions = append(this.paymentTransactions, paymentTransaction)
 	}
 
-	pb := query._Build()
-	pb.CryptoGetAccountRecords.Header = query.pbHeader
+	pb := this.build()
+	pb.CryptoGetAccountRecords.Header = this.pbHeader
 
-	query.pb = &services.Query{
+	this.pb = &services.Query{
 		Query: pb,
 	}
 
+	this.pbHeader.ResponseType = services.ResponseType_COST_ANSWER
+	this.paymentTransactionIDs._Advance()
+
 	resp, err := _Execute(
 		client,
-		&query.query,
-		_AccountRecordsQueryShouldRetry,
-		_CostQueryMakeRequest,
-		_CostQueryAdvanceRequest,
-		getNodeAccountID,
-		_AccountRecordsQueryGetMethod,
-		_AccountRecordsQueryMapStatusError,
-		mapResponse,
-		query._GetLogID(),
-		query.grpcDeadline,
-		query.maxBackoff,
-		query.minBackoff,
-		query.maxRetry,
+		this.e,
 	)
 
 	if err != nil {
@@ -148,50 +115,34 @@ func (query *AccountRecordsQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func _AccountRecordsQueryShouldRetry(_ interface{}, response interface{}) _ExecutionState {
-	return shouldRetry(Status(response.(*services.Response).GetCryptoGetAccountRecords().Header.NodeTransactionPrecheckCode))
-}
-
-func _AccountRecordsQueryMapStatusError(_ interface{}, response interface{}) error {
-	return ErrHederaPreCheckStatus{
-		Status: Status(response.(*services.Response).GetCryptoGetAccountRecords().Header.NodeTransactionPrecheckCode),
-	}
-}
-
-func _AccountRecordsQueryGetMethod(_ interface{}, channel *_Channel) _Method {
-	return _Method{
-		query: channel._GetCrypto().GetAccountRecords,
-	}
-}
-
 // Execute executes the Query with the provided client
-func (query *AccountRecordsQuery) Execute(client *Client) ([]TransactionRecord, error) {
+func (this *AccountRecordsQuery) Execute(client *Client) ([]TransactionRecord, error) {
 	if client == nil || client.operator == nil {
 		return []TransactionRecord{}, errNoClientProvided
 	}
 
 	var err error
 
-	err = query._ValidateNetworkOnIDs(client)
+	err = this.validateNetworkOnIDs(client)
 	if err != nil {
 		return []TransactionRecord{}, err
 	}
 
-	if !query.paymentTransactionIDs.locked {
-		query.paymentTransactionIDs._Clear()._Push(TransactionIDGenerate(client.operator.accountID))
+	if !this.paymentTransactionIDs.locked {
+		this.paymentTransactionIDs._Clear()._Push(TransactionIDGenerate(client.operator.accountID))
 	}
 
 	var cost Hbar
-	if query.queryPayment.tinybar != 0 {
-		cost = query.queryPayment
+	if this.queryPayment.tinybar != 0 {
+		cost = this.queryPayment
 	} else {
-		if query.maxQueryPayment.tinybar == 0 {
+		if this.maxQueryPayment.tinybar == 0 {
 			cost = client.GetDefaultMaxQueryPayment()
 		} else {
-			cost = query.maxQueryPayment
+			cost = this.maxQueryPayment
 		}
 
-		actualCost, err := query.GetCost(client)
+		actualCost, err := this.GetCost(client)
 		if err != nil {
 			return []TransactionRecord{}, err
 		}
@@ -207,46 +158,39 @@ func (query *AccountRecordsQuery) Execute(client *Client) ([]TransactionRecord, 
 		cost = actualCost
 	}
 
-	query.paymentTransactions = make([]*services.Transaction, 0)
+	this.paymentTransactions = make([]*services.Transaction, 0)
 
-	if query.nodeAccountIDs.locked {
-		err = _QueryGeneratePayments(&query.query, client, cost)
+	if this.nodeAccountIDs.locked {
+		err = this._QueryGeneratePayments(client, cost)
 		if err != nil {
 			return []TransactionRecord{}, err
 		}
 	} else {
-		paymentTransaction, err := _QueryMakePaymentTransaction(query.paymentTransactionIDs._GetCurrent().(TransactionID), AccountID{}, client.operator, cost)
+		paymentTransaction, err := _QueryMakePaymentTransaction(this.paymentTransactionIDs._GetCurrent().(TransactionID), AccountID{}, client.operator, cost)
 		if err != nil {
 			if err != nil {
 				return []TransactionRecord{}, err
 			}
 		}
-		query.paymentTransactions = append(query.paymentTransactions, paymentTransaction)
+		this.paymentTransactions = append(this.paymentTransactions, paymentTransaction)
 	}
 
-	pb := query._Build()
-	pb.CryptoGetAccountRecords.Header = query.pbHeader
-	query.pb = &services.Query{
+	pb := this.build()
+	pb.CryptoGetAccountRecords.Header = this.pbHeader
+	this.pb = &services.Query{
 		Query: pb,
 	}
 
 	records := make([]TransactionRecord, 0)
 
+	if this.isPaymentRequired && len(this.paymentTransactions) > 0 {
+		this.paymentTransactionIDs._Advance()
+	}
+	this.pbHeader.ResponseType = services.ResponseType_ANSWER_ONLY
+
 	resp, err := _Execute(
 		client,
-		&query.query,
-		_AccountRecordsQueryShouldRetry,
-		makeRequest,
-		advanceRequest,
-		getNodeAccountID,
-		_AccountRecordsQueryGetMethod,
-		_AccountRecordsQueryMapStatusError,
-		mapResponse,
-		query._GetLogID(),
-		query.grpcDeadline,
-		query.maxBackoff,
-		query.minBackoff,
-		query.maxRetry,
+		this.e,
 	)
 
 	if err != nil {
@@ -262,84 +206,116 @@ func (query *AccountRecordsQuery) Execute(client *Client) ([]TransactionRecord, 
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.
-func (query *AccountRecordsQuery) SetMaxQueryPayment(maxPayment Hbar) *AccountRecordsQuery {
-	query.query.SetMaxQueryPayment(maxPayment)
-	return query
+func (this *AccountRecordsQuery) SetMaxQueryPayment(maxPayment Hbar) *AccountRecordsQuery {
+	this.query.SetMaxQueryPayment(maxPayment)
+	return this
 }
 
 // SetQueryPayment sets the payment amount for this Query.
-func (query *AccountRecordsQuery) SetQueryPayment(paymentAmount Hbar) *AccountRecordsQuery {
-	query.query.SetQueryPayment(paymentAmount)
-	return query
+func (this *AccountRecordsQuery) SetQueryPayment(paymentAmount Hbar) *AccountRecordsQuery {
+	this.query.SetQueryPayment(paymentAmount)
+	return this
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for this AccountRecordsQuery.
-func (query *AccountRecordsQuery) SetNodeAccountIDs(accountID []AccountID) *AccountRecordsQuery {
-	query.query.SetNodeAccountIDs(accountID)
-	return query
+func (this *AccountRecordsQuery) SetNodeAccountIDs(accountID []AccountID) *AccountRecordsQuery {
+	this.query.SetNodeAccountIDs(accountID)
+	return this
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
-func (query *AccountRecordsQuery) SetMaxRetry(count int) *AccountRecordsQuery {
-	query.query.SetMaxRetry(count)
-	return query
+func (this *AccountRecordsQuery) SetMaxRetry(count int) *AccountRecordsQuery {
+	this.query.SetMaxRetry(count)
+	return this
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
 // Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (query *AccountRecordsQuery) SetMaxBackoff(max time.Duration) *AccountRecordsQuery {
-	if max.Nanoseconds() < 0 {
-		panic("maxBackoff must be a positive duration")
-	} else if max.Nanoseconds() < query.minBackoff.Nanoseconds() {
-		panic("maxBackoff must be greater than or equal to minBackoff")
-	}
-	query.maxBackoff = &max
-	return query
+func (this *AccountRecordsQuery) SetMaxBackoff(max time.Duration) *AccountRecordsQuery {
+	this.query.SetMaxBackoff(max)
+	return this
 }
 
 // GetMaxBackoff returns the maximum amount of time to wait between retries.
-func (query *AccountRecordsQuery) GetMaxBackoff() time.Duration {
-	if query.maxBackoff != nil {
-		return *query.maxBackoff
-	}
-
-	return 8 * time.Second
+func (this *AccountRecordsQuery) GetMaxBackoff() time.Duration {
+	return this.query.GetMaxBackoff()
 }
 
-func (query *AccountRecordsQuery) SetMinBackoff(min time.Duration) *AccountRecordsQuery {
-	if min.Nanoseconds() < 0 {
-		panic("minBackoff must be a positive duration")
-	} else if query.maxBackoff.Nanoseconds() < min.Nanoseconds() {
-		panic("minBackoff must be less than or equal to maxBackoff")
-	}
-	query.minBackoff = &min
-	return query
+func (this *AccountRecordsQuery) SetMinBackoff(min time.Duration) *AccountRecordsQuery {
+	this.query.SetMinBackoff(min)
+	return this
 }
 
 // GetMinBackoff returns the minimum amount of time to wait between retries.
-func (query *AccountRecordsQuery) GetMinBackoff() time.Duration {
-	if query.minBackoff != nil {
-		return *query.minBackoff
-	}
-
-	return 250 * time.Millisecond
+func (this *AccountRecordsQuery) GetMinBackoff() time.Duration {
+	return this.GetMinBackoff()
 }
 
-func (query *AccountRecordsQuery) _GetLogID() string {
-	timestamp := query.timestamp.UnixNano()
-	if query.paymentTransactionIDs._Length() > 0 && query.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart != nil {
-		timestamp = query.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart.UnixNano()
+func (this *AccountRecordsQuery) _GetLogID() string {
+	timestamp := this.timestamp.UnixNano()
+	if this.paymentTransactionIDs._Length() > 0 && this.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart != nil {
+		timestamp = this.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart.UnixNano()
 	}
 	return fmt.Sprintf("AccountRecordsQuery:%d", timestamp)
 }
 
 // SetPaymentTransactionID assigns the payment transaction id.
-func (query *AccountRecordsQuery) SetPaymentTransactionID(transactionID TransactionID) *AccountRecordsQuery {
-	query.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
-	return query
+func (this *AccountRecordsQuery) SetPaymentTransactionID(transactionID TransactionID) *AccountRecordsQuery {
+	this.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
+	return this
 }
 
-func (query *AccountRecordsQuery) SetLogLevel(level LogLevel) *AccountRecordsQuery {
-	query.query.SetLogLevel(level)
-	return query
+func (this *AccountRecordsQuery) SetLogLevel(level LogLevel) *AccountRecordsQuery {
+	this.query.SetLogLevel(level)
+	return this
+}
+
+// ---------- Parent functions specific implementation ----------
+
+func (this *AccountRecordsQuery) getMethod(channel *_Channel) _Method {
+	return _Method{
+		query: channel._GetCrypto().GetAccountRecords,
+	}
+}
+
+func (this *AccountRecordsQuery) mapStatusError(_ interface{}, response interface{}) error {
+	return ErrHederaPreCheckStatus{
+		Status: Status(response.(*services.Response).GetCryptoGetAccountRecords().Header.NodeTransactionPrecheckCode),
+	}
+}
+
+func (this *AccountRecordsQuery) getName() string {
+	return "AccountRecordsQuery"
+}
+
+func (this *AccountRecordsQuery) build() *services.Query_CryptoGetAccountRecords {
+	pb := services.Query_CryptoGetAccountRecords{
+		CryptoGetAccountRecords: &services.CryptoGetAccountRecordsQuery{
+			Header: &services.QueryHeader{},
+		},
+	}
+
+	if this.accountID != nil {
+		pb.CryptoGetAccountRecords.AccountID = this.accountID._ToProtobuf()
+	}
+
+	return &pb
+}
+
+func (this *AccountRecordsQuery) validateNetworkOnIDs(client *Client) error {
+	if client == nil || !client.autoValidateChecksums {
+		return nil
+	}
+	
+	if this.accountID != nil {
+		if err := this.accountID.ValidateChecksum(client); err != nil {
+			return err
+		}
+	}
+	
+	return nil
+}
+
+func (this *AccountRecordsQuery) getQueryStatus(response interface{}) Status {
+	return Status(response.(*services.Response).GetCryptoGetAccountRecords().Header.NodeTransactionPrecheckCode)
 }
