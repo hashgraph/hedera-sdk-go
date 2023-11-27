@@ -37,102 +37,68 @@ type ContractBytecodeQuery struct {
 // Contract Get Bytecode Query.
 func NewContractBytecodeQuery() *ContractBytecodeQuery {
 	header := services.QueryHeader{}
-	return &ContractBytecodeQuery{
+	result := ContractBytecodeQuery{
 		query: _NewQuery(true, &header),
 	}
+	result.e = &result
+	return &result
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (query *ContractBytecodeQuery) SetGrpcDeadline(deadline *time.Duration) *ContractBytecodeQuery {
-	query.query.SetGrpcDeadline(deadline)
-	return query
+func (this *ContractBytecodeQuery) SetGrpcDeadline(deadline *time.Duration) *ContractBytecodeQuery {
+	this.query.SetGrpcDeadline(deadline)
+	return this
 }
 
 // SetContractID sets the contract for which the bytecode is requested
-func (query *ContractBytecodeQuery) SetContractID(contractID ContractID) *ContractBytecodeQuery {
-	query.contractID = &contractID
-	return query
+func (this *ContractBytecodeQuery) SetContractID(contractID ContractID) *ContractBytecodeQuery {
+	this.contractID = &contractID
+	return this
 }
 
 // GetContractID returns the contract for which the bytecode is requested
-func (query *ContractBytecodeQuery) GetContractID() ContractID {
-	if query.contractID == nil {
+func (this *ContractBytecodeQuery) GetContractID() ContractID {
+	if this.contractID == nil {
 		return ContractID{}
 	}
 
-	return *query.contractID
+	return *this.contractID
 }
 
-func (query *ContractBytecodeQuery) _ValidateNetworkOnIDs(client *Client) error {
-	if client == nil || !client.autoValidateChecksums {
-		return nil
-	}
-
-	if query.contractID != nil {
-		if err := query.contractID.ValidateChecksum(client); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (query *ContractBytecodeQuery) _Build() *services.Query_ContractGetBytecode {
-	pb := services.Query_ContractGetBytecode{
-		ContractGetBytecode: &services.ContractGetBytecodeQuery{
-			Header: &services.QueryHeader{},
-		},
-	}
-
-	if query.contractID != nil {
-		pb.ContractGetBytecode.ContractID = query.contractID._ToProtobuf()
-	}
-
-	return &pb
-}
-
-func (query *ContractBytecodeQuery) GetCost(client *Client) (Hbar, error) {
+func (this *ContractBytecodeQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
 		return Hbar{}, errNoClientProvided
 	}
 
 	var err error
 
-	err = query._ValidateNetworkOnIDs(client)
+	err = this.validateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	for range query.nodeAccountIDs.slice {
+	for range this.nodeAccountIDs.slice {
 		paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 		if err != nil {
 			return Hbar{}, err
 		}
-		query.paymentTransactions = append(query.paymentTransactions, paymentTransaction)
+		this.paymentTransactions = append(this.paymentTransactions, paymentTransaction)
 	}
 
-	pb := query._Build()
-	pb.ContractGetBytecode.Header = query.pbHeader
+	pb := this.build()
+	pb.ContractGetBytecode.Header = this.pbHeader
 
-	query.pb = &services.Query{
+	this.pb = &services.Query{
 		Query: pb,
 	}
 
+
+	this.pbHeader.ResponseType = services.ResponseType_COST_ANSWER
+	this.paymentTransactionIDs._Advance()
+
 	resp, err := _Execute(
 		client,
-		&query.query,
-		_ContractBytecodeQueryShouldRetry,
-		_CostQueryMakeRequest,
-		_CostQueryAdvanceRequest,
-		getNodeAccountID,
-		_ContractBytecodeQueryGetMethod,
-		_ContractBytecodeQueryMapStatusError,
-		mapResponse,
-		query._GetLogID(),
-		query.grpcDeadline,
-		query.maxBackoff,
-		query.minBackoff,
-		query.maxRetry,
+		this.e,
 	)
 
 	if err != nil {
@@ -143,50 +109,34 @@ func (query *ContractBytecodeQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func _ContractBytecodeQueryShouldRetry(_ interface{}, response interface{}) _ExecutionState {
-	return shouldRetry(Status(response.(*services.Response).GetContractGetBytecodeResponse().Header.NodeTransactionPrecheckCode))
-}
-
-func _ContractBytecodeQueryMapStatusError(_ interface{}, response interface{}) error {
-	return ErrHederaPreCheckStatus{
-		Status: Status(response.(*services.Response).GetContractGetBytecodeResponse().Header.NodeTransactionPrecheckCode),
-	}
-}
-
-func _ContractBytecodeQueryGetMethod(_ interface{}, channel *_Channel) _Method {
-	return _Method{
-		query: channel._GetContract().ContractGetBytecode,
-	}
-}
-
 // Execute executes the Query with the provided client
-func (query *ContractBytecodeQuery) Execute(client *Client) ([]byte, error) {
+func (this *ContractBytecodeQuery) Execute(client *Client) ([]byte, error) {
 	if client == nil || client.operator == nil {
 		return make([]byte, 0), errNoClientProvided
 	}
 
 	var err error
 
-	err = query._ValidateNetworkOnIDs(client)
+	err = this.validateNetworkOnIDs(client)
 	if err != nil {
 		return []byte{}, err
 	}
 
-	if !query.paymentTransactionIDs.locked {
-		query.paymentTransactionIDs._Clear()._Push(TransactionIDGenerate(client.operator.accountID))
+	if !this.paymentTransactionIDs.locked {
+		this.paymentTransactionIDs._Clear()._Push(TransactionIDGenerate(client.operator.accountID))
 	}
 
 	var cost Hbar
-	if query.queryPayment.tinybar != 0 {
-		cost = query.queryPayment
+	if this.queryPayment.tinybar != 0 {
+		cost = this.queryPayment
 	} else {
-		if query.maxQueryPayment.tinybar == 0 {
+		if this.maxQueryPayment.tinybar == 0 {
 			cost = client.GetDefaultMaxQueryPayment()
 		} else {
-			cost = query.maxQueryPayment
+			cost = this.maxQueryPayment
 		}
 
-		actualCost, err := query.GetCost(client)
+		actualCost, err := this.GetCost(client)
 		if err != nil {
 			return []byte{}, err
 		}
@@ -202,44 +152,37 @@ func (query *ContractBytecodeQuery) Execute(client *Client) ([]byte, error) {
 		cost = actualCost
 	}
 
-	query.paymentTransactions = make([]*services.Transaction, 0)
+	this.paymentTransactions = make([]*services.Transaction, 0)
 
-	if query.nodeAccountIDs.locked {
-		err = _QueryGeneratePayments(&query.query, client, cost)
+	if this.nodeAccountIDs.locked {
+		err = this._QueryGeneratePayments(client, cost)
 		if err != nil {
 			if err != nil {
 				return []byte{}, err
 			}
 		}
 	} else {
-		paymentTransaction, err := _QueryMakePaymentTransaction(query.paymentTransactionIDs._GetCurrent().(TransactionID), AccountID{}, client.operator, cost)
+		paymentTransaction, err := _QueryMakePaymentTransaction(this.paymentTransactionIDs._GetCurrent().(TransactionID), AccountID{}, client.operator, cost)
 		if err != nil {
 			return []byte{}, err
 		}
-		query.paymentTransactions = append(query.paymentTransactions, paymentTransaction)
+		this.paymentTransactions = append(this.paymentTransactions, paymentTransaction)
 	}
 
-	pb := query._Build()
-	pb.ContractGetBytecode.Header = query.pbHeader
-	query.pb = &services.Query{
+	pb := this.build()
+	pb.ContractGetBytecode.Header = this.pbHeader
+	this.pb = &services.Query{
 		Query: pb,
 	}
 
+	if this.isPaymentRequired && len(this.paymentTransactions) > 0 {
+		this.paymentTransactionIDs._Advance()
+	}
+	this.pbHeader.ResponseType = services.ResponseType_ANSWER_ONLY
+
 	resp, err := _Execute(
 		client,
-		&query.query,
-		_ContractBytecodeQueryShouldRetry,
-		makeRequest,
-		advanceRequest,
-		getNodeAccountID,
-		_ContractBytecodeQueryGetMethod,
-		_ContractBytecodeQueryMapStatusError,
-		mapResponse,
-		query._GetLogID(),
-		query.grpcDeadline,
-		query.maxBackoff,
-		query.minBackoff,
-		query.maxRetry,
+		this.e,
 	)
 
 	if err != nil {
@@ -250,85 +193,117 @@ func (query *ContractBytecodeQuery) Execute(client *Client) ([]byte, error) {
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.
-func (query *ContractBytecodeQuery) SetMaxQueryPayment(maxPayment Hbar) *ContractBytecodeQuery {
-	query.query.SetMaxQueryPayment(maxPayment)
-	return query
+func (this *ContractBytecodeQuery) SetMaxQueryPayment(maxPayment Hbar) *ContractBytecodeQuery {
+	this.query.SetMaxQueryPayment(maxPayment)
+	return this
 }
 
 // SetQueryPayment sets the payment amount for this Query.
-func (query *ContractBytecodeQuery) SetQueryPayment(paymentAmount Hbar) *ContractBytecodeQuery {
-	query.query.SetQueryPayment(paymentAmount)
-	return query
+func (this *ContractBytecodeQuery) SetQueryPayment(paymentAmount Hbar) *ContractBytecodeQuery {
+	this.query.SetQueryPayment(paymentAmount)
+	return this
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for this ContractBytecodeQuery.
-func (query *ContractBytecodeQuery) SetNodeAccountIDs(accountID []AccountID) *ContractBytecodeQuery {
-	query.query.SetNodeAccountIDs(accountID)
-	return query
+func (this *ContractBytecodeQuery) SetNodeAccountIDs(accountID []AccountID) *ContractBytecodeQuery {
+	this.query.SetNodeAccountIDs(accountID)
+	return this
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
-func (query *ContractBytecodeQuery) SetMaxRetry(count int) *ContractBytecodeQuery {
-	query.query.SetMaxRetry(count)
-	return query
+func (this *ContractBytecodeQuery) SetMaxRetry(count int) *ContractBytecodeQuery {
+	this.query.SetMaxRetry(count)
+	return this
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
 // Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (query *ContractBytecodeQuery) SetMaxBackoff(max time.Duration) *ContractBytecodeQuery {
-	if max.Nanoseconds() < 0 {
-		panic("maxBackoff must be a positive duration")
-	} else if max.Nanoseconds() < query.minBackoff.Nanoseconds() {
-		panic("maxBackoff must be greater than or equal to minBackoff")
-	}
-	query.maxBackoff = &max
-	return query
+func (this *ContractBytecodeQuery) SetMaxBackoff(max time.Duration) *ContractBytecodeQuery {
+	this.query.SetMaxBackoff(max)
+	return this
 }
 
 // GetMaxBackoff returns the maximum amount of time to wait between retries.
-func (query *ContractBytecodeQuery) GetMaxBackoff() time.Duration {
-	if query.maxBackoff != nil {
-		return *query.maxBackoff
-	}
-
-	return 8 * time.Second
+func (this *ContractBytecodeQuery) GetMaxBackoff() time.Duration {
+	return this.GetMaxBackoff()
 }
 
 // SetMinBackoff sets the minimum amount of time to wait between retries.
-func (query *ContractBytecodeQuery) SetMinBackoff(min time.Duration) *ContractBytecodeQuery {
-	if min.Nanoseconds() < 0 {
-		panic("minBackoff must be a positive duration")
-	} else if query.maxBackoff.Nanoseconds() < min.Nanoseconds() {
-		panic("minBackoff must be less than or equal to maxBackoff")
-	}
-	query.minBackoff = &min
-	return query
+func (this *ContractBytecodeQuery) SetMinBackoff(min time.Duration) *ContractBytecodeQuery {
+	this.SetMinBackoff(min)
+	return this
 }
 
 // GetMinBackoff returns the minimum amount of time to wait between retries.
-func (query *ContractBytecodeQuery) GetMinBackoff() time.Duration {
-	if query.minBackoff != nil {
-		return *query.minBackoff
-	}
-
-	return 250 * time.Millisecond
+func (this *ContractBytecodeQuery) GetMinBackoff() time.Duration {
+	return this.GetMinBackoff()
 }
 
-func (query *ContractBytecodeQuery) _GetLogID() string {
-	timestamp := query.timestamp.UnixNano()
-	if query.paymentTransactionIDs._Length() > 0 && query.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart != nil {
-		timestamp = query.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart.UnixNano()
+func (this *ContractBytecodeQuery) _GetLogID() string {
+	timestamp := this.timestamp.UnixNano()
+	if this.paymentTransactionIDs._Length() > 0 && this.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart != nil {
+		timestamp = this.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart.UnixNano()
 	}
 	return fmt.Sprintf("ContractBytecodeQuery:%d", timestamp)
 }
 
 // SetPaymentTransactionID assigns the payment transaction id.
-func (query *ContractBytecodeQuery) SetPaymentTransactionID(transactionID TransactionID) *ContractBytecodeQuery {
-	query.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
-	return query
+func (this *ContractBytecodeQuery) SetPaymentTransactionID(transactionID TransactionID) *ContractBytecodeQuery {
+	this.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
+	return this
 }
 
-func (query *ContractBytecodeQuery) SetLogLevel(level LogLevel) *ContractBytecodeQuery {
-	query.query.SetLogLevel(level)
-	return query
+func (this *ContractBytecodeQuery) SetLogLevel(level LogLevel) *ContractBytecodeQuery {
+	this.query.SetLogLevel(level)
+	return this
+}
+
+
+// ---------- Parent functions specific implementation ----------
+
+func (this *ContractBytecodeQuery) getMethod(channel *_Channel) _Method {
+	return _Method{
+		query: channel._GetContract().ContractGetBytecode,	}
+}
+
+func (this *ContractBytecodeQuery) mapStatusError(_ interface{}, response interface{}) error {
+	return ErrHederaPreCheckStatus{
+		Status: Status(response.(*services.Response).GetContractGetBytecodeResponse().Header.NodeTransactionPrecheckCode),
+	}
+}
+
+func (this *ContractBytecodeQuery) getName() string {
+	return "ContractBytecodeQuery"
+}
+
+func (this *ContractBytecodeQuery) build() *services.Query_ContractGetBytecode {
+	pb := services.Query_ContractGetBytecode{
+		ContractGetBytecode: &services.ContractGetBytecodeQuery{
+			Header: &services.QueryHeader{},
+		},
+	}
+
+	if this.contractID != nil {
+		pb.ContractGetBytecode.ContractID = this.contractID._ToProtobuf()
+	}
+
+	return &pb
+}
+
+func (this *ContractBytecodeQuery) validateNetworkOnIDs(client *Client) error {
+	if client == nil || !client.autoValidateChecksums {
+		return nil
+	}
+
+	if this.contractID != nil {
+		if err := this.contractID.ValidateChecksum(client); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (this *ContractBytecodeQuery) getQueryStatus(response interface{}) Status {
+	return Status(response.(*services.Response).GetContractGetBytecodeResponse().Header.NodeTransactionPrecheckCode)
 }
