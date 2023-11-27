@@ -47,7 +47,7 @@ func TestUnitAccountStakersQueryValidate(t *testing.T) {
 	stackersQuery := NewAccountStakersQuery().
 		SetAccountID(accountID)
 
-	err = stackersQuery._ValidateNetworkOnIDs(client)
+	err = stackersQuery.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 }
 
@@ -64,7 +64,7 @@ func TestUnitAccountStakersQueryValidateWrong(t *testing.T) {
 	stackersQuery := NewAccountStakersQuery().
 		SetAccountID(accountID)
 
-	err = stackersQuery._ValidateNetworkOnIDs(client)
+	err = stackersQuery.validateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
@@ -132,7 +132,7 @@ func TestUnitAccountStakersQueryCoverage(t *testing.T) {
 		SetQueryPayment(NewHbar(3)).
 		SetGrpcDeadline(&grpc)
 
-	err = query._ValidateNetworkOnIDs(client)
+	err = query.validateNetworkOnIDs(client)
 
 	require.NoError(t, err)
 	query.GetNodeAccountIDs()
