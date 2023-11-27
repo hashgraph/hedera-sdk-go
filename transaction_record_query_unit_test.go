@@ -47,7 +47,7 @@ func TestUnitTransactionRecordQueryValidate(t *testing.T) {
 	recordQuery := NewTransactionRecordQuery().
 		SetTransactionID(transactionID)
 
-	err = recordQuery._ValidateNetworkOnIDs(client)
+	err = recordQuery.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 }
 
@@ -65,7 +65,7 @@ func TestUnitTransactionRecordQueryValidateWrong(t *testing.T) {
 	recordQuery := NewTransactionRecordQuery().
 		SetTransactionID(transactionID)
 
-	err = recordQuery._ValidateNetworkOnIDs(client)
+	err = recordQuery.validateNetworkOnIDs(client)
 	require.Error(t, err)
 	if err != nil {
 		require.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())

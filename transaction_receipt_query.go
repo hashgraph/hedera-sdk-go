@@ -327,12 +327,9 @@ func (this *TransactionReceiptQuery) validateNetworkOnIDs(client *Client) error 
 	return nil
 }
 
-func (this *TransactionReceiptQuery) getQueryStatus(response interface{}) Status {
-	return  Status(response.(*services.Response).GetTransactionGetReceipt().GetHeader().GetNodeTransactionPrecheckCode())
-}
-
 func (this *TransactionReceiptQuery) shouldRetry(_ interface{}, response interface{}) _ExecutionState {
-	status := this.getQueryStatus(response)
+	status := Status(response.(*services.Response).GetTransactionGetReceipt().GetHeader().GetNodeTransactionPrecheckCode())
+
 
 	switch status {
 	case StatusPlatformTransactionNotCreated, StatusBusy, StatusUnknown, StatusReceiptNotFound, StatusRecordNotFound:

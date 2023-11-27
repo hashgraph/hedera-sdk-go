@@ -52,29 +52,32 @@ type TransactionRecordQuery struct {
 // the record, then the results field will be set to nothing.
 func NewTransactionRecordQuery() *TransactionRecordQuery {
 	header := services.QueryHeader{}
-	return &TransactionRecordQuery{
+	result := TransactionRecordQuery{
 		query: _NewQuery(true, &header),
 	}
+
+	result.e = &result
+	return &result
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (query *TransactionRecordQuery) SetGrpcDeadline(deadline *time.Duration) *TransactionRecordQuery {
-	query.query.SetGrpcDeadline(deadline)
-	return query
+func (this *TransactionRecordQuery) SetGrpcDeadline(deadline *time.Duration) *TransactionRecordQuery {
+	this.query.SetGrpcDeadline(deadline)
+	return this
 }
 
 // SetIncludeChildren Sets whether the response should include the records of any child transactions spawned by the
 // top-level transaction with the given transactionID.
-func (query *TransactionRecordQuery) SetIncludeChildren(includeChildRecords bool) *TransactionRecordQuery {
-	query.includeChildRecords = &includeChildRecords
-	return query
+func (this *TransactionRecordQuery) SetIncludeChildren(includeChildRecords bool) *TransactionRecordQuery {
+	this.includeChildRecords = &includeChildRecords
+	return this
 }
 
 // GetIncludeChildren returns whether the response should include the records of any child transactions spawned by the
 // top-level transaction with the given transactionID.
-func (query *TransactionRecordQuery) GetIncludeChildren() bool {
-	if query.includeChildRecords != nil {
-		return *query.includeChildRecords
+func (this *TransactionRecordQuery) GetIncludeChildren() bool {
+	if this.includeChildRecords != nil {
+		return *this.includeChildRecords
 	}
 
 	return false
@@ -85,98 +88,55 @@ func (query *TransactionRecordQuery) GetIncludeChildren() bool {
 // INVALID_NODE_ACCOUNT nor <tt>INVALID_PAYER_SIGNATURE; or, if no such
 // record exists, the record of processing the first transaction to reach consensus with the
 // given transaction id..
-func (query *TransactionRecordQuery) SetIncludeDuplicates(includeDuplicates bool) *TransactionRecordQuery {
-	query.duplicates = &includeDuplicates
-	return query
+func (this *TransactionRecordQuery) SetIncludeDuplicates(includeDuplicates bool) *TransactionRecordQuery {
+	this.duplicates = &includeDuplicates
+	return this
 }
 
 // GetIncludeDuplicates returns whether records of processing duplicate transactions should be returned along with the record
 // of processing the first consensus transaction with the given id.
-func (query *TransactionRecordQuery) GetIncludeDuplicates() bool {
-	if query.duplicates != nil {
-		return *query.duplicates
+func (this *TransactionRecordQuery) GetIncludeDuplicates() bool {
+	if this.duplicates != nil {
+		return *this.duplicates
 	}
 
 	return false
 }
 
-func (query *TransactionRecordQuery) _ValidateNetworkOnIDs(client *Client) error {
-	if client == nil || !client.autoValidateChecksums {
-		return nil
-	}
-
-	if err := query.transactionID.AccountID.ValidateChecksum(client); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (query *TransactionRecordQuery) _Build() *services.Query_TransactionGetRecord {
-	body := &services.TransactionGetRecordQuery{
-		Header: &services.QueryHeader{},
-	}
-
-	if query.includeChildRecords != nil {
-		body.IncludeChildRecords = query.GetIncludeChildren()
-	}
-
-	if query.duplicates != nil {
-		body.IncludeDuplicates = query.GetIncludeDuplicates()
-	}
-
-	if query.transactionID.AccountID != nil {
-		body.TransactionID = query.transactionID._ToProtobuf()
-	}
-
-	return &services.Query_TransactionGetRecord{
-		TransactionGetRecord: body,
-	}
-}
-
 // GetCost returns the fee that would be charged to get the requested information (if a cost was requested).
-func (query *TransactionRecordQuery) GetCost(client *Client) (Hbar, error) {
+func (this *TransactionRecordQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
 		return Hbar{}, errNoClientProvided
 	}
 
 	var err error
 
-	err = query._ValidateNetworkOnIDs(client)
+	err = this.validateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	for range query.nodeAccountIDs.slice {
+	for range this.nodeAccountIDs.slice {
 		paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 		if err != nil {
 			return Hbar{}, err
 		}
-		query.paymentTransactions = append(query.paymentTransactions, paymentTransaction)
+		this.paymentTransactions = append(this.paymentTransactions, paymentTransaction)
 	}
 
-	pb := query._Build()
-	pb.TransactionGetRecord.Header = query.pbHeader
+	pb := this.build()
+	pb.TransactionGetRecord.Header = this.pbHeader
 
-	query.pb = &services.Query{
+	this.pb = &services.Query{
 		Query: pb,
 	}
 
+	this.pbHeader.ResponseType = services.ResponseType_COST_ANSWER
+	this.paymentTransactionIDs._Advance()
+
 	resp, err := _Execute(
 		client,
-		&query.query,
-		_TransactionRecordQueryShouldRetry,
-		_CostQueryMakeRequest,
-		_CostQueryAdvanceRequest,
-		getNodeAccountID,
-		_TransactionRecordQueryGetMethod,
-		_TransactionRecordQueryMapStatusError,
-		mapResponse,
-		query._GetLogID(),
-		query.grpcDeadline,
-		query.maxBackoff,
-		query.minBackoff,
-		query.maxRetry,
+		this.e,
 	)
 
 	if err != nil {
@@ -187,7 +147,236 @@ func (query *TransactionRecordQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func _TransactionRecordQueryShouldRetry(request interface{}, response interface{}) _ExecutionState {
+// Execute executes the Query with the provided client
+func (this *TransactionRecordQuery) Execute(client *Client) (TransactionRecord, error) {
+	if client == nil || client.operator == nil {
+		return TransactionRecord{}, errNoClientProvided
+	}
+
+	var err error
+
+	err = this.validateNetworkOnIDs(client)
+	if err != nil {
+		return TransactionRecord{}, err
+	}
+
+	if !this.paymentTransactionIDs.locked {
+		this.paymentTransactionIDs._Clear()._Push(TransactionIDGenerate(client.operator.accountID))
+	}
+
+	var cost Hbar
+	if this.queryPayment.tinybar != 0 {
+		cost = this.queryPayment
+	} else {
+		if this.maxQueryPayment.tinybar == 0 {
+			cost = client.GetDefaultMaxQueryPayment()
+		} else {
+			cost = this.maxQueryPayment
+		}
+
+		actualCost, err := this.GetCost(client)
+		if err != nil {
+			return TransactionRecord{}, err
+		}
+
+		if cost.tinybar < actualCost.tinybar {
+			return TransactionRecord{}, ErrMaxQueryPaymentExceeded{
+				QueryCost:       actualCost,
+				MaxQueryPayment: cost,
+				query:           "TransactionRecordQuery",
+			}
+		}
+
+		cost = actualCost
+	}
+
+	this.paymentTransactions = make([]*services.Transaction, 0)
+
+	if this.nodeAccountIDs.locked {
+		err = this._QueryGeneratePayments(client, cost)
+		if err != nil {
+			return TransactionRecord{}, err
+		}
+	} else {
+		paymentTransaction, err := _QueryMakePaymentTransaction(this.paymentTransactionIDs._GetCurrent().(TransactionID), AccountID{}, client.operator, cost)
+		if err != nil {
+			return TransactionRecord{}, err
+		}
+		this.paymentTransactions = append(this.paymentTransactions, paymentTransaction)
+	}
+
+	pb := this.build()
+	pb.TransactionGetRecord.Header = this.pbHeader
+	this.pb = &services.Query{
+		Query: pb,
+	}
+
+	if this.isPaymentRequired && len(this.paymentTransactions) > 0 {
+		this.paymentTransactionIDs._Advance()
+	}
+	this.pbHeader.ResponseType = services.ResponseType_ANSWER_ONLY
+
+	resp, err := _Execute(
+		client,
+		this.e,
+	)
+
+	if err != nil {
+		if precheckErr, ok := err.(ErrHederaPreCheckStatus); ok {
+			return TransactionRecord{}, _NewErrHederaReceiptStatus(precheckErr.TxID, precheckErr.Status)
+		}
+		return TransactionRecord{}, err
+	}
+
+	return _TransactionRecordFromProtobuf(resp.(*services.Response).GetTransactionGetRecord(), this.transactionID), nil
+}
+
+// SetTransactionID sets the TransactionID for this TransactionRecordQuery.
+func (this *TransactionRecordQuery) SetTransactionID(transactionID TransactionID) *TransactionRecordQuery {
+	this.transactionID = &transactionID
+	return this
+}
+
+// GetTransactionID gets the TransactionID for this TransactionRecordQuery.
+func (this *TransactionRecordQuery) GetTransactionID() TransactionID {
+	if this.transactionID == nil {
+		return TransactionID{}
+	}
+
+	return *this.transactionID
+}
+
+// SetNodeAccountIDs sets the _Node AccountID for this TransactionRecordQuery.
+func (this *TransactionRecordQuery) SetNodeAccountIDs(accountID []AccountID) *TransactionRecordQuery {
+	this.query.SetNodeAccountIDs(accountID)
+	return this
+}
+
+// SetQueryPayment sets the Hbar payment to pay the _Node a fee for handling this query
+func (this *TransactionRecordQuery) SetQueryPayment(queryPayment Hbar) *TransactionRecordQuery {
+	this.queryPayment = queryPayment
+	return this
+}
+
+// SetMaxQueryPayment sets the maximum payment allowed for this Query.
+func (this *TransactionRecordQuery) SetMaxQueryPayment(queryMaxPayment Hbar) *TransactionRecordQuery {
+	this.maxQueryPayment = queryMaxPayment
+	return this
+}
+
+// SetMaxRetry sets the max number of errors before execution will fail.
+func (this *TransactionRecordQuery) SetMaxRetry(count int) *TransactionRecordQuery {
+	this.query.SetMaxRetry(count)
+	return this
+}
+
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
+func (this *TransactionRecordQuery) SetMaxBackoff(max time.Duration) *TransactionRecordQuery {
+	this.query.SetMaxBackoff(max)
+	return this
+}
+
+// GetMaxBackoff returns the maximum amount of time to wait between retries.
+func (this *TransactionRecordQuery) GetMaxBackoff() time.Duration {
+	return this.query.GetMaxBackoff()
+}
+
+// SetMinBackoff sets the minimum amount of time to wait between retries.
+func (this *TransactionRecordQuery) SetMinBackoff(min time.Duration) *TransactionRecordQuery {
+	this.query.SetMinBackoff(min)
+	return this
+}
+
+// GetMinBackoff returns the minimum amount of time to wait between retries.
+func (this *TransactionRecordQuery) GetMinBackoff() time.Duration {
+	return this.query.GetMinBackoff()
+}
+
+func (this *TransactionRecordQuery) _GetLogID() string {
+	timestamp := this.timestamp.UnixNano()
+	if this.paymentTransactionIDs._Length() > 0 && this.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart != nil {
+		timestamp = this.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart.UnixNano()
+	}
+	return fmt.Sprintf("TransactionRecordQuery:%d", timestamp)
+}
+
+// SetPaymentTransactionID assigns the payment transaction id.
+func (this *TransactionRecordQuery) SetPaymentTransactionID(transactionID TransactionID) *TransactionRecordQuery {
+	this.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
+	return this
+}
+
+func (this *TransactionRecordQuery) SetLogLevel(level LogLevel) *TransactionRecordQuery {
+	this.query.SetLogLevel(level)
+	return this
+}
+
+// ---------- Parent functions specific implementation ----------
+
+func (this *TransactionRecordQuery) getMethod(channel *_Channel) _Method {
+	return _Method{
+		query: channel._GetCrypto().GetTxRecordByTxID,
+	}
+}
+
+func (this *TransactionRecordQuery) mapStatusError(_ interface{}, response interface{}) error {
+	query := response.(*services.Response)
+	switch Status(query.GetTransactionGetRecord().GetHeader().GetNodeTransactionPrecheckCode()) {
+	case StatusPlatformTransactionNotCreated, StatusBusy, StatusUnknown, StatusReceiptNotFound, StatusRecordNotFound, StatusOk:
+		break
+	default:
+		return ErrHederaPreCheckStatus{
+			Status: Status(query.GetTransactionGetRecord().GetHeader().GetNodeTransactionPrecheckCode()),
+		}
+	}
+
+	return ErrHederaReceiptStatus{
+		Status: Status(query.GetTransactionGetRecord().GetTransactionRecord().GetReceipt().GetStatus()),
+		// TxID:    _TransactionIDFromProtobuf(_Request.query.pb.GetTransactionGetRecord().TransactionID, networkName),
+		Receipt: _TransactionReceiptFromProtobuf(query.GetTransactionGetReceipt(), nil),
+	}
+}
+
+func (this *TransactionRecordQuery) getName() string {
+	return "TransactionRecordQuery"
+}
+
+func (this *TransactionRecordQuery) build() *services.Query_TransactionGetRecord {
+	body := &services.TransactionGetRecordQuery{
+		Header: &services.QueryHeader{},
+	}
+
+	if this.includeChildRecords != nil {
+		body.IncludeChildRecords = this.GetIncludeChildren()
+	}
+
+	if this.duplicates != nil {
+		body.IncludeDuplicates = this.GetIncludeDuplicates()
+	}
+
+	if this.transactionID.AccountID != nil {
+		body.TransactionID = this.transactionID._ToProtobuf()
+	}
+
+	return &services.Query_TransactionGetRecord{
+		TransactionGetRecord: body,
+	}
+}
+
+func (this *TransactionRecordQuery) validateNetworkOnIDs(client *Client) error {
+	if client == nil || !client.autoValidateChecksums {
+		return nil
+	}
+
+	if err := this.transactionID.AccountID.ValidateChecksum(client); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (this *ContractInfoQuery) shouldRetry(_ interface{}, response interface{}) _ExecutionState {
 	status := Status(response.(*services.Response).GetTransactionGetRecord().GetHeader().GetNodeTransactionPrecheckCode())
 
 	switch status {
@@ -211,218 +400,4 @@ func _TransactionRecordQueryShouldRetry(request interface{}, response interface{
 	default:
 		return executionStateError
 	}
-}
-
-func _TransactionRecordQueryMapStatusError(request interface{}, response interface{}) error {
-	query := response.(*services.Response)
-	switch Status(query.GetTransactionGetRecord().GetHeader().GetNodeTransactionPrecheckCode()) {
-	case StatusPlatformTransactionNotCreated, StatusBusy, StatusUnknown, StatusReceiptNotFound, StatusRecordNotFound, StatusOk:
-		break
-	default:
-		return ErrHederaPreCheckStatus{
-			Status: Status(query.GetTransactionGetRecord().GetHeader().GetNodeTransactionPrecheckCode()),
-		}
-	}
-
-	return ErrHederaReceiptStatus{
-		Status: Status(query.GetTransactionGetRecord().GetTransactionRecord().GetReceipt().GetStatus()),
-		// TxID:    _TransactionIDFromProtobuf(_Request.query.pb.GetTransactionGetRecord().TransactionID, networkName),
-		Receipt: _TransactionReceiptFromProtobuf(query.GetTransactionGetReceipt(), nil),
-	}
-}
-
-func _TransactionRecordQueryGetMethod(_ interface{}, channel *_Channel) _Method {
-	return _Method{
-		query: channel._GetCrypto().GetTxRecordByTxID,
-	}
-}
-
-// SetTransactionID sets the TransactionID for this TransactionRecordQuery.
-func (query *TransactionRecordQuery) SetTransactionID(transactionID TransactionID) *TransactionRecordQuery {
-	query.transactionID = &transactionID
-	return query
-}
-
-// GetTransactionID gets the TransactionID for this TransactionRecordQuery.
-func (query *TransactionRecordQuery) GetTransactionID() TransactionID {
-	if query.transactionID == nil {
-		return TransactionID{}
-	}
-
-	return *query.transactionID
-}
-
-// SetNodeAccountIDs sets the _Node AccountID for this TransactionRecordQuery.
-func (query *TransactionRecordQuery) SetNodeAccountIDs(accountID []AccountID) *TransactionRecordQuery {
-	query.query.SetNodeAccountIDs(accountID)
-	return query
-}
-
-// SetQueryPayment sets the Hbar payment to pay the _Node a fee for handling this query
-func (query *TransactionRecordQuery) SetQueryPayment(queryPayment Hbar) *TransactionRecordQuery {
-	query.queryPayment = queryPayment
-	return query
-}
-
-// SetMaxQueryPayment sets the maximum payment allowed for this Query.
-func (query *TransactionRecordQuery) SetMaxQueryPayment(queryMaxPayment Hbar) *TransactionRecordQuery {
-	query.maxQueryPayment = queryMaxPayment
-	return query
-}
-
-// SetMaxRetry sets the max number of errors before execution will fail.
-func (query *TransactionRecordQuery) SetMaxRetry(count int) *TransactionRecordQuery {
-	query.query.SetMaxRetry(count)
-	return query
-}
-
-// SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (query *TransactionRecordQuery) SetMaxBackoff(max time.Duration) *TransactionRecordQuery {
-	if max.Nanoseconds() < 0 {
-		panic("maxBackoff must be a positive duration")
-	} else if max.Nanoseconds() < query.minBackoff.Nanoseconds() {
-		panic("maxBackoff must be greater than or equal to minBackoff")
-	}
-	query.maxBackoff = &max
-	return query
-}
-
-// GetMaxBackoff returns the maximum amount of time to wait between retries.
-func (query *TransactionRecordQuery) GetMaxBackoff() time.Duration {
-	if query.maxBackoff != nil {
-		return *query.maxBackoff
-	}
-
-	return 8 * time.Second
-}
-
-// SetMinBackoff sets the minimum amount of time to wait between retries.
-func (query *TransactionRecordQuery) SetMinBackoff(min time.Duration) *TransactionRecordQuery {
-	if min.Nanoseconds() < 0 {
-		panic("minBackoff must be a positive duration")
-	} else if query.maxBackoff.Nanoseconds() < min.Nanoseconds() {
-		panic("minBackoff must be less than or equal to maxBackoff")
-	}
-	query.minBackoff = &min
-	return query
-}
-
-// GetMinBackoff returns the minimum amount of time to wait between retries.
-func (query *TransactionRecordQuery) GetMinBackoff() time.Duration {
-	if query.minBackoff != nil {
-		return *query.minBackoff
-	}
-
-	return 250 * time.Millisecond
-}
-
-// Execute executes the Query with the provided client
-func (query *TransactionRecordQuery) Execute(client *Client) (TransactionRecord, error) {
-	if client == nil || client.operator == nil {
-		return TransactionRecord{}, errNoClientProvided
-	}
-
-	var err error
-
-	err = query._ValidateNetworkOnIDs(client)
-	if err != nil {
-		return TransactionRecord{}, err
-	}
-
-	if !query.paymentTransactionIDs.locked {
-		query.paymentTransactionIDs._Clear()._Push(TransactionIDGenerate(client.operator.accountID))
-	}
-
-	var cost Hbar
-	if query.queryPayment.tinybar != 0 {
-		cost = query.queryPayment
-	} else {
-		if query.maxQueryPayment.tinybar == 0 {
-			cost = client.GetDefaultMaxQueryPayment()
-		} else {
-			cost = query.maxQueryPayment
-		}
-
-		actualCost, err := query.GetCost(client)
-		if err != nil {
-			return TransactionRecord{}, err
-		}
-
-		if cost.tinybar < actualCost.tinybar {
-			return TransactionRecord{}, ErrMaxQueryPaymentExceeded{
-				QueryCost:       actualCost,
-				MaxQueryPayment: cost,
-				query:           "TransactionRecordQuery",
-			}
-		}
-
-		cost = actualCost
-	}
-
-	query.paymentTransactions = make([]*services.Transaction, 0)
-
-	if query.nodeAccountIDs.locked {
-		err = _QueryGeneratePayments(&query.query, client, cost)
-		if err != nil {
-			return TransactionRecord{}, err
-		}
-	} else {
-		paymentTransaction, err := _QueryMakePaymentTransaction(query.paymentTransactionIDs._GetCurrent().(TransactionID), AccountID{}, client.operator, cost)
-		if err != nil {
-			return TransactionRecord{}, err
-		}
-		query.paymentTransactions = append(query.paymentTransactions, paymentTransaction)
-	}
-
-	pb := query._Build()
-	pb.TransactionGetRecord.Header = query.pbHeader
-	query.pb = &services.Query{
-		Query: pb,
-	}
-
-	resp, err := _Execute(
-		client,
-		&query.query,
-		_TransactionRecordQueryShouldRetry,
-		makeRequest,
-		advanceRequest,
-		getNodeAccountID,
-		_TransactionRecordQueryGetMethod,
-		_TransactionRecordQueryMapStatusError,
-		mapResponse,
-		query._GetLogID(),
-		query.grpcDeadline,
-		query.maxBackoff,
-		query.minBackoff,
-		query.maxRetry,
-	)
-
-	if err != nil {
-		if precheckErr, ok := err.(ErrHederaPreCheckStatus); ok {
-			return TransactionRecord{}, _NewErrHederaReceiptStatus(precheckErr.TxID, precheckErr.Status)
-		}
-		return TransactionRecord{}, err
-	}
-
-	return _TransactionRecordFromProtobuf(resp.(*services.Response).GetTransactionGetRecord(), query.transactionID), nil
-}
-
-func (query *TransactionRecordQuery) _GetLogID() string {
-	timestamp := query.timestamp.UnixNano()
-	if query.paymentTransactionIDs._Length() > 0 && query.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart != nil {
-		timestamp = query.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart.UnixNano()
-	}
-	return fmt.Sprintf("TransactionRecordQuery:%d", timestamp)
-}
-
-// SetPaymentTransactionID assigns the payment transaction id.
-func (query *TransactionRecordQuery) SetPaymentTransactionID(transactionID TransactionID) *TransactionRecordQuery {
-	query.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
-	return query
-}
-
-func (query *TransactionRecordQuery) SetLogLevel(level LogLevel) *TransactionRecordQuery {
-	query.query.SetLogLevel(level)
-	return query
 }
