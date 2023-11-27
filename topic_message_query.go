@@ -150,7 +150,7 @@ func (query *TopicMessageQuery) SetRetryHandler(retryHandler func(err error) boo
 	return query
 }
 
-func (query *TopicMessageQuery) _ValidateNetworkOnIDs(client *Client) error {
+func (query *TopicMessageQuery) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -164,7 +164,7 @@ func (query *TopicMessageQuery) _ValidateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (query *TopicMessageQuery) _Build() *mirror.ConsensusTopicQuery {
+func (query *TopicMessageQuery) build() *mirror.ConsensusTopicQuery {
 	body := &mirror.ConsensusTopicQuery{
 		Limit: query.limit,
 	}
@@ -191,12 +191,12 @@ func (query *TopicMessageQuery) Subscribe(client *Client, onNext func(TopicMessa
 	done := make(chan struct{})
 	handle := SubscriptionHandle{}
 
-	err := query._ValidateNetworkOnIDs(client)
+	err := query.validateNetworkOnIDs(client)
 	if err != nil {
 		return SubscriptionHandle{}, err
 	}
 
-	pb := query._Build()
+	pb := query.build()
 
 	messages := make(map[string][]*mirror.ConsensusTopicResponse)
 
