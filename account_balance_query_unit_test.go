@@ -47,7 +47,7 @@ func TestUnitAccountBalanceQueryValidate(t *testing.T) {
 	balanceQuery := NewAccountBalanceQuery().
 		SetAccountID(accountID)
 
-	err = balanceQuery._ValidateNetworkOnIDs(client)
+	err = balanceQuery.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 }
 
@@ -64,7 +64,7 @@ func TestUnitAccountBalanceQueryValidateWrong(t *testing.T) {
 	balanceQuery := NewAccountBalanceQuery().
 		SetAccountID(accountID)
 
-	err = balanceQuery._ValidateNetworkOnIDs(client)
+	err = balanceQuery.validateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
@@ -120,7 +120,7 @@ func TestUnitAccountBalanceQueryCoverage(t *testing.T) {
 		SetMaxQueryPayment(NewHbar(23)).
 		SetQueryPayment(NewHbar(3))
 
-	err = query._ValidateNetworkOnIDs(client)
+	err = query.validateNetworkOnIDs(client)
 
 	require.NoError(t, err)
 	query.GetNodeAccountIDs()

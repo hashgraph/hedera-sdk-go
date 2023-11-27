@@ -131,10 +131,10 @@ func (this *query) shouldRetry(_ interface{}, response interface{}) _ExecutionSt
 }
 
 
-func _QueryGeneratePayments(q *query, client *Client, cost Hbar) error {
-	for _, nodeID := range q.nodeAccountIDs.slice {
+func (this *query)_QueryGeneratePayments(client *Client, cost Hbar) error {
+	for _, nodeID := range this.nodeAccountIDs.slice {
 		transaction, err := _QueryMakePaymentTransaction(
-			q.paymentTransactionIDs._GetCurrent().(TransactionID),
+			this.paymentTransactionIDs._GetCurrent().(TransactionID),
 			nodeID.(AccountID),
 			client.operator,
 			cost,
@@ -143,7 +143,7 @@ func _QueryGeneratePayments(q *query, client *Client, cost Hbar) error {
 			return err
 		}
 
-		q.paymentTransactions = append(q.paymentTransactions, transaction)
+		this.paymentTransactions = append(this.paymentTransactions, transaction)
 	}
 
 	return nil
@@ -200,6 +200,11 @@ func (this *query) GetPaymentTransactionID() TransactionID {
 	}
 
 	return TransactionID{}
+}
+
+// GetMaxRetryCount returns the max number of errors before execution will fail.
+func (this *query) GetMaxRetryCount() int {
+	return this.GetMaxRetry()
 }
 
 // SetPaymentTransactionID assigns the payment transaction id.
