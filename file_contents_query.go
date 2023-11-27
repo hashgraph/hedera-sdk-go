@@ -36,9 +36,12 @@ type FileContentsQuery struct {
 // NewFileContentsQuery creates a FileContentsQuery which retrieves the contents of a file.
 func NewFileContentsQuery() *FileContentsQuery {
 	header := services.QueryHeader{}
-	return &FileContentsQuery{
+	result := FileContentsQuery{
 		query: _NewQuery(true, &header),
 	}
+
+	result.e = &result
+	return	&result	
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
@@ -254,7 +257,7 @@ func (this *FileContentsQuery) SetLogLevel(level LogLevel) *FileContentsQuery {
 
 // ---------- Parent functions specific implementation ----------
 
-func (this *FileContentsQuery) getMethod(_ interface{}, channel *_Channel) _Method {
+func (this *FileContentsQuery) getMethod(channel *_Channel) _Method {
 	return _Method{
 		query: channel._GetFile().GetFileContent,
 	}
