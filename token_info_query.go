@@ -36,102 +36,69 @@ type TokenInfoQuery struct {
 // NewTokenInfoQuery creates a TokenInfoQuery which is used get information about Token instance
 func NewTokenInfoQuery() *TokenInfoQuery {
 	header := services.QueryHeader{}
-	return &TokenInfoQuery{
+	result := TokenInfoQuery{
 		query: _NewQuery(true, &header),
 	}
+
+	result.e = &result
+	return &result
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (query *TokenInfoQuery) SetGrpcDeadline(deadline *time.Duration) *TokenInfoQuery {
-	query.query.SetGrpcDeadline(deadline)
-	return query
+func (this *TokenInfoQuery) SetGrpcDeadline(deadline *time.Duration) *TokenInfoQuery {
+	this.query.SetGrpcDeadline(deadline)
+	return this
 }
 
 // SetTokenID Sets the topic to retrieve info about (the parameters and running state of).
-func (query *TokenInfoQuery) SetTokenID(tokenID TokenID) *TokenInfoQuery {
-	query.tokenID = &tokenID
-	return query
+func (this *TokenInfoQuery) SetTokenID(tokenID TokenID) *TokenInfoQuery {
+	this.tokenID = &tokenID
+	return this
 }
 
 // GetTokenID returns the TokenID for this TokenInfoQuery
-func (query *TokenInfoQuery) GetTokenID() TokenID {
-	if query.tokenID == nil {
+func (this *TokenInfoQuery) GetTokenID() TokenID {
+	if this.tokenID == nil {
 		return TokenID{}
 	}
 
-	return *query.tokenID
-}
-
-func (query *TokenInfoQuery) _ValidateNetworkOnIDs(client *Client) error {
-	if client == nil || !client.autoValidateChecksums {
-		return nil
-	}
-
-	if query.tokenID != nil {
-		if err := query.tokenID.ValidateChecksum(client); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (query *TokenInfoQuery) _Build() *services.Query_TokenGetInfo {
-	body := &services.TokenGetInfoQuery{
-		Header: &services.QueryHeader{},
-	}
-	if query.tokenID != nil {
-		body.Token = query.tokenID._ToProtobuf()
-	}
-
-	return &services.Query_TokenGetInfo{
-		TokenGetInfo: body,
-	}
+	return *this.tokenID
 }
 
 // GetCost returns the fee that would be charged to get the requested information (if a cost was requested).
-func (query *TokenInfoQuery) GetCost(client *Client) (Hbar, error) {
+func (this *TokenInfoQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
 		return Hbar{}, errNoClientProvided
 	}
 
 	var err error
 
-	err = query._ValidateNetworkOnIDs(client)
+	err = this.validateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	for range query.nodeAccountIDs.slice {
+	for range this.nodeAccountIDs.slice {
 		paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 		if err != nil {
 			return Hbar{}, err
 		}
-		query.paymentTransactions = append(query.paymentTransactions, paymentTransaction)
+		this.paymentTransactions = append(this.paymentTransactions, paymentTransaction)
 	}
 
-	pb := query._Build()
-	pb.TokenGetInfo.Header = query.pbHeader
+	pb := this.build()
+	pb.TokenGetInfo.Header = this.pbHeader
 
-	query.pb = &services.Query{
+	this.pb = &services.Query{
 		Query: pb,
 	}
 
+	this.pbHeader.ResponseType = services.ResponseType_COST_ANSWER
+	this.paymentTransactionIDs._Advance()
+
 	resp, err := _Execute(
 		client,
-		&query.query,
-		_TokenInfoQueryShouldRetry,
-		_CostQueryMakeRequest,
-		_CostQueryAdvanceRequest,
-		getNodeAccountID,
-		_TokenInfoQueryGetMethod,
-		_TokenInfoQueryMapStatusError,
-		mapResponse,
-		query._GetLogID(),
-		query.grpcDeadline,
-		query.maxBackoff,
-		query.minBackoff,
-		query.maxRetry,
+		this.e,
 	)
 
 	if err != nil {
@@ -142,50 +109,34 @@ func (query *TokenInfoQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func _TokenInfoQueryShouldRetry(_ interface{}, response interface{}) _ExecutionState {
-	return shouldRetry(Status(response.(*services.Response).GetTokenGetInfo().Header.NodeTransactionPrecheckCode))
-}
-
-func _TokenInfoQueryMapStatusError(_ interface{}, response interface{}) error {
-	return ErrHederaPreCheckStatus{
-		Status: Status(response.(*services.Response).GetTokenGetInfo().Header.NodeTransactionPrecheckCode),
-	}
-}
-
-func _TokenInfoQueryGetMethod(_ interface{}, channel *_Channel) _Method {
-	return _Method{
-		query: channel._GetToken().GetTokenInfo,
-	}
-}
-
 // Execute executes the TopicInfoQuery using the provided client
-func (query *TokenInfoQuery) Execute(client *Client) (TokenInfo, error) {
+func (this *TokenInfoQuery) Execute(client *Client) (TokenInfo, error) {
 	if client == nil || client.operator == nil {
 		return TokenInfo{}, errNoClientProvided
 	}
 
 	var err error
 
-	err = query._ValidateNetworkOnIDs(client)
+	err = this.validateNetworkOnIDs(client)
 	if err != nil {
 		return TokenInfo{}, err
 	}
 
-	if !query.paymentTransactionIDs.locked {
-		query.paymentTransactionIDs._Clear()._Push(TransactionIDGenerate(client.operator.accountID))
+	if !this.paymentTransactionIDs.locked {
+		this.paymentTransactionIDs._Clear()._Push(TransactionIDGenerate(client.operator.accountID))
 	}
 
 	var cost Hbar
-	if query.queryPayment.tinybar != 0 {
-		cost = query.queryPayment
+	if this.queryPayment.tinybar != 0 {
+		cost = this.queryPayment
 	} else {
-		if query.maxQueryPayment.tinybar == 0 {
+		if this.maxQueryPayment.tinybar == 0 {
 			cost = client.GetDefaultMaxQueryPayment()
 		} else {
-			cost = query.maxQueryPayment
+			cost = this.maxQueryPayment
 		}
 
-		actualCost, err := query.GetCost(client)
+		actualCost, err := this.GetCost(client)
 		if err != nil {
 			return TokenInfo{}, err
 		}
@@ -201,42 +152,35 @@ func (query *TokenInfoQuery) Execute(client *Client) (TokenInfo, error) {
 		cost = actualCost
 	}
 
-	query.paymentTransactions = make([]*services.Transaction, 0)
+	this.paymentTransactions = make([]*services.Transaction, 0)
 
-	if query.nodeAccountIDs.locked {
-		err = _QueryGeneratePayments(&query.query, client, cost)
+	if this.nodeAccountIDs.locked {
+		err = this._QueryGeneratePayments(client, cost)
 		if err != nil {
 			return TokenInfo{}, err
 		}
 	} else {
-		paymentTransaction, err := _QueryMakePaymentTransaction(query.paymentTransactionIDs._GetCurrent().(TransactionID), AccountID{}, client.operator, cost)
+		paymentTransaction, err := _QueryMakePaymentTransaction(this.paymentTransactionIDs._GetCurrent().(TransactionID), AccountID{}, client.operator, cost)
 		if err != nil {
 			return TokenInfo{}, err
 		}
-		query.paymentTransactions = append(query.paymentTransactions, paymentTransaction)
+		this.paymentTransactions = append(this.paymentTransactions, paymentTransaction)
 	}
 
-	pb := query._Build()
-	pb.TokenGetInfo.Header = query.pbHeader
-	query.pb = &services.Query{
+	pb := this.build()
+	pb.TokenGetInfo.Header = this.pbHeader
+	this.pb = &services.Query{
 		Query: pb,
 	}
 
+	if this.isPaymentRequired && len(this.paymentTransactions) > 0 {
+		this.paymentTransactionIDs._Advance()
+	}
+	this.pbHeader.ResponseType = services.ResponseType_ANSWER_ONLY
+
 	resp, err := _Execute(
 		client,
-		&query.query,
-		_TokenInfoQueryShouldRetry,
-		makeRequest,
-		advanceRequest,
-		getNodeAccountID,
-		_TokenInfoQueryGetMethod,
-		_TokenInfoQueryMapStatusError,
-		mapResponse,
-		query._GetLogID(),
-		query.grpcDeadline,
-		query.maxBackoff,
-		query.minBackoff,
-		query.maxRetry,
+		this.e,
 	)
 
 	if err != nil {
@@ -249,85 +193,115 @@ func (query *TokenInfoQuery) Execute(client *Client) (TokenInfo, error) {
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.
-func (query *TokenInfoQuery) SetMaxQueryPayment(maxPayment Hbar) *TokenInfoQuery {
-	query.query.SetMaxQueryPayment(maxPayment)
-	return query
+func (this *TokenInfoQuery) SetMaxQueryPayment(maxPayment Hbar) *TokenInfoQuery {
+	this.query.SetMaxQueryPayment(maxPayment)
+	return this
 }
 
 // SetQueryPayment sets the payment amount for this Query.
-func (query *TokenInfoQuery) SetQueryPayment(paymentAmount Hbar) *TokenInfoQuery {
-	query.query.SetQueryPayment(paymentAmount)
-	return query
+func (this *TokenInfoQuery) SetQueryPayment(paymentAmount Hbar) *TokenInfoQuery {
+	this.query.SetQueryPayment(paymentAmount)
+	return this
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for this TokenInfoQuery.
-func (query *TokenInfoQuery) SetNodeAccountIDs(accountID []AccountID) *TokenInfoQuery {
-	query.query.SetNodeAccountIDs(accountID)
-	return query
+func (this *TokenInfoQuery) SetNodeAccountIDs(accountID []AccountID) *TokenInfoQuery {
+	this.query.SetNodeAccountIDs(accountID)
+	return this
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
-func (query *TokenInfoQuery) SetMaxRetry(count int) *TokenInfoQuery {
-	query.query.SetMaxRetry(count)
-	return query
+func (this *TokenInfoQuery) SetMaxRetry(count int) *TokenInfoQuery {
+	this.query.SetMaxRetry(count)
+	return this
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
 // Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (query *TokenInfoQuery) SetMaxBackoff(max time.Duration) *TokenInfoQuery {
-	if max.Nanoseconds() < 0 {
-		panic("maxBackoff must be a positive duration")
-	} else if max.Nanoseconds() < query.minBackoff.Nanoseconds() {
-		panic("maxBackoff must be greater than or equal to minBackoff")
-	}
-	query.maxBackoff = &max
-	return query
+func (this *TokenInfoQuery) SetMaxBackoff(max time.Duration) *TokenInfoQuery {
+	this.query.SetMaxBackoff(max)
+	return this
 }
 
 // GetMaxBackoff returns the maximum amount of time to wait between retries.
-func (query *TokenInfoQuery) GetMaxBackoff() time.Duration {
-	if query.maxBackoff != nil {
-		return *query.maxBackoff
-	}
-
-	return 8 * time.Second
+func (this *TokenInfoQuery) GetMaxBackoff() time.Duration {
+	return this.query.GetMaxBackoff()
 }
 
 // SetMinBackoff sets the minimum amount of time to wait between retries.
-func (query *TokenInfoQuery) SetMinBackoff(min time.Duration) *TokenInfoQuery {
-	if min.Nanoseconds() < 0 {
-		panic("minBackoff must be a positive duration")
-	} else if query.maxBackoff.Nanoseconds() < min.Nanoseconds() {
-		panic("minBackoff must be less than or equal to maxBackoff")
-	}
-	query.minBackoff = &min
-	return query
+func (this *TokenInfoQuery) SetMinBackoff(min time.Duration) *TokenInfoQuery {
+	this.query.SetMinBackoff(min)
+	return this
 }
 
 // GetMinBackoff returns the minimum amount of time to wait between retries.
-func (query *TokenInfoQuery) GetMinBackoff() time.Duration {
-	if query.minBackoff != nil {
-		return *query.minBackoff
-	}
-
-	return 250 * time.Millisecond
+func (this *TokenInfoQuery) GetMinBackoff() time.Duration {
+	return this.query.GetMinBackoff()
 }
 
-func (query *TokenInfoQuery) _GetLogID() string {
-	timestamp := query.timestamp.UnixNano()
-	if query.paymentTransactionIDs._Length() > 0 && query.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart != nil {
-		timestamp = query.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart.UnixNano()
+func (this *TokenInfoQuery) _GetLogID() string {
+	timestamp := this.timestamp.UnixNano()
+	if this.paymentTransactionIDs._Length() > 0 && this.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart != nil {
+		timestamp = this.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart.UnixNano()
 	}
 	return fmt.Sprintf("TokenInfoQuery:%d", timestamp)
 }
 
 // SetPaymentTransactionID assigns the payment transaction id.
-func (query *TokenInfoQuery) SetPaymentTransactionID(transactionID TransactionID) *TokenInfoQuery {
-	query.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
-	return query
+func (this *TokenInfoQuery) SetPaymentTransactionID(transactionID TransactionID) *TokenInfoQuery {
+	this.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
+	return this
 }
 
-func (query *TokenInfoQuery) SetLogLevel(level LogLevel) *TokenInfoQuery {
-	query.query.SetLogLevel(level)
-	return query
+func (this *TokenInfoQuery) SetLogLevel(level LogLevel) *TokenInfoQuery {
+	this.query.SetLogLevel(level)
+	return this
+}
+// ---------- Parent functions specific implementation ----------
+
+func (this *TokenInfoQuery) getMethod(channel *_Channel) _Method {
+	return _Method{
+		query: channel._GetToken().GetTokenInfo,
+	}
+}
+
+func (this *TokenInfoQuery) mapStatusError(_ interface{}, response interface{}) error {
+	return ErrHederaPreCheckStatus{
+		Status: Status(response.(*services.Response).GetTokenGetInfo().Header.NodeTransactionPrecheckCode),
+	}
+}
+
+func (this *TokenInfoQuery) getName() string {
+	return "TokenInfoQuery"
+}
+
+func (this *TokenInfoQuery) build()*services.Query_TokenGetInfo {
+	body := &services.TokenGetInfoQuery{
+		Header: &services.QueryHeader{},
+	}
+	if this.tokenID != nil {
+		body.Token = this.tokenID._ToProtobuf()
+	}
+
+	return &services.Query_TokenGetInfo{
+		TokenGetInfo: body,
+	}
+}
+
+func (this *TokenInfoQuery) validateNetworkOnIDs(client *Client) error {
+	if client == nil || !client.autoValidateChecksums {
+		return nil
+	}
+
+	if this.tokenID != nil {
+		if err := this.tokenID.ValidateChecksum(client); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (this *TokenInfoQuery) getQueryStatus(response interface{}) Status {
+	return Status(response.(*services.Response).GetTokenGetInfo().Header.NodeTransactionPrecheckCode)
 }
