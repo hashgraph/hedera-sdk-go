@@ -45,7 +45,7 @@ func TestUnitAddressBookQueryCoverage(t *testing.T) {
 		SetLimit(3).
 		SetMaxAttempts(4)
 
-	err = query._ValidateNetworkOnIDs(client)
+	err = query.validateNetworkOnIDs(client)
 
 	require.NoError(t, err)
 	query.GetFileID()

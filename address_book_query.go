@@ -83,7 +83,7 @@ func (query *AddressBookQuery) GetMaxAttempts() uint64 {
 	return query.maxAttempts
 }
 
-func (query *AddressBookQuery) _ValidateNetworkOnIDs(client *Client) error {
+func (query *AddressBookQuery) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -97,7 +97,7 @@ func (query *AddressBookQuery) _ValidateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (query *AddressBookQuery) _Build() *mirror.AddressBookQuery {
+func (query *AddressBookQuery) build() *mirror.AddressBookQuery {
 	body := &mirror.AddressBookQuery{
 		Limit: query.limit,
 	}
@@ -113,12 +113,12 @@ func (query *AddressBookQuery) Execute(client *Client) (NodeAddressBook, error) 
 	var cancel func()
 	var ctx context.Context
 	var subClientError error
-	err := query._ValidateNetworkOnIDs(client)
+	err := query.validateNetworkOnIDs(client)
 	if err != nil {
 		return NodeAddressBook{}, err
 	}
 
-	pb := query._Build()
+	pb := query.build()
 
 	messages := make([]*services.NodeAddress, 0)
 
