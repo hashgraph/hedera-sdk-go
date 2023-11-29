@@ -41,17 +41,18 @@ type ContractDeleteTransaction struct {
 // NewContractDeleteTransaction creates ContractDeleteTransaction which marks a contract as deleted and transfers its remaining hBars, if any, to a
 // designated receiver. After a contract is deleted, it can no longer be called.
 func NewContractDeleteTransaction() *ContractDeleteTransaction {
-	transaction := ContractDeleteTransaction{
+	this := ContractDeleteTransaction{
 		transaction: _NewTransaction(),
 	}
-	transaction._SetDefaultMaxTransactionFee(NewHbar(2))
+	this._SetDefaultMaxTransactionFee(NewHbar(2))
+	this.e = &this
 
-	return &transaction
+	return &this
 }
 
-func _ContractDeleteTransactionFromProtobuf(transaction transaction, pb *services.TransactionBody) *ContractDeleteTransaction {
+func _ContractDeleteTransactionFromProtobuf(this transaction, pb *services.TransactionBody) *ContractDeleteTransaction {
 	return &ContractDeleteTransaction{
-		transaction:       transaction,
+		transaction:       this,
 		contractID:        _ContractIDFromProtobuf(pb.GetContractDeleteInstance().GetContractID()),
 		transferContactID: _ContractIDFromProtobuf(pb.GetContractDeleteInstance().GetTransferContractID()),
 		transferAccountID: _AccountIDFromProtobuf(pb.GetContractDeleteInstance().GetTransferAccountID()),
@@ -60,58 +61,58 @@ func _ContractDeleteTransactionFromProtobuf(transaction transaction, pb *service
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (transaction *ContractDeleteTransaction) SetGrpcDeadline(deadline *time.Duration) *ContractDeleteTransaction {
-	transaction.transaction.SetGrpcDeadline(deadline)
-	return transaction
+func (this *ContractDeleteTransaction) SetGrpcDeadline(deadline *time.Duration) *ContractDeleteTransaction {
+	this.transaction.SetGrpcDeadline(deadline)
+	return this
 }
 
 // Sets the contract ID which will be deleted.
-func (transaction *ContractDeleteTransaction) SetContractID(contractID ContractID) *ContractDeleteTransaction {
-	transaction._RequireNotFrozen()
-	transaction.contractID = &contractID
-	return transaction
+func (this *ContractDeleteTransaction) SetContractID(contractID ContractID) *ContractDeleteTransaction {
+	this._RequireNotFrozen()
+	this.contractID = &contractID
+	return this
 }
 
 // Returns the contract ID which will be deleted.
-func (transaction *ContractDeleteTransaction) GetContractID() ContractID {
-	if transaction.contractID == nil {
+func (this *ContractDeleteTransaction) GetContractID() ContractID {
+	if this.contractID == nil {
 		return ContractID{}
 	}
 
-	return *transaction.contractID
+	return *this.contractID
 }
 
 // Sets the contract ID which will receive all remaining hbars.
-func (transaction *ContractDeleteTransaction) SetTransferContractID(transferContactID ContractID) *ContractDeleteTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transferContactID = &transferContactID
-	return transaction
+func (this *ContractDeleteTransaction) SetTransferContractID(transferContactID ContractID) *ContractDeleteTransaction {
+	this._RequireNotFrozen()
+	this.transferContactID = &transferContactID
+	return this
 }
 
 // Returns the contract ID which will receive all remaining hbars.
-func (transaction *ContractDeleteTransaction) GetTransferContractID() ContractID {
-	if transaction.transferContactID == nil {
+func (this *ContractDeleteTransaction) GetTransferContractID() ContractID {
+	if this.transferContactID == nil {
 		return ContractID{}
 	}
 
-	return *transaction.transferContactID
+	return *this.transferContactID
 }
 
 // Sets the account ID which will receive all remaining hbars.
-func (transaction *ContractDeleteTransaction) SetTransferAccountID(accountID AccountID) *ContractDeleteTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transferAccountID = &accountID
+func (this *ContractDeleteTransaction) SetTransferAccountID(accountID AccountID) *ContractDeleteTransaction {
+	this._RequireNotFrozen()
+	this.transferAccountID = &accountID
 
-	return transaction
+	return this
 }
 
 // Returns the account ID which will receive all remaining hbars.
-func (transaction *ContractDeleteTransaction) GetTransferAccountID() AccountID {
-	if transaction.transferAccountID == nil {
+func (this *ContractDeleteTransaction) GetTransferAccountID() AccountID {
+	if this.transferAccountID == nil {
 		return AccountID{}
 	}
 
-	return *transaction.transferAccountID
+	return *this.transferAccountID
 }
 
 // SetPermanentRemoval
@@ -121,82 +122,22 @@ func (transaction *ContractDeleteTransaction) GetTransferAccountID() AccountID {
 // removal is always managed by the ledger itself. Any ContractDeleteTransaction
 // submitted to HAPI with permanent_removal=true will be rejected with precheck status
 // PERMANENT_REMOVAL_REQUIRES_SYSTEM_INITIATION.
-func (transaction *ContractDeleteTransaction) SetPermanentRemoval(remove bool) *ContractDeleteTransaction {
-	transaction._RequireNotFrozen()
-	transaction.permanentRemoval = remove
+func (this *ContractDeleteTransaction) SetPermanentRemoval(remove bool) *ContractDeleteTransaction {
+	this._RequireNotFrozen()
+	this.permanentRemoval = remove
 
-	return transaction
+	return this
 }
 
 // GetPermanentRemoval returns true if this is a "synthetic" system transaction.
-func (transaction *ContractDeleteTransaction) GetPermanentRemoval() bool {
-	return transaction.permanentRemoval
+func (this *ContractDeleteTransaction) GetPermanentRemoval() bool {
+	return this.permanentRemoval
 }
 
-func (transaction *ContractDeleteTransaction) _ValidateNetworkOnIDs(client *Client) error {
-	if client == nil || !client.autoValidateChecksums {
-		return nil
-	}
+func (this *ContractDeleteTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	this._RequireNotFrozen()
 
-	if transaction.contractID != nil {
-		if err := transaction.contractID.ValidateChecksum(client); err != nil {
-			return err
-		}
-	}
-
-	if transaction.transferContactID != nil {
-		if err := transaction.transferContactID.ValidateChecksum(client); err != nil {
-			return err
-		}
-	}
-
-	if transaction.transferAccountID != nil {
-		if err := transaction.transferAccountID.ValidateChecksum(client); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (transaction *ContractDeleteTransaction) _Build() *services.TransactionBody {
-	body := &services.ContractDeleteTransactionBody{
-		PermanentRemoval: transaction.permanentRemoval,
-	}
-
-	if transaction.contractID != nil {
-		body.ContractID = transaction.contractID._ToProtobuf()
-	}
-
-	if transaction.transferContactID != nil {
-		body.Obtainers = &services.ContractDeleteTransactionBody_TransferContractID{
-			TransferContractID: transaction.transferContactID._ToProtobuf(),
-		}
-	}
-
-	if transaction.transferAccountID != nil {
-		body.Obtainers = &services.ContractDeleteTransactionBody_TransferAccountID{
-			TransferAccountID: transaction.transferAccountID._ToProtobuf(),
-		}
-	}
-
-	pb := services.TransactionBody{
-		TransactionFee:           transaction.transactionFee,
-		Memo:                     transaction.transaction.memo,
-		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
-		TransactionID:            transaction.transactionID._ToProtobuf(),
-		Data: &services.TransactionBody_ContractDeleteInstance{
-			ContractDeleteInstance: body,
-		},
-	}
-
-	return &pb
-}
-
-func (transaction *ContractDeleteTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	transaction._RequireNotFrozen()
-
-	scheduled, err := transaction._ConstructScheduleProtobuf()
+	scheduled, err := this.buildProtoBody()
 	if err != nil {
 		return nil, err
 	}
@@ -204,315 +145,138 @@ func (transaction *ContractDeleteTransaction) Schedule() (*ScheduleCreateTransac
 	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *ContractDeleteTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
-	body := &services.ContractDeleteTransactionBody{
-		PermanentRemoval: transaction.permanentRemoval,
-	}
-
-	if transaction.contractID != nil {
-		body.ContractID = transaction.contractID._ToProtobuf()
-	}
-
-	if transaction.transferContactID != nil {
-		body.Obtainers = &services.ContractDeleteTransactionBody_TransferContractID{
-			TransferContractID: transaction.transferContactID._ToProtobuf(),
-		}
-	}
-
-	if transaction.transferAccountID != nil {
-		body.Obtainers = &services.ContractDeleteTransactionBody_TransferAccountID{
-			TransferAccountID: transaction.transferAccountID._ToProtobuf(),
-		}
-	}
-
-	return &services.SchedulableTransactionBody{
-		TransactionFee: transaction.transactionFee,
-		Memo:           transaction.transaction.memo,
-		Data: &services.SchedulableTransactionBody_ContractDeleteInstance{
-			ContractDeleteInstance: body,
-		},
-	}, nil
-}
-
-func _ContractDeleteTransactionGetMethod(request interface{}, channel *_Channel) _Method {
-	return _Method{
-		transaction: channel._GetContract().DeleteContract,
-	}
-}
-
 func (transaction *ContractDeleteTransaction) IsFrozen() bool {
 	return transaction._IsFrozen()
 }
 
 // Sign uses the provided privateKey to sign the transaction.
-func (transaction *ContractDeleteTransaction) Sign(
+func (this *ContractDeleteTransaction) Sign(
 	privateKey PrivateKey,
 ) *ContractDeleteTransaction {
-	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
+	this.transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
+	return this
 }
 
 // SignWithOperator signs the transaction with client's operator privateKey.
-func (transaction *ContractDeleteTransaction) SignWithOperator(
+func (this *ContractDeleteTransaction) SignWithOperator(
 	client *Client,
 ) (*ContractDeleteTransaction, error) {
 	// If the transaction is not signed by the _Operator, we need
 	// to sign the transaction with the _Operator
-
-	if client == nil {
-		return nil, errNoClientProvided
-	} else if client.operator == nil {
-		return nil, errClientOperatorSigning
-	}
-
-	if !transaction.IsFrozen() {
-		_, err := transaction.FreezeWith(client)
-		if err != nil {
-			return transaction, err
-		}
-	}
-	return transaction.SignWith(client.operator.publicKey, client.operator.signer), nil
+	_,err := this.transaction.SignWithOperator(client)
+	return this, err
 }
 
 // SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
 // with the publicKey as the map key.
-func (transaction *ContractDeleteTransaction) SignWith(
+func (this *ContractDeleteTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *ContractDeleteTransaction {
-	if !transaction._KeyAlreadySigned(publicKey) {
-		transaction._SignWith(publicKey, signer)
-	}
-
-	return transaction
+	this.transaction.SignWith(publicKey, signer)
+	return this
 }
 
-// Execute executes the transaction with the provided client
-func (transaction *ContractDeleteTransaction) Execute(
-	client *Client,
-) (TransactionResponse, error) {
-	if client == nil {
-		return TransactionResponse{}, errNoClientProvided
-	}
-
-	if transaction.freezeError != nil {
-		return TransactionResponse{}, transaction.freezeError
-	}
-
-	if !transaction.IsFrozen() {
-		_, err := transaction.FreezeWith(client)
-		if err != nil {
-			return TransactionResponse{}, err
-		}
-	}
-
-	transactionID := transaction.transactionIDs._GetCurrent().(TransactionID)
-
-	if !client.GetOperatorAccountID()._IsZero() && client.GetOperatorAccountID()._Equals(*transactionID.AccountID) {
-		transaction.SignWith(
-			client.GetOperatorPublicKey(),
-			client.operator.signer,
-		)
-	}
-
-	resp, err := _Execute(
-		client,
-		&transaction.transaction,
-		_TransactionShouldRetry,
-		_TransactionMakeRequest,
-		_TransactionAdvanceRequest,
-		_TransactionGetNodeAccountID,
-		_ContractDeleteTransactionGetMethod,
-		_TransactionMapStatusError,
-		_TransactionMapResponse,
-		transaction._GetLogID(),
-		transaction.grpcDeadline,
-		transaction.maxBackoff,
-		transaction.minBackoff,
-		transaction.maxRetry,
-	)
-
-	if err != nil {
-		return TransactionResponse{
-			TransactionID:  transaction.GetTransactionID(),
-			NodeID:         resp.(TransactionResponse).NodeID,
-			ValidateStatus: true,
-		}, err
-	}
-
-	return TransactionResponse{
-		TransactionID:  transaction.GetTransactionID(),
-		NodeID:         resp.(TransactionResponse).NodeID,
-		Hash:           resp.(TransactionResponse).Hash,
-		ValidateStatus: true,
-	}, nil
+func (this *ContractDeleteTransaction) Freeze() (*ContractDeleteTransaction, error) {
+	_,err := this.transaction.Freeze()
+	return this, err
 }
 
-func (transaction *ContractDeleteTransaction) Freeze() (*ContractDeleteTransaction, error) {
-	return transaction.FreezeWith(nil)
-}
-
-func (transaction *ContractDeleteTransaction) FreezeWith(client *Client) (*ContractDeleteTransaction, error) {
-	if transaction.IsFrozen() {
-		return transaction, nil
-	}
-	transaction._InitFee(client)
-	err := transaction._ValidateNetworkOnIDs(client)
-	if err != nil {
-		return &ContractDeleteTransaction{}, err
-	}
-	if err := transaction._InitTransactionID(client); err != nil {
-		return transaction, err
-	}
-	body := transaction._Build()
-
-	return transaction, _TransactionFreezeWith(&transaction.transaction, client, body)
+func (this *ContractDeleteTransaction) FreezeWith(client *Client) (*ContractDeleteTransaction, error) {
+	_, err := this.transaction.FreezeWith(client)
+	return this, err
 }
 
 // GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
-func (transaction *ContractDeleteTransaction) GetMaxTransactionFee() Hbar {
-	return transaction.transaction.GetMaxTransactionFee()
+func (this *ContractDeleteTransaction) GetMaxTransactionFee() Hbar {
+	return this.transaction.GetMaxTransactionFee()
 }
 
 // SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
-func (transaction *ContractDeleteTransaction) SetMaxTransactionFee(fee Hbar) *ContractDeleteTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetMaxTransactionFee(fee)
-	return transaction
+func (this *ContractDeleteTransaction) SetMaxTransactionFee(fee Hbar) *ContractDeleteTransaction {
+	this._RequireNotFrozen()
+	this.transaction.SetMaxTransactionFee(fee)
+	return this
 }
 
 // SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
-func (transaction *ContractDeleteTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *ContractDeleteTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetRegenerateTransactionID(regenerateTransactionID)
-	return transaction
+func (this *ContractDeleteTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *ContractDeleteTransaction {
+	this._RequireNotFrozen()
+	this.transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	return this
 }
 
 // GetRegenerateTransactionID returns true if transaction ID regeneration is enabled.
-func (transaction *ContractDeleteTransaction) GetRegenerateTransactionID() bool {
-	return transaction.transaction.GetRegenerateTransactionID()
+func (this *ContractDeleteTransaction) GetRegenerateTransactionID() bool {
+	return this.transaction.GetRegenerateTransactionID()
 }
 
 // GetTransactionMemo returns the memo for this ContractDeleteTransaction.
-func (transaction *ContractDeleteTransaction) GetTransactionMemo() string {
-	return transaction.transaction.GetTransactionMemo()
+func (this *ContractDeleteTransaction) GetTransactionMemo() string {
+	return this.transaction.GetTransactionMemo()
 }
 
 // SetTransactionMemo sets the memo for this ContractDeleteTransaction.
-func (transaction *ContractDeleteTransaction) SetTransactionMemo(memo string) *ContractDeleteTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetTransactionMemo(memo)
-	return transaction
+func (this *ContractDeleteTransaction) SetTransactionMemo(memo string) *ContractDeleteTransaction {
+	this._RequireNotFrozen()
+	this.transaction.SetTransactionMemo(memo)
+	return this
 }
 
 // GetTransactionValidDuration returns the duration that this transaction is valid for.
-func (transaction *ContractDeleteTransaction) GetTransactionValidDuration() time.Duration {
-	return transaction.transaction.GetTransactionValidDuration()
+func (this *ContractDeleteTransaction) GetTransactionValidDuration() time.Duration {
+	return this.transaction.GetTransactionValidDuration()
 }
 
 // SetTransactionValidDuration sets the valid duration for this ContractDeleteTransaction.
-func (transaction *ContractDeleteTransaction) SetTransactionValidDuration(duration time.Duration) *ContractDeleteTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetTransactionValidDuration(duration)
-	return transaction
+func (this *ContractDeleteTransaction) SetTransactionValidDuration(duration time.Duration) *ContractDeleteTransaction {
+	this._RequireNotFrozen()
+	this.transaction.SetTransactionValidDuration(duration)
+	return this
 }
 
 // GetTransactionID gets the TransactionID for this ContractDeleteTransaction.
-func (transaction *ContractDeleteTransaction) GetTransactionID() TransactionID {
-	return transaction.transaction.GetTransactionID()
+func (this *ContractDeleteTransaction) GetTransactionID() TransactionID {
+	return this.transaction.GetTransactionID()
 }
 
 // SetTransactionID sets the TransactionID for this ContractDeleteTransaction.
-func (transaction *ContractDeleteTransaction) SetTransactionID(transactionID TransactionID) *ContractDeleteTransaction {
-	transaction._RequireNotFrozen()
+func (this *ContractDeleteTransaction) SetTransactionID(transactionID TransactionID) *ContractDeleteTransaction {
+	this._RequireNotFrozen()
 
-	transaction.transaction.SetTransactionID(transactionID)
-	return transaction
+	this.transaction.SetTransactionID(transactionID)
+	return this
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for this ContractDeleteTransaction.
-func (transaction *ContractDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *ContractDeleteTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetNodeAccountIDs(nodeID)
-	return transaction
+func (this *ContractDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *ContractDeleteTransaction {
+	this._RequireNotFrozen()
+	this.transaction.SetNodeAccountIDs(nodeID)
+	return this
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
-func (transaction *ContractDeleteTransaction) SetMaxRetry(count int) *ContractDeleteTransaction {
-	transaction.transaction.SetMaxRetry(count)
-	return transaction
+func (this *ContractDeleteTransaction) SetMaxRetry(count int) *ContractDeleteTransaction {
+	this.transaction.SetMaxRetry(count)
+	return this
 }
 
-func (transaction *ContractDeleteTransaction) AddSignature(publicKey PublicKey, signature []byte) *ContractDeleteTransaction {
-	transaction._RequireOneNodeAccountID()
-
-	if transaction._KeyAlreadySigned(publicKey) {
-		return transaction
-	}
-
-	if transaction.signedTransactions._Length() == 0 {
-		return transaction
-	}
-
-	transaction.transactions = _NewLockableSlice()
-	transaction.publicKeys = append(transaction.publicKeys, publicKey)
-	transaction.transactionSigners = append(transaction.transactionSigners, nil)
-	transaction.transactionIDs.locked = true
-
-	for index := 0; index < transaction.signedTransactions._Length(); index++ {
-		var temp *services.SignedTransaction
-		switch t := transaction.signedTransactions._Get(index).(type) { //nolint
-		case *services.SignedTransaction:
-			temp = t
-		}
-		temp.SigMap.SigPair = append(
-			temp.SigMap.SigPair,
-			publicKey._ToSignaturePairProtobuf(signature),
-		)
-		transaction.signedTransactions._Set(index, temp)
-	}
-
-	return transaction
+func (this *ContractDeleteTransaction) AddSignature(publicKey PublicKey, signature []byte) *ContractDeleteTransaction {
+	this.transaction.AddSignature(publicKey, signature)
+	return this
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
 // Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (transaction *ContractDeleteTransaction) SetMaxBackoff(max time.Duration) *ContractDeleteTransaction {
-	if max.Nanoseconds() < 0 {
-		panic("maxBackoff must be a positive duration")
-	} else if max.Nanoseconds() < transaction.minBackoff.Nanoseconds() {
-		panic("maxBackoff must be greater than or equal to minBackoff")
-	}
-	transaction.maxBackoff = &max
-	return transaction
-}
-
-// GetMaxBackoff returns the maximum amount of time to wait between retries.
-func (transaction *ContractDeleteTransaction) GetMaxBackoff() time.Duration {
-	if transaction.maxBackoff != nil {
-		return *transaction.maxBackoff
-	}
-
-	return 8 * time.Second
+func (this *ContractDeleteTransaction) SetMaxBackoff(max time.Duration) *ContractDeleteTransaction {
+	this.transaction.SetMaxBackoff(max)
+	return this
 }
 
 // SetMinBackoff sets the minimum amount of time to wait between retries.
-func (transaction *ContractDeleteTransaction) SetMinBackoff(min time.Duration) *ContractDeleteTransaction {
-	if min.Nanoseconds() < 0 {
-		panic("minBackoff must be a positive duration")
-	} else if transaction.maxBackoff.Nanoseconds() < min.Nanoseconds() {
-		panic("minBackoff must be less than or equal to maxBackoff")
-	}
-	transaction.minBackoff = &min
-	return transaction
-}
-
-// GetMinBackoff returns the minimum amount of time to wait between retries.
-func (transaction *ContractDeleteTransaction) GetMinBackoff() time.Duration {
-	if transaction.minBackoff != nil {
-		return *transaction.minBackoff
-	}
-
-	return 250 * time.Millisecond
+func (this *ContractDeleteTransaction) SetMinBackoff(min time.Duration) *ContractDeleteTransaction {
+	this.transaction.SetMinBackoff(min)
+	return this
 }
 
 func (transaction *ContractDeleteTransaction) _GetLogID() string {
@@ -523,4 +287,104 @@ func (transaction *ContractDeleteTransaction) _GetLogID() string {
 func (transaction *ContractDeleteTransaction) SetLogLevel(level LogLevel) *ContractDeleteTransaction {
 	transaction.transaction.SetLogLevel(level)
 	return transaction
+}
+
+// ----------- overriden functions ----------------
+
+func (this *ContractDeleteTransaction) getName() string {
+	return "ContractDeleteTransaction"
+}
+func (this *ContractDeleteTransaction) validateNetworkOnIDs(client *Client) error {
+	if client == nil || !client.autoValidateChecksums {
+		return nil
+	}
+
+	if this.contractID != nil {
+		if err := this.contractID.ValidateChecksum(client); err != nil {
+			return err
+		}
+	}
+
+	if this.transferContactID != nil {
+		if err := this.transferContactID.ValidateChecksum(client); err != nil {
+			return err
+		}
+	}
+
+	if this.transferAccountID != nil {
+		if err := this.transferAccountID.ValidateChecksum(client); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (this *ContractDeleteTransaction) build() *services.TransactionBody {
+	body := &services.ContractDeleteTransactionBody{
+		PermanentRemoval: this.permanentRemoval,
+	}
+
+	if this.contractID != nil {
+		body.ContractID = this.contractID._ToProtobuf()
+	}
+
+	if this.transferContactID != nil {
+		body.Obtainers = &services.ContractDeleteTransactionBody_TransferContractID{
+			TransferContractID: this.transferContactID._ToProtobuf(),
+		}
+	}
+
+	if this.transferAccountID != nil {
+		body.Obtainers = &services.ContractDeleteTransactionBody_TransferAccountID{
+			TransferAccountID: this.transferAccountID._ToProtobuf(),
+		}
+	}
+
+	pb := services.TransactionBody{
+		TransactionFee:           this.transactionFee,
+		Memo:                     this.transaction.memo,
+		TransactionValidDuration: _DurationToProtobuf(this.GetTransactionValidDuration()),
+		TransactionID:            this.transactionID._ToProtobuf(),
+		Data: &services.TransactionBody_ContractDeleteInstance{
+			ContractDeleteInstance: body,
+		},
+	}
+
+	return &pb
+}
+func (this *ContractDeleteTransaction) buildProtoBody() (*services.SchedulableTransactionBody, error) {
+	body := &services.ContractDeleteTransactionBody{
+		PermanentRemoval: this.permanentRemoval,
+	}
+
+	if this.contractID != nil {
+		body.ContractID = this.contractID._ToProtobuf()
+	}
+
+	if this.transferContactID != nil {
+		body.Obtainers = &services.ContractDeleteTransactionBody_TransferContractID{
+			TransferContractID: this.transferContactID._ToProtobuf(),
+		}
+	}
+
+	if this.transferAccountID != nil {
+		body.Obtainers = &services.ContractDeleteTransactionBody_TransferAccountID{
+			TransferAccountID: this.transferAccountID._ToProtobuf(),
+		}
+	}
+
+	return &services.SchedulableTransactionBody{
+		TransactionFee: this.transactionFee,
+		Memo:           this.transaction.memo,
+		Data: &services.SchedulableTransactionBody_ContractDeleteInstance{
+			ContractDeleteInstance: body,
+		},
+	}, nil
+}
+
+func (this *ContractDeleteTransaction) getMethod(channel *_Channel) _Method {
+	return _Method{
+		transaction: channel._GetContract().DeleteContract,
+	}
 }
