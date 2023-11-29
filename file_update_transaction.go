@@ -52,20 +52,20 @@ type FileUpdateTransaction struct {
 // additional KeyList or ThresholdKey then M-of-M secondary KeyList or ThresholdKey signing
 // requirements must be meet
 func NewFileUpdateTransaction() *FileUpdateTransaction {
-	transaction := FileUpdateTransaction{
+	this := FileUpdateTransaction{
 		transaction: _NewTransaction(),
 	}
-	transaction._SetDefaultMaxTransactionFee(NewHbar(5))
-
-	return &transaction
+	this._SetDefaultMaxTransactionFee(NewHbar(5))
+	this.e= &this
+	return &this
 }
 
-func _FileUpdateTransactionFromProtobuf(transaction transaction, pb *services.TransactionBody) *FileUpdateTransaction {
+func _FileUpdateTransactionFromProtobuf(this transaction, pb *services.TransactionBody) *FileUpdateTransaction {
 	keys, _ := _KeyListFromProtobuf(pb.GetFileUpdate().GetKeys())
 	expiration := _TimeFromProtobuf(pb.GetFileUpdate().GetExpirationTime())
 
 	return &FileUpdateTransaction{
-		transaction:    transaction,
+		transaction:    this,
 		fileID:         _FileIDFromProtobuf(pb.GetFileUpdate().GetFileID()),
 		keys:           &keys,
 		expirationTime: &expiration,
@@ -75,144 +75,99 @@ func _FileUpdateTransactionFromProtobuf(transaction transaction, pb *services.Tr
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (transaction *FileUpdateTransaction) SetGrpcDeadline(deadline *time.Duration) *FileUpdateTransaction {
-	transaction.transaction.SetGrpcDeadline(deadline)
-	return transaction
+func (this *FileUpdateTransaction) SetGrpcDeadline(deadline *time.Duration) *FileUpdateTransaction {
+	this.transaction.SetGrpcDeadline(deadline)
+	return this
 }
 
 // SetFileID Sets the FileID to be updated
-func (transaction *FileUpdateTransaction) SetFileID(fileID FileID) *FileUpdateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.fileID = &fileID
-	return transaction
+func (this *FileUpdateTransaction) SetFileID(fileID FileID) *FileUpdateTransaction {
+	this._RequireNotFrozen()
+	this.fileID = &fileID
+	return this
 }
 
 // GetFileID returns the FileID to be updated
-func (transaction *FileUpdateTransaction) GetFileID() FileID {
-	if transaction.fileID == nil {
+func (this *FileUpdateTransaction) GetFileID() FileID {
+	if this.fileID == nil {
 		return FileID{}
 	}
 
-	return *transaction.fileID
+	return *this.fileID
 }
 
 // SetKeys Sets the new list of keys that can modify or delete the file
-func (transaction *FileUpdateTransaction) SetKeys(keys ...Key) *FileUpdateTransaction {
-	transaction._RequireNotFrozen()
-	if transaction.keys == nil {
-		transaction.keys = &KeyList{keys: []Key{}}
+func (this *FileUpdateTransaction) SetKeys(keys ...Key) *FileUpdateTransaction {
+	this._RequireNotFrozen()
+	if this.keys == nil {
+		this.keys = &KeyList{keys: []Key{}}
 	}
 	keyList := NewKeyList()
 	keyList.AddAll(keys)
 
-	transaction.keys = keyList
+	this.keys = keyList
 
-	return transaction
+	return this
 }
 
-func (transaction *FileUpdateTransaction) GetKeys() KeyList {
-	if transaction.keys != nil {
-		return *transaction.keys
+func (this *FileUpdateTransaction) GetKeys() KeyList {
+	if this.keys != nil {
+		return *this.keys
 	}
 
 	return KeyList{}
 }
 
 // SetExpirationTime Sets the new expiry time
-func (transaction *FileUpdateTransaction) SetExpirationTime(expiration time.Time) *FileUpdateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.expirationTime = &expiration
-	return transaction
+func (this *FileUpdateTransaction) SetExpirationTime(expiration time.Time) *FileUpdateTransaction {
+	this._RequireNotFrozen()
+	this.expirationTime = &expiration
+	return this
 }
 
 // GetExpirationTime returns the new expiry time
-func (transaction *FileUpdateTransaction) GetExpirationTime() time.Time {
-	if transaction.expirationTime != nil {
-		return *transaction.expirationTime
+func (this *FileUpdateTransaction) GetExpirationTime() time.Time {
+	if this.expirationTime != nil {
+		return *this.expirationTime
 	}
 
 	return time.Time{}
 }
 
 // SetContents Sets the new contents that should overwrite the file's current contents
-func (transaction *FileUpdateTransaction) SetContents(contents []byte) *FileUpdateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.contents = contents
-	return transaction
+func (this *FileUpdateTransaction) SetContents(contents []byte) *FileUpdateTransaction {
+	this._RequireNotFrozen()
+	this.contents = contents
+	return this
 }
 
 // GetContents returns the new contents that should overwrite the file's current contents
-func (transaction *FileUpdateTransaction) GetContents() []byte {
-	return transaction.contents
+func (this *FileUpdateTransaction) GetContents() []byte {
+	return this.contents
 }
 
 // SetFileMemo Sets the new memo to be associated with the file (UTF-8 encoding max 100 bytes)
-func (transaction *FileUpdateTransaction) SetFileMemo(memo string) *FileUpdateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.memo = memo
+func (this *FileUpdateTransaction) SetFileMemo(memo string) *FileUpdateTransaction {
+	this._RequireNotFrozen()
+	this.memo = memo
 
-	return transaction
+	return this
 }
 
 // GeFileMemo
 // Deprecated: use GetFileMemo()
-func (transaction *FileUpdateTransaction) GeFileMemo() string {
-	return transaction.memo
+func (this *FileUpdateTransaction) GeFileMemo() string {
+	return this.memo
 }
 
-func (transaction *FileUpdateTransaction) GetFileMemo() string {
-	return transaction.memo
+func (this *FileUpdateTransaction) GetFileMemo() string {
+	return this.memo
 }
 
-func (transaction *FileUpdateTransaction) _ValidateNetworkOnIDs(client *Client) error {
-	if client == nil || !client.autoValidateChecksums {
-		return nil
-	}
+func (this *FileUpdateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	this._RequireNotFrozen()
 
-	if transaction.fileID != nil {
-		if err := transaction.fileID.ValidateChecksum(client); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (transaction *FileUpdateTransaction) _Build() *services.TransactionBody {
-	body := &services.FileUpdateTransactionBody{
-		Memo: &wrapperspb.StringValue{Value: transaction.memo},
-	}
-	if transaction.fileID != nil {
-		body.FileID = transaction.fileID._ToProtobuf()
-	}
-
-	if transaction.expirationTime != nil {
-		body.ExpirationTime = _TimeToProtobuf(*transaction.expirationTime)
-	}
-
-	if transaction.keys != nil {
-		body.Keys = transaction.keys._ToProtoKeyList()
-	}
-
-	if transaction.contents != nil {
-		body.Contents = transaction.contents
-	}
-
-	return &services.TransactionBody{
-		TransactionFee:           transaction.transactionFee,
-		Memo:                     transaction.transaction.memo,
-		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
-		TransactionID:            transaction.transactionID._ToProtobuf(),
-		Data: &services.TransactionBody_FileUpdate{
-			FileUpdate: body,
-		},
-	}
-}
-
-func (transaction *FileUpdateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	transaction._RequireNotFrozen()
-
-	scheduled, err := transaction._ConstructScheduleProtobuf()
+	scheduled, err := this.buildProtoBody()
 	if err != nil {
 		return nil, err
 	}
@@ -220,322 +175,230 @@ func (transaction *FileUpdateTransaction) Schedule() (*ScheduleCreateTransaction
 	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *FileUpdateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (this *FileUpdateTransaction) IsFrozen() bool {
+	return this._IsFrozen()
+}
+
+// Sign uses the provided privateKey to sign the transaction.
+func (this *FileUpdateTransaction) Sign(
+	privateKey PrivateKey,
+) *FileUpdateTransaction {
+	this.transaction.Sign(privateKey)
+	return this
+}
+
+// SignWithOperator signs the transaction with client's operator privateKey.
+func (this *FileUpdateTransaction) SignWithOperator(
+	client *Client,
+) (*FileUpdateTransaction, error) {
+	// If the transaction is not signed by the _Operator, we need
+	// to sign the transaction with the _Operator
+	_,err := this.transaction.SignWithOperator(client)
+	return this, err
+}
+
+// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// with the publicKey as the map key.
+func (this *FileUpdateTransaction) SignWith(
+	publicKey PublicKey,
+	signer TransactionSigner,
+) *FileUpdateTransaction {
+	this.transaction.SignWith(publicKey, signer)
+	return this
+}
+
+func (this *FileUpdateTransaction) Freeze() (*FileUpdateTransaction, error) {
+	_,err := this.transaction.Freeze()
+	return this, err
+}
+
+func (this *FileUpdateTransaction) FreezeWith(client *Client) (*FileUpdateTransaction, error) {
+	_, err := this.transaction.FreezeWith(client)
+	return this, err
+}
+
+// GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
+func (this *FileUpdateTransaction) GetMaxTransactionFee() Hbar {
+	return this.transaction.GetMaxTransactionFee()
+}
+
+// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
+func (this *FileUpdateTransaction) SetMaxTransactionFee(fee Hbar) *FileUpdateTransaction {
+	this._RequireNotFrozen()
+	this.transaction.SetMaxTransactionFee(fee)
+	return this
+}
+
+// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
+func (this *FileUpdateTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *FileUpdateTransaction {
+	this._RequireNotFrozen()
+	this.transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	return this
+}
+
+// GetRegenerateTransactionID returns true if transaction ID regeneration is enabled.
+func (this *FileUpdateTransaction) GetRegenerateTransactionID() bool {
+	return this.transaction.GetRegenerateTransactionID()
+}
+
+func (this *FileUpdateTransaction) GetTransactionMemo() string {
+	return this.transaction.GetTransactionMemo()
+}
+
+// SetTransactionMemo sets the memo for this FileUpdateTransaction.
+func (this *FileUpdateTransaction) SetTransactionMemo(memo string) *FileUpdateTransaction {
+	this._RequireNotFrozen()
+	this.transaction.SetTransactionMemo(memo)
+	return this
+}
+
+// GetTransactionValidDuration returns the duration that this transaction is valid for.
+func (this *FileUpdateTransaction) GetTransactionValidDuration() time.Duration {
+	return this.transaction.GetTransactionValidDuration()
+}
+
+// SetTransactionValidDuration sets the valid duration for this FileUpdateTransaction.
+func (this *FileUpdateTransaction) SetTransactionValidDuration(duration time.Duration) *FileUpdateTransaction {
+	this._RequireNotFrozen()
+	this.transaction.SetTransactionValidDuration(duration)
+	return this
+}
+
+// GetTransactionID gets the TransactionID for this	FileUpdateTransaction.
+func (this *FileUpdateTransaction) GetTransactionID() TransactionID {
+	return this.transaction.GetTransactionID()
+}
+
+// SetTransactionID sets the TransactionID for this FileUpdateTransaction.
+func (this *FileUpdateTransaction) SetTransactionID(transactionID TransactionID) *FileUpdateTransaction {
+	this._RequireNotFrozen()
+
+	this.transaction.SetTransactionID(transactionID)
+	return this
+}
+
+// SetNodeAccountID sets the _Node AccountID for this FileUpdateTransaction.
+func (this *FileUpdateTransaction) SetNodeAccountIDs(nodeID []AccountID) *FileUpdateTransaction {
+	this._RequireNotFrozen()
+	this.transaction.SetNodeAccountIDs(nodeID)
+	return this
+}
+
+// SetMaxRetry sets the max number of errors before execution will fail.
+func (this *FileUpdateTransaction) SetMaxRetry(count int) *FileUpdateTransaction {
+	this.transaction.SetMaxRetry(count)
+	return this
+}
+
+// AddSignature adds a signature to the transaction.
+func (this *FileUpdateTransaction) AddSignature(publicKey PublicKey, signature []byte) *FileUpdateTransaction {
+	this.transaction.AddSignature(publicKey, signature)
+	return this
+}
+
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
+func (this *FileUpdateTransaction) SetMaxBackoff(max time.Duration) *FileUpdateTransaction {
+	this.transaction.SetMaxBackoff(max)
+	return this
+}
+
+// SetMinBackoff sets the minimum amount of time to wait between retries.
+func (this *FileUpdateTransaction) SetMinBackoff(min time.Duration) *FileUpdateTransaction {
+	this.transaction.SetMinBackoff(min)
+	return this
+}
+
+func (this *FileUpdateTransaction) _GetLogID() string {
+	timestamp := this.transactionIDs._GetCurrent().(TransactionID).ValidStart
+	return fmt.Sprintf("FileUpdateTransaction:%d", timestamp.UnixNano())
+}
+
+func (this *FileUpdateTransaction) SetLogLevel(level LogLevel) *FileUpdateTransaction {
+	this.transaction.SetLogLevel(level)
+	return this
+}
+// ----------- overriden functions ----------------
+
+func (this *FileUpdateTransaction) getName() string {
+	return "FileUpdateTransaction"
+}
+func (this *FileUpdateTransaction) validateNetworkOnIDs(client *Client) error {
+	if client == nil || !client.autoValidateChecksums {
+		return nil
+	}
+
+	if this.fileID != nil {
+		if err := this.fileID.ValidateChecksum(client); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (this *FileUpdateTransaction) build() *services.TransactionBody {
 	body := &services.FileUpdateTransactionBody{
-		Memo: &wrapperspb.StringValue{Value: transaction.memo},
+		Memo: &wrapperspb.StringValue{Value: this.memo},
 	}
-	if transaction.fileID != nil {
-		body.FileID = transaction.fileID._ToProtobuf()
-	}
-
-	if transaction.expirationTime != nil {
-		body.ExpirationTime = _TimeToProtobuf(*transaction.expirationTime)
+	if this.fileID != nil {
+		body.FileID = this.fileID._ToProtobuf()
 	}
 
-	if transaction.keys != nil {
-		body.Keys = transaction.keys._ToProtoKeyList()
+	if this.expirationTime != nil {
+		body.ExpirationTime = _TimeToProtobuf(*this.expirationTime)
 	}
 
-	if transaction.contents != nil {
-		body.Contents = transaction.contents
+	if this.keys != nil {
+		body.Keys = this.keys._ToProtoKeyList()
+	}
+
+	if this.contents != nil {
+		body.Contents = this.contents
+	}
+
+	return &services.TransactionBody{
+		TransactionFee:           this.transactionFee,
+		Memo:                     this.transaction.memo,
+		TransactionValidDuration: _DurationToProtobuf(this.GetTransactionValidDuration()),
+		TransactionID:            this.transactionID._ToProtobuf(),
+		Data: &services.TransactionBody_FileUpdate{
+			FileUpdate: body,
+		},
+	}
+}
+
+func (this *FileUpdateTransaction) buildProtoBody() (*services.SchedulableTransactionBody, error) {
+	body := &services.FileUpdateTransactionBody{
+		Memo: &wrapperspb.StringValue{Value: this.memo},
+	}
+	if this.fileID != nil {
+		body.FileID = this.fileID._ToProtobuf()
+	}
+
+	if this.expirationTime != nil {
+		body.ExpirationTime = _TimeToProtobuf(*this.expirationTime)
+	}
+
+	if this.keys != nil {
+		body.Keys = this.keys._ToProtoKeyList()
+	}
+
+	if this.contents != nil {
+		body.Contents = this.contents
 	}
 
 	return &services.SchedulableTransactionBody{
-		TransactionFee: transaction.transactionFee,
-		Memo:           transaction.transaction.memo,
+		TransactionFee: this.transactionFee,
+		Memo:           this.transaction.memo,
 		Data: &services.SchedulableTransactionBody_FileUpdate{
 			FileUpdate: body,
 		},
 	}, nil
 }
 
-func _FileUpdateTransactionGetMethod(request interface{}, channel *_Channel) _Method {
+func (this *FileUpdateTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetFile().UpdateFile,
 	}
-}
-
-func (transaction *FileUpdateTransaction) IsFrozen() bool {
-	return transaction._IsFrozen()
-}
-
-// Sign uses the provided privateKey to sign the transaction.
-func (transaction *FileUpdateTransaction) Sign(
-	privateKey PrivateKey,
-) *FileUpdateTransaction {
-	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
-}
-
-// SignWithOperator signs the transaction with client's operator privateKey.
-func (transaction *FileUpdateTransaction) SignWithOperator(
-	client *Client,
-) (*FileUpdateTransaction, error) {
-	// If the transaction is not signed by the _Operator, we need
-	// to sign the transaction with the _Operator
-
-	if client == nil {
-		return nil, errNoClientProvided
-	} else if client.operator == nil {
-		return nil, errClientOperatorSigning
-	}
-
-	if !transaction.IsFrozen() {
-		_, err := transaction.FreezeWith(client)
-		if err != nil {
-			return transaction, err
-		}
-	}
-	return transaction.SignWith(client.operator.publicKey, client.operator.signer), nil
-}
-
-// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
-// with the publicKey as the map key.
-func (transaction *FileUpdateTransaction) SignWith(
-	publicKey PublicKey,
-	signer TransactionSigner,
-) *FileUpdateTransaction {
-	if !transaction._KeyAlreadySigned(publicKey) {
-		transaction._SignWith(publicKey, signer)
-	}
-
-	return transaction
-}
-
-// Execute executes the transaction with the provided client
-func (transaction *FileUpdateTransaction) Execute(
-	client *Client,
-) (TransactionResponse, error) {
-	if client == nil {
-		return TransactionResponse{}, errNoClientProvided
-	}
-
-	if !transaction.IsFrozen() {
-		_, err := transaction.FreezeWith(client)
-		if err != nil {
-			return TransactionResponse{}, err
-		}
-	}
-
-	if transaction.freezeError != nil {
-		return TransactionResponse{}, transaction.freezeError
-	}
-
-	transactionID := transaction.transactionIDs._GetCurrent().(TransactionID)
-
-	if !client.GetOperatorAccountID()._IsZero() && client.GetOperatorAccountID()._Equals(*transactionID.AccountID) {
-		transaction.SignWith(
-			client.GetOperatorPublicKey(),
-			client.operator.signer,
-		)
-	}
-
-	resp, err := _Execute(
-		client,
-		&transaction.transaction,
-		_TransactionShouldRetry,
-		_TransactionMakeRequest,
-		_TransactionAdvanceRequest,
-		_TransactionGetNodeAccountID,
-		_FileUpdateTransactionGetMethod,
-		_TransactionMapStatusError,
-		_TransactionMapResponse,
-		transaction._GetLogID(),
-		transaction.grpcDeadline,
-		transaction.maxBackoff,
-		transaction.minBackoff,
-		transaction.maxRetry,
-	)
-
-	if err != nil {
-		return TransactionResponse{
-			TransactionID:  transaction.GetTransactionID(),
-			NodeID:         resp.(TransactionResponse).NodeID,
-			ValidateStatus: true,
-		}, err
-	}
-
-	return TransactionResponse{
-		TransactionID:  transaction.GetTransactionID(),
-		NodeID:         resp.(TransactionResponse).NodeID,
-		Hash:           resp.(TransactionResponse).Hash,
-		ValidateStatus: true,
-	}, nil
-}
-
-func (transaction *FileUpdateTransaction) Freeze() (*FileUpdateTransaction, error) {
-	return transaction.FreezeWith(nil)
-}
-
-func (transaction *FileUpdateTransaction) FreezeWith(client *Client) (*FileUpdateTransaction, error) {
-	if transaction.IsFrozen() {
-		return transaction, nil
-	}
-	transaction._InitFee(client)
-	err := transaction._ValidateNetworkOnIDs(client)
-	if err != nil {
-		return &FileUpdateTransaction{}, err
-	}
-	if err := transaction._InitTransactionID(client); err != nil {
-		return transaction, err
-	}
-	body := transaction._Build()
-
-	return transaction, _TransactionFreezeWith(&transaction.transaction, client, body)
-}
-
-// GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
-func (transaction *FileUpdateTransaction) GetMaxTransactionFee() Hbar {
-	return transaction.transaction.GetMaxTransactionFee()
-}
-
-// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
-func (transaction *FileUpdateTransaction) SetMaxTransactionFee(fee Hbar) *FileUpdateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetMaxTransactionFee(fee)
-	return transaction
-}
-
-// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
-func (transaction *FileUpdateTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *FileUpdateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetRegenerateTransactionID(regenerateTransactionID)
-	return transaction
-}
-
-// GetRegenerateTransactionID returns true if transaction ID regeneration is enabled.
-func (transaction *FileUpdateTransaction) GetRegenerateTransactionID() bool {
-	return transaction.transaction.GetRegenerateTransactionID()
-}
-
-func (transaction *FileUpdateTransaction) GetTransactionMemo() string {
-	return transaction.transaction.GetTransactionMemo()
-}
-
-// SetTransactionMemo sets the memo for this FileUpdateTransaction.
-func (transaction *FileUpdateTransaction) SetTransactionMemo(memo string) *FileUpdateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetTransactionMemo(memo)
-	return transaction
-}
-
-// GetTransactionValidDuration returns the duration that this transaction is valid for.
-func (transaction *FileUpdateTransaction) GetTransactionValidDuration() time.Duration {
-	return transaction.transaction.GetTransactionValidDuration()
-}
-
-// SetTransactionValidDuration sets the valid duration for this FileUpdateTransaction.
-func (transaction *FileUpdateTransaction) SetTransactionValidDuration(duration time.Duration) *FileUpdateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetTransactionValidDuration(duration)
-	return transaction
-}
-
-// GetTransactionID gets the TransactionID for this	FileUpdateTransaction.
-func (transaction *FileUpdateTransaction) GetTransactionID() TransactionID {
-	return transaction.transaction.GetTransactionID()
-}
-
-// SetTransactionID sets the TransactionID for this FileUpdateTransaction.
-func (transaction *FileUpdateTransaction) SetTransactionID(transactionID TransactionID) *FileUpdateTransaction {
-	transaction._RequireNotFrozen()
-
-	transaction.transaction.SetTransactionID(transactionID)
-	return transaction
-}
-
-// SetNodeAccountID sets the _Node AccountID for this FileUpdateTransaction.
-func (transaction *FileUpdateTransaction) SetNodeAccountIDs(nodeID []AccountID) *FileUpdateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetNodeAccountIDs(nodeID)
-	return transaction
-}
-
-// SetMaxRetry sets the max number of errors before execution will fail.
-func (transaction *FileUpdateTransaction) SetMaxRetry(count int) *FileUpdateTransaction {
-	transaction.transaction.SetMaxRetry(count)
-	return transaction
-}
-
-// AddSignature adds a signature to the transaction.
-func (transaction *FileUpdateTransaction) AddSignature(publicKey PublicKey, signature []byte) *FileUpdateTransaction {
-	transaction._RequireOneNodeAccountID()
-
-	if transaction._KeyAlreadySigned(publicKey) {
-		return transaction
-	}
-
-	if transaction.signedTransactions._Length() == 0 {
-		return transaction
-	}
-
-	transaction.transactions = _NewLockableSlice()
-	transaction.publicKeys = append(transaction.publicKeys, publicKey)
-	transaction.transactionSigners = append(transaction.transactionSigners, nil)
-	transaction.transactionIDs.locked = true
-
-	for index := 0; index < transaction.signedTransactions._Length(); index++ {
-		var temp *services.SignedTransaction
-		switch t := transaction.signedTransactions._Get(index).(type) { //nolint
-		case *services.SignedTransaction:
-			temp = t
-		}
-		temp.SigMap.SigPair = append(
-			temp.SigMap.SigPair,
-			publicKey._ToSignaturePairProtobuf(signature),
-		)
-		transaction.signedTransactions._Set(index, temp)
-	}
-
-	return transaction
-}
-
-// SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (transaction *FileUpdateTransaction) SetMaxBackoff(max time.Duration) *FileUpdateTransaction {
-	if max.Nanoseconds() < 0 {
-		panic("maxBackoff must be a positive duration")
-	} else if max.Nanoseconds() < transaction.minBackoff.Nanoseconds() {
-		panic("maxBackoff must be greater than or equal to minBackoff")
-	}
-	transaction.maxBackoff = &max
-	return transaction
-}
-
-// GetMaxBackoff returns the maximum amount of time to wait between retries.
-func (transaction *FileUpdateTransaction) GetMaxBackoff() time.Duration {
-	if transaction.maxBackoff != nil {
-		return *transaction.maxBackoff
-	}
-
-	return 8 * time.Second
-}
-
-// SetMinBackoff sets the minimum amount of time to wait between retries.
-func (transaction *FileUpdateTransaction) SetMinBackoff(min time.Duration) *FileUpdateTransaction {
-	if min.Nanoseconds() < 0 {
-		panic("minBackoff must be a positive duration")
-	} else if transaction.maxBackoff.Nanoseconds() < min.Nanoseconds() {
-		panic("minBackoff must be less than or equal to maxBackoff")
-	}
-	transaction.minBackoff = &min
-	return transaction
-}
-
-// GetMinBackoff returns the minimum amount of time to wait between retries.
-func (transaction *FileUpdateTransaction) GetMinBackoff() time.Duration {
-	if transaction.minBackoff != nil {
-		return *transaction.minBackoff
-	}
-
-	return 250 * time.Millisecond
-}
-
-func (transaction *FileUpdateTransaction) _GetLogID() string {
-	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
-	return fmt.Sprintf("FileUpdateTransaction:%d", timestamp.UnixNano())
-}
-
-func (transaction *FileUpdateTransaction) SetLogLevel(level LogLevel) *FileUpdateTransaction {
-	transaction.transaction.SetLogLevel(level)
-	return transaction
 }
