@@ -41,18 +41,18 @@ type EthereumTransaction struct {
 // NewEthereumTransaction creates a EthereumTransaction transaction which can be used to construct and execute
 // a Ethereum transaction.
 func NewEthereumTransaction() *EthereumTransaction {
-	transaction := EthereumTransaction{
+	this := EthereumTransaction{
 		transaction: _NewTransaction(),
 	}
+	this.e = &this
+	this._SetDefaultMaxTransactionFee(NewHbar(2))
 
-	transaction._SetDefaultMaxTransactionFee(NewHbar(2))
-
-	return &transaction
+	return &this
 }
 
-func _EthereumTransactionFromProtobuf(transaction transaction, pb *services.TransactionBody) *EthereumTransaction {
+func _EthereumTransactionFromProtobuf(this transaction, pb *services.TransactionBody) *EthereumTransaction {
 	return &EthereumTransaction{
-		transaction:   transaction,
+		transaction:   this,
 		ethereumData:  pb.GetEthereumTransaction().EthereumData,
 		callData:      _FileIDFromProtobuf(pb.GetEthereumTransaction().CallData),
 		MaxGasAllowed: pb.GetEthereumTransaction().MaxGasAllowance,
@@ -60,37 +60,37 @@ func _EthereumTransactionFromProtobuf(transaction transaction, pb *services.Tran
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (transaction *EthereumTransaction) SetGrpcDeadline(deadline *time.Duration) *EthereumTransaction {
-	transaction.transaction.SetGrpcDeadline(deadline)
-	return transaction
+func (this *EthereumTransaction) SetGrpcDeadline(deadline *time.Duration) *EthereumTransaction {
+	this.transaction.SetGrpcDeadline(deadline)
+	return this
 }
 
 // SetEthereumData
 // The raw Ethereum transaction (RLP encoded type 0, 1, and 2). Complete
 // unless the callData field is set.
-func (transaction *EthereumTransaction) SetEthereumData(data []byte) *EthereumTransaction {
-	transaction._RequireNotFrozen()
-	transaction.ethereumData = data
-	return transaction
+func (this *EthereumTransaction) SetEthereumData(data []byte) *EthereumTransaction {
+	this._RequireNotFrozen()
+	this.ethereumData = data
+	return this
 }
 
 // GetEthereumData returns the raw Ethereum transaction (RLP encoded type 0, 1, and 2).
-func (transaction *EthereumTransaction) GetEthereumData() []byte {
-	return transaction.ethereumData
+func (this *EthereumTransaction) GetEthereumData() []byte {
+	return this.ethereumData
 }
 
 // Deprecated
-func (transaction *EthereumTransaction) SetCallData(file FileID) *EthereumTransaction {
-	transaction._RequireNotFrozen()
-	transaction.callData = &file
-	return transaction
+func (this *EthereumTransaction) SetCallData(file FileID) *EthereumTransaction {
+	this._RequireNotFrozen()
+	this.callData = &file
+	return this
 }
 
 // SetCallDataFileID sets the file ID containing the call data.
-func (transaction *EthereumTransaction) SetCallDataFileID(file FileID) *EthereumTransaction {
-	transaction._RequireNotFrozen()
-	transaction.callData = &file
-	return transaction
+func (this *EthereumTransaction) SetCallDataFileID(file FileID) *EthereumTransaction {
+	this._RequireNotFrozen()
+	this.callData = &file
+	return this
 }
 
 // GetCallData
@@ -99,9 +99,9 @@ func (transaction *EthereumTransaction) SetCallDataFileID(file FileID) *Ethereum
 // the callData element as a zero length string with the original contents in
 // the referenced file at time of execution. The ethereumData will need to be
 // "rehydrated" with the callData for signature validation to pass.
-func (transaction *EthereumTransaction) GetCallData() FileID {
-	if transaction.callData != nil {
-		return *transaction.callData
+func (this *EthereumTransaction) GetCallData() FileID {
+	if this.callData != nil {
+		return *this.callData
 	}
 
 	return FileID{}
@@ -110,33 +110,177 @@ func (transaction *EthereumTransaction) GetCallData() FileID {
 // SetMaxGasAllowed
 // The maximum amount, in tinybars, that the payer of the hedera transaction
 // is willing to pay to complete the transaction.
-func (transaction *EthereumTransaction) SetMaxGasAllowed(gas int64) *EthereumTransaction {
-	transaction._RequireNotFrozen()
-	transaction.MaxGasAllowed = gas
-	return transaction
+func (this *EthereumTransaction) SetMaxGasAllowed(gas int64) *EthereumTransaction {
+	this._RequireNotFrozen()
+	this.MaxGasAllowed = gas
+	return this
 }
 
 // SetMaxGasAllowanceHbar sets the maximum amount, that the payer of the hedera transaction
 // is willing to pay to complete the transaction.
-func (transaction *EthereumTransaction) SetMaxGasAllowanceHbar(gas Hbar) *EthereumTransaction {
-	transaction._RequireNotFrozen()
-	transaction.MaxGasAllowed = gas.AsTinybar()
-	return transaction
+func (this *EthereumTransaction) SetMaxGasAllowanceHbar(gas Hbar) *EthereumTransaction {
+	this._RequireNotFrozen()
+	this.MaxGasAllowed = gas.AsTinybar()
+	return this
 }
 
 // GetMaxGasAllowed returns the maximum amount, that the payer of the hedera transaction
 // is willing to pay to complete the transaction.
-func (transaction *EthereumTransaction) GetMaxGasAllowed() int64 {
-	return transaction.MaxGasAllowed
+func (this *EthereumTransaction) GetMaxGasAllowed() int64 {
+	return this.MaxGasAllowed
 }
 
-func (transaction *EthereumTransaction) _ValidateNetworkOnIDs(client *Client) error {
+func (this *EthereumTransaction) IsFrozen() bool {
+	return this._IsFrozen()
+}
+
+// Sign uses the provided privateKey to sign the transaction.
+func (this *EthereumTransaction) Sign(
+	privateKey PrivateKey,
+) *EthereumTransaction {
+	this.transaction.Sign(privateKey)
+	return this
+}
+
+// SignWithOperator signs the transaction with client's operator privateKey.
+func (this *EthereumTransaction) SignWithOperator(
+	client *Client,
+) (*EthereumTransaction, error) {
+	// If the transaction is not signed by the _Operator, we need
+	// to sign the transaction with the _Operator
+	_,err := this.transaction.SignWithOperator(client)
+	return this, err
+}
+
+// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// with the publicKey as the map key.
+func (this *EthereumTransaction) SignWith(
+	publicKey PublicKey,
+	signer TransactionSigner,
+) *EthereumTransaction {
+	this.transaction.SignWith(publicKey, signer)
+	return this
+}
+
+func (this *EthereumTransaction) Freeze() (*EthereumTransaction, error) {
+	_,err := this.transaction.Freeze()
+	return this, err
+}
+
+func (this *EthereumTransaction) FreezeWith(client *Client) (*EthereumTransaction, error) {
+	_, err := this.transaction.FreezeWith(client)
+	return this, err
+}
+
+// GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
+func (this *EthereumTransaction) GetMaxTransactionFee() Hbar {
+	return this.transaction.GetMaxTransactionFee()
+}
+
+// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
+func (this *EthereumTransaction) SetMaxTransactionFee(fee Hbar) *EthereumTransaction {
+	this._RequireNotFrozen()
+	this.transaction.SetMaxTransactionFee(fee)
+	return this
+}
+
+// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
+func (this *EthereumTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *EthereumTransaction {
+	this._RequireNotFrozen()
+	this.transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	return this
+}
+
+// GetRegenerateTransactionID returns true if transaction ID regeneration is enabled.
+func (this *EthereumTransaction) GetRegenerateTransactionID() bool {
+	return this.transaction.GetRegenerateTransactionID()
+}
+
+// GetTransactionMemo returns the memo for this EthereumTransaction.
+func (this *EthereumTransaction) GetTransactionMemo() string {
+	return this.transaction.GetTransactionMemo()
+}
+
+// SetTransactionMemo sets the memo for this EthereumTransaction.
+func (this *EthereumTransaction) SetTransactionMemo(memo string) *EthereumTransaction {
+	this._RequireNotFrozen()
+	this.transaction.SetTransactionMemo(memo)
+	return this
+}
+
+// GetTransactionValidDuration returns the duration that this transaction is valid for.
+func (this *EthereumTransaction) GetTransactionValidDuration() time.Duration {
+	return this.transaction.GetTransactionValidDuration()
+}
+
+// SetTransactionValidDuration sets the valid duration for this EthereumTransaction.
+func (this *EthereumTransaction) SetTransactionValidDuration(duration time.Duration) *EthereumTransaction {
+	this._RequireNotFrozen()
+	this.transaction.SetTransactionValidDuration(duration)
+	return this
+}
+
+// GetTransactionID gets the TransactionID for this	EthereumTransaction.
+func (this *EthereumTransaction) GetTransactionID() TransactionID {
+	return this.transaction.GetTransactionID()
+}
+
+// SetTransactionID sets the TransactionID for this EthereumTransaction.
+func (this *EthereumTransaction) SetTransactionID(transactionID TransactionID) *EthereumTransaction {
+	this._RequireNotFrozen()
+
+	this.transaction.SetTransactionID(transactionID)
+	return this
+}
+
+// SetNodeAccountIDs sets the _Node AccountID for this EthereumTransaction.
+func (this *EthereumTransaction) SetNodeAccountIDs(nodeID []AccountID) *EthereumTransaction {
+	this._RequireNotFrozen()
+	this.transaction.SetNodeAccountIDs(nodeID)
+	return this
+}
+
+// SetMaxRetry sets the max number of errors before execution will fail.
+func (this *EthereumTransaction) SetMaxRetry(count int) *EthereumTransaction {
+	this.transaction.SetMaxRetry(count)
+	return this
+}
+
+// AddSignature adds a signature to the transaction.
+func (this *EthereumTransaction) AddSignature(publicKey PublicKey, signature []byte) *EthereumTransaction {
+	this.transaction.AddSignature(publicKey, signature)
+	return this
+}
+
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
+func (this *EthereumTransaction) SetMaxBackoff(max time.Duration) *EthereumTransaction {
+	this.transaction.SetMaxBackoff(max)
+	return this
+}
+// SetMinBackoff sets the minimum amount of time to wait between retries.
+func (this *EthereumTransaction) SetMinBackoff(min time.Duration) *EthereumTransaction {
+	this.transaction.SetMinBackoff(min)
+	return this
+}
+
+func (this *EthereumTransaction) _GetLogID() string {
+	timestamp := this.transactionIDs._GetCurrent().(TransactionID).ValidStart
+	return fmt.Sprintf("EthereumTransaction:%d", timestamp.UnixNano())
+}
+
+// ----------- overriden functions ----------------
+
+func (this *EthereumTransaction) getName() string {
+	return "EthereumTransaction"
+}
+func (this *EthereumTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
 
-	if transaction.callData != nil {
-		if err := transaction.callData.ValidateChecksum(client); err != nil {
+	if this.callData != nil {
+		if err := this.callData.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}
@@ -144,318 +288,33 @@ func (transaction *EthereumTransaction) _ValidateNetworkOnIDs(client *Client) er
 	return nil
 }
 
-func (transaction *EthereumTransaction) _Build() *services.TransactionBody {
+func (this *EthereumTransaction) build() *services.TransactionBody {
 	body := &services.EthereumTransactionBody{
-		EthereumData:    transaction.ethereumData,
-		MaxGasAllowance: transaction.MaxGasAllowed,
+		EthereumData:    this.ethereumData,
+		MaxGasAllowance: this.MaxGasAllowed,
 	}
 
-	if transaction.callData != nil {
-		body.CallData = transaction.callData._ToProtobuf()
+	if this.callData != nil {
+		body.CallData = this.callData._ToProtobuf()
 	}
 
 	return &services.TransactionBody{
-		TransactionID:            transaction.transactionID._ToProtobuf(),
-		TransactionFee:           transaction.transactionFee,
-		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
-		Memo:                     transaction.transaction.memo,
+		TransactionID:            this.transactionID._ToProtobuf(),
+		TransactionFee:           this.transactionFee,
+		TransactionValidDuration: _DurationToProtobuf(this.GetTransactionValidDuration()),
+		Memo:                     this.transaction.memo,
 		Data: &services.TransactionBody_EthereumTransaction{
 			EthereumTransaction: body,
 		},
 	}
 }
 
-func (transaction *EthereumTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (this *EthereumTransaction) buildProtoBody() (*services.SchedulableTransactionBody, error) {
 	return nil, errors.New("cannot schedule `EthereumTransaction")
 }
 
-func _EthereumTransactionGetMethod(request interface{}, channel *_Channel) _Method {
+func (this *EthereumTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetContract().CallEthereum,
 	}
-}
-
-func (transaction *EthereumTransaction) IsFrozen() bool {
-	return transaction._IsFrozen()
-}
-
-// Sign uses the provided privateKey to sign the transaction.
-func (transaction *EthereumTransaction) Sign(
-	privateKey PrivateKey,
-) *EthereumTransaction {
-	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
-}
-
-// SignWithOperator signs the transaction with client's operator privateKey.
-func (transaction *EthereumTransaction) SignWithOperator(
-	client *Client,
-) (*EthereumTransaction, error) {
-	// If the transaction is not signed by the _Operator, we need
-	// to sign the transaction with the _Operator
-
-	if client == nil {
-		return nil, errNoClientProvided
-	} else if client.operator == nil {
-		return nil, errClientOperatorSigning
-	}
-
-	if !transaction.IsFrozen() {
-		_, err := transaction.FreezeWith(client)
-		if err != nil {
-			return transaction, err
-		}
-	}
-	return transaction.SignWith(client.operator.publicKey, client.operator.signer), nil
-}
-
-// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
-// with the publicKey as the map key.
-func (transaction *EthereumTransaction) SignWith(
-	publicKey PublicKey,
-	signer TransactionSigner,
-) *EthereumTransaction {
-	if !transaction._KeyAlreadySigned(publicKey) {
-		transaction._SignWith(publicKey, signer)
-	}
-
-	return transaction
-}
-
-// Execute executes the transaction with the provided client
-func (transaction *EthereumTransaction) Execute(
-	client *Client,
-) (TransactionResponse, error) {
-	if client == nil {
-		return TransactionResponse{}, errNoClientProvided
-	}
-
-	if transaction.freezeError != nil {
-		return TransactionResponse{}, transaction.freezeError
-	}
-
-	if !transaction.IsFrozen() {
-		_, err := transaction.FreezeWith(client)
-		if err != nil {
-			return TransactionResponse{}, err
-		}
-	}
-
-	transactionID := transaction.transactionIDs._GetCurrent().(TransactionID)
-
-	if !client.GetOperatorAccountID()._IsZero() && client.GetOperatorAccountID()._Equals(*transactionID.AccountID) {
-		transaction.SignWith(
-			client.GetOperatorPublicKey(),
-			client.operator.signer,
-		)
-	}
-
-	if transaction.grpcDeadline == nil {
-		transaction.grpcDeadline = client.requestTimeout
-	}
-
-	resp, err := _Execute(
-		client,
-		&transaction.transaction,
-		_TransactionShouldRetry,
-		_TransactionMakeRequest,
-		_TransactionAdvanceRequest,
-		_TransactionGetNodeAccountID,
-		_EthereumTransactionGetMethod,
-		_TransactionMapStatusError,
-		_TransactionMapResponse,
-		transaction._GetLogID(),
-		transaction.grpcDeadline,
-		transaction.maxBackoff,
-		transaction.minBackoff,
-		transaction.maxRetry,
-	)
-
-	if err != nil {
-		return TransactionResponse{
-			TransactionID:  transaction.GetTransactionID(),
-			NodeID:         resp.(TransactionResponse).NodeID,
-			ValidateStatus: true,
-		}, err
-	}
-
-	return TransactionResponse{
-		TransactionID:  transaction.GetTransactionID(),
-		NodeID:         resp.(TransactionResponse).NodeID,
-		Hash:           resp.(TransactionResponse).Hash,
-		ValidateStatus: true,
-	}, nil
-}
-
-func (transaction *EthereumTransaction) Freeze() (*EthereumTransaction, error) {
-	return transaction.FreezeWith(nil)
-}
-
-func (transaction *EthereumTransaction) FreezeWith(client *Client) (*EthereumTransaction, error) {
-	if transaction.IsFrozen() {
-		return transaction, nil
-	}
-	transaction._InitFee(client)
-	if err := transaction._InitTransactionID(client); err != nil {
-		return transaction, err
-	}
-	err := transaction._ValidateNetworkOnIDs(client)
-	body := transaction._Build()
-	if err != nil {
-		return &EthereumTransaction{}, err
-	}
-
-	return transaction, _TransactionFreezeWith(&transaction.transaction, client, body)
-}
-
-// GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
-func (transaction *EthereumTransaction) GetMaxTransactionFee() Hbar {
-	return transaction.transaction.GetMaxTransactionFee()
-}
-
-// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
-func (transaction *EthereumTransaction) SetMaxTransactionFee(fee Hbar) *EthereumTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetMaxTransactionFee(fee)
-	return transaction
-}
-
-// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
-func (transaction *EthereumTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *EthereumTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetRegenerateTransactionID(regenerateTransactionID)
-	return transaction
-}
-
-// GetRegenerateTransactionID returns true if transaction ID regeneration is enabled.
-func (transaction *EthereumTransaction) GetRegenerateTransactionID() bool {
-	return transaction.transaction.GetRegenerateTransactionID()
-}
-
-// GetTransactionMemo returns the memo for this EthereumTransaction.
-func (transaction *EthereumTransaction) GetTransactionMemo() string {
-	return transaction.transaction.GetTransactionMemo()
-}
-
-// SetTransactionMemo sets the memo for this EthereumTransaction.
-func (transaction *EthereumTransaction) SetTransactionMemo(memo string) *EthereumTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetTransactionMemo(memo)
-	return transaction
-}
-
-// GetTransactionValidDuration returns the duration that this transaction is valid for.
-func (transaction *EthereumTransaction) GetTransactionValidDuration() time.Duration {
-	return transaction.transaction.GetTransactionValidDuration()
-}
-
-// SetTransactionValidDuration sets the valid duration for this EthereumTransaction.
-func (transaction *EthereumTransaction) SetTransactionValidDuration(duration time.Duration) *EthereumTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetTransactionValidDuration(duration)
-	return transaction
-}
-
-// GetTransactionID gets the TransactionID for this	EthereumTransaction.
-func (transaction *EthereumTransaction) GetTransactionID() TransactionID {
-	return transaction.transaction.GetTransactionID()
-}
-
-// SetTransactionID sets the TransactionID for this EthereumTransaction.
-func (transaction *EthereumTransaction) SetTransactionID(transactionID TransactionID) *EthereumTransaction {
-	transaction._RequireNotFrozen()
-
-	transaction.transaction.SetTransactionID(transactionID)
-	return transaction
-}
-
-// SetNodeAccountIDs sets the _Node AccountID for this EthereumTransaction.
-func (transaction *EthereumTransaction) SetNodeAccountIDs(nodeID []AccountID) *EthereumTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetNodeAccountIDs(nodeID)
-	return transaction
-}
-
-// SetMaxRetry sets the max number of errors before execution will fail.
-func (transaction *EthereumTransaction) SetMaxRetry(count int) *EthereumTransaction {
-	transaction.transaction.SetMaxRetry(count)
-	return transaction
-}
-
-// AddSignature adds a signature to the transaction.
-func (transaction *EthereumTransaction) AddSignature(publicKey PublicKey, signature []byte) *EthereumTransaction {
-	transaction._RequireOneNodeAccountID()
-
-	if transaction._KeyAlreadySigned(publicKey) {
-		return transaction
-	}
-
-	if transaction.signedTransactions._Length() == 0 {
-		return transaction
-	}
-
-	transaction.transactions = _NewLockableSlice()
-	transaction.publicKeys = append(transaction.publicKeys, publicKey)
-	transaction.transactionSigners = append(transaction.transactionSigners, nil)
-	transaction.transactionIDs.locked = true
-
-	for index := 0; index < transaction.signedTransactions._Length(); index++ {
-		var temp *services.SignedTransaction
-		switch t := transaction.signedTransactions._Get(index).(type) { //nolint
-		case *services.SignedTransaction:
-			temp = t
-		}
-		temp.SigMap.SigPair = append(
-			temp.SigMap.SigPair,
-			publicKey._ToSignaturePairProtobuf(signature),
-		)
-		transaction.signedTransactions._Set(index, temp)
-	}
-
-	return transaction
-}
-
-// SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (transaction *EthereumTransaction) SetMaxBackoff(max time.Duration) *EthereumTransaction {
-	if max.Nanoseconds() < 0 {
-		panic("maxBackoff must be a positive duration")
-	} else if max.Nanoseconds() < transaction.minBackoff.Nanoseconds() {
-		panic("maxBackoff must be greater than or equal to minBackoff")
-	}
-	transaction.maxBackoff = &max
-	return transaction
-}
-
-// GetMaxBackoff returns the maximum amount of time to wait between retries.
-func (transaction *EthereumTransaction) GetMaxBackoff() time.Duration {
-	if transaction.maxBackoff != nil {
-		return *transaction.maxBackoff
-	}
-
-	return 8 * time.Second
-}
-
-// SetMinBackoff sets the minimum amount of time to wait between retries.
-func (transaction *EthereumTransaction) SetMinBackoff(min time.Duration) *EthereumTransaction {
-	if min.Nanoseconds() < 0 {
-		panic("minBackoff must be a positive duration")
-	} else if transaction.maxBackoff.Nanoseconds() < min.Nanoseconds() {
-		panic("minBackoff must be less than or equal to maxBackoff")
-	}
-	transaction.minBackoff = &min
-	return transaction
-}
-
-// GetMinBackoff returns the minimum amount of time to wait between retries.
-func (transaction *EthereumTransaction) GetMinBackoff() time.Duration {
-	if transaction.minBackoff != nil {
-		return *transaction.minBackoff
-	}
-
-	return 250 * time.Millisecond
-}
-
-func (transaction *EthereumTransaction) _GetLogID() string {
-	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
-	return fmt.Sprintf("EthereumTransaction:%d", timestamp.UnixNano())
 }
