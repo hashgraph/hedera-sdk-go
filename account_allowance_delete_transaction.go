@@ -45,13 +45,13 @@ type AccountAllowanceDeleteTransaction struct {
 // listed as wiping an allowance must sign the transaction. Hbar and fungible token allowances
 // can be removed by setting the amount to zero in CryptoApproveAllowance.
 func NewAccountAllowanceDeleteTransaction() *AccountAllowanceDeleteTransaction {
-	transaction := AccountAllowanceDeleteTransaction{
+	this := AccountAllowanceDeleteTransaction{
 		transaction: _NewTransaction(),
 	}
+	this.e = &this
+	this._SetDefaultMaxTransactionFee(NewHbar(2))
 
-	transaction._SetDefaultMaxTransactionFee(NewHbar(2))
-
-	return &transaction
+	return &this
 }
 
 func _AccountAllowanceDeleteTransactionFromProtobuf(transaction transaction, pb *services.TransactionBody) *AccountAllowanceDeleteTransaction {
@@ -69,43 +69,43 @@ func _AccountAllowanceDeleteTransactionFromProtobuf(transaction transaction, pb 
 }
 
 // Deprecated
-func (transaction *AccountAllowanceDeleteTransaction) DeleteAllHbarAllowances(ownerAccountID *AccountID) *AccountAllowanceDeleteTransaction {
-	transaction._RequireNotFrozen()
-	transaction.hbarWipe = append(transaction.hbarWipe, &HbarAllowance{
+func (this *AccountAllowanceDeleteTransaction) DeleteAllHbarAllowances(ownerAccountID *AccountID) *AccountAllowanceDeleteTransaction {
+	this._RequireNotFrozen()
+	this.hbarWipe = append(this.hbarWipe, &HbarAllowance{
 		OwnerAccountID: ownerAccountID,
 	})
 
-	return transaction
+	return this
 }
 
 // Deprecated
-func (transaction *AccountAllowanceDeleteTransaction) GetAllHbarDeleteAllowances() []*HbarAllowance {
-	return transaction.hbarWipe
+func (this *AccountAllowanceDeleteTransaction) GetAllHbarDeleteAllowances() []*HbarAllowance {
+	return this.hbarWipe
 }
 
 // Deprecated
-func (transaction *AccountAllowanceDeleteTransaction) DeleteAllTokenAllowances(tokenID TokenID, ownerAccountID *AccountID) *AccountAllowanceDeleteTransaction {
-	transaction._RequireNotFrozen()
+func (this *AccountAllowanceDeleteTransaction) DeleteAllTokenAllowances(tokenID TokenID, ownerAccountID *AccountID) *AccountAllowanceDeleteTransaction {
+	this._RequireNotFrozen()
 	tokenApproval := TokenAllowance{
 		TokenID:        &tokenID,
 		OwnerAccountID: ownerAccountID,
 	}
 
-	transaction.tokenWipe = append(transaction.tokenWipe, &tokenApproval)
-	return transaction
+	this.tokenWipe = append(this.tokenWipe, &tokenApproval)
+	return this
 }
 
 // Deprecated
-func (transaction *AccountAllowanceDeleteTransaction) GetAllTokenDeleteAllowances() []*TokenAllowance {
-	return transaction.tokenWipe
+func (this *AccountAllowanceDeleteTransaction) GetAllTokenDeleteAllowances() []*TokenAllowance {
+	return this.tokenWipe
 }
 
 // DeleteAllTokenNftAllowances
 // The non-fungible token allowance/allowances to remove.
-func (transaction *AccountAllowanceDeleteTransaction) DeleteAllTokenNftAllowances(nftID NftID, ownerAccountID *AccountID) *AccountAllowanceDeleteTransaction {
-	transaction._RequireNotFrozen()
+func (this *AccountAllowanceDeleteTransaction) DeleteAllTokenNftAllowances(nftID NftID, ownerAccountID *AccountID) *AccountAllowanceDeleteTransaction {
+	this._RequireNotFrozen()
 
-	for _, t := range transaction.nftWipe {
+	for _, t := range this.nftWipe {
 		if t.TokenID.String() == nftID.TokenID.String() {
 			if t.OwnerAccountID.String() == ownerAccountID.String() {
 				b := false
@@ -117,32 +117,187 @@ func (transaction *AccountAllowanceDeleteTransaction) DeleteAllTokenNftAllowance
 				if !b {
 					t.SerialNumbers = append(t.SerialNumbers, nftID.SerialNumber)
 				}
-				return transaction
+				return this
 			}
 		}
 	}
 
-	transaction.nftWipe = append(transaction.nftWipe, &TokenNftAllowance{
+	this.nftWipe = append(this.nftWipe, &TokenNftAllowance{
 		TokenID:        &nftID.TokenID,
 		OwnerAccountID: ownerAccountID,
 		SerialNumbers:  []int64{nftID.SerialNumber},
 		AllSerials:     false,
 	})
-	return transaction
+	return this
 }
 
 // GetAllTokenNftDeleteAllowances
 // Get the non-fungible token allowance/allowances that will be removed.
-func (transaction *AccountAllowanceDeleteTransaction) GetAllTokenNftDeleteAllowances() []*TokenNftAllowance {
-	return transaction.nftWipe
+func (this *AccountAllowanceDeleteTransaction) GetAllTokenNftDeleteAllowances() []*TokenNftAllowance {
+	return this.nftWipe
+}
+func (this *AccountAllowanceDeleteTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	this._RequireNotFrozen()
+
+	scheduled, err := this.buildScheduled()
+	if err != nil {
+		return nil, err
+	}
+
+	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *AccountAllowanceDeleteTransaction) _ValidateNetworkOnIDs(client *Client) error {
+func (this *AccountAllowanceDeleteTransaction) IsFrozen() bool {
+	return this._IsFrozen()
+}
+
+// Sign uses the provided privateKey to sign the transaction.
+func (this *AccountAllowanceDeleteTransaction) Sign(
+	privateKey PrivateKey,
+) *AccountAllowanceDeleteTransaction {
+	this.transaction.Sign(privateKey)
+	return this
+}
+
+// SignWithOperator signs the transaction with client's operator privateKey.
+func (this *AccountAllowanceDeleteTransaction) SignWithOperator(
+	client *Client,
+) (*AccountAllowanceDeleteTransaction, error) {
+	// If the transaction is not signed by the _Operator, we need
+	// to sign the transaction with the _Operator
+	_,err := this.transaction.SignWithOperator(client)
+	return this,err
+}
+
+// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// with the publicKey as the map key.
+func (this *AccountAllowanceDeleteTransaction) SignWith(
+	publicKey PublicKey,
+	signer TransactionSigner,
+) *AccountAllowanceDeleteTransaction {
+	this.transaction.SignWith(publicKey,signer);
+	return this
+}
+
+func (this *AccountAllowanceDeleteTransaction) Freeze() (*AccountAllowanceDeleteTransaction, error) {
+	_,err := this.transaction.Freeze()
+	return this,err
+}
+
+func (this *AccountAllowanceDeleteTransaction) FreezeWith(client *Client) (*AccountAllowanceDeleteTransaction, error) {
+	_,err := this.transaction.FreezeWith(client)
+	return this, err
+}
+
+// GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
+func (this *AccountAllowanceDeleteTransaction) GetMaxTransactionFee() Hbar {
+	return this.transaction.GetMaxTransactionFee()
+}
+
+// SetMaxTransactionFee sets the max transaction fee for this AccountAllowanceDeleteTransaction.
+func (this *AccountAllowanceDeleteTransaction) SetMaxTransactionFee(fee Hbar) *AccountAllowanceDeleteTransaction {
+	this._RequireNotFrozen()
+	this.transaction.SetMaxTransactionFee(fee)
+	return this
+}
+
+// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
+func (this *AccountAllowanceDeleteTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *AccountAllowanceDeleteTransaction {
+	this._RequireNotFrozen()
+	this.transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	return this
+}
+
+// GetRegenerateTransactionID returns true if transaction ID regeneration is enabled.
+func (this *AccountAllowanceDeleteTransaction) GetRegenerateTransactionID() bool {
+	return this.transaction.GetRegenerateTransactionID()
+}
+
+// GetTransactionMemo returns the memo for this AccountAllowanceDeleteTransaction.
+func (this *AccountAllowanceDeleteTransaction) GetTransactionMemo() string {
+	return this.transaction.GetTransactionMemo()
+}
+
+// SetTransactionMemo sets the memo for this AccountAllowanceDeleteTransaction.
+func (this *AccountAllowanceDeleteTransaction) SetTransactionMemo(memo string) *AccountAllowanceDeleteTransaction {
+	this._RequireNotFrozen()
+	this.transaction.SetTransactionMemo(memo)
+	return this
+}
+
+// GetTransactionValidDuration returns the duration that this transaction is valid for.
+func (transaction *AccountAllowanceDeleteTransaction) GetTransactionValidDuration() time.Duration {
+	return transaction.transaction.GetTransactionValidDuration()
+}
+
+// SetTransactionValidDuration sets the valid duration for this AccountAllowanceDeleteTransaction.
+func (this *AccountAllowanceDeleteTransaction) SetTransactionValidDuration(duration time.Duration) *AccountAllowanceDeleteTransaction {
+	this._RequireNotFrozen()
+	this.transaction.SetTransactionValidDuration(duration)
+	return this
+}
+
+// GetTransactionID returns the TransactionID for this AccountAllowanceDeleteTransaction.
+func (this *AccountAllowanceDeleteTransaction) GetTransactionID() TransactionID {
+	return this.transaction.GetTransactionID()
+}
+
+// SetTransactionID sets the TransactionID for this AccountAllowanceDeleteTransaction.
+func (this *AccountAllowanceDeleteTransaction) SetTransactionID(transactionID TransactionID) *AccountAllowanceDeleteTransaction {
+	this._RequireNotFrozen()
+
+	this.transaction.SetTransactionID(transactionID)
+	return this
+}
+
+// SetNodeAccountIDs sets the _Node AccountID for this AccountAllowanceDeleteTransaction.
+func (this *AccountAllowanceDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *AccountAllowanceDeleteTransaction {
+	this._RequireNotFrozen()
+	this.transaction.SetNodeAccountIDs(nodeID)
+	return this
+}
+
+// SetMaxRetry sets the max number of errors before execution will fail.
+func (this *AccountAllowanceDeleteTransaction) SetMaxRetry(count int) *AccountAllowanceDeleteTransaction {
+	this.transaction.SetMaxRetry(count)
+	return this
+}
+
+// AddSignature adds a signature to the transaction.
+func (this *AccountAllowanceDeleteTransaction) AddSignature(publicKey PublicKey, signature []byte) *AccountAllowanceDeleteTransaction {
+	this.transaction.AddSignature(publicKey, signature)
+	return this
+}
+
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
+func (this *AccountAllowanceDeleteTransaction) SetMaxBackoff(max time.Duration) *AccountAllowanceDeleteTransaction {
+	this.transaction.SetMaxBackoff(max)
+    return this
+}
+
+// SetMinBackoff sets the min back off for this AccountAllowanceDeleteTransaction.
+func (this *AccountAllowanceDeleteTransaction) SetMinBackoff(min time.Duration) *AccountAllowanceDeleteTransaction {
+	this.transaction.SetMinBackoff(min)
+	return this
+}
+
+func (transaction *AccountAllowanceDeleteTransaction) _GetLogID() string {
+	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
+	return fmt.Sprintf("AccountAllowanceDeleteTransaction:%d", timestamp.UnixNano())
+}
+
+// ----------- overriden functions ----------------
+func (this *AccountAllowanceDeleteTransaction) getName() string {
+	return "AccountAllowanceDeleteTransaction"
+}
+
+func (this *AccountAllowanceDeleteTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
 
-	for _, ap := range transaction.nftWipe {
+	for _, ap := range this.nftWipe {
 		if ap.TokenID != nil {
 			if err := ap.TokenID.ValidateChecksum(client); err != nil {
 				return err
@@ -159,18 +314,18 @@ func (transaction *AccountAllowanceDeleteTransaction) _ValidateNetworkOnIDs(clie
 	return nil
 }
 
-func (transaction *AccountAllowanceDeleteTransaction) _Build() *services.TransactionBody {
+func (this *AccountAllowanceDeleteTransaction) build() *services.TransactionBody {
 	nftWipe := make([]*services.NftRemoveAllowance, 0)
 
-	for _, ap := range transaction.nftWipe {
+	for _, ap := range this.nftWipe {
 		nftWipe = append(nftWipe, ap._ToWipeProtobuf())
 	}
 
 	return &services.TransactionBody{
-		TransactionID:            transaction.transactionID._ToProtobuf(),
-		TransactionFee:           transaction.transactionFee,
-		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
-		Memo:                     transaction.transaction.memo,
+		TransactionID:            this.transactionID._ToProtobuf(),
+		TransactionFee:           this.transactionFee,
+		TransactionValidDuration: _DurationToProtobuf(this.GetTransactionValidDuration()),
+		Memo:                     this.transaction.memo,
 		Data: &services.TransactionBody_CryptoDeleteAllowance{
 			CryptoDeleteAllowance: &services.CryptoDeleteAllowanceTransactionBody{
 				NftAllowances: nftWipe,
@@ -179,27 +334,16 @@ func (transaction *AccountAllowanceDeleteTransaction) _Build() *services.Transac
 	}
 }
 
-func (transaction *AccountAllowanceDeleteTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	transaction._RequireNotFrozen()
-
-	scheduled, err := transaction._ConstructScheduleProtobuf()
-	if err != nil {
-		return nil, err
-	}
-
-	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
-}
-
-func (transaction *AccountAllowanceDeleteTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (this *AccountAllowanceDeleteTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	nftWipe := make([]*services.NftRemoveAllowance, 0)
 
-	for _, ap := range transaction.nftWipe {
+	for _, ap := range this.nftWipe {
 		nftWipe = append(nftWipe, ap._ToWipeProtobuf())
 	}
 
 	return &services.SchedulableTransactionBody{
-		TransactionFee: transaction.transactionFee,
-		Memo:           transaction.transaction.memo,
+		TransactionFee: this.transactionFee,
+		Memo:           this.transaction.memo,
 		Data: &services.SchedulableTransactionBody_CryptoDeleteAllowance{
 			CryptoDeleteAllowance: &services.CryptoDeleteAllowanceTransactionBody{
 				NftAllowances: nftWipe,
@@ -208,289 +352,8 @@ func (transaction *AccountAllowanceDeleteTransaction) _ConstructScheduleProtobuf
 	}, nil
 }
 
-func _AccountDeleteAllowanceTransactionGetMethod(request interface{}, channel *_Channel) _Method {
+func (this *AccountAllowanceDeleteTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetCrypto().DeleteAllowances,
 	}
-}
-
-func (transaction *AccountAllowanceDeleteTransaction) IsFrozen() bool {
-	return transaction._IsFrozen()
-}
-
-// Sign uses the provided privateKey to sign the transaction.
-func (transaction *AccountAllowanceDeleteTransaction) Sign(
-	privateKey PrivateKey,
-) *AccountAllowanceDeleteTransaction {
-	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
-}
-
-// SignWithOperator signs the transaction with client's operator privateKey.
-func (transaction *AccountAllowanceDeleteTransaction) SignWithOperator(
-	client *Client,
-) (*AccountAllowanceDeleteTransaction, error) {
-	// If the transaction is not signed by the _Operator, we need
-	// to sign the transaction with the _Operator
-
-	if client == nil {
-		return nil, errNoClientProvided
-	} else if client.operator == nil {
-		return nil, errClientOperatorSigning
-	}
-
-	if !transaction.IsFrozen() {
-		_, err := transaction.FreezeWith(client)
-		if err != nil {
-			return transaction, err
-		}
-	}
-	return transaction.SignWith(client.operator.publicKey, client.operator.signer), nil
-}
-
-// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
-// with the publicKey as the map key.
-func (transaction *AccountAllowanceDeleteTransaction) SignWith(
-	publicKey PublicKey,
-	signer TransactionSigner,
-) *AccountAllowanceDeleteTransaction {
-	if !transaction._KeyAlreadySigned(publicKey) {
-		transaction._SignWith(publicKey, signer)
-	}
-
-	return transaction
-}
-
-// Execute executes the transaction with the provided client
-func (transaction *AccountAllowanceDeleteTransaction) Execute(
-	client *Client,
-) (TransactionResponse, error) {
-	if client == nil {
-		return TransactionResponse{}, errNoClientProvided
-	}
-
-	if transaction.freezeError != nil {
-		return TransactionResponse{}, transaction.freezeError
-	}
-
-	if !transaction.IsFrozen() {
-		_, err := transaction.FreezeWith(client)
-		if err != nil {
-			return TransactionResponse{}, err
-		}
-	}
-
-	transactionID := transaction.transactionIDs._GetCurrent().(TransactionID)
-
-	if !client.GetOperatorAccountID()._IsZero() && client.GetOperatorAccountID()._Equals(*transactionID.AccountID) {
-		transaction.SignWith(
-			client.GetOperatorPublicKey(),
-			client.operator.signer,
-		)
-	}
-
-	resp, err := _Execute(
-		client,
-		&transaction.transaction,
-		_TransactionShouldRetry,
-		_TransactionMakeRequest,
-		_TransactionAdvanceRequest,
-		_TransactionGetNodeAccountID,
-		_AccountDeleteAllowanceTransactionGetMethod,
-		_TransactionMapStatusError,
-		_TransactionMapResponse,
-		transaction._GetLogID(),
-		transaction.grpcDeadline,
-		transaction.maxBackoff,
-		transaction.minBackoff,
-		transaction.maxRetry,
-	)
-
-	if err != nil {
-		return TransactionResponse{
-			TransactionID:  transaction.GetTransactionID(),
-			NodeID:         resp.(TransactionResponse).NodeID,
-			ValidateStatus: true,
-		}, err
-	}
-
-	return TransactionResponse{
-		TransactionID:  transaction.GetTransactionID(),
-		NodeID:         resp.(TransactionResponse).NodeID,
-		Hash:           resp.(TransactionResponse).Hash,
-		ValidateStatus: true,
-	}, nil
-}
-
-func (transaction *AccountAllowanceDeleteTransaction) Freeze() (*AccountAllowanceDeleteTransaction, error) {
-	return transaction.FreezeWith(nil)
-}
-
-func (transaction *AccountAllowanceDeleteTransaction) FreezeWith(client *Client) (*AccountAllowanceDeleteTransaction, error) {
-	if transaction.IsFrozen() {
-		return transaction, nil
-	}
-	transaction._InitFee(client)
-	if err := transaction._InitTransactionID(client); err != nil {
-		return transaction, err
-	}
-	err := transaction._ValidateNetworkOnIDs(client)
-	body := transaction._Build()
-	if err != nil {
-		return &AccountAllowanceDeleteTransaction{}, err
-	}
-
-	return transaction, _TransactionFreezeWith(&transaction.transaction, client, body)
-}
-
-// GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
-func (transaction *AccountAllowanceDeleteTransaction) GetMaxTransactionFee() Hbar {
-	return transaction.transaction.GetMaxTransactionFee()
-}
-
-// SetMaxTransactionFee sets the max transaction fee for this AccountAllowanceDeleteTransaction.
-func (transaction *AccountAllowanceDeleteTransaction) SetMaxTransactionFee(fee Hbar) *AccountAllowanceDeleteTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetMaxTransactionFee(fee)
-	return transaction
-}
-
-// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
-func (transaction *AccountAllowanceDeleteTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *AccountAllowanceDeleteTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetRegenerateTransactionID(regenerateTransactionID)
-	return transaction
-}
-
-// GetRegenerateTransactionID returns true if transaction ID regeneration is enabled.
-func (transaction *AccountAllowanceDeleteTransaction) GetRegenerateTransactionID() bool {
-	return transaction.transaction.GetRegenerateTransactionID()
-}
-
-// GetTransactionMemo returns the memo for this AccountAllowanceDeleteTransaction.
-func (transaction *AccountAllowanceDeleteTransaction) GetTransactionMemo() string {
-	return transaction.transaction.GetTransactionMemo()
-}
-
-// SetTransactionMemo sets the memo for this AccountAllowanceDeleteTransaction.
-func (transaction *AccountAllowanceDeleteTransaction) SetTransactionMemo(memo string) *AccountAllowanceDeleteTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetTransactionMemo(memo)
-	return transaction
-}
-
-// GetTransactionValidDuration returns the duration that this transaction is valid for.
-func (transaction *AccountAllowanceDeleteTransaction) GetTransactionValidDuration() time.Duration {
-	return transaction.transaction.GetTransactionValidDuration()
-}
-
-// SetTransactionValidDuration sets the valid duration for this AccountAllowanceDeleteTransaction.
-func (transaction *AccountAllowanceDeleteTransaction) SetTransactionValidDuration(duration time.Duration) *AccountAllowanceDeleteTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetTransactionValidDuration(duration)
-	return transaction
-}
-
-// GetTransactionID returns the TransactionID for this AccountAllowanceDeleteTransaction.
-func (transaction *AccountAllowanceDeleteTransaction) GetTransactionID() TransactionID {
-	return transaction.transaction.GetTransactionID()
-}
-
-// SetTransactionID sets the TransactionID for this AccountAllowanceDeleteTransaction.
-func (transaction *AccountAllowanceDeleteTransaction) SetTransactionID(transactionID TransactionID) *AccountAllowanceDeleteTransaction {
-	transaction._RequireNotFrozen()
-
-	transaction.transaction.SetTransactionID(transactionID)
-	return transaction
-}
-
-// SetNodeAccountIDs sets the _Node AccountID for this AccountAllowanceDeleteTransaction.
-func (transaction *AccountAllowanceDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *AccountAllowanceDeleteTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetNodeAccountIDs(nodeID)
-	return transaction
-}
-
-// SetMaxRetry sets the max number of errors before execution will fail.
-func (transaction *AccountAllowanceDeleteTransaction) SetMaxRetry(count int) *AccountAllowanceDeleteTransaction {
-	transaction.transaction.SetMaxRetry(count)
-	return transaction
-}
-
-// AddSignature adds a signature to the transaction.
-func (transaction *AccountAllowanceDeleteTransaction) AddSignature(publicKey PublicKey, signature []byte) *AccountAllowanceDeleteTransaction {
-	transaction._RequireOneNodeAccountID()
-
-	if transaction._KeyAlreadySigned(publicKey) {
-		return transaction
-	}
-
-	if transaction.signedTransactions._Length() == 0 {
-		return transaction
-	}
-
-	transaction.transactions = _NewLockableSlice()
-	transaction.publicKeys = append(transaction.publicKeys, publicKey)
-	transaction.transactionSigners = append(transaction.transactionSigners, nil)
-	transaction.transactionIDs.locked = true
-
-	for index := 0; index < transaction.signedTransactions._Length(); index++ {
-		var temp *services.SignedTransaction
-		switch t := transaction.signedTransactions._Get(index).(type) { //nolint
-		case *services.SignedTransaction:
-			temp = t
-		}
-		temp.SigMap.SigPair = append(
-			temp.SigMap.SigPair,
-			publicKey._ToSignaturePairProtobuf(signature),
-		)
-		transaction.signedTransactions._Set(index, temp)
-	}
-
-	return transaction
-}
-
-// SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (transaction *AccountAllowanceDeleteTransaction) SetMaxBackoff(max time.Duration) *AccountAllowanceDeleteTransaction {
-	if max.Nanoseconds() < 0 {
-		panic("maxBackoff must be a positive duration")
-	} else if max.Nanoseconds() < transaction.minBackoff.Nanoseconds() {
-		panic("maxBackoff must be greater than or equal to minBackoff")
-	}
-	transaction.maxBackoff = &max
-	return transaction
-}
-
-// GetMaxBackoff returns the max back off for this AccountAllowanceDeleteTransaction.
-func (transaction *AccountAllowanceDeleteTransaction) GetMaxBackoff() time.Duration {
-	if transaction.maxBackoff != nil {
-		return *transaction.maxBackoff
-	}
-
-	return 8 * time.Second
-}
-
-// SetMinBackoff sets the min back off for this AccountAllowanceDeleteTransaction.
-func (transaction *AccountAllowanceDeleteTransaction) SetMinBackoff(min time.Duration) *AccountAllowanceDeleteTransaction {
-	if min.Nanoseconds() < 0 {
-		panic("minBackoff must be a positive duration")
-	} else if transaction.maxBackoff.Nanoseconds() < min.Nanoseconds() {
-		panic("minBackoff must be less than or equal to maxBackoff")
-	}
-	transaction.minBackoff = &min
-	return transaction
-}
-
-// GetMinBackoff returns the minimum amount of time to wait between retries.
-func (transaction *AccountAllowanceDeleteTransaction) GetMinBackoff() time.Duration {
-	if transaction.minBackoff != nil {
-		return *transaction.minBackoff
-	}
-
-	return 250 * time.Millisecond
-}
-
-func (transaction *AccountAllowanceDeleteTransaction) _GetLogID() string {
-	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
-	return fmt.Sprintf("AccountAllowanceDeleteTransaction:%d", timestamp.UnixNano())
 }

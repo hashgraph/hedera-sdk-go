@@ -394,20 +394,10 @@ func (this *AccountAllowanceApproveTransaction) SetMaxBackoff(max time.Duration)
 	return this
 }
 
-// GetMaxBackoff returns the max back off for this AccountAllowanceApproveTransaction.
-func (this *AccountAllowanceApproveTransaction) GetMaxBackoff() time.Duration {
-	return this.transaction.GetMaxBackoff()
-}
-
 // SetMinBackoff sets the min back off for this AccountAllowanceApproveTransaction.
 func (this *AccountAllowanceApproveTransaction) SetMinBackoff(min time.Duration) *AccountAllowanceApproveTransaction {
 	this.SetMinBackoff(min)
 	return this
-}
-
-// GetMinBackoff returns the min back off for this AccountAllowanceApproveTransaction.
-func (this *AccountAllowanceApproveTransaction) GetMinBackoff() time.Duration {
-	return this.GetMinBackoff()
 }
 
 func (this *AccountAllowanceApproveTransaction) _GetLogID() string {
