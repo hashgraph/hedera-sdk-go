@@ -1,6 +1,3 @@
-//go:build all || unit
-// +build all unit
-
 package hedera
 
 import (
@@ -52,7 +49,7 @@ func TestUnitAccountAllowanceAdjustTransactionGet(t *testing.T) {
 		SetTransactionMemo("go sdk unit test").SetTransactionValidDuration(time.Second * 120).
 		SetMaxRetry(1).SetMaxBackoff(time.Second * 120).SetMinBackoff(time.Second * 1).
 		Freeze()
-	sign, err := key2.SignTransaction(&tx.Transaction)
+	sign, err := key2.SignTransaction(&tx.transaction)
 	require.NoError(t, err)
 	tx.AddSignature(key.PublicKey(), sign)
 	tx.AddSignature(key2.PublicKey(), sign)

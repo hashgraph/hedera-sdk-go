@@ -281,15 +281,6 @@ func (this *AccountCreateTransaction) Schedule() (*ScheduleCreateTransaction, er
 	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-
-
-
-func _AccountCreateTransactionGetMethod(request interface{}, channel *_Channel) _Method {
-	return _Method{
-		transaction: channel._GetCrypto().CreateAccount,
-	}
-}
-
 func (this *AccountCreateTransaction) IsFrozen() bool {
 	return this._IsFrozen()
 }
@@ -317,7 +308,6 @@ func (this *AccountCreateTransaction) SignWith(
 	signer TransactionSigner,
 ) *AccountCreateTransaction {
 	this.transaction.SignWith(publicKey,signer);
-
 	return this
 }
 
@@ -436,6 +426,8 @@ func (this *AccountCreateTransaction) SetLogLevel(level LogLevel) *AccountCreate
 	return this
 }
 
+// ----------- overriden functions ----------------
+
 func (transaction *AccountCreateTransaction) getName() string {
 	return "AccountCreateTransaction"
 }
@@ -502,4 +494,10 @@ func (this *AccountCreateTransaction) buildProtoBody() *services.CryptoCreateTra
 	}
 
 	return body
+}
+
+func (this *AccountCreateTransaction) getMethod(channel *_Channel) _Method {
+	return _Method{
+		transaction: channel._GetCrypto().CreateAccount,
+	}
 }
