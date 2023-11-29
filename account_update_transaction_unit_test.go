@@ -48,7 +48,7 @@ func TestUnitAccountUpdateTransactionValidate(t *testing.T) {
 	accountUpdate := NewAccountUpdateTransaction().
 		SetProxyAccountID(accountID)
 
-	err = accountUpdate._ValidateNetworkOnIDs(client)
+	err = accountUpdate.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 }
 
@@ -65,7 +65,7 @@ func TestUnitAccountUpdateTransactionValidateWrong(t *testing.T) {
 	accountUpdate := NewAccountUpdateTransaction().
 		SetProxyAccountID(accountID)
 
-	err = accountUpdate._ValidateNetworkOnIDs(client)
+	err = accountUpdate.validateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
@@ -252,7 +252,7 @@ func TestUnitAccountUpdateTransactionProtoCheck(t *testing.T) {
 	transaction.GetTransactionID()
 	transaction.GetNodeAccountIDs()
 
-	proto := transaction._Build().GetCryptoUpdateAccount()
+	proto := transaction.build().GetCryptoUpdateAccount()
 	require.Equal(t, proto.AccountIDToUpdate.String(), accountID._ToProtobuf().String())
 	require.Equal(t, proto.Key.String(), key._ToProtoKey().String())
 	require.Equal(t, proto.Memo.Value, "ty")
@@ -307,7 +307,7 @@ func TestUnitAccountUpdateTransactionCoverage(t *testing.T) {
 		Freeze()
 	require.NoError(t, err)
 
-	transaction._ValidateNetworkOnIDs(client)
+	transaction.validateNetworkOnIDs(client)
 
 	_, err = transaction.Schedule()
 	require.NoError(t, err)
@@ -322,7 +322,7 @@ func TestUnitAccountUpdateTransactionCoverage(t *testing.T) {
 	require.NoError(t, err)
 	txFromBytes, err := TransactionFromBytes(byt)
 	require.NoError(t, err)
-	sig, err := key.SignTransaction(&transaction.Transaction)
+	sig, err := key.SignTransaction(&transaction.transaction)
 	require.NoError(t, err)
 
 	_, err = transaction.GetTransactionHash()
