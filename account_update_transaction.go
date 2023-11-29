@@ -59,17 +59,17 @@ type AccountUpdateTransaction struct {
 // and the new key. The old key must sign for security. The new key must sign as a safeguard to
 // avoid accidentally changing to an invalid key, and then having no way to recover.
 func NewAccountUpdateTransaction() *AccountUpdateTransaction {
-	transaction := AccountUpdateTransaction{
+	this := AccountUpdateTransaction{
 		transaction: _NewTransaction(),
 	}
+	this.e = &this
+	this.SetAutoRenewPeriod(7890000 * time.Second)
+	this._SetDefaultMaxTransactionFee(NewHbar(2))
 
-	transaction.SetAutoRenewPeriod(7890000 * time.Second)
-	transaction._SetDefaultMaxTransactionFee(NewHbar(2))
-
-	return &transaction
+	return &this
 }
 
-func _AccountUpdateTransactionFromProtobuf(transaction transaction, pb *services.TransactionBody) *AccountUpdateTransaction {
+func _AccountUpdateTransactionFromProtobuf(transact transaction, pb *services.TransactionBody) *AccountUpdateTransaction {
 	key, _ := _KeyFromProtobuf(pb.GetCryptoUpdateAccount().GetKey())
 	var receiverSignatureRequired bool
 
@@ -91,7 +91,7 @@ func _AccountUpdateTransactionFromProtobuf(transaction transaction, pb *services
 	}
 
 	return &AccountUpdateTransaction{
-		transaction:                   transaction,
+		transaction:                   transact,
 		accountID:                     _AccountIDFromProtobuf(pb.GetCryptoUpdateAccount().GetAccountIDToUpdate()),
 		key:                           key,
 		autoRenewPeriod:               &autoRenew,
@@ -106,259 +106,192 @@ func _AccountUpdateTransactionFromProtobuf(transaction transaction, pb *services
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (transaction *AccountUpdateTransaction) SetGrpcDeadline(deadline *time.Duration) *AccountUpdateTransaction {
-	transaction.transaction.SetGrpcDeadline(deadline)
-	return transaction
+func (this *AccountUpdateTransaction) SetGrpcDeadline(deadline *time.Duration) *AccountUpdateTransaction {
+	this.transaction.SetGrpcDeadline(deadline)
+	return this
 }
 
 // SetKey Sets the new key for the Account
-func (transaction *AccountUpdateTransaction) SetKey(key Key) *AccountUpdateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.key = key
-	return transaction
+func (this *AccountUpdateTransaction) SetKey(key Key) *AccountUpdateTransaction {
+	this._RequireNotFrozen()
+	this.key = key
+	return this
 }
 
-func (transaction *AccountUpdateTransaction) GetKey() (Key, error) {
-	return transaction.key, nil
+func (this *AccountUpdateTransaction) GetKey() (Key, error) {
+	return this.key, nil
 }
 
 // SetAccountID Sets the account ID which is being updated in this transaction.
-func (transaction *AccountUpdateTransaction) SetAccountID(accountID AccountID) *AccountUpdateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.accountID = &accountID
-	return transaction
+func (this *AccountUpdateTransaction) SetAccountID(accountID AccountID) *AccountUpdateTransaction {
+	this._RequireNotFrozen()
+	this.accountID = &accountID
+	return this
 }
 
-func (transaction *AccountUpdateTransaction) GetAccountID() AccountID {
-	if transaction.accountID == nil {
+func (this *AccountUpdateTransaction) GetAccountID() AccountID {
+	if this.accountID == nil {
 		return AccountID{}
 	}
 
-	return *transaction.accountID
+	return *this.accountID
 }
 
 // Deprecated
-func (transaction *AccountUpdateTransaction) SetAliasKey(alias PublicKey) *AccountUpdateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.aliasKey = &alias
-	return transaction
+func (this *AccountUpdateTransaction) SetAliasKey(alias PublicKey) *AccountUpdateTransaction {
+	this._RequireNotFrozen()
+	this.aliasKey = &alias
+	return this
 }
 
 // Deprecated
-func (transaction *AccountUpdateTransaction) GetAliasKey() PublicKey {
-	if transaction.aliasKey == nil {
+func (this *AccountUpdateTransaction) GetAliasKey() PublicKey {
+	if this.aliasKey == nil {
 		return PublicKey{}
 	}
 
-	return *transaction.aliasKey
+	return *this.aliasKey
 }
 
-func (transaction *AccountUpdateTransaction) SetStakedAccountID(id AccountID) *AccountUpdateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.stakedAccountID = &id
-	return transaction
+func (this *AccountUpdateTransaction) SetStakedAccountID(id AccountID) *AccountUpdateTransaction {
+	this._RequireNotFrozen()
+	this.stakedAccountID = &id
+	return this
 }
 
-func (transaction *AccountUpdateTransaction) GetStakedAccountID() AccountID {
-	if transaction.stakedAccountID != nil {
-		return *transaction.stakedAccountID
+func (this *AccountUpdateTransaction) GetStakedAccountID() AccountID {
+	if this.stakedAccountID != nil {
+		return *this.stakedAccountID
 	}
 
 	return AccountID{}
 }
 
-func (transaction *AccountUpdateTransaction) SetStakedNodeID(id int64) *AccountUpdateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.stakedNodeID = &id
-	return transaction
+func (this *AccountUpdateTransaction) SetStakedNodeID(id int64) *AccountUpdateTransaction {
+	this._RequireNotFrozen()
+	this.stakedNodeID = &id
+	return this
 }
 
-func (transaction *AccountUpdateTransaction) GetStakedNodeID() int64 {
-	if transaction.stakedNodeID != nil {
-		return *transaction.stakedNodeID
+func (this *AccountUpdateTransaction) GetStakedNodeID() int64 {
+	if this.stakedNodeID != nil {
+		return *this.stakedNodeID
 	}
 
 	return 0
 }
 
-func (transaction *AccountUpdateTransaction) SetDeclineStakingReward(decline bool) *AccountUpdateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.declineReward = decline
-	return transaction
+func (this *AccountUpdateTransaction) SetDeclineStakingReward(decline bool) *AccountUpdateTransaction {
+	this._RequireNotFrozen()
+	this.declineReward = decline
+	return this
 }
 
-func (transaction *AccountUpdateTransaction) ClearStakedAccountID() *AccountUpdateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.stakedAccountID = &AccountID{Account: 0}
-	return transaction
+func (this *AccountUpdateTransaction) ClearStakedAccountID() *AccountUpdateTransaction {
+	this._RequireNotFrozen()
+	this.stakedAccountID = &AccountID{Account: 0}
+	return this
 }
 
-func (transaction *AccountUpdateTransaction) ClearStakedNodeID() *AccountUpdateTransaction {
-	transaction._RequireNotFrozen()
-	*transaction.stakedNodeID = -1
-	return transaction
+func (this *AccountUpdateTransaction) ClearStakedNodeID() *AccountUpdateTransaction {
+	this._RequireNotFrozen()
+	*this.stakedNodeID = -1
+	return this
 }
 
-func (transaction *AccountUpdateTransaction) GetDeclineStakingReward() bool {
-	return transaction.declineReward
+func (this *AccountUpdateTransaction) GetDeclineStakingReward() bool {
+	return this.declineReward
 }
 
 // SetMaxAutomaticTokenAssociations
 // Sets the maximum number of tokens that an Account can be implicitly associated with. Up to a 1000
 // including implicit and explicit associations.
-func (transaction *AccountUpdateTransaction) SetMaxAutomaticTokenAssociations(max uint32) *AccountUpdateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.maxAutomaticTokenAssociations = max
-	return transaction
+func (this *AccountUpdateTransaction) SetMaxAutomaticTokenAssociations(max uint32) *AccountUpdateTransaction {
+	this._RequireNotFrozen()
+	this.maxAutomaticTokenAssociations = max
+	return this
 }
 
-func (transaction *AccountUpdateTransaction) GetMaxAutomaticTokenAssociations() uint32 {
-	return transaction.maxAutomaticTokenAssociations
+func (this *AccountUpdateTransaction) GetMaxAutomaticTokenAssociations() uint32 {
+	return this.maxAutomaticTokenAssociations
 }
 
 // SetReceiverSignatureRequired
 // If true, this account's key must sign any transaction depositing into this account (in
 // addition to all withdrawals)
-func (transaction *AccountUpdateTransaction) SetReceiverSignatureRequired(receiverSignatureRequired bool) *AccountUpdateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.receiverSignatureRequired = receiverSignatureRequired
-	return transaction
+func (this *AccountUpdateTransaction) SetReceiverSignatureRequired(receiverSignatureRequired bool) *AccountUpdateTransaction {
+	this._RequireNotFrozen()
+	this.receiverSignatureRequired = receiverSignatureRequired
+	return this
 }
 
-func (transaction *AccountUpdateTransaction) GetReceiverSignatureRequired() bool {
-	return transaction.receiverSignatureRequired
+func (this *AccountUpdateTransaction) GetReceiverSignatureRequired() bool {
+	return this.receiverSignatureRequired
 }
 
 // Deprecated
 // SetProxyAccountID Sets the ID of the account to which this account is proxy staked.
-func (transaction *AccountUpdateTransaction) SetProxyAccountID(proxyAccountID AccountID) *AccountUpdateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.proxyAccountID = &proxyAccountID
-	return transaction
+func (this *AccountUpdateTransaction) SetProxyAccountID(proxyAccountID AccountID) *AccountUpdateTransaction {
+	this._RequireNotFrozen()
+	this.proxyAccountID = &proxyAccountID
+	return this
 }
 
 // Deprecated
-func (transaction *AccountUpdateTransaction) GetProxyAccountID() AccountID {
-	if transaction.proxyAccountID == nil {
+func (this *AccountUpdateTransaction) GetProxyAccountID() AccountID {
+	if this.proxyAccountID == nil {
 		return AccountID{}
 	}
 
-	return *transaction.proxyAccountID
+	return *this.proxyAccountID
 }
 
 // SetAutoRenewPeriod Sets the duration in which it will automatically extend the expiration period.
-func (transaction *AccountUpdateTransaction) SetAutoRenewPeriod(autoRenewPeriod time.Duration) *AccountUpdateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.autoRenewPeriod = &autoRenewPeriod
-	return transaction
+func (this *AccountUpdateTransaction) SetAutoRenewPeriod(autoRenewPeriod time.Duration) *AccountUpdateTransaction {
+	this._RequireNotFrozen()
+	this.autoRenewPeriod = &autoRenewPeriod
+	return this
 }
 
-func (transaction *AccountUpdateTransaction) GetAutoRenewPeriod() time.Duration {
-	if transaction.autoRenewPeriod != nil {
-		return *transaction.autoRenewPeriod
+func (this *AccountUpdateTransaction) GetAutoRenewPeriod() time.Duration {
+	if this.autoRenewPeriod != nil {
+		return *this.autoRenewPeriod
 	}
 
 	return time.Duration(0)
 }
 
 // SetExpirationTime sets the new expiration time to extend to (ignored if equal to or before the current one)
-func (transaction *AccountUpdateTransaction) SetExpirationTime(expirationTime time.Time) *AccountUpdateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.expirationTime = &expirationTime
-	return transaction
+func (this *AccountUpdateTransaction) SetExpirationTime(expirationTime time.Time) *AccountUpdateTransaction {
+	this._RequireNotFrozen()
+	this.expirationTime = &expirationTime
+	return this
 }
 
-func (transaction *AccountUpdateTransaction) GetExpirationTime() time.Time {
-	if transaction.expirationTime != nil {
-		return *transaction.expirationTime
+func (this *AccountUpdateTransaction) GetExpirationTime() time.Time {
+	if this.expirationTime != nil {
+		return *this.expirationTime
 	}
 	return time.Time{}
 }
 
 // SetAccountMemo sets the new memo to be associated with the account (UTF-8 encoding max 100 bytes)
-func (transaction *AccountUpdateTransaction) SetAccountMemo(memo string) *AccountUpdateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.memo = memo
+func (this *AccountUpdateTransaction) SetAccountMemo(memo string) *AccountUpdateTransaction {
+	this._RequireNotFrozen()
+	this.memo = memo
 
-	return transaction
+	return this
 }
 
-func (transaction *AccountUpdateTransaction) GetAccountMemo() string {
-	return transaction.memo
-}
-
-func (transaction *AccountUpdateTransaction) _ValidateNetworkOnIDs(client *Client) error {
-	if client == nil || !client.autoValidateChecksums {
-		return nil
-	}
-
-	if transaction.accountID != nil {
-		if err := transaction.accountID.ValidateChecksum(client); err != nil {
-			return err
-		}
-	}
-
-	if transaction.proxyAccountID != nil {
-		if err := transaction.proxyAccountID.ValidateChecksum(client); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (transaction *AccountUpdateTransaction) _Build() *services.TransactionBody {
-	body := &services.CryptoUpdateTransactionBody{
-		ReceiverSigRequiredField: &services.CryptoUpdateTransactionBody_ReceiverSigRequiredWrapper{
-			ReceiverSigRequiredWrapper: &wrapperspb.BoolValue{Value: transaction.receiverSignatureRequired},
-		},
-		Memo:                          &wrapperspb.StringValue{Value: transaction.memo},
-		MaxAutomaticTokenAssociations: &wrapperspb.Int32Value{Value: int32(transaction.maxAutomaticTokenAssociations)},
-		DeclineReward:                 &wrapperspb.BoolValue{Value: transaction.declineReward},
-	}
-
-	if transaction.autoRenewPeriod != nil {
-		body.AutoRenewPeriod = _DurationToProtobuf(*transaction.autoRenewPeriod)
-	}
-
-	if transaction.expirationTime != nil {
-		body.ExpirationTime = _TimeToProtobuf(*transaction.expirationTime)
-	}
-
-	if transaction.accountID != nil {
-		body.AccountIDToUpdate = transaction.accountID._ToProtobuf()
-	}
-
-	if transaction.key != nil {
-		body.Key = transaction.key._ToProtoKey()
-	}
-
-	if transaction.stakedAccountID != nil {
-		body.StakedId = &services.CryptoUpdateTransactionBody_StakedAccountId{StakedAccountId: transaction.stakedAccountID._ToProtobuf()}
-	} else if transaction.stakedNodeID != nil {
-		body.StakedId = &services.CryptoUpdateTransactionBody_StakedNodeId{StakedNodeId: *transaction.stakedNodeID}
-	}
-
-	pb := services.TransactionBody{
-		TransactionFee:           transaction.transactionFee,
-		Memo:                     transaction.transaction.memo,
-		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
-		TransactionID:            transaction.transactionID._ToProtobuf(),
-		Data: &services.TransactionBody_CryptoUpdateAccount{
-			CryptoUpdateAccount: body,
-		},
-	}
-
-	body.MaxAutomaticTokenAssociations = &wrapperspb.Int32Value{Value: int32(transaction.maxAutomaticTokenAssociations)}
-
-	return &pb
+func (this *AccountUpdateTransaction) GetAccountMemo() string {
+	return this.memo
 }
 
 // Schedule Prepares a ScheduleCreateTransaction containing this transaction.
-func (transaction *AccountUpdateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	transaction._RequireNotFrozen()
+func (this *AccountUpdateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	this._RequireNotFrozen()
 
-	scheduled, err := transaction._ConstructScheduleProtobuf()
+	scheduled, err := this.buildProtoBody()
 	if err != nil {
 		return nil, err
 	}
@@ -366,327 +299,139 @@ func (transaction *AccountUpdateTransaction) Schedule() (*ScheduleCreateTransact
 	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *AccountUpdateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
-	body := &services.CryptoUpdateTransactionBody{
-		ReceiverSigRequiredField: &services.CryptoUpdateTransactionBody_ReceiverSigRequiredWrapper{
-			ReceiverSigRequiredWrapper: &wrapperspb.BoolValue{Value: transaction.receiverSignatureRequired},
-		},
-		Memo:                          &wrapperspb.StringValue{Value: transaction.memo},
-		DeclineReward:                 &wrapperspb.BoolValue{Value: transaction.declineReward},
-		MaxAutomaticTokenAssociations: &wrapperspb.Int32Value{Value: int32(transaction.maxAutomaticTokenAssociations)},
-	}
-
-	if transaction.autoRenewPeriod != nil {
-		body.AutoRenewPeriod = _DurationToProtobuf(*transaction.autoRenewPeriod)
-	}
-
-	if transaction.expirationTime != nil {
-		body.ExpirationTime = _TimeToProtobuf(*transaction.expirationTime)
-	}
-
-	if transaction.accountID != nil {
-		body.AccountIDToUpdate = transaction.accountID._ToProtobuf()
-	}
-
-	if transaction.key != nil {
-		body.Key = transaction.key._ToProtoKey()
-	}
-
-	if transaction.stakedAccountID != nil {
-		body.StakedId = &services.CryptoUpdateTransactionBody_StakedAccountId{StakedAccountId: transaction.stakedAccountID._ToProtobuf()}
-	} else if transaction.stakedNodeID != nil {
-		body.StakedId = &services.CryptoUpdateTransactionBody_StakedNodeId{StakedNodeId: *transaction.stakedNodeID}
-	}
-
-	return &services.SchedulableTransactionBody{
-		TransactionFee: transaction.transactionFee,
-		Memo:           transaction.transaction.memo,
-		Data: &services.SchedulableTransactionBody_CryptoUpdateAccount{
-			CryptoUpdateAccount: body,
-		},
-	}, nil
-}
-
-func _AccountUpdateTransactionGetMethod(request interface{}, channel *_Channel) _Method {
-	return _Method{
-		transaction: channel._GetCrypto().UpdateAccount,
-	}
-}
-
-func (transaction *AccountUpdateTransaction) IsFrozen() bool {
-	return transaction._IsFrozen()
+func (this *AccountUpdateTransaction) IsFrozen() bool {
+	return this._IsFrozen()
 }
 
 // Sign uses the provided privateKey to sign the transaction.
-func (transaction *AccountUpdateTransaction) Sign(
+func (this *AccountUpdateTransaction) Sign(
 	privateKey PrivateKey,
 ) *AccountUpdateTransaction {
-	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
+	this.transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
+	return this
 }
 
 // SignWithOperator signs the transaction with client's operator privateKey.
-func (transaction *AccountUpdateTransaction) SignWithOperator(
+func (this *AccountUpdateTransaction) SignWithOperator(
 	client *Client,
 ) (*AccountUpdateTransaction, error) {
 	// If the transaction is not signed by the _Operator, we need
 	// to sign the transaction with the _Operator
-
-	if client == nil {
-		return nil, errNoClientProvided
-	} else if client.operator == nil {
-		return nil, errClientOperatorSigning
-	}
-
-	if !transaction.IsFrozen() {
-		_, err := transaction.FreezeWith(client)
-		if err != nil {
-			return transaction, err
-		}
-	}
-	return transaction.SignWith(client.operator.publicKey, client.operator.signer), nil
+	_,err := this.transaction.SignWithOperator(client)
+	return this, err
 }
 
 // SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
 // with the publicKey as the map key.
-func (transaction *AccountUpdateTransaction) SignWith(
+func (this *AccountUpdateTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *AccountUpdateTransaction {
-	if !transaction._KeyAlreadySigned(publicKey) {
-		transaction._SignWith(publicKey, signer)
-	}
-
-	return transaction
+	this.transaction.SignWith(publicKey, signer)
+	return this
 }
 
-// Execute executes the transaction with the provided client
-func (transaction *AccountUpdateTransaction) Execute(
-	client *Client,
-) (TransactionResponse, error) {
-	if client == nil {
-		return TransactionResponse{}, errNoClientProvided
-	}
-
-	if transaction.freezeError != nil {
-		return TransactionResponse{}, transaction.freezeError
-	}
-
-	if !transaction.IsFrozen() {
-		_, err := transaction.FreezeWith(client)
-		if err != nil {
-			return TransactionResponse{}, err
-		}
-	}
-
-	transactionID := transaction.transactionIDs._GetCurrent().(TransactionID)
-
-	if !client.GetOperatorAccountID()._IsZero() && client.GetOperatorAccountID()._Equals(*transactionID.AccountID) {
-		transaction.SignWith(
-			client.GetOperatorPublicKey(),
-			client.operator.signer,
-		)
-	}
-
-	resp, err := _Execute(
-		client,
-		&transaction.transaction,
-		_TransactionShouldRetry,
-		_TransactionMakeRequest,
-		_TransactionAdvanceRequest,
-		_TransactionGetNodeAccountID,
-		_AccountUpdateTransactionGetMethod,
-		_TransactionMapStatusError,
-		_TransactionMapResponse,
-		transaction._GetLogID(),
-		transaction.grpcDeadline,
-		transaction.maxBackoff,
-		transaction.minBackoff,
-		transaction.maxRetry,
-	)
-
-	if err != nil {
-		return TransactionResponse{
-			TransactionID:  transaction.GetTransactionID(),
-			NodeID:         resp.(TransactionResponse).NodeID,
-			ValidateStatus: true,
-		}, err
-	}
-
-	return TransactionResponse{
-		TransactionID:  transaction.GetTransactionID(),
-		NodeID:         resp.(TransactionResponse).NodeID,
-		Hash:           resp.(TransactionResponse).Hash,
-		ValidateStatus: true,
-	}, nil
+func (this *AccountUpdateTransaction) Freeze() (*AccountUpdateTransaction, error) {
+	_,err := this.transaction.Freeze()
+	return this, err
 }
 
-func (transaction *AccountUpdateTransaction) Freeze() (*AccountUpdateTransaction, error) {
-	return transaction.FreezeWith(nil)
-}
-
-func (transaction *AccountUpdateTransaction) FreezeWith(client *Client) (*AccountUpdateTransaction, error) {
-	if transaction.IsFrozen() {
-		return transaction, nil
-	}
-	transaction._InitFee(client)
-	if err := transaction._InitTransactionID(client); err != nil {
-		return transaction, err
-	}
-	err := transaction._ValidateNetworkOnIDs(client)
-	if err != nil {
-		return &AccountUpdateTransaction{}, err
-	}
-	body := transaction._Build()
-
-	return transaction, _TransactionFreezeWith(&transaction.transaction, client, body)
+func (this *AccountUpdateTransaction) FreezeWith(client *Client) (*AccountUpdateTransaction, error) {
+	_, err := this.transaction.FreezeWith(client)
+	return this, err
 }
 
 // GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
-func (transaction *AccountUpdateTransaction) GetMaxTransactionFee() Hbar {
-	return transaction.transaction.GetMaxTransactionFee()
+func (this *AccountUpdateTransaction) GetMaxTransactionFee() Hbar {
+	return this.transaction.GetMaxTransactionFee()
 }
 
 // SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
-func (transaction *AccountUpdateTransaction) SetMaxTransactionFee(fee Hbar) *AccountUpdateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetMaxTransactionFee(fee)
-	return transaction
+func (this *AccountUpdateTransaction) SetMaxTransactionFee(fee Hbar) *AccountUpdateTransaction {
+	this._RequireNotFrozen()
+	this.transaction.SetMaxTransactionFee(fee)
+	return this
 }
 
 // SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
-func (transaction *AccountUpdateTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *AccountUpdateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetRegenerateTransactionID(regenerateTransactionID)
-	return transaction
+func (this *AccountUpdateTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *AccountUpdateTransaction {
+	this._RequireNotFrozen()
+	this.transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	return this
 }
 
 // GetRegenerateTransactionID returns true if transaction ID regeneration is enabled.
-func (transaction *AccountUpdateTransaction) GetRegenerateTransactionID() bool {
-	return transaction.transaction.GetRegenerateTransactionID()
+func (this *AccountUpdateTransaction) GetRegenerateTransactionID() bool {
+	return this.transaction.GetRegenerateTransactionID()
 }
 
 // GetTransactionMemo returns the memo for this AccountUpdateTransaction.
-func (transaction *AccountUpdateTransaction) GetTransactionMemo() string {
-	return transaction.transaction.GetTransactionMemo()
+func (this *AccountUpdateTransaction) GetTransactionMemo() string {
+	return this.transaction.GetTransactionMemo()
 }
 
 // SetTransactionMemo sets the memo for this AccountUpdateTransaction.
-func (transaction *AccountUpdateTransaction) SetTransactionMemo(memo string) *AccountUpdateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetTransactionMemo(memo)
-	return transaction
+func (this *AccountUpdateTransaction) SetTransactionMemo(memo string) *AccountUpdateTransaction {
+	this._RequireNotFrozen()
+	this.transaction.SetTransactionMemo(memo)
+	return this
 }
 
 // GetTransactionValidDuration returns the duration that this transaction is valid for.
-func (transaction *AccountUpdateTransaction) GetTransactionValidDuration() time.Duration {
-	return transaction.transaction.GetTransactionValidDuration()
+func (this *AccountUpdateTransaction) GetTransactionValidDuration() time.Duration {
+	return this.transaction.GetTransactionValidDuration()
 }
 
 // SetTransactionValidDuration sets the valid duration for this AccountUpdateTransaction.
-func (transaction *AccountUpdateTransaction) SetTransactionValidDuration(duration time.Duration) *AccountUpdateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetTransactionValidDuration(duration)
-	return transaction
+func (this *AccountUpdateTransaction) SetTransactionValidDuration(duration time.Duration) *AccountUpdateTransaction {
+	this._RequireNotFrozen()
+	this.transaction.SetTransactionValidDuration(duration)
+	return this
 }
 
 // GetTransactionID gets the TransactionID for this AccountUpdateTransaction.
-func (transaction *AccountUpdateTransaction) GetTransactionID() TransactionID {
-	return transaction.transaction.GetTransactionID()
+func (this *AccountUpdateTransaction) GetTransactionID() TransactionID {
+	return this.transaction.GetTransactionID()
 }
 
 // SetTransactionID sets the TransactionID for this AccountUpdateTransaction.
-func (transaction *AccountUpdateTransaction) SetTransactionID(transactionID TransactionID) *AccountUpdateTransaction {
-	transaction._RequireNotFrozen()
+func (this *AccountUpdateTransaction) SetTransactionID(transactionID TransactionID) *AccountUpdateTransaction {
+	this._RequireNotFrozen()
 
-	transaction.transaction.SetTransactionID(transactionID)
-	return transaction
+	this.transaction.SetTransactionID(transactionID)
+	return this
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for this AccountUpdateTransaction.
-func (transaction *AccountUpdateTransaction) SetNodeAccountIDs(nodeID []AccountID) *AccountUpdateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetNodeAccountIDs(nodeID)
-	return transaction
+func (this *AccountUpdateTransaction) SetNodeAccountIDs(nodeID []AccountID) *AccountUpdateTransaction {
+	this._RequireNotFrozen()
+	this.transaction.SetNodeAccountIDs(nodeID)
+	return this
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
-func (transaction *AccountUpdateTransaction) SetMaxRetry(count int) *AccountUpdateTransaction {
-	transaction.transaction.SetMaxRetry(count)
-	return transaction
+func (this *AccountUpdateTransaction) SetMaxRetry(count int) *AccountUpdateTransaction {
+	this.transaction.SetMaxRetry(count)
+	return this
 }
 
 // AddSignature adds a signature to the transaction.
-func (transaction *AccountUpdateTransaction) AddSignature(publicKey PublicKey, signature []byte) *AccountUpdateTransaction {
-	transaction._RequireOneNodeAccountID()
-
-	if transaction._KeyAlreadySigned(publicKey) {
-		return transaction
-	}
-
-	if transaction.signedTransactions._Length() == 0 {
-		return transaction
-	}
-
-	transaction.transactions = _NewLockableSlice()
-	transaction.publicKeys = append(transaction.publicKeys, publicKey)
-	transaction.transactionSigners = append(transaction.transactionSigners, nil)
-	transaction.transactionIDs.locked = true
-
-	for index := 0; index < transaction.signedTransactions._Length(); index++ {
-		var temp *services.SignedTransaction
-		switch t := transaction.signedTransactions._Get(index).(type) { //nolint
-		case *services.SignedTransaction:
-			temp = t
-		}
-		temp.SigMap.SigPair = append(
-			temp.SigMap.SigPair,
-			publicKey._ToSignaturePairProtobuf(signature),
-		)
-		transaction.signedTransactions._Set(index, temp)
-	}
-
-	return transaction
+func (this *AccountUpdateTransaction) AddSignature(publicKey PublicKey, signature []byte) *AccountUpdateTransaction {
+	this.transaction.AddSignature(publicKey, signature)
+	return this
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
 // Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (transaction *AccountUpdateTransaction) SetMaxBackoff(max time.Duration) *AccountUpdateTransaction {
-	if max.Nanoseconds() < 0 {
-		panic("maxBackoff must be a positive duration")
-	} else if max.Nanoseconds() < transaction.minBackoff.Nanoseconds() {
-		panic("maxBackoff must be greater than or equal to minBackoff")
-	}
-	transaction.maxBackoff = &max
-	return transaction
-}
-
-// GetMaxBackoff returns the maximum amount of time to wait between retries.
-func (transaction *AccountUpdateTransaction) GetMaxBackoff() time.Duration {
-	if transaction.maxBackoff != nil {
-		return *transaction.maxBackoff
-	}
-
-	return 8 * time.Second
+func (this *AccountUpdateTransaction) SetMaxBackoff(max time.Duration) *AccountUpdateTransaction {
+	this.transaction.SetMaxBackoff(max)
+	return this
 }
 
 // SetMinBackoff sets the minimum amount of time to wait between retries.
-func (transaction *AccountUpdateTransaction) SetMinBackoff(min time.Duration) *AccountUpdateTransaction {
-	if min.Nanoseconds() < 0 {
-		panic("minBackoff must be a positive duration")
-	} else if transaction.maxBackoff.Nanoseconds() < min.Nanoseconds() {
-		panic("minBackoff must be less than or equal to maxBackoff")
-	}
-	transaction.minBackoff = &min
-	return transaction
-}
-
-// GetMinBackoff returns the minimum amount of time to wait between retries.
-func (transaction *AccountUpdateTransaction) GetMinBackoff() time.Duration {
-	if transaction.minBackoff != nil {
-		return *transaction.minBackoff
-	}
-
-	return 250 * time.Millisecond
+func (this *AccountUpdateTransaction) SetMinBackoff(min time.Duration) *AccountUpdateTransaction {
+	this.transaction.SetMinBackoff(min)
+	return this
 }
 
 func (transaction *AccountUpdateTransaction) _GetLogID() string {
@@ -697,4 +442,123 @@ func (transaction *AccountUpdateTransaction) _GetLogID() string {
 func (transaction *AccountUpdateTransaction) SetLogLevel(level LogLevel) *AccountUpdateTransaction {
 	transaction.transaction.SetLogLevel(level)
 	return transaction
+}
+
+// ----------- overriden functions ----------------
+
+func (this *AccountUpdateTransaction) getName() string {
+	return "AccountUpdateTransaction"
+}
+
+func (this *AccountUpdateTransaction) validateNetworkOnIDs(client *Client) error {
+	if client == nil || !client.autoValidateChecksums {
+		return nil
+	}
+
+	if this.accountID != nil {
+		if err := this.accountID.ValidateChecksum(client); err != nil {
+			return err
+		}
+	}
+
+	if this.proxyAccountID != nil {
+		if err := this.proxyAccountID.ValidateChecksum(client); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (this *AccountUpdateTransaction) build() *services.TransactionBody {
+	body := &services.CryptoUpdateTransactionBody{
+		ReceiverSigRequiredField: &services.CryptoUpdateTransactionBody_ReceiverSigRequiredWrapper{
+			ReceiverSigRequiredWrapper: &wrapperspb.BoolValue{Value: this.receiverSignatureRequired},
+		},
+		Memo:                          &wrapperspb.StringValue{Value: this.memo},
+		MaxAutomaticTokenAssociations: &wrapperspb.Int32Value{Value: int32(this.maxAutomaticTokenAssociations)},
+		DeclineReward:                 &wrapperspb.BoolValue{Value: this.declineReward},
+	}
+
+	if this.autoRenewPeriod != nil {
+		body.AutoRenewPeriod = _DurationToProtobuf(*this.autoRenewPeriod)
+	}
+
+	if this.expirationTime != nil {
+		body.ExpirationTime = _TimeToProtobuf(*this.expirationTime)
+	}
+
+	if this.accountID != nil {
+		body.AccountIDToUpdate = this.accountID._ToProtobuf()
+	}
+
+	if this.key != nil {
+		body.Key = this.key._ToProtoKey()
+	}
+
+	if this.stakedAccountID != nil {
+		body.StakedId = &services.CryptoUpdateTransactionBody_StakedAccountId{StakedAccountId: this.stakedAccountID._ToProtobuf()}
+	} else if this.stakedNodeID != nil {
+		body.StakedId = &services.CryptoUpdateTransactionBody_StakedNodeId{StakedNodeId: *this.stakedNodeID}
+	}
+
+	pb := services.TransactionBody{
+		TransactionFee:           this.transactionFee,
+		Memo:                     this.transaction.memo,
+		TransactionValidDuration: _DurationToProtobuf(this.GetTransactionValidDuration()),
+		TransactionID:            this.transactionID._ToProtobuf(),
+		Data: &services.TransactionBody_CryptoUpdateAccount{
+			CryptoUpdateAccount: body,
+		},
+	}
+
+	body.MaxAutomaticTokenAssociations = &wrapperspb.Int32Value{Value: int32(this.maxAutomaticTokenAssociations)}
+
+	return &pb
+}
+func (this *AccountUpdateTransaction) buildProtoBody() (*services.SchedulableTransactionBody, error) {
+	body := &services.CryptoUpdateTransactionBody{
+		ReceiverSigRequiredField: &services.CryptoUpdateTransactionBody_ReceiverSigRequiredWrapper{
+			ReceiverSigRequiredWrapper: &wrapperspb.BoolValue{Value: this.receiverSignatureRequired},
+		},
+		Memo:                          &wrapperspb.StringValue{Value: this.memo},
+		DeclineReward:                 &wrapperspb.BoolValue{Value: this.declineReward},
+		MaxAutomaticTokenAssociations: &wrapperspb.Int32Value{Value: int32(this.maxAutomaticTokenAssociations)},
+	}
+
+	if this.autoRenewPeriod != nil {
+		body.AutoRenewPeriod = _DurationToProtobuf(*this.autoRenewPeriod)
+	}
+
+	if this.expirationTime != nil {
+		body.ExpirationTime = _TimeToProtobuf(*this.expirationTime)
+	}
+
+	if this.accountID != nil {
+		body.AccountIDToUpdate = this.accountID._ToProtobuf()
+	}
+
+	if this.key != nil {
+		body.Key = this.key._ToProtoKey()
+	}
+
+	if this.stakedAccountID != nil {
+		body.StakedId = &services.CryptoUpdateTransactionBody_StakedAccountId{StakedAccountId: this.stakedAccountID._ToProtobuf()}
+	} else if this.stakedNodeID != nil {
+		body.StakedId = &services.CryptoUpdateTransactionBody_StakedNodeId{StakedNodeId: *this.stakedNodeID}
+	}
+
+	return &services.SchedulableTransactionBody{
+		TransactionFee: this.transactionFee,
+		Memo:           this.transaction.memo,
+		Data: &services.SchedulableTransactionBody_CryptoUpdateAccount{
+			CryptoUpdateAccount: body,
+		},
+	}, nil
+}
+
+func (this *AccountUpdateTransaction) getMethod(channel *_Channel) _Method {
+	return _Method{
+		transaction: channel._GetCrypto().UpdateAccount,
+	}
 }
