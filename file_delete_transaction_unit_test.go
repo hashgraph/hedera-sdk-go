@@ -48,7 +48,7 @@ func TestUnitFileDeleteTransactionValidate(t *testing.T) {
 	fileDelete := NewFileDeleteTransaction().
 		SetFileID(fileID)
 
-	err = fileDelete._ValidateNetworkOnIDs(client)
+	err = fileDelete.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 }
 
@@ -65,7 +65,7 @@ func TestUnitFileDeleteTransactionValidateWrong(t *testing.T) {
 	fileDelete := NewFileDeleteTransaction().
 		SetFileID(fileID)
 
-	err = fileDelete._ValidateNetworkOnIDs(client)
+	err = fileDelete.validateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
@@ -233,7 +233,7 @@ func TestUnitFileDeleteTransactionCoverage(t *testing.T) {
 		Freeze()
 	require.NoError(t, err)
 
-	transaction._ValidateNetworkOnIDs(client)
+	transaction.validateNetworkOnIDs(client)
 
 	_, err = transaction.Schedule()
 	require.NoError(t, err)
@@ -248,7 +248,7 @@ func TestUnitFileDeleteTransactionCoverage(t *testing.T) {
 	require.NoError(t, err)
 	txFromBytes, err := TransactionFromBytes(byt)
 	require.NoError(t, err)
-	sig, err := newKey.SignTransaction(&transaction.Transaction)
+	sig, err := newKey.SignTransaction(&transaction.transaction)
 	require.NoError(t, err)
 
 	_, err = transaction.GetTransactionHash()
