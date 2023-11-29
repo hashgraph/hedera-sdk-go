@@ -49,7 +49,7 @@ func TestUnitFileAppendTransactionValidate(t *testing.T) {
 	fileAppend := NewFileAppendTransaction().
 		SetFileID(fileID)
 
-	err = fileAppend._ValidateNetworkOnIDs(client)
+	err = fileAppend.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 }
 
@@ -66,7 +66,7 @@ func TestUnitFileAppendTransactionValidateWrong(t *testing.T) {
 	fileAppend := NewFileAppendTransaction().
 		SetFileID(fileID)
 
-	err = fileAppend._ValidateNetworkOnIDs(client)
+	err = fileAppend.validateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
@@ -330,7 +330,7 @@ func TestUnitFileAppendTransactionCoverage(t *testing.T) {
 		Freeze()
 	require.NoError(t, err)
 
-	transaction._ValidateNetworkOnIDs(client)
+	transaction.validateNetworkOnIDs(client)
 
 	_, err = transaction.Schedule()
 	require.NoError(t, err)
@@ -347,7 +347,7 @@ func TestUnitFileAppendTransactionCoverage(t *testing.T) {
 	require.NoError(t, err)
 	txFromBytes, err := TransactionFromBytes(byt)
 	require.NoError(t, err)
-	sig, err := newKey.SignTransaction(&transaction.Transaction)
+	sig, err := newKey.SignTransaction(&transaction.transaction)
 	require.NoError(t, err)
 
 	_, err = transaction.GetTransactionHash()
