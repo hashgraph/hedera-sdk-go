@@ -54,17 +54,18 @@ type ContractCreateTransaction struct {
 // The instance will run the bytecode, either stored in a previously created file or in the transaction body itself for
 // small contracts.
 func NewContractCreateTransaction() *ContractCreateTransaction {
-	transaction := ContractCreateTransaction{
+	this := ContractCreateTransaction{
 		transaction: _NewTransaction(),
 	}
 
-	transaction.SetAutoRenewPeriod(131500 * time.Minute)
-	transaction._SetDefaultMaxTransactionFee(NewHbar(20))
+	this.SetAutoRenewPeriod(131500 * time.Minute)
+	this._SetDefaultMaxTransactionFee(NewHbar(20))
+	this.e = &this
 
-	return &transaction
+	return &this
 }
 
-func _ContractCreateTransactionFromProtobuf(transaction transaction, pb *services.TransactionBody) *ContractCreateTransaction {
+func _ContractCreateTransactionFromProtobuf(this transaction, pb *services.TransactionBody) *ContractCreateTransaction {
 	key, _ := _KeyFromProtobuf(pb.GetContractCreateInstance().GetAdminKey())
 	autoRenew := _DurationFromProtobuf(pb.GetContractCreateInstance().GetAutoRenewPeriod())
 	stakedNodeID := pb.GetContractCreateInstance().GetStakedNodeId()
@@ -80,7 +81,7 @@ func _ContractCreateTransactionFromProtobuf(transaction transaction, pb *service
 	}
 
 	return &ContractCreateTransaction{
-		transaction:                   transaction,
+		transaction:                   this,
 		byteCodeFileID:                _FileIDFromProtobuf(pb.GetContractCreateInstance().GetFileID()),
 		adminKey:                      key,
 		gas:                           pb.GetContractCreateInstance().Gas,
@@ -98,41 +99,41 @@ func _ContractCreateTransactionFromProtobuf(transaction transaction, pb *service
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (transaction *ContractCreateTransaction) SetGrpcDeadline(deadline *time.Duration) *ContractCreateTransaction {
-	transaction.transaction.SetGrpcDeadline(deadline)
-	return transaction
+func (this *ContractCreateTransaction) SetGrpcDeadline(deadline *time.Duration) *ContractCreateTransaction {
+	this.transaction.SetGrpcDeadline(deadline)
+	return this
 }
 
 // SetBytecodeFileID
 // If the initcode is large (> 5K) then it must be stored in a file as hex encoded ascii.
-func (transaction *ContractCreateTransaction) SetBytecodeFileID(byteCodeFileID FileID) *ContractCreateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.byteCodeFileID = &byteCodeFileID
-	transaction.initcode = nil
-	return transaction
+func (this *ContractCreateTransaction) SetBytecodeFileID(byteCodeFileID FileID) *ContractCreateTransaction {
+	this._RequireNotFrozen()
+	this.byteCodeFileID = &byteCodeFileID
+	this.initcode = nil
+	return this
 }
 
 // GetBytecodeFileID returns the FileID of the file containing the contract's bytecode.
-func (transaction *ContractCreateTransaction) GetBytecodeFileID() FileID {
-	if transaction.byteCodeFileID == nil {
+func (this *ContractCreateTransaction) GetBytecodeFileID() FileID {
+	if this.byteCodeFileID == nil {
 		return FileID{}
 	}
 
-	return *transaction.byteCodeFileID
+	return *this.byteCodeFileID
 }
 
 // SetBytecode
 // If it is small then it may either be stored as a hex encoded file or as a binary encoded field as part of the transaction.
-func (transaction *ContractCreateTransaction) SetBytecode(code []byte) *ContractCreateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.initcode = code
-	transaction.byteCodeFileID = nil
-	return transaction
+func (this *ContractCreateTransaction) SetBytecode(code []byte) *ContractCreateTransaction {
+	this._RequireNotFrozen()
+	this.initcode = code
+	this.byteCodeFileID = nil
+	return this
 }
 
 // GetBytecode returns the bytecode for the contract.
-func (transaction *ContractCreateTransaction) GetBytecode() []byte {
-	return transaction.initcode
+func (this *ContractCreateTransaction) GetBytecode() []byte {
+	return this.initcode
 }
 
 /**
@@ -142,40 +143,40 @@ func (transaction *ContractCreateTransaction) GetBytecode() []byte {
  * admin keys, then there is no administrator to authorize changing the admin keys, so
  * there can never be any admin keys for that instance.
  */
-func (transaction *ContractCreateTransaction) SetAdminKey(adminKey Key) *ContractCreateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.adminKey = adminKey
-	return transaction
+func (this *ContractCreateTransaction) SetAdminKey(adminKey Key) *ContractCreateTransaction {
+	this._RequireNotFrozen()
+	this.adminKey = adminKey
+	return this
 }
 
 // GetAdminKey returns the key that can sign to modify the state of the instance
 // and its fields can be modified arbitrarily if this key signs a transaction
-func (transaction *ContractCreateTransaction) GetAdminKey() (Key, error) {
-	return transaction.adminKey, nil
+func (this *ContractCreateTransaction) GetAdminKey() (Key, error) {
+	return this.adminKey, nil
 }
 
 // Sets the gas to run the constructor.
-func (transaction *ContractCreateTransaction) SetGas(gas uint64) *ContractCreateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.gas = int64(gas)
-	return transaction
+func (this *ContractCreateTransaction) SetGas(gas uint64) *ContractCreateTransaction {
+	this._RequireNotFrozen()
+	this.gas = int64(gas)
+	return this
 }
 
 // GetGas returns the gas to run the constructor.
-func (transaction *ContractCreateTransaction) GetGas() uint64 {
-	return uint64(transaction.gas)
+func (this *ContractCreateTransaction) GetGas() uint64 {
+	return uint64(this.gas)
 }
 
 // SetInitialBalance sets the initial number of Hbar to put into the account
-func (transaction *ContractCreateTransaction) SetInitialBalance(initialBalance Hbar) *ContractCreateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.initialBalance = initialBalance.AsTinybar()
-	return transaction
+func (this *ContractCreateTransaction) SetInitialBalance(initialBalance Hbar) *ContractCreateTransaction {
+	this._RequireNotFrozen()
+	this.initialBalance = initialBalance.AsTinybar()
+	return this
 }
 
 // GetInitialBalance gets the initial number of Hbar in the account
-func (transaction *ContractCreateTransaction) GetInitialBalance() Hbar {
-	return HbarFromTinybar(transaction.initialBalance)
+func (this *ContractCreateTransaction) GetInitialBalance() Hbar {
+	return HbarFromTinybar(this.initialBalance)
 }
 
 // SetAutoRenewPeriod sets the time duration for when account is charged to extend its expiration date. When the account
@@ -190,9 +191,9 @@ func (transaction *ContractCreateTransaction) SetAutoRenewPeriod(autoRenewPeriod
 	return transaction
 }
 
-func (transaction *ContractCreateTransaction) GetAutoRenewPeriod() time.Duration {
-	if transaction.autoRenewPeriod != nil {
-		return *transaction.autoRenewPeriod
+func (this *ContractCreateTransaction) GetAutoRenewPeriod() time.Duration {
+	if this.autoRenewPeriod != nil {
+		return *this.autoRenewPeriod
 	}
 
 	return time.Duration(0)
@@ -203,200 +204,133 @@ func (transaction *ContractCreateTransaction) GetAutoRenewPeriod() time.Duration
 // is an invalID account, or is an account that isn't a _Node, then this account is automatically proxy staked to a _Node
 // chosen by the _Network, but without earning payments. If the proxyAccountID account refuses to accept proxy staking ,
 // or if it is not currently running a _Node, then it will behave as if proxyAccountID was not set.
-func (transaction *ContractCreateTransaction) SetProxyAccountID(proxyAccountID AccountID) *ContractCreateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.proxyAccountID = &proxyAccountID
-	return transaction
+func (this *ContractCreateTransaction) SetProxyAccountID(proxyAccountID AccountID) *ContractCreateTransaction {
+	this._RequireNotFrozen()
+	this.proxyAccountID = &proxyAccountID
+	return this
 }
 
 // Deprecated
-func (transaction *ContractCreateTransaction) GetProxyAccountID() AccountID {
-	if transaction.proxyAccountID == nil {
+func (this *ContractCreateTransaction) GetProxyAccountID() AccountID {
+	if this.proxyAccountID == nil {
 		return AccountID{}
 	}
 
-	return *transaction.proxyAccountID
+	return *this.proxyAccountID
 }
 
 // SetConstructorParameters Sets the constructor parameters
-func (transaction *ContractCreateTransaction) SetConstructorParameters(params *ContractFunctionParameters) *ContractCreateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.parameters = params._Build(nil)
-	return transaction
+func (this *ContractCreateTransaction) SetConstructorParameters(params *ContractFunctionParameters) *ContractCreateTransaction {
+	this._RequireNotFrozen()
+	this.parameters = params._Build(nil)
+	return this
 }
 
 // SetConstructorParametersRaw Sets the constructor parameters as their raw bytes.
-func (transaction *ContractCreateTransaction) SetConstructorParametersRaw(params []byte) *ContractCreateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.parameters = params
-	return transaction
+func (this *ContractCreateTransaction) SetConstructorParametersRaw(params []byte) *ContractCreateTransaction {
+	this._RequireNotFrozen()
+	this.parameters = params
+	return this
 }
 
 // GetConstructorParameters returns the constructor parameters
-func (transaction *ContractCreateTransaction) GetConstructorParameters() []byte {
-	return transaction.parameters
+func (this *ContractCreateTransaction) GetConstructorParameters() []byte {
+	return this.parameters
 }
 
 // SetContractMemo Sets the memo to be associated with this contract.
-func (transaction *ContractCreateTransaction) SetContractMemo(memo string) *ContractCreateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.memo = memo
-	return transaction
+func (this *ContractCreateTransaction) SetContractMemo(memo string) *ContractCreateTransaction {
+	this._RequireNotFrozen()
+	this.memo = memo
+	return this
 }
 
 // GetContractMemo returns the memo associated with this contract.
-func (transaction *ContractCreateTransaction) GetContractMemo() string {
-	return transaction.memo
+func (this *ContractCreateTransaction) GetContractMemo() string {
+	return this.memo
 }
 
 // SetAutoRenewAccountID
 // An account to charge for auto-renewal of this contract. If not set, or set to an
 // account with zero hbar balance, the contract's own hbar balance will be used to
 // cover auto-renewal fees.
-func (transaction *ContractCreateTransaction) SetAutoRenewAccountID(id AccountID) *ContractCreateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.autoRenewAccountID = &id
-	return transaction
+func (this *ContractCreateTransaction) SetAutoRenewAccountID(id AccountID) *ContractCreateTransaction {
+	this._RequireNotFrozen()
+	this.autoRenewAccountID = &id
+	return this
 }
 
 // GetAutoRenewAccountID returns the account to be used at the end of the auto renewal period
-func (transaction *ContractCreateTransaction) GetAutoRenewAccountID() AccountID {
-	if transaction.autoRenewAccountID == nil {
+func (this *ContractCreateTransaction) GetAutoRenewAccountID() AccountID {
+	if this.autoRenewAccountID == nil {
 		return AccountID{}
 	}
 
-	return *transaction.autoRenewAccountID
+	return *this.autoRenewAccountID
 }
 
 // SetMaxAutomaticTokenAssociations
 // The maximum number of tokens that this contract can be automatically associated
 // with (i.e., receive air-drops from).
-func (transaction *ContractCreateTransaction) SetMaxAutomaticTokenAssociations(max int32) *ContractCreateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.maxAutomaticTokenAssociations = max
-	return transaction
+func (this *ContractCreateTransaction) SetMaxAutomaticTokenAssociations(max int32) *ContractCreateTransaction {
+	this._RequireNotFrozen()
+	this.maxAutomaticTokenAssociations = max
+	return this
 }
 
 // GetMaxAutomaticTokenAssociations returns the maximum number of tokens that this contract can be automatically associated
-func (transaction *ContractCreateTransaction) GetMaxAutomaticTokenAssociations() int32 {
-	return transaction.maxAutomaticTokenAssociations
+func (this *ContractCreateTransaction) GetMaxAutomaticTokenAssociations() int32 {
+	return this.maxAutomaticTokenAssociations
 }
 
 // SetStakedAccountID sets the account ID of the account to which this contract is staked.
-func (transaction *ContractCreateTransaction) SetStakedAccountID(id AccountID) *ContractCreateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.stakedAccountID = &id
-	return transaction
+func (this *ContractCreateTransaction) SetStakedAccountID(id AccountID) *ContractCreateTransaction {
+	this._RequireNotFrozen()
+	this.stakedAccountID = &id
+	return this
 }
 
 // GetStakedAccountID returns the account ID of the account to which this contract is staked.
-func (transaction *ContractCreateTransaction) GetStakedAccountID() AccountID {
-	if transaction.stakedAccountID != nil {
-		return *transaction.stakedAccountID
+func (this *ContractCreateTransaction) GetStakedAccountID() AccountID {
+	if this.stakedAccountID != nil {
+		return *this.stakedAccountID
 	}
 
 	return AccountID{}
 }
 
 // SetStakedNodeID sets the node ID of the node to which this contract is staked.
-func (transaction *ContractCreateTransaction) SetStakedNodeID(id int64) *ContractCreateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.stakedNodeID = &id
-	return transaction
+func (this *ContractCreateTransaction) SetStakedNodeID(id int64) *ContractCreateTransaction {
+	this._RequireNotFrozen()
+	this.stakedNodeID = &id
+	return this
 }
 
 // GetStakedNodeID returns the node ID of the node to which this contract is staked.
-func (transaction *ContractCreateTransaction) GetStakedNodeID() int64 {
-	if transaction.stakedNodeID != nil {
-		return *transaction.stakedNodeID
+func (this *ContractCreateTransaction) GetStakedNodeID() int64 {
+	if this.stakedNodeID != nil {
+		return *this.stakedNodeID
 	}
 
 	return 0
 }
 
 // SetDeclineStakingReward sets if the contract should decline to pay the account's staking revenue.
-func (transaction *ContractCreateTransaction) SetDeclineStakingReward(decline bool) *ContractCreateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.declineReward = decline
-	return transaction
+func (this *ContractCreateTransaction) SetDeclineStakingReward(decline bool) *ContractCreateTransaction {
+	this._RequireNotFrozen()
+	this.declineReward = decline
+	return this
 }
 
 // GetDeclineStakingReward returns if the contract should decline to pay the account's staking revenue.
-func (transaction *ContractCreateTransaction) GetDeclineStakingReward() bool {
-	return transaction.declineReward
+func (this *ContractCreateTransaction) GetDeclineStakingReward() bool {
+	return this.declineReward
 }
 
-func (transaction *ContractCreateTransaction) _ValidateNetworkOnIDs(client *Client) error {
-	if client == nil || !client.autoValidateChecksums {
-		return nil
-	}
+func (this *ContractCreateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	this._RequireNotFrozen()
 
-	if transaction.byteCodeFileID != nil {
-		if err := transaction.byteCodeFileID.ValidateChecksum(client); err != nil {
-			return err
-		}
-	}
-
-	if transaction.proxyAccountID != nil {
-		if err := transaction.proxyAccountID.ValidateChecksum(client); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (transaction *ContractCreateTransaction) _Build() *services.TransactionBody {
-	body := &services.ContractCreateTransactionBody{
-		Gas:                           transaction.gas,
-		InitialBalance:                transaction.initialBalance,
-		ConstructorParameters:         transaction.parameters,
-		Memo:                          transaction.memo,
-		MaxAutomaticTokenAssociations: transaction.maxAutomaticTokenAssociations,
-		DeclineReward:                 transaction.declineReward,
-	}
-
-	if transaction.autoRenewPeriod != nil {
-		body.AutoRenewPeriod = _DurationToProtobuf(*transaction.autoRenewPeriod)
-	}
-
-	if transaction.adminKey != nil {
-		body.AdminKey = transaction.adminKey._ToProtoKey()
-	}
-
-	if transaction.byteCodeFileID != nil {
-		body.InitcodeSource = &services.ContractCreateTransactionBody_FileID{FileID: transaction.byteCodeFileID._ToProtobuf()}
-	} else if len(transaction.initcode) != 0 {
-		body.InitcodeSource = &services.ContractCreateTransactionBody_Initcode{Initcode: transaction.initcode}
-	}
-
-	if transaction.autoRenewAccountID != nil {
-		body.AutoRenewAccountId = transaction.autoRenewAccountID._ToProtobuf()
-	}
-
-	if transaction.stakedAccountID != nil {
-		body.StakedId = &services.ContractCreateTransactionBody_StakedAccountId{StakedAccountId: transaction.stakedAccountID._ToProtobuf()}
-	} else if transaction.stakedNodeID != nil {
-		body.StakedId = &services.ContractCreateTransactionBody_StakedNodeId{StakedNodeId: *transaction.stakedNodeID}
-	}
-
-	pb := services.TransactionBody{
-		TransactionFee:           transaction.transactionFee,
-		Memo:                     transaction.transaction.memo,
-		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
-		TransactionID:            transaction.transactionID._ToProtobuf(),
-		Data: &services.TransactionBody_ContractCreateInstance{
-			ContractCreateInstance: body,
-		},
-	}
-
-	return &pb
-}
-
-func (transaction *ContractCreateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	transaction._RequireNotFrozen()
-
-	scheduled, err := transaction._ConstructScheduleProtobuf()
+	scheduled, err := this.buildProtoBody()
 	if err != nil {
 		return nil, err
 	}
@@ -404,337 +338,268 @@ func (transaction *ContractCreateTransaction) Schedule() (*ScheduleCreateTransac
 	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *ContractCreateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (this *ContractCreateTransaction) IsFrozen() bool {
+	return this._IsFrozen()
+}
+
+// Sign uses the provided privateKey to sign the transaction.
+func (this *ContractCreateTransaction) Sign(
+	privateKey PrivateKey,
+) *ContractCreateTransaction {
+	this.transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
+	return this
+}
+
+// SignWithOperator signs the transaction with client's operator privateKey.
+func (this *ContractCreateTransaction) SignWithOperator(
+	client *Client,
+) (*ContractCreateTransaction, error) {
+	// If the transaction is not signed by the _Operator, we need
+	// to sign the transaction with the _Operator
+	_,err := this.transaction.SignWithOperator(client)
+	return this, err
+}
+
+// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// with the publicKey as the map key.
+func (this *ContractCreateTransaction) SignWith(
+	publicKey PublicKey,
+	signer TransactionSigner,
+) *ContractCreateTransaction {
+	this.transaction.SignWith(publicKey, signer)
+	return this
+}
+
+func (this *ContractCreateTransaction) Freeze() (*ContractCreateTransaction, error) {
+	_,err := this.transaction.Freeze()
+	return this, err
+}
+
+func (this *ContractCreateTransaction) FreezeWith(client *Client) (*ContractCreateTransaction, error) {
+	_, err := this.transaction.FreezeWith(client)
+	return this, err
+}
+
+// GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
+func (this *ContractCreateTransaction) GetMaxTransactionFee() Hbar {
+	return this.transaction.GetMaxTransactionFee()
+}
+
+// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
+func (this *ContractCreateTransaction) SetMaxTransactionFee(fee Hbar) *ContractCreateTransaction {
+	this._RequireNotFrozen()
+	this.transaction.SetMaxTransactionFee(fee)
+	return this
+}
+
+// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
+func (this *ContractCreateTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *ContractCreateTransaction {
+	this._RequireNotFrozen()
+	this.transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	return this
+}
+
+// GetRegenerateTransactionID returns true if transaction ID regeneration is enabled.
+func (this *ContractCreateTransaction) GetRegenerateTransactionID() bool {
+	return this.transaction.GetRegenerateTransactionID()
+}
+
+// GetTransactionMemo returns the memo for this ContractCreateTransaction.
+func (this *ContractCreateTransaction) GetTransactionMemo() string {
+	return this.transaction.GetTransactionMemo()
+}
+
+// SetTransactionMemo sets the memo for this ContractCreateTransaction.
+func (this *ContractCreateTransaction) SetTransactionMemo(memo string) *ContractCreateTransaction {
+	this._RequireNotFrozen()
+	this.transaction.SetTransactionMemo(memo)
+	return this
+}
+
+// GetTransactionValidDuration returns the duration that this transaction is valid for.
+func (this *ContractCreateTransaction) GetTransactionValidDuration() time.Duration {
+	return this.transaction.GetTransactionValidDuration()
+}
+
+// SetTransactionValidDuration sets the valid duration for this ContractCreateTransaction.
+func (this *ContractCreateTransaction) SetTransactionValidDuration(duration time.Duration) *ContractCreateTransaction {
+	this._RequireNotFrozen()
+	this.transaction.SetTransactionValidDuration(duration)
+	return this
+}
+
+// GetTransactionID gets the TransactionID for this	ContractCreateTransaction.
+func (this *ContractCreateTransaction) GetTransactionID() TransactionID {
+	return this.transaction.GetTransactionID()
+}
+
+// SetTransactionID sets the TransactionID for this ContractCreateTransaction.
+func (this *ContractCreateTransaction) SetTransactionID(transactionID TransactionID) *ContractCreateTransaction {
+	this._RequireNotFrozen()
+
+	this.transaction.SetTransactionID(transactionID)
+	return this
+}
+
+// SetNodeAccountIDs sets the _Node AccountID for this ContractCreateTransaction.
+func (this *ContractCreateTransaction) SetNodeAccountIDs(nodeID []AccountID) *ContractCreateTransaction {
+	this._RequireNotFrozen()
+	this.transaction.SetNodeAccountIDs(nodeID)
+	return this
+}
+
+// SetMaxRetry sets the max number of errors before execution will fail.
+func (this *ContractCreateTransaction) SetMaxRetry(count int) *ContractCreateTransaction {
+	this.transaction.SetMaxRetry(count)
+	return this
+}
+
+// AddSignature adds a signature to the transaction.
+func (this *ContractCreateTransaction) AddSignature(publicKey PublicKey, signature []byte) *ContractCreateTransaction {
+	this.transaction.AddSignature(publicKey, signature)
+	return this
+}
+
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
+func (this *ContractCreateTransaction) SetMaxBackoff(max time.Duration) *ContractCreateTransaction {
+	this.transaction.SetMaxBackoff(max)
+	return this
+}
+
+// SetMinBackoff sets the minimum amount of time to wait between retries.
+func (this *ContractCreateTransaction) SetMinBackoff(min time.Duration) *ContractCreateTransaction {
+	this.transaction.SetMinBackoff(min)
+	return this
+}
+
+func (this *ContractCreateTransaction) _GetLogID() string {
+	timestamp := this.transactionIDs._GetCurrent().(TransactionID).ValidStart
+	return fmt.Sprintf("ContractCreateTransaction:%d", timestamp.UnixNano())
+}
+
+func (this *ContractCreateTransaction) SetLogLevel(level LogLevel) *ContractCreateTransaction {
+	this.transaction.SetLogLevel(level)
+	return this
+}
+
+// ----------- overriden functions ----------------
+
+func (this *ContractCreateTransaction) getName() string {
+	return "ContractCreateTransaction"
+}
+
+func (this *ContractCreateTransaction) validateNetworkOnIDs(client *Client) error {
+	if client == nil || !client.autoValidateChecksums {
+		return nil
+	}
+
+	if this.byteCodeFileID != nil {
+		if err := this.byteCodeFileID.ValidateChecksum(client); err != nil {
+			return err
+		}
+	}
+
+	if this.proxyAccountID != nil {
+		if err := this.proxyAccountID.ValidateChecksum(client); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (this *ContractCreateTransaction) build() *services.TransactionBody {
 	body := &services.ContractCreateTransactionBody{
-		Gas:                           transaction.gas,
-		InitialBalance:                transaction.initialBalance,
-		ConstructorParameters:         transaction.parameters,
-		Memo:                          transaction.memo,
-		MaxAutomaticTokenAssociations: transaction.maxAutomaticTokenAssociations,
-		DeclineReward:                 transaction.declineReward,
+		Gas:                           this.gas,
+		InitialBalance:                this.initialBalance,
+		ConstructorParameters:         this.parameters,
+		Memo:                          this.memo,
+		MaxAutomaticTokenAssociations: this.maxAutomaticTokenAssociations,
+		DeclineReward:                 this.declineReward,
 	}
 
-	if transaction.autoRenewPeriod != nil {
-		body.AutoRenewPeriod = _DurationToProtobuf(*transaction.autoRenewPeriod)
+	if this.autoRenewPeriod != nil {
+		body.AutoRenewPeriod = _DurationToProtobuf(*this.autoRenewPeriod)
 	}
 
-	if transaction.adminKey != nil {
-		body.AdminKey = transaction.adminKey._ToProtoKey()
+	if this.adminKey != nil {
+		body.AdminKey = this.adminKey._ToProtoKey()
 	}
 
-	if transaction.byteCodeFileID != nil {
-		body.InitcodeSource = &services.ContractCreateTransactionBody_FileID{FileID: transaction.byteCodeFileID._ToProtobuf()}
-	} else if len(transaction.initcode) != 0 {
-		body.InitcodeSource = &services.ContractCreateTransactionBody_Initcode{Initcode: transaction.initcode}
+	if this.byteCodeFileID != nil {
+		body.InitcodeSource = &services.ContractCreateTransactionBody_FileID{FileID: this.byteCodeFileID._ToProtobuf()}
+	} else if len(this.initcode) != 0 {
+		body.InitcodeSource = &services.ContractCreateTransactionBody_Initcode{Initcode: this.initcode}
 	}
 
-	if transaction.autoRenewAccountID != nil {
-		body.AutoRenewAccountId = transaction.autoRenewAccountID._ToProtobuf()
+	if this.autoRenewAccountID != nil {
+		body.AutoRenewAccountId = this.autoRenewAccountID._ToProtobuf()
 	}
 
-	if transaction.stakedAccountID != nil {
-		body.StakedId = &services.ContractCreateTransactionBody_StakedAccountId{StakedAccountId: transaction.stakedAccountID._ToProtobuf()}
-	} else if transaction.stakedNodeID != nil {
-		body.StakedId = &services.ContractCreateTransactionBody_StakedNodeId{StakedNodeId: *transaction.stakedNodeID}
+	if this.stakedAccountID != nil {
+		body.StakedId = &services.ContractCreateTransactionBody_StakedAccountId{StakedAccountId: this.stakedAccountID._ToProtobuf()}
+	} else if this.stakedNodeID != nil {
+		body.StakedId = &services.ContractCreateTransactionBody_StakedNodeId{StakedNodeId: *this.stakedNodeID}
+	}
+
+	pb := services.TransactionBody{
+		TransactionFee:           this.transactionFee,
+		Memo:                     this.transaction.memo,
+		TransactionValidDuration: _DurationToProtobuf(this.GetTransactionValidDuration()),
+		TransactionID:            this.transactionID._ToProtobuf(),
+		Data: &services.TransactionBody_ContractCreateInstance{
+			ContractCreateInstance: body,
+		},
+	}
+
+	return &pb
+}
+func (this *ContractCreateTransaction) buildProtoBody() (*services.SchedulableTransactionBody, error) {
+	body := &services.ContractCreateTransactionBody{
+		Gas:                           this.gas,
+		InitialBalance:                this.initialBalance,
+		ConstructorParameters:         this.parameters,
+		Memo:                          this.memo,
+		MaxAutomaticTokenAssociations: this.maxAutomaticTokenAssociations,
+		DeclineReward:                 this.declineReward,
+	}
+
+	if this.autoRenewPeriod != nil {
+		body.AutoRenewPeriod = _DurationToProtobuf(*this.autoRenewPeriod)
+	}
+
+	if this.adminKey != nil {
+		body.AdminKey = this.adminKey._ToProtoKey()
+	}
+
+	if this.byteCodeFileID != nil {
+		body.InitcodeSource = &services.ContractCreateTransactionBody_FileID{FileID: this.byteCodeFileID._ToProtobuf()}
+	} else if len(this.initcode) != 0 {
+		body.InitcodeSource = &services.ContractCreateTransactionBody_Initcode{Initcode: this.initcode}
+	}
+
+	if this.autoRenewAccountID != nil {
+		body.AutoRenewAccountId = this.autoRenewAccountID._ToProtobuf()
+	}
+
+	if this.stakedAccountID != nil {
+		body.StakedId = &services.ContractCreateTransactionBody_StakedAccountId{StakedAccountId: this.stakedAccountID._ToProtobuf()}
+	} else if this.stakedNodeID != nil {
+		body.StakedId = &services.ContractCreateTransactionBody_StakedNodeId{StakedNodeId: *this.stakedNodeID}
 	}
 
 	return &services.SchedulableTransactionBody{
-		TransactionFee: transaction.transactionFee,
-		Memo:           transaction.transaction.memo,
+		TransactionFee: this.transactionFee,
+		Memo:           this.transaction.memo,
 		Data: &services.SchedulableTransactionBody_ContractCreateInstance{
 			ContractCreateInstance: body,
 		},
 	}, nil
 }
 
-func _ContractCreateTransactionGetMethod(request interface{}, channel *_Channel) _Method {
+func (this *ContractCreateTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetContract().CreateContract,
 	}
-}
-
-func (transaction *ContractCreateTransaction) IsFrozen() bool {
-	return transaction._IsFrozen()
-}
-
-// Sign uses the provided privateKey to sign the transaction.
-func (transaction *ContractCreateTransaction) Sign(
-	privateKey PrivateKey,
-) *ContractCreateTransaction {
-	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
-}
-
-// SignWithOperator signs the transaction with client's operator privateKey.
-func (transaction *ContractCreateTransaction) SignWithOperator(
-	client *Client,
-) (*ContractCreateTransaction, error) {
-	// If the transaction is not signed by the _Operator, we need
-	// to sign the transaction with the _Operator
-
-	if client == nil {
-		return nil, errNoClientProvided
-	} else if client.operator == nil {
-		return nil, errClientOperatorSigning
-	}
-
-	if !transaction.IsFrozen() {
-		_, err := transaction.FreezeWith(client)
-		if err != nil {
-			return transaction, err
-		}
-	}
-	return transaction.SignWith(client.operator.publicKey, client.operator.signer), nil
-}
-
-// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
-// with the publicKey as the map key.
-func (transaction *ContractCreateTransaction) SignWith(
-	publicKey PublicKey,
-	signer TransactionSigner,
-) *ContractCreateTransaction {
-	if !transaction._KeyAlreadySigned(publicKey) {
-		transaction._SignWith(publicKey, signer)
-	}
-
-	return transaction
-}
-
-// Execute executes the transaction with the provided client
-func (transaction *ContractCreateTransaction) Execute(
-	client *Client,
-) (TransactionResponse, error) {
-	if client == nil {
-		return TransactionResponse{}, errNoClientProvided
-	}
-
-	if transaction.freezeError != nil {
-		return TransactionResponse{}, transaction.freezeError
-	}
-
-	if !transaction.IsFrozen() {
-		_, err := transaction.FreezeWith(client)
-		if err != nil {
-			return TransactionResponse{}, err
-		}
-	}
-
-	transactionID := transaction.transactionIDs._GetCurrent().(TransactionID)
-
-	if !client.GetOperatorAccountID()._IsZero() && client.GetOperatorAccountID()._Equals(*transactionID.AccountID) {
-		transaction.SignWith(
-			client.GetOperatorPublicKey(),
-			client.operator.signer,
-		)
-	}
-
-	resp, err := _Execute(
-		client,
-		&transaction.transaction,
-		_TransactionShouldRetry,
-		_TransactionMakeRequest,
-		_TransactionAdvanceRequest,
-		_TransactionGetNodeAccountID,
-		_ContractCreateTransactionGetMethod,
-		_TransactionMapStatusError,
-		_TransactionMapResponse,
-		transaction._GetLogID(),
-		transaction.grpcDeadline,
-		transaction.maxBackoff,
-		transaction.minBackoff,
-		transaction.maxRetry,
-	)
-
-	if err != nil {
-		return TransactionResponse{
-			TransactionID:  transaction.GetTransactionID(),
-			NodeID:         resp.(TransactionResponse).NodeID,
-			ValidateStatus: true,
-		}, err
-	}
-
-	return TransactionResponse{
-		TransactionID:  transaction.GetTransactionID(),
-		NodeID:         resp.(TransactionResponse).NodeID,
-		Hash:           resp.(TransactionResponse).Hash,
-		ValidateStatus: true,
-	}, nil
-}
-
-func (transaction *ContractCreateTransaction) Freeze() (*ContractCreateTransaction, error) {
-	return transaction.FreezeWith(nil)
-}
-
-func (transaction *ContractCreateTransaction) FreezeWith(client *Client) (*ContractCreateTransaction, error) {
-	if transaction.IsFrozen() {
-		return transaction, nil
-	}
-	transaction._InitFee(client)
-	err := transaction._ValidateNetworkOnIDs(client)
-	if err != nil {
-		return &ContractCreateTransaction{}, err
-	}
-	if err := transaction._InitTransactionID(client); err != nil {
-		return transaction, err
-	}
-	body := transaction._Build()
-
-	return transaction, _TransactionFreezeWith(&transaction.transaction, client, body)
-}
-
-// GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
-func (transaction *ContractCreateTransaction) GetMaxTransactionFee() Hbar {
-	return transaction.transaction.GetMaxTransactionFee()
-}
-
-// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
-func (transaction *ContractCreateTransaction) SetMaxTransactionFee(fee Hbar) *ContractCreateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetMaxTransactionFee(fee)
-	return transaction
-}
-
-// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
-func (transaction *ContractCreateTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *ContractCreateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetRegenerateTransactionID(regenerateTransactionID)
-	return transaction
-}
-
-// GetRegenerateTransactionID returns true if transaction ID regeneration is enabled.
-func (transaction *ContractCreateTransaction) GetRegenerateTransactionID() bool {
-	return transaction.transaction.GetRegenerateTransactionID()
-}
-
-// GetTransactionMemo returns the memo for this ContractCreateTransaction.
-func (transaction *ContractCreateTransaction) GetTransactionMemo() string {
-	return transaction.transaction.GetTransactionMemo()
-}
-
-// SetTransactionMemo sets the memo for this ContractCreateTransaction.
-func (transaction *ContractCreateTransaction) SetTransactionMemo(memo string) *ContractCreateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetTransactionMemo(memo)
-	return transaction
-}
-
-// GetTransactionValidDuration returns the duration that this transaction is valid for.
-func (transaction *ContractCreateTransaction) GetTransactionValidDuration() time.Duration {
-	return transaction.transaction.GetTransactionValidDuration()
-}
-
-// SetTransactionValidDuration sets the valid duration for this ContractCreateTransaction.
-func (transaction *ContractCreateTransaction) SetTransactionValidDuration(duration time.Duration) *ContractCreateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetTransactionValidDuration(duration)
-	return transaction
-}
-
-// GetTransactionID gets the TransactionID for this	ContractCreateTransaction.
-func (transaction *ContractCreateTransaction) GetTransactionID() TransactionID {
-	return transaction.transaction.GetTransactionID()
-}
-
-// SetTransactionID sets the TransactionID for this ContractCreateTransaction.
-func (transaction *ContractCreateTransaction) SetTransactionID(transactionID TransactionID) *ContractCreateTransaction {
-	transaction._RequireNotFrozen()
-
-	transaction.transaction.SetTransactionID(transactionID)
-	return transaction
-}
-
-// SetNodeAccountIDs sets the _Node AccountID for this ContractCreateTransaction.
-func (transaction *ContractCreateTransaction) SetNodeAccountIDs(nodeID []AccountID) *ContractCreateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetNodeAccountIDs(nodeID)
-	return transaction
-}
-
-// SetMaxRetry sets the max number of errors before execution will fail.
-func (transaction *ContractCreateTransaction) SetMaxRetry(count int) *ContractCreateTransaction {
-	transaction.transaction.SetMaxRetry(count)
-	return transaction
-}
-
-// AddSignature adds a signature to the transaction.
-func (transaction *ContractCreateTransaction) AddSignature(publicKey PublicKey, signature []byte) *ContractCreateTransaction {
-	transaction._RequireOneNodeAccountID()
-
-	if transaction._KeyAlreadySigned(publicKey) {
-		return transaction
-	}
-
-	if transaction.signedTransactions._Length() == 0 {
-		return transaction
-	}
-
-	transaction.transactions = _NewLockableSlice()
-	transaction.publicKeys = append(transaction.publicKeys, publicKey)
-	transaction.transactionSigners = append(transaction.transactionSigners, nil)
-	transaction.transactionIDs.locked = true
-
-	for index := 0; index < transaction.signedTransactions._Length(); index++ {
-		var temp *services.SignedTransaction
-		switch t := transaction.signedTransactions._Get(index).(type) { //nolint
-		case *services.SignedTransaction:
-			temp = t
-		}
-		temp.SigMap.SigPair = append(
-			temp.SigMap.SigPair,
-			publicKey._ToSignaturePairProtobuf(signature),
-		)
-		transaction.signedTransactions._Set(index, temp)
-	}
-
-	return transaction
-}
-
-// SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (transaction *ContractCreateTransaction) SetMaxBackoff(max time.Duration) *ContractCreateTransaction {
-	if max.Nanoseconds() < 0 {
-		panic("maxBackoff must be a positive duration")
-	} else if max.Nanoseconds() < transaction.minBackoff.Nanoseconds() {
-		panic("maxBackoff must be greater than or equal to minBackoff")
-	}
-	transaction.maxBackoff = &max
-	return transaction
-}
-
-// GetMaxBackoff returns the maximum amount of time to wait between retries.
-func (transaction *ContractCreateTransaction) GetMaxBackoff() time.Duration {
-	if transaction.maxBackoff != nil {
-		return *transaction.maxBackoff
-	}
-
-	return 8 * time.Second
-}
-
-// SetMinBackoff sets the minimum amount of time to wait between retries.
-func (transaction *ContractCreateTransaction) SetMinBackoff(min time.Duration) *ContractCreateTransaction {
-	if min.Nanoseconds() < 0 {
-		panic("minBackoff must be a positive duration")
-	} else if transaction.maxBackoff.Nanoseconds() < min.Nanoseconds() {
-		panic("minBackoff must be less than or equal to maxBackoff")
-	}
-	transaction.minBackoff = &min
-	return transaction
-}
-
-// GetMinBackoff returns the minimum amount of time to wait between retries.
-func (transaction *ContractCreateTransaction) GetMinBackoff() time.Duration {
-	if transaction.minBackoff != nil {
-		return *transaction.minBackoff
-	}
-
-	return 250 * time.Millisecond
-}
-
-func (transaction *ContractCreateTransaction) _GetLogID() string {
-	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
-	return fmt.Sprintf("ContractCreateTransaction:%d", timestamp.UnixNano())
-}
-
-func (transaction *ContractCreateTransaction) SetLogLevel(level LogLevel) *ContractCreateTransaction {
-	transaction.transaction.SetLogLevel(level)
-	return transaction
 }

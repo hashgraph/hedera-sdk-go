@@ -53,7 +53,7 @@ func TestUnitContractCreateTransactionValidate(t *testing.T) {
 		SetProxyAccountID(accountID).
 		SetBytecodeFileID(fileID)
 
-	err = contractCreate._ValidateNetworkOnIDs(client)
+	err = contractCreate.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 }
 
@@ -73,7 +73,7 @@ func TestUnitContractCreateTransactionValidateWrong(t *testing.T) {
 		SetProxyAccountID(accountID).
 		SetBytecodeFileID(fileID)
 
-	err = contractCreate._ValidateNetworkOnIDs(client)
+	err = contractCreate.validateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
@@ -260,7 +260,7 @@ func TestUnitContractCreateTransactionProtoCheck(t *testing.T) {
 	transaction.GetTransactionID()
 	transaction.GetNodeAccountIDs()
 
-	proto := transaction._Build().GetContractCreateInstance()
+	proto := transaction.build().GetContractCreateInstance()
 	require.Equal(t, proto.AdminKey.String(), newKey._ToProtoKey().String())
 	require.Equal(t, proto.GetFileID().String(), fileID._ToProtobuf().String())
 	require.Equal(t, proto.Memo, "yes")
@@ -316,7 +316,7 @@ func TestUnitContractCreateTransactionCoverage(t *testing.T) {
 		Freeze()
 	require.NoError(t, err)
 
-	transaction._ValidateNetworkOnIDs(client)
+	transaction.validateNetworkOnIDs(client)
 
 	_, err = transaction.Schedule()
 	require.NoError(t, err)
@@ -331,7 +331,7 @@ func TestUnitContractCreateTransactionCoverage(t *testing.T) {
 	require.NoError(t, err)
 	txFromBytes, err := TransactionFromBytes(byt)
 	require.NoError(t, err)
-	sig, err := newKey.SignTransaction(&transaction.Transaction)
+	sig, err := newKey.SignTransaction(&transaction.transaction)
 	require.NoError(t, err)
 
 	_, err = transaction.GetTransactionHash()
