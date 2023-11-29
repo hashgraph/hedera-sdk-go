@@ -54,16 +54,16 @@ type AccountAllowanceApproveTransaction struct {
 // (So if account 0.0.X pays for this transaction and owner is not specified in the allowance,
 // then at consensus each spender account will have new allowances to spend hbar or tokens from 0.0.X).
 func NewAccountAllowanceApproveTransaction() *AccountAllowanceApproveTransaction {
-	transaction := AccountAllowanceApproveTransaction{
+	this := AccountAllowanceApproveTransaction{
 		transaction: _NewTransaction(),
 	}
+	this.e = &this
+	this._SetDefaultMaxTransactionFee(NewHbar(2))
 
-	transaction._SetDefaultMaxTransactionFee(NewHbar(2))
-
-	return &transaction
+	return &this
 }
 
-func _AccountAllowanceApproveTransactionFromProtobuf(transaction transaction, pb *services.TransactionBody) *AccountAllowanceApproveTransaction {
+func _AccountAllowanceApproveTransactionFromProtobuf(this transaction, pb *services.TransactionBody) *AccountAllowanceApproveTransaction {
 	accountApproval := make([]*HbarAllowance, 0)
 	tokenApproval := make([]*TokenAllowance, 0)
 	nftApproval := make([]*TokenNftAllowance, 0)
@@ -84,49 +84,49 @@ func _AccountAllowanceApproveTransactionFromProtobuf(transaction transaction, pb
 	}
 
 	return &AccountAllowanceApproveTransaction{
-		transaction:     transaction,
+		transaction:     this,
 		hbarAllowances:  accountApproval,
 		tokenAllowances: tokenApproval,
 		nftAllowances:   nftApproval,
 	}
 }
 
-func (transaction *AccountAllowanceApproveTransaction) _ApproveHbarApproval(ownerAccountID *AccountID, id AccountID, amount Hbar) *AccountAllowanceApproveTransaction {
-	transaction._RequireNotFrozen()
-	transaction.hbarAllowances = append(transaction.hbarAllowances, &HbarAllowance{
+func (this *AccountAllowanceApproveTransaction) _ApproveHbarApproval(ownerAccountID *AccountID, id AccountID, amount Hbar) *AccountAllowanceApproveTransaction {
+	this._RequireNotFrozen()
+	this.hbarAllowances = append(this.hbarAllowances, &HbarAllowance{
 		SpenderAccountID: &id,
 		Amount:           amount.AsTinybar(),
 		OwnerAccountID:   ownerAccountID,
 	})
 
-	return transaction
+	return this
 }
 
 // AddHbarApproval
 // Deprecated - Use ApproveHbarAllowance instead
-func (transaction *AccountAllowanceApproveTransaction) AddHbarApproval(id AccountID, amount Hbar) *AccountAllowanceApproveTransaction {
-	return transaction._ApproveHbarApproval(nil, id, amount)
+func (this *AccountAllowanceApproveTransaction) AddHbarApproval(id AccountID, amount Hbar) *AccountAllowanceApproveTransaction {
+	return this._ApproveHbarApproval(nil, id, amount)
 }
 
 // ApproveHbarApproval
 // Deprecated - Use ApproveHbarAllowance instead
-func (transaction *AccountAllowanceApproveTransaction) ApproveHbarApproval(ownerAccountID AccountID, id AccountID, amount Hbar) *AccountAllowanceApproveTransaction {
-	return transaction._ApproveHbarApproval(&ownerAccountID, id, amount)
+func (this *AccountAllowanceApproveTransaction) ApproveHbarApproval(ownerAccountID AccountID, id AccountID, amount Hbar) *AccountAllowanceApproveTransaction {
+	return this._ApproveHbarApproval(&ownerAccountID, id, amount)
 }
 
 // ApproveHbarAllowance
 // Approves allowance of hbar transfers for a spender.
-func (transaction *AccountAllowanceApproveTransaction) ApproveHbarAllowance(ownerAccountID AccountID, id AccountID, amount Hbar) *AccountAllowanceApproveTransaction {
-	return transaction._ApproveHbarApproval(&ownerAccountID, id, amount)
+func (this *AccountAllowanceApproveTransaction) ApproveHbarAllowance(ownerAccountID AccountID, id AccountID, amount Hbar) *AccountAllowanceApproveTransaction {
+	return this._ApproveHbarApproval(&ownerAccountID, id, amount)
 }
 
 // List of hbar allowance records
-func (transaction *AccountAllowanceApproveTransaction) GetHbarAllowances() []*HbarAllowance {
-	return transaction.hbarAllowances
+func (this *AccountAllowanceApproveTransaction) GetHbarAllowances() []*HbarAllowance {
+	return this.hbarAllowances
 }
 
-func (transaction *AccountAllowanceApproveTransaction) _ApproveTokenApproval(tokenID TokenID, ownerAccountID *AccountID, accountID AccountID, amount int64) *AccountAllowanceApproveTransaction {
-	transaction._RequireNotFrozen()
+func (this *AccountAllowanceApproveTransaction) _ApproveTokenApproval(tokenID TokenID, ownerAccountID *AccountID, accountID AccountID, amount int64) *AccountAllowanceApproveTransaction {
+	this._RequireNotFrozen()
 	tokenApproval := TokenAllowance{
 		TokenID:          &tokenID,
 		SpenderAccountID: &accountID,
@@ -134,36 +134,36 @@ func (transaction *AccountAllowanceApproveTransaction) _ApproveTokenApproval(tok
 		OwnerAccountID:   ownerAccountID,
 	}
 
-	transaction.tokenAllowances = append(transaction.tokenAllowances, &tokenApproval)
-	return transaction
+	this.tokenAllowances = append(this.tokenAllowances, &tokenApproval)
+	return this
 }
 
 // Deprecated - Use ApproveTokenAllowance instead
-func (transaction *AccountAllowanceApproveTransaction) AddTokenApproval(tokenID TokenID, accountID AccountID, amount int64) *AccountAllowanceApproveTransaction {
-	return transaction._ApproveTokenApproval(tokenID, nil, accountID, amount)
+func (this *AccountAllowanceApproveTransaction) AddTokenApproval(tokenID TokenID, accountID AccountID, amount int64) *AccountAllowanceApproveTransaction {
+	return this._ApproveTokenApproval(tokenID, nil, accountID, amount)
 }
 
 // ApproveTokenApproval
 // Deprecated - Use ApproveTokenAllowance instead
-func (transaction *AccountAllowanceApproveTransaction) ApproveTokenApproval(tokenID TokenID, ownerAccountID AccountID, accountID AccountID, amount int64) *AccountAllowanceApproveTransaction {
-	return transaction._ApproveTokenApproval(tokenID, &ownerAccountID, accountID, amount)
+func (this *AccountAllowanceApproveTransaction) ApproveTokenApproval(tokenID TokenID, ownerAccountID AccountID, accountID AccountID, amount int64) *AccountAllowanceApproveTransaction {
+	return this._ApproveTokenApproval(tokenID, &ownerAccountID, accountID, amount)
 }
 
 // ApproveTokenAllowance
 // Approve allowance of fungible token transfers for a spender.
-func (transaction *AccountAllowanceApproveTransaction) ApproveTokenAllowance(tokenID TokenID, ownerAccountID AccountID, accountID AccountID, amount int64) *AccountAllowanceApproveTransaction {
-	return transaction._ApproveTokenApproval(tokenID, &ownerAccountID, accountID, amount)
+func (this *AccountAllowanceApproveTransaction) ApproveTokenAllowance(tokenID TokenID, ownerAccountID AccountID, accountID AccountID, amount int64) *AccountAllowanceApproveTransaction {
+	return this._ApproveTokenApproval(tokenID, &ownerAccountID, accountID, amount)
 }
 
 // List of token allowance records
-func (transaction *AccountAllowanceApproveTransaction) GetTokenAllowances() []*TokenAllowance {
-	return transaction.tokenAllowances
+func (this *AccountAllowanceApproveTransaction) GetTokenAllowances() []*TokenAllowance {
+	return this.tokenAllowances
 }
 
-func (transaction *AccountAllowanceApproveTransaction) _ApproveTokenNftApproval(nftID NftID, ownerAccountID *AccountID, spenderAccountID *AccountID, delegatingSpenderAccountId *AccountID) *AccountAllowanceApproveTransaction {
-	transaction._RequireNotFrozen()
+func (this *AccountAllowanceApproveTransaction) _ApproveTokenNftApproval(nftID NftID, ownerAccountID *AccountID, spenderAccountID *AccountID, delegatingSpenderAccountId *AccountID) *AccountAllowanceApproveTransaction {
+	this._RequireNotFrozen()
 
-	for _, t := range transaction.nftAllowances {
+	for _, t := range this.nftAllowances {
 		if t.TokenID.String() == nftID.TokenID.String() {
 			if t.SpenderAccountID.String() == spenderAccountID.String() {
 				b := false
@@ -175,12 +175,12 @@ func (transaction *AccountAllowanceApproveTransaction) _ApproveTokenNftApproval(
 				if !b {
 					t.SerialNumbers = append(t.SerialNumbers, nftID.SerialNumber)
 				}
-				return transaction
+				return this
 			}
 		}
 	}
 
-	transaction.nftAllowances = append(transaction.nftAllowances, &TokenNftAllowance{
+	this.nftAllowances = append(this.nftAllowances, &TokenNftAllowance{
 		TokenID:           &nftID.TokenID,
 		SpenderAccountID:  spenderAccountID,
 		SerialNumbers:     []int64{nftID.SerialNumber},
@@ -188,80 +188,245 @@ func (transaction *AccountAllowanceApproveTransaction) _ApproveTokenNftApproval(
 		OwnerAccountID:    ownerAccountID,
 		DelegatingSpender: delegatingSpenderAccountId,
 	})
-	return transaction
+	return this
 }
 
 // AddTokenNftApproval
 // Deprecated - Use ApproveTokenNftAllowance instead
-func (transaction *AccountAllowanceApproveTransaction) AddTokenNftApproval(nftID NftID, accountID AccountID) *AccountAllowanceApproveTransaction {
-	return transaction._ApproveTokenNftApproval(nftID, nil, &accountID, nil)
+func (this *AccountAllowanceApproveTransaction) AddTokenNftApproval(nftID NftID, accountID AccountID) *AccountAllowanceApproveTransaction {
+	return this._ApproveTokenNftApproval(nftID, nil, &accountID, nil)
 }
 
 // ApproveTokenNftApproval
 // Deprecated - Use ApproveTokenNftAllowance instead
-func (transaction *AccountAllowanceApproveTransaction) ApproveTokenNftApproval(nftID NftID, ownerAccountID AccountID, accountID AccountID) *AccountAllowanceApproveTransaction {
-	return transaction._ApproveTokenNftApproval(nftID, &ownerAccountID, &accountID, nil)
+func (this *AccountAllowanceApproveTransaction) ApproveTokenNftApproval(nftID NftID, ownerAccountID AccountID, accountID AccountID) *AccountAllowanceApproveTransaction {
+	return this._ApproveTokenNftApproval(nftID, &ownerAccountID, &accountID, nil)
 }
 
-func (transaction *AccountAllowanceApproveTransaction) ApproveTokenNftAllowanceWithDelegatingSpender(nftID NftID, ownerAccountID AccountID, spenderAccountId AccountID, delegatingSpenderAccountID AccountID) *AccountAllowanceApproveTransaction {
-	transaction._RequireNotFrozen()
-	return transaction._ApproveTokenNftApproval(nftID, &ownerAccountID, &spenderAccountId, &delegatingSpenderAccountID)
+func (this *AccountAllowanceApproveTransaction) ApproveTokenNftAllowanceWithDelegatingSpender(nftID NftID, ownerAccountID AccountID, spenderAccountId AccountID, delegatingSpenderAccountID AccountID) *AccountAllowanceApproveTransaction {
+	this._RequireNotFrozen()
+	return this._ApproveTokenNftApproval(nftID, &ownerAccountID, &spenderAccountId, &delegatingSpenderAccountID)
 }
 
 // ApproveTokenNftAllowance
 // Approve allowance of non-fungible token transfers for a spender.
-func (transaction *AccountAllowanceApproveTransaction) ApproveTokenNftAllowance(nftID NftID, ownerAccountID AccountID, accountID AccountID) *AccountAllowanceApproveTransaction {
-	return transaction._ApproveTokenNftApproval(nftID, &ownerAccountID, &accountID, nil)
+func (this *AccountAllowanceApproveTransaction) ApproveTokenNftAllowance(nftID NftID, ownerAccountID AccountID, accountID AccountID) *AccountAllowanceApproveTransaction {
+	return this._ApproveTokenNftApproval(nftID, &ownerAccountID, &accountID, nil)
 }
 
-func (transaction *AccountAllowanceApproveTransaction) _ApproveTokenNftAllowanceAllSerials(tokenID TokenID, ownerAccountID *AccountID, spenderAccount AccountID) *AccountAllowanceApproveTransaction {
-	for _, t := range transaction.nftAllowances {
+func (this *AccountAllowanceApproveTransaction) _ApproveTokenNftAllowanceAllSerials(tokenID TokenID, ownerAccountID *AccountID, spenderAccount AccountID) *AccountAllowanceApproveTransaction {
+	for _, t := range this.nftAllowances {
 		if t.TokenID.String() == tokenID.String() {
 			if t.SpenderAccountID.String() == spenderAccount.String() {
 				t.SerialNumbers = []int64{}
 				t.AllSerials = true
-				return transaction
+				return this
 			}
 		}
 	}
 
-	transaction.nftAllowances = append(transaction.nftAllowances, &TokenNftAllowance{
+	this.nftAllowances = append(this.nftAllowances, &TokenNftAllowance{
 		TokenID:          &tokenID,
 		SpenderAccountID: &spenderAccount,
 		SerialNumbers:    []int64{},
 		AllSerials:       true,
 		OwnerAccountID:   ownerAccountID,
 	})
-	return transaction
+	return this
 }
 
 // AddAllTokenNftApproval
 // Approve allowance of non-fungible token transfers for a spender.
 // Spender has access to all of the owner's NFT units of type tokenId (currently
 // owned and any in the future).
-func (transaction *AccountAllowanceApproveTransaction) AddAllTokenNftApproval(tokenID TokenID, spenderAccount AccountID) *AccountAllowanceApproveTransaction {
-	return transaction._ApproveTokenNftAllowanceAllSerials(tokenID, nil, spenderAccount)
+func (this *AccountAllowanceApproveTransaction) AddAllTokenNftApproval(tokenID TokenID, spenderAccount AccountID) *AccountAllowanceApproveTransaction {
+	return this._ApproveTokenNftAllowanceAllSerials(tokenID, nil, spenderAccount)
 }
 
 // ApproveTokenNftAllowanceAllSerials
 // Approve allowance of non-fungible token transfers for a spender.
 // Spender has access to all of the owner's NFT units of type tokenId (currently
 // owned and any in the future).
-func (transaction *AccountAllowanceApproveTransaction) ApproveTokenNftAllowanceAllSerials(tokenID TokenID, ownerAccountID AccountID, spenderAccount AccountID) *AccountAllowanceApproveTransaction {
-	return transaction._ApproveTokenNftAllowanceAllSerials(tokenID, &ownerAccountID, spenderAccount)
+func (this *AccountAllowanceApproveTransaction) ApproveTokenNftAllowanceAllSerials(tokenID TokenID, ownerAccountID AccountID, spenderAccount AccountID) *AccountAllowanceApproveTransaction {
+	return this._ApproveTokenNftAllowanceAllSerials(tokenID, &ownerAccountID, spenderAccount)
 }
 
 // List of NFT allowance records
-func (transaction *AccountAllowanceApproveTransaction) GetTokenNftAllowances() []*TokenNftAllowance {
-	return transaction.nftAllowances
+func (this *AccountAllowanceApproveTransaction) GetTokenNftAllowances() []*TokenNftAllowance {
+	return this.nftAllowances
 }
 
-func (transaction *AccountAllowanceApproveTransaction) _ValidateNetworkOnIDs(client *Client) error {
+func (this *AccountAllowanceApproveTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	this._RequireNotFrozen()
+
+	scheduled, err := this.buildProtoBody()
+	if err != nil {
+		return nil, err
+	}
+
+	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
+}
+
+func (this *AccountAllowanceApproveTransaction) IsFrozen() bool {
+	return this._IsFrozen()
+}
+
+// Sign uses the provided privateKey to sign the transaction.
+func (this *AccountAllowanceApproveTransaction) Sign(
+	privateKey PrivateKey,
+) *AccountAllowanceApproveTransaction {
+	this.transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
+	return this
+}
+
+// SignWithOperator signs the transaction with client's operator privateKey.
+func (this *AccountAllowanceApproveTransaction) SignWithOperator(
+	client *Client,
+) (*AccountAllowanceApproveTransaction, error) {
+	_,err := this.transaction.SignWithOperator(client)
+	return this, err
+}
+
+// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// with the publicKey as the map key.
+func (this *AccountAllowanceApproveTransaction) SignWith(
+	publicKey PublicKey,
+	signer TransactionSigner,
+) *AccountAllowanceApproveTransaction {
+	this.transaction.SignWith(publicKey, signer)
+	return this
+}
+
+func (this *AccountAllowanceApproveTransaction) Freeze() (*AccountAllowanceApproveTransaction, error) {
+	_,err := this.transaction.Freeze()
+	return this, err
+}
+
+func (this *AccountAllowanceApproveTransaction) FreezeWith(client *Client) (*AccountAllowanceApproveTransaction, error) {
+	_, err := this.transaction.FreezeWith(client)
+	return this, err
+}
+
+// GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
+func (this *AccountAllowanceApproveTransaction) GetMaxTransactionFee() Hbar {
+	return this.transaction.GetMaxTransactionFee()
+}
+
+// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
+func (this *AccountAllowanceApproveTransaction) SetMaxTransactionFee(fee Hbar) *AccountAllowanceApproveTransaction {
+	this._RequireNotFrozen()
+	this.transaction.SetMaxTransactionFee(fee)
+	return this
+}
+
+// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
+func (this *AccountAllowanceApproveTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *AccountAllowanceApproveTransaction {
+	this._RequireNotFrozen()
+	this.transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	return this
+}
+
+// GetRegenerateTransactionID returns true if transaction ID regeneration is enabled.
+func (this *AccountAllowanceApproveTransaction) GetRegenerateTransactionID() bool {
+	return this.transaction.GetRegenerateTransactionID()
+}
+
+// GetTransactionMemo returns the memo for this AccountAllowanceApproveTransaction.
+func (this *AccountAllowanceApproveTransaction) GetTransactionMemo() string {
+	return this.transaction.GetTransactionMemo()
+}
+
+// SetTransactionMemo sets the memo for this AccountAllowanceApproveTransaction.
+func (this *AccountAllowanceApproveTransaction) SetTransactionMemo(memo string) *AccountAllowanceApproveTransaction {
+	this._RequireNotFrozen()
+	this.transaction.SetTransactionMemo(memo)
+	return this
+}
+
+// GetTransactionValidDuration returns the duration that this transaction is valid for.
+func (this *AccountAllowanceApproveTransaction) GetTransactionValidDuration() time.Duration {
+	return this.transaction.GetTransactionValidDuration()
+}
+
+// SetTransactionValidDuration sets the valid duration for this AccountAllowanceApproveTransaction.
+func (this *AccountAllowanceApproveTransaction) SetTransactionValidDuration(duration time.Duration) *AccountAllowanceApproveTransaction {
+	this._RequireNotFrozen()
+	this.transaction.SetTransactionValidDuration(duration)
+	return this
+}
+
+// GetTransactionID gets the TransactionID for this AccountAllowanceApproveTransaction.
+func (this *AccountAllowanceApproveTransaction) GetTransactionID() TransactionID {
+	return this.transaction.GetTransactionID()
+}
+
+// SetTransactionID sets the TransactionID for this AccountAllowanceApproveTransaction.
+func (this *AccountAllowanceApproveTransaction) SetTransactionID(transactionID TransactionID) *AccountAllowanceApproveTransaction {
+	this._RequireNotFrozen()
+
+	this.transaction.SetTransactionID(transactionID)
+	return this
+}
+
+// SetNodeAccountIDs sets the _Node AccountID for this AccountAllowanceApproveTransaction.
+func (this *AccountAllowanceApproveTransaction) SetNodeAccountIDs(nodeID []AccountID) *AccountAllowanceApproveTransaction {
+	this._RequireNotFrozen()
+	this.transaction.SetNodeAccountIDs(nodeID)
+	return this
+}
+
+// SetMaxRetry sets the max number of errors before execution will fail.
+func (this *AccountAllowanceApproveTransaction) SetMaxRetry(count int) *AccountAllowanceApproveTransaction {
+	this.transaction.SetMaxRetry(count)
+	return this
+}
+
+// AddSignature adds a signature to the transaction.
+func (this *AccountAllowanceApproveTransaction) AddSignature(publicKey PublicKey, signature []byte) *AccountAllowanceApproveTransaction {
+	this.transaction.AddSignature(publicKey, signature)
+	return this
+}
+
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
+func (this *AccountAllowanceApproveTransaction) SetMaxBackoff(max time.Duration) *AccountAllowanceApproveTransaction {
+	this.SetMaxBackoff(max)
+	return this
+}
+
+// GetMaxBackoff returns the max back off for this AccountAllowanceApproveTransaction.
+func (this *AccountAllowanceApproveTransaction) GetMaxBackoff() time.Duration {
+	return this.transaction.GetMaxBackoff()
+}
+
+// SetMinBackoff sets the min back off for this AccountAllowanceApproveTransaction.
+func (this *AccountAllowanceApproveTransaction) SetMinBackoff(min time.Duration) *AccountAllowanceApproveTransaction {
+	this.SetMinBackoff(min)
+	return this
+}
+
+// GetMinBackoff returns the min back off for this AccountAllowanceApproveTransaction.
+func (this *AccountAllowanceApproveTransaction) GetMinBackoff() time.Duration {
+	return this.GetMinBackoff()
+}
+
+func (this *AccountAllowanceApproveTransaction) _GetLogID() string {
+	timestamp := this.transactionIDs._GetCurrent().(TransactionID).ValidStart
+	return fmt.Sprintf("AccountAllowanceApproveTransaction:%d", timestamp.UnixNano())
+}
+
+
+// ----------- overriden functions ----------------
+
+func (this *AccountAllowanceApproveTransaction) getName() string {
+	return "AccountAllowanceApproveTransaction"
+}
+func (this *AccountAllowanceApproveTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
 
-	for _, ap := range transaction.hbarAllowances {
+	for _, ap := range this.hbarAllowances {
 		if ap.SpenderAccountID != nil {
 			if err := ap.SpenderAccountID.ValidateChecksum(client); err != nil {
 				return err
@@ -275,7 +440,7 @@ func (transaction *AccountAllowanceApproveTransaction) _ValidateNetworkOnIDs(cli
 		}
 	}
 
-	for _, ap := range transaction.tokenAllowances {
+	for _, ap := range this.tokenAllowances {
 		if ap.SpenderAccountID != nil {
 			if err := ap.SpenderAccountID.ValidateChecksum(client); err != nil {
 				return err
@@ -295,7 +460,7 @@ func (transaction *AccountAllowanceApproveTransaction) _ValidateNetworkOnIDs(cli
 		}
 	}
 
-	for _, ap := range transaction.nftAllowances {
+	for _, ap := range this.nftAllowances {
 		if ap.SpenderAccountID != nil {
 			if err := ap.SpenderAccountID.ValidateChecksum(client); err != nil {
 				return err
@@ -318,28 +483,28 @@ func (transaction *AccountAllowanceApproveTransaction) _ValidateNetworkOnIDs(cli
 	return nil
 }
 
-func (transaction *AccountAllowanceApproveTransaction) _Build() *services.TransactionBody {
+func (this *AccountAllowanceApproveTransaction) build() *services.TransactionBody {
 	accountApproval := make([]*services.CryptoAllowance, 0)
 	tokenApproval := make([]*services.TokenAllowance, 0)
 	nftApproval := make([]*services.NftAllowance, 0)
 
-	for _, ap := range transaction.hbarAllowances {
+	for _, ap := range this.hbarAllowances {
 		accountApproval = append(accountApproval, ap._ToProtobuf())
 	}
 
-	for _, ap := range transaction.tokenAllowances {
+	for _, ap := range this.tokenAllowances {
 		tokenApproval = append(tokenApproval, ap._ToProtobuf())
 	}
 
-	for _, ap := range transaction.nftAllowances {
+	for _, ap := range this.nftAllowances {
 		nftApproval = append(nftApproval, ap._ToProtobuf())
 	}
 
 	return &services.TransactionBody{
-		TransactionID:            transaction.transactionID._ToProtobuf(),
-		TransactionFee:           transaction.transactionFee,
-		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
-		Memo:                     transaction.transaction.memo,
+		TransactionID:            this.transactionID._ToProtobuf(),
+		TransactionFee:           this.transactionFee,
+		TransactionValidDuration: _DurationToProtobuf(this.GetTransactionValidDuration()),
+		Memo:                     this.transaction.memo,
 		Data: &services.TransactionBody_CryptoApproveAllowance{
 			CryptoApproveAllowance: &services.CryptoApproveAllowanceTransactionBody{
 				CryptoAllowances: accountApproval,
@@ -350,37 +515,26 @@ func (transaction *AccountAllowanceApproveTransaction) _Build() *services.Transa
 	}
 }
 
-func (transaction *AccountAllowanceApproveTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	transaction._RequireNotFrozen()
-
-	scheduled, err := transaction._ConstructScheduleProtobuf()
-	if err != nil {
-		return nil, err
-	}
-
-	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
-}
-
-func (transaction *AccountAllowanceApproveTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (this *AccountAllowanceApproveTransaction) buildProtoBody() (*services.SchedulableTransactionBody, error) {
 	accountApproval := make([]*services.CryptoAllowance, 0)
 	tokenApproval := make([]*services.TokenAllowance, 0)
 	nftApproval := make([]*services.NftAllowance, 0)
 
-	for _, ap := range transaction.hbarAllowances {
+	for _, ap := range this.hbarAllowances {
 		accountApproval = append(accountApproval, ap._ToProtobuf())
 	}
 
-	for _, ap := range transaction.tokenAllowances {
+	for _, ap := range this.tokenAllowances {
 		tokenApproval = append(tokenApproval, ap._ToProtobuf())
 	}
 
-	for _, ap := range transaction.nftAllowances {
+	for _, ap := range this.nftAllowances {
 		nftApproval = append(nftApproval, ap._ToProtobuf())
 	}
 
 	return &services.SchedulableTransactionBody{
-		TransactionFee: transaction.transactionFee,
-		Memo:           transaction.transaction.memo,
+		TransactionFee: this.transactionFee,
+		Memo:           this.transaction.memo,
 		Data: &services.SchedulableTransactionBody_CryptoApproveAllowance{
 			CryptoApproveAllowance: &services.CryptoApproveAllowanceTransactionBody{
 				CryptoAllowances: accountApproval,
@@ -391,289 +545,8 @@ func (transaction *AccountAllowanceApproveTransaction) _ConstructScheduleProtobu
 	}, nil
 }
 
-func _AccountApproveAllowanceTransactionGetMethod(request interface{}, channel *_Channel) _Method {
+func (this *AccountAllowanceApproveTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetCrypto().ApproveAllowances,
 	}
-}
-
-func (transaction *AccountAllowanceApproveTransaction) IsFrozen() bool {
-	return transaction._IsFrozen()
-}
-
-// Sign uses the provided privateKey to sign the transaction.
-func (transaction *AccountAllowanceApproveTransaction) Sign(
-	privateKey PrivateKey,
-) *AccountAllowanceApproveTransaction {
-	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
-}
-
-// SignWithOperator signs the transaction with client's operator privateKey.
-func (transaction *AccountAllowanceApproveTransaction) SignWithOperator(
-	client *Client,
-) (*AccountAllowanceApproveTransaction, error) {
-	// If the transaction is not signed by the _Operator, we need
-	// to sign the transaction with the _Operator
-
-	if client == nil {
-		return nil, errNoClientProvided
-	} else if client.operator == nil {
-		return nil, errClientOperatorSigning
-	}
-
-	if !transaction.IsFrozen() {
-		_, err := transaction.FreezeWith(client)
-		if err != nil {
-			return transaction, err
-		}
-	}
-	return transaction.SignWith(client.operator.publicKey, client.operator.signer), nil
-}
-
-// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
-// with the publicKey as the map key.
-func (transaction *AccountAllowanceApproveTransaction) SignWith(
-	publicKey PublicKey,
-	signer TransactionSigner,
-) *AccountAllowanceApproveTransaction {
-	if !transaction._KeyAlreadySigned(publicKey) {
-		transaction._SignWith(publicKey, signer)
-	}
-
-	return transaction
-}
-
-// Execute executes the transaction with the provided client
-func (transaction *AccountAllowanceApproveTransaction) Execute(
-	client *Client,
-) (TransactionResponse, error) {
-	if client == nil {
-		return TransactionResponse{}, errNoClientProvided
-	}
-
-	if transaction.freezeError != nil {
-		return TransactionResponse{}, transaction.freezeError
-	}
-
-	if !transaction.IsFrozen() {
-		_, err := transaction.FreezeWith(client)
-		if err != nil {
-			return TransactionResponse{}, err
-		}
-	}
-
-	transactionID := transaction.transactionIDs._GetCurrent().(TransactionID)
-
-	if !client.GetOperatorAccountID()._IsZero() && client.GetOperatorAccountID()._Equals(*transactionID.AccountID) {
-		transaction.SignWith(
-			client.GetOperatorPublicKey(),
-			client.operator.signer,
-		)
-	}
-
-	resp, err := _Execute(
-		client,
-		&transaction.transaction,
-		_TransactionShouldRetry,
-		_TransactionMakeRequest,
-		_TransactionAdvanceRequest,
-		_TransactionGetNodeAccountID,
-		_AccountApproveAllowanceTransactionGetMethod,
-		_TransactionMapStatusError,
-		_TransactionMapResponse,
-		transaction._GetLogID(),
-		transaction.grpcDeadline,
-		transaction.maxBackoff,
-		transaction.minBackoff,
-		transaction.maxRetry,
-	)
-
-	if err != nil {
-		return TransactionResponse{
-			TransactionID:  transaction.GetTransactionID(),
-			NodeID:         resp.(TransactionResponse).NodeID,
-			ValidateStatus: true,
-		}, err
-	}
-
-	return TransactionResponse{
-		TransactionID:  transaction.GetTransactionID(),
-		NodeID:         resp.(TransactionResponse).NodeID,
-		Hash:           resp.(TransactionResponse).Hash,
-		ValidateStatus: true,
-	}, nil
-}
-
-func (transaction *AccountAllowanceApproveTransaction) Freeze() (*AccountAllowanceApproveTransaction, error) {
-	return transaction.FreezeWith(nil)
-}
-
-func (transaction *AccountAllowanceApproveTransaction) FreezeWith(client *Client) (*AccountAllowanceApproveTransaction, error) {
-	if transaction.IsFrozen() {
-		return transaction, nil
-	}
-	transaction._InitFee(client)
-	if err := transaction._InitTransactionID(client); err != nil {
-		return transaction, err
-	}
-	err := transaction._ValidateNetworkOnIDs(client)
-	body := transaction._Build()
-	if err != nil {
-		return &AccountAllowanceApproveTransaction{}, err
-	}
-
-	return transaction, _TransactionFreezeWith(&transaction.transaction, client, body)
-}
-
-// GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
-func (transaction *AccountAllowanceApproveTransaction) GetMaxTransactionFee() Hbar {
-	return transaction.transaction.GetMaxTransactionFee()
-}
-
-// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
-func (transaction *AccountAllowanceApproveTransaction) SetMaxTransactionFee(fee Hbar) *AccountAllowanceApproveTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetMaxTransactionFee(fee)
-	return transaction
-}
-
-// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
-func (transaction *AccountAllowanceApproveTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *AccountAllowanceApproveTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetRegenerateTransactionID(regenerateTransactionID)
-	return transaction
-}
-
-// GetRegenerateTransactionID returns true if transaction ID regeneration is enabled.
-func (transaction *AccountAllowanceApproveTransaction) GetRegenerateTransactionID() bool {
-	return transaction.transaction.GetRegenerateTransactionID()
-}
-
-// GetTransactionMemo returns the memo for this AccountAllowanceApproveTransaction.
-func (transaction *AccountAllowanceApproveTransaction) GetTransactionMemo() string {
-	return transaction.transaction.GetTransactionMemo()
-}
-
-// SetTransactionMemo sets the memo for this AccountAllowanceApproveTransaction.
-func (transaction *AccountAllowanceApproveTransaction) SetTransactionMemo(memo string) *AccountAllowanceApproveTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetTransactionMemo(memo)
-	return transaction
-}
-
-// GetTransactionValidDuration returns the duration that this transaction is valid for.
-func (transaction *AccountAllowanceApproveTransaction) GetTransactionValidDuration() time.Duration {
-	return transaction.transaction.GetTransactionValidDuration()
-}
-
-// SetTransactionValidDuration sets the valid duration for this AccountAllowanceApproveTransaction.
-func (transaction *AccountAllowanceApproveTransaction) SetTransactionValidDuration(duration time.Duration) *AccountAllowanceApproveTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetTransactionValidDuration(duration)
-	return transaction
-}
-
-// GetTransactionID gets the TransactionID for this AccountAllowanceApproveTransaction.
-func (transaction *AccountAllowanceApproveTransaction) GetTransactionID() TransactionID {
-	return transaction.transaction.GetTransactionID()
-}
-
-// SetTransactionID sets the TransactionID for this AccountAllowanceApproveTransaction.
-func (transaction *AccountAllowanceApproveTransaction) SetTransactionID(transactionID TransactionID) *AccountAllowanceApproveTransaction {
-	transaction._RequireNotFrozen()
-
-	transaction.transaction.SetTransactionID(transactionID)
-	return transaction
-}
-
-// SetNodeAccountIDs sets the _Node AccountID for this AccountAllowanceApproveTransaction.
-func (transaction *AccountAllowanceApproveTransaction) SetNodeAccountIDs(nodeID []AccountID) *AccountAllowanceApproveTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetNodeAccountIDs(nodeID)
-	return transaction
-}
-
-// SetMaxRetry sets the max number of errors before execution will fail.
-func (transaction *AccountAllowanceApproveTransaction) SetMaxRetry(count int) *AccountAllowanceApproveTransaction {
-	transaction.transaction.SetMaxRetry(count)
-	return transaction
-}
-
-// AddSignature adds a signature to the transaction.
-func (transaction *AccountAllowanceApproveTransaction) AddSignature(publicKey PublicKey, signature []byte) *AccountAllowanceApproveTransaction {
-	transaction._RequireOneNodeAccountID()
-
-	if transaction._KeyAlreadySigned(publicKey) {
-		return transaction
-	}
-
-	if transaction.signedTransactions._Length() == 0 {
-		return transaction
-	}
-
-	transaction.transactions = _NewLockableSlice()
-	transaction.publicKeys = append(transaction.publicKeys, publicKey)
-	transaction.transactionSigners = append(transaction.transactionSigners, nil)
-	transaction.transactionIDs.locked = true
-
-	for index := 0; index < transaction.signedTransactions._Length(); index++ {
-		var temp *services.SignedTransaction
-		switch t := transaction.signedTransactions._Get(index).(type) { //nolint
-		case *services.SignedTransaction:
-			temp = t
-		}
-		temp.SigMap.SigPair = append(
-			temp.SigMap.SigPair,
-			publicKey._ToSignaturePairProtobuf(signature),
-		)
-		transaction.signedTransactions._Set(index, temp)
-	}
-
-	return transaction
-}
-
-// SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (transaction *AccountAllowanceApproveTransaction) SetMaxBackoff(max time.Duration) *AccountAllowanceApproveTransaction {
-	if max.Nanoseconds() < 0 {
-		panic("maxBackoff must be a positive duration")
-	} else if max.Nanoseconds() < transaction.minBackoff.Nanoseconds() {
-		panic("maxBackoff must be greater than or equal to minBackoff")
-	}
-	transaction.maxBackoff = &max
-	return transaction
-}
-
-// GetMaxBackoff returns the max back off for this AccountAllowanceApproveTransaction.
-func (transaction *AccountAllowanceApproveTransaction) GetMaxBackoff() time.Duration {
-	if transaction.maxBackoff != nil {
-		return *transaction.maxBackoff
-	}
-
-	return 8 * time.Second
-}
-
-// SetMinBackoff sets the min back off for this AccountAllowanceApproveTransaction.
-func (transaction *AccountAllowanceApproveTransaction) SetMinBackoff(min time.Duration) *AccountAllowanceApproveTransaction {
-	if min.Nanoseconds() < 0 {
-		panic("minBackoff must be a positive duration")
-	} else if transaction.maxBackoff.Nanoseconds() < min.Nanoseconds() {
-		panic("minBackoff must be less than or equal to maxBackoff")
-	}
-	transaction.minBackoff = &min
-	return transaction
-}
-
-// GetMinBackoff returns the min back off for this AccountAllowanceApproveTransaction.
-func (transaction *AccountAllowanceApproveTransaction) GetMinBackoff() time.Duration {
-	if transaction.minBackoff != nil {
-		return *transaction.minBackoff
-	}
-
-	return 250 * time.Millisecond
-}
-
-func (transaction *AccountAllowanceApproveTransaction) _GetLogID() string {
-	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
-	return fmt.Sprintf("AccountAllowanceApproveTransaction:%d", timestamp.UnixNano())
-}
+ }

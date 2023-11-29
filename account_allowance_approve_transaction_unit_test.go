@@ -64,7 +64,7 @@ func TestUnitAccountAllowanceApproveTransaction(t *testing.T) {
 		Freeze()
 	require.NoError(t, err)
 
-	data := transaction._Build()
+	data := transaction.build()
 
 	switch d := data.Data.(type) {
 	case *services.TransactionBody_CryptoApproveAllowance:
@@ -131,7 +131,7 @@ func TestUnit_ValidateNetworkOnIDs(t *testing.T){
 	client.SetLedgerID(*NewLedgerIDTestnet())
 	require.NoError(t, err)
 
-	e := transaction._ValidateNetworkOnIDs(client)
+	e := transaction.validateNetworkOnIDs(client)
 	require.NoError(t, e)
 }
 func TestUnitAccountAllowanceApproveTransactionGet(t *testing.T) {
@@ -236,7 +236,7 @@ func TestUnitAccountAllowanceApproveTransactionFromProtobuf(t *testing.T) {
 		Freeze()
 	require.NoError(t, err)
 
-	txFromProto := _AccountAllowanceApproveTransactionFromProtobuf(tx.Transaction, tx._Build())
+	txFromProto := _AccountAllowanceApproveTransactionFromProtobuf(tx.transaction, tx.build())
 	require.Equal(t, tx, txFromProto)
 }
 
@@ -296,7 +296,7 @@ func TestUnitAccountAllowanceApproveTransactionScheduleProtobuf(t *testing.T) {
 			},
 		},
 	}
-	actual, err := tx._ConstructScheduleProtobuf()
+	actual, err := tx.buildScheduled()
 	require.NoError(t, err)
 	require.Equal(t, expected.String(), actual.String())
 }
@@ -352,7 +352,7 @@ func TestUnitAccountAllowanceDeleteTransactionCoverage(t *testing.T) {
 	require.NoError(t, err)
 	txFromBytes, ok := txFromBytesI.(AccountAllowanceDeleteTransaction)
 	require.Equal(t, true, ok)
-	sig, err := newKey.SignTransaction(&transaction.Transaction)
+	sig, err := newKey.SignTransaction(&transaction.transaction)
 	require.NoError(t, err)
 
 	_, err = transaction.GetTransactionHash()
