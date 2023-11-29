@@ -560,62 +560,6 @@ func (this *transaction) _KeyAlreadySigned(
 	return false
 }
 
-func (this *transaction) shouldRetry(_ interface{}, response interface{}) _ExecutionState {
-	status := Status(response.(*services.TransactionResponse).NodeTransactionPrecheckCode)
-	switch status {
-	case StatusPlatformTransactionNotCreated, StatusPlatformNotActive, StatusBusy:
-		return executionStateRetry
-	case StatusTransactionExpired:
-		return executionStateExpired
-	case StatusOk:
-		return executionStateFinished
-	}
-
-	return executionStateError
-}
-
-func (this *transaction) makeRequest(request interface{}) interface{} {
-	transaction := request.(*transaction)
-	index := transaction.nodeAccountIDs._Length()*transaction.transactionIDs.index + transaction.nodeAccountIDs.index
-	tx, _ := transaction._BuildTransaction(index)
-
-	return tx
-}
-
-func (this *transaction) advanceRequest(request interface{}) {
-	request.(*transaction).nodeAccountIDs._Advance()
-	request.(*transaction).signedTransactions._Advance()
-}
-
-func (this *transaction) getNodeAccountID(request interface{}) AccountID {
-	return request.(*transaction).nodeAccountIDs._GetCurrent().(AccountID)
-}
-
-func (this *transaction) mapStatusError(
-	request interface{},
-	response interface{},
-) error {
-	return ErrHederaPreCheckStatus{
-		Status: Status(response.(*services.TransactionResponse).NodeTransactionPrecheckCode),
-		//NodeID: request.transaction.nodeAccountIDs,
-		TxID: request.(*transaction).GetTransactionID(),
-	}
-}
-
-func (this *transaction) mapResponse(request interface{}, _ interface{}, nodeID AccountID, protoRequest interface{}) (interface{}, error) {
-	hash := sha512.New384()
-	_, err := hash.Write(protoRequest.(*services.Transaction).SignedTransactionBytes)
-	if err != nil {
-		return nil, err
-	}
-
-	return TransactionResponse{
-		NodeID:        nodeID,
-		TransactionID: request.(*transaction).transactionIDs._GetNext().(TransactionID),
-		Hash:          hash.Sum(nil),
-	}, nil
-}
-
 // String returns a string representation of the transaction
 func (this *transaction) String() string {
 	switch sig := this.signedTransactions._Get(0).(type) { //nolint
@@ -872,6 +816,52 @@ func (this *transaction) SetMaxRetry(count int) *transaction {
 	return this
 }
 
+// ------------ Transaction methdos ---------------
+func (this *transaction) Execute(client *Client) (TransactionResponse, error) {
+	if client == nil {
+		return TransactionResponse{}, errNoClientProvided
+	}
+
+	if this.freezeError != nil {
+		return TransactionResponse{}, this.freezeError
+	}
+
+	if !this._IsFrozen() {
+		_, err := this.FreezeWith(client)
+		if err != nil {
+			return TransactionResponse{}, err
+		}
+	}
+
+	transactionID := this.transactionIDs._GetCurrent().(TransactionID)
+
+	if !client.GetOperatorAccountID()._IsZero() && client.GetOperatorAccountID()._Equals(*transactionID.AccountID) {
+		this.SignWith(
+			client.GetOperatorPublicKey(),
+			client.operator.signer,
+		)
+	}
+
+	resp, err := _Execute(
+		client,
+		this.e,
+	)
+
+	if err != nil {
+		return TransactionResponse{
+			TransactionID:  this.GetTransactionID(),
+			NodeID:         resp.(TransactionResponse).NodeID,
+			ValidateStatus: true,
+		}, err
+	}
+
+	return TransactionResponse{
+		TransactionID:  this.GetTransactionID(),
+		NodeID:         resp.(TransactionResponse).NodeID,
+		Hash:           resp.(TransactionResponse).Hash,
+		ValidateStatus: true,
+	}, nil
+}
 func (this *transaction) Sign(privateKey PrivateKey) Transaction {
 	return this.SignWith(privateKey.PublicKey(), privateKey.Sign)
 }
@@ -953,53 +943,6 @@ func (this *transaction) FreezeWith(client *Client) (Transaction, error) {
 	return this, _TransactionFreezeWith(this, client, body)
 }
 
-// ------------ Executable Functions ------------
-func (this *transaction) Execute(client *Client) (TransactionResponse, error) {
-	if client == nil {
-		return TransactionResponse{}, errNoClientProvided
-	}
-
-	if this.freezeError != nil {
-		return TransactionResponse{}, this.freezeError
-	}
-
-	if !this._IsFrozen() {
-		_, err := this.FreezeWith(client)
-		if err != nil {
-			return TransactionResponse{}, err
-		}
-	}
-
-	transactionID := this.transactionIDs._GetCurrent().(TransactionID)
-
-	if !client.GetOperatorAccountID()._IsZero() && client.GetOperatorAccountID()._Equals(*transactionID.AccountID) {
-		this.SignWith(
-			client.GetOperatorPublicKey(),
-			client.operator.signer,
-		)
-	}
-
-	resp, err := _Execute(
-		client,
-		this.e,
-	)
-
-	if err != nil {
-		return TransactionResponse{
-			TransactionID:  this.GetTransactionID(),
-			NodeID:         resp.(TransactionResponse).NodeID,
-			ValidateStatus: true,
-		}, err
-	}
-
-	return TransactionResponse{
-		TransactionID:  this.GetTransactionID(),
-		NodeID:         resp.(TransactionResponse).NodeID,
-		Hash:           resp.(TransactionResponse).Hash,
-		ValidateStatus: true,
-	}, nil
-}
-
 // Building empty object as "default" implementation. All inhertents must implement their own implementation.
 func (this *transaction) build() *services.TransactionBody {
 	return &services.TransactionBody{}
@@ -1010,20 +953,7 @@ func (this *transaction) buildScheduled() (*services.SchedulableTransactionBody,
 	return &services.SchedulableTransactionBody{}, nil
 }
 
-// Building empty object as "default" implementation. All inhertents must implement their own implementation.
-func (this *transaction) getMethod(*_Channel) _Method {
-	return _Method{}
-}
-
-// Building empty object as "default" implementation. All inhertents must implement their own implementation.
-func (this *transaction) getName() string {
-	return "transaction"
-}
-
-// Building empty object as "default" implementation. All inhertents must implement their own implementation.
-func (this *transaction) validateNetworkOnIDs(client *Client) error {
-	return errors.New("Function not implemented")
-}
+// -------------------------------------
 
 func TransactionSign(transaction interface{}, privateKey PrivateKey) (interface{}, error) { // nolint
 	switch i := transaction.(type) {
@@ -4839,4 +4769,76 @@ func TransactionExecute(transaction interface{}, client *Client) (TransactionRes
 	default:
 		return TransactionResponse{}, errors.New("(BUG) non-exhaustive switch statement")
 	}
+}
+// ------------ Executable Functions ------------
+
+func (this *transaction) shouldRetry(_ interface{}, response interface{}) _ExecutionState {
+	status := Status(response.(*services.TransactionResponse).NodeTransactionPrecheckCode)
+	switch status {
+	case StatusPlatformTransactionNotCreated, StatusPlatformNotActive, StatusBusy:
+		return executionStateRetry
+	case StatusTransactionExpired:
+		return executionStateExpired
+	case StatusOk:
+		return executionStateFinished
+	}
+
+	return executionStateError
+}
+
+func (this *transaction) makeRequest(request interface{}) interface{} {
+	transaction := request.(*transaction)
+	index := transaction.nodeAccountIDs._Length()*transaction.transactionIDs.index + transaction.nodeAccountIDs.index
+	tx, _ := transaction._BuildTransaction(index)
+
+	return tx
+}
+
+func (this *transaction) advanceRequest(request interface{}) {
+	request.(*transaction).nodeAccountIDs._Advance()
+	request.(*transaction).signedTransactions._Advance()
+}
+
+func (this *transaction) getNodeAccountID(request interface{}) AccountID {
+	return request.(*transaction).nodeAccountIDs._GetCurrent().(AccountID)
+}
+
+func (this *transaction) mapStatusError(
+	request interface{},
+	response interface{},
+) error {
+	return ErrHederaPreCheckStatus{
+		Status: Status(response.(*services.TransactionResponse).NodeTransactionPrecheckCode),
+		//NodeID: request.transaction.nodeAccountIDs,
+		TxID: request.(*transaction).GetTransactionID(),
+	}
+}
+
+func (this *transaction) mapResponse(request interface{}, _ interface{}, nodeID AccountID, protoRequest interface{}) (interface{}, error) {
+	hash := sha512.New384()
+	_, err := hash.Write(protoRequest.(*services.Transaction).SignedTransactionBytes)
+	if err != nil {
+		return nil, err
+	}
+
+	return TransactionResponse{
+		NodeID:        nodeID,
+		TransactionID: request.(*transaction).transactionIDs._GetNext().(TransactionID),
+		Hash:          hash.Sum(nil),
+	}, nil
+}
+
+// Building empty object as "default" implementation. All inhertents must implement their own implementation.
+func (this *transaction) getMethod(*_Channel) _Method {
+	return _Method{}
+}
+
+// Building empty object as "default" implementation. All inhertents must implement their own implementation.
+func (this *transaction) getName() string {
+	return "transaction"
+}
+
+// Building empty object as "default" implementation. All inhertents must implement their own implementation.
+func (this *transaction) validateNetworkOnIDs(client *Client) error {
+	return errors.New("Function not implemented")
 }
