@@ -408,18 +408,11 @@ func (this *AccountCreateTransaction) SetMaxBackoff(max time.Duration) *AccountC
     return this
 }
 
-func (this *AccountCreateTransaction) GetMaxBackoff() time.Duration {
-	return this.transaction.GetMaxBackoff();
-}
-	
-
-
 // SetMinBackoff sets the minimum amount of time to wait between retries.
 func (this *AccountCreateTransaction) SetMinBackoff(min time.Duration) *AccountCreateTransaction {
 	this.transaction.SetMinBackoff(min)
 	return this
 }
-
 
 func (this *AccountCreateTransaction) _GetLogID() string {
 	timestamp := this.transactionIDs._GetCurrent().(TransactionID).ValidStart

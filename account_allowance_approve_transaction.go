@@ -390,13 +390,13 @@ func (this *AccountAllowanceApproveTransaction) AddSignature(publicKey PublicKey
 // SetMaxBackoff The maximum amount of time to wait between retries.
 // Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (this *AccountAllowanceApproveTransaction) SetMaxBackoff(max time.Duration) *AccountAllowanceApproveTransaction {
-	this.SetMaxBackoff(max)
+	this.transaction.SetMaxBackoff(max)
 	return this
 }
 
 // SetMinBackoff sets the min back off for this AccountAllowanceApproveTransaction.
 func (this *AccountAllowanceApproveTransaction) SetMinBackoff(min time.Duration) *AccountAllowanceApproveTransaction {
-	this.SetMinBackoff(min)
+	this.transaction.SetMinBackoff(min)
 	return this
 }
 

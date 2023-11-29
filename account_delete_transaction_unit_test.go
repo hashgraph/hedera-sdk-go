@@ -48,7 +48,7 @@ func TestUnitAccountDeleteTransactionValidate(t *testing.T) {
 		SetAccountID(accountID).
 		SetTransferAccountID(accountID)
 
-	err = deleteAccount._ValidateNetworkOnIDs(client)
+	err = deleteAccount.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 }
 
@@ -66,7 +66,7 @@ func TestUnitAccountDeleteTransactionValidateWrong(t *testing.T) {
 		SetAccountID(accountID).
 		SetTransferAccountID(accountID)
 
-	err = deleteAccount._ValidateNetworkOnIDs(client)
+	err = deleteAccount.validateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
@@ -157,7 +157,7 @@ func TestUnitAccountDeleteTransactionProtoCheck(t *testing.T) {
 	transaction.GetTransactionID()
 	transaction.GetNodeAccountIDs()
 
-	proto := transaction._Build().GetCryptoDelete()
+	proto := transaction.build().GetCryptoDelete()
 	require.Equal(t, proto.TransferAccountID.String(), transferAccountID._ToProtobuf().String())
 	require.Equal(t, proto.DeleteAccountID.String(), spenderAccountID1._ToProtobuf().String())
 }
@@ -195,7 +195,7 @@ func TestUnitAccountDeleteTransactionTransactionCoverage(t *testing.T) {
 		Freeze()
 	require.NoError(t, err)
 
-	transaction._ValidateNetworkOnIDs(client)
+	transaction.validateNetworkOnIDs(client)
 
 	_, err = transaction.Schedule()
 	require.NoError(t, err)
@@ -210,7 +210,7 @@ func TestUnitAccountDeleteTransactionTransactionCoverage(t *testing.T) {
 	require.NoError(t, err)
 	txFromBytes, err := TransactionFromBytes(byt)
 	require.NoError(t, err)
-	sig, err := newKey.SignTransaction(&transaction.Transaction)
+	sig, err := newKey.SignTransaction(&transaction.transaction)
 	require.NoError(t, err)
 
 	_, err = transaction.GetTransactionHash()

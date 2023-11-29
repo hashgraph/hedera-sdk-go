@@ -329,17 +329,9 @@ func (this *AccountAllowanceAdjustTransaction) SetMaxBackoff(max time.Duration) 
 	return this
 }
 
-func (this *AccountAllowanceAdjustTransaction) GetMaxBackoff() time.Duration {
-	return this.transaction.GetMaxBackoff()
-}
-
 func (this *AccountAllowanceAdjustTransaction) SetMinBackoff(min time.Duration) *AccountAllowanceAdjustTransaction {
-	this.SetMinBackoff(min)
+	this.transaction.SetMinBackoff(min)
 	return this
-}
-
-func (this *AccountAllowanceAdjustTransaction) GetMinBackoff() time.Duration {
-	return this.transaction.GetMaxBackoff()
 }
 
 func (this *AccountAllowanceAdjustTransaction) _GetLogID() string {
