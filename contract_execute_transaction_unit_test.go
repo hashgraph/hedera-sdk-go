@@ -49,7 +49,7 @@ func TestUnitContractExecuteTransactionValidate(t *testing.T) {
 	contractExecute := NewContractExecuteTransaction().
 		SetContractID(contractID)
 
-	err = contractExecute._ValidateNetworkOnIDs(client)
+	err = contractExecute.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 }
 
@@ -66,7 +66,7 @@ func TestUnitContractExecuteTransactionValidateWrong(t *testing.T) {
 	contractExecute := NewContractExecuteTransaction().
 		SetContractID(contractID)
 
-	err = contractExecute._ValidateNetworkOnIDs(client)
+	err = contractExecute.validateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
@@ -233,7 +233,7 @@ func TestUnitContractExecuteTransactionProtoCheck(t *testing.T) {
 	transaction.GetTransactionID()
 	transaction.GetNodeAccountIDs()
 
-	proto := transaction._Build().GetContractCall()
+	proto := transaction.build().GetContractCall()
 	require.Equal(t, proto.ContractID.String(), contractID._ToProtobuf().String())
 	require.Equal(t, proto.Gas, int64(100000))
 	require.Equal(t, proto.Amount, NewHbar(1).AsTinybar())
@@ -275,7 +275,7 @@ func TestUnitContractExecuteTransactionCoverage(t *testing.T) {
 		Freeze()
 	require.NoError(t, err)
 
-	transaction._ValidateNetworkOnIDs(client)
+	transaction.validateNetworkOnIDs(client)
 
 	_, err = transaction.Schedule()
 	require.NoError(t, err)
@@ -290,7 +290,7 @@ func TestUnitContractExecuteTransactionCoverage(t *testing.T) {
 	require.NoError(t, err)
 	txFromBytes, err := TransactionFromBytes(byt)
 	require.NoError(t, err)
-	sig, err := newKey.SignTransaction(&transaction.Transaction)
+	sig, err := newKey.SignTransaction(&transaction.transaction)
 	require.NoError(t, err)
 
 	_, err = transaction.GetTransactionHash()

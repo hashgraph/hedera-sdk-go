@@ -46,17 +46,18 @@ type ContractExecuteTransaction struct {
 // NewContractExecuteTransaction creates a ContractExecuteTransaction transaction which can be
 // used to construct and execute a Contract Call transaction.
 func NewContractExecuteTransaction() *ContractExecuteTransaction {
-	transaction := ContractExecuteTransaction{
+	this := ContractExecuteTransaction{
 		transaction: _NewTransaction(),
 	}
-	transaction._SetDefaultMaxTransactionFee(NewHbar(2))
+	this._SetDefaultMaxTransactionFee(NewHbar(2))
+	this.e = &this
 
-	return &transaction
+	return &this
 }
 
-func _ContractExecuteTransactionFromProtobuf(transaction transaction, pb *services.TransactionBody) *ContractExecuteTransaction {
+func _ContractExecuteTransactionFromProtobuf(this transaction, pb *services.TransactionBody) *ContractExecuteTransaction {
 	return &ContractExecuteTransaction{
-		transaction: transaction,
+		transaction: this,
 		contractID:  _ContractIDFromProtobuf(pb.GetContractCall().GetContractID()),
 		gas:         pb.GetContractCall().GetGas(),
 		amount:      pb.GetContractCall().GetAmount(),
@@ -65,114 +66,79 @@ func _ContractExecuteTransactionFromProtobuf(transaction transaction, pb *servic
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (transaction *ContractExecuteTransaction) SetGrpcDeadline(deadline *time.Duration) *ContractExecuteTransaction {
-	transaction.transaction.SetGrpcDeadline(deadline)
-	return transaction
+func (this *ContractExecuteTransaction) SetGrpcDeadline(deadline *time.Duration) *ContractExecuteTransaction {
+	this.transaction.SetGrpcDeadline(deadline)
+	return this
 }
 
 // SetContractID sets the contract instance to call.
-func (transaction *ContractExecuteTransaction) SetContractID(contractID ContractID) *ContractExecuteTransaction {
-	transaction._RequireNotFrozen()
-	transaction.contractID = &contractID
-	return transaction
+func (this *ContractExecuteTransaction) SetContractID(contractID ContractID) *ContractExecuteTransaction {
+	this._RequireNotFrozen()
+	this.contractID = &contractID
+	return this
 }
 
 // GetContractID returns the contract instance to call.
-func (transaction *ContractExecuteTransaction) GetContractID() ContractID {
-	if transaction.contractID == nil {
+func (this *ContractExecuteTransaction) GetContractID() ContractID {
+	if this.contractID == nil {
 		return ContractID{}
 	}
 
-	return *transaction.contractID
+	return *this.contractID
 }
 
 // SetGas sets the maximum amount of gas to use for the call.
-func (transaction *ContractExecuteTransaction) SetGas(gas uint64) *ContractExecuteTransaction {
-	transaction._RequireNotFrozen()
-	transaction.gas = int64(gas)
-	return transaction
+func (this *ContractExecuteTransaction) SetGas(gas uint64) *ContractExecuteTransaction {
+	this._RequireNotFrozen()
+	this.gas = int64(gas)
+	return this
 }
 
 // GetGas returns the maximum amount of gas to use for the call.
-func (transaction *ContractExecuteTransaction) GetGas() uint64 {
-	return uint64(transaction.gas)
+func (this *ContractExecuteTransaction) GetGas() uint64 {
+	return uint64(this.gas)
 }
 
 // SetPayableAmount sets the amount of Hbar sent (the function must be payable if this is nonzero)
-func (transaction *ContractExecuteTransaction) SetPayableAmount(amount Hbar) *ContractExecuteTransaction {
-	transaction._RequireNotFrozen()
-	transaction.amount = amount.AsTinybar()
-	return transaction
+func (this *ContractExecuteTransaction) SetPayableAmount(amount Hbar) *ContractExecuteTransaction {
+	this._RequireNotFrozen()
+	this.amount = amount.AsTinybar()
+	return this
 }
 
 // GetPayableAmount returns the amount of Hbar sent (the function must be payable if this is nonzero)
-func (transaction ContractExecuteTransaction) GetPayableAmount() Hbar {
-	return HbarFromTinybar(transaction.amount)
+func (this ContractExecuteTransaction) GetPayableAmount() Hbar {
+	return HbarFromTinybar(this.amount)
 }
 
 // SetFunctionParameters sets the function parameters
-func (transaction *ContractExecuteTransaction) SetFunctionParameters(params []byte) *ContractExecuteTransaction {
-	transaction._RequireNotFrozen()
-	transaction.parameters = params
-	return transaction
+func (this *ContractExecuteTransaction) SetFunctionParameters(params []byte) *ContractExecuteTransaction {
+	this._RequireNotFrozen()
+	this.parameters = params
+	return this
 }
 
 // GetFunctionParameters returns the function parameters
-func (transaction *ContractExecuteTransaction) GetFunctionParameters() []byte {
-	return transaction.parameters
+func (this *ContractExecuteTransaction) GetFunctionParameters() []byte {
+	return this.parameters
 }
 
 // SetFunction sets which function to call, and the ContractFunctionParams to pass to the function
-func (transaction *ContractExecuteTransaction) SetFunction(name string, params *ContractFunctionParameters) *ContractExecuteTransaction {
-	transaction._RequireNotFrozen()
+func (this *ContractExecuteTransaction) SetFunction(name string, params *ContractFunctionParameters) *ContractExecuteTransaction {
+	this._RequireNotFrozen()
 	if params == nil {
 		params = NewContractFunctionParameters()
 	}
 
-	transaction.parameters = params._Build(&name)
-	return transaction
+	this.parameters = params._Build(&name)
+	return this
 }
 
-func (transaction *ContractExecuteTransaction) _ValidateNetworkOnIDs(client *Client) error {
-	if client == nil || !client.autoValidateChecksums {
-		return nil
-	}
 
-	if transaction.contractID != nil {
-		if err := transaction.contractID.ValidateChecksum(client); err != nil {
-			return err
-		}
-	}
+func (this *ContractExecuteTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	this._RequireNotFrozen()
 
-	return nil
-}
-
-func (transaction *ContractExecuteTransaction) _Build() *services.TransactionBody {
-	body := services.ContractCallTransactionBody{
-		Gas:                transaction.gas,
-		Amount:             transaction.amount,
-		FunctionParameters: transaction.parameters,
-	}
-
-	if transaction.contractID != nil {
-		body.ContractID = transaction.contractID._ToProtobuf()
-	}
-
-	return &services.TransactionBody{
-		TransactionFee:           transaction.transactionFee,
-		Memo:                     transaction.transaction.memo,
-		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
-		TransactionID:            transaction.transactionID._ToProtobuf(),
-		Data: &services.TransactionBody_ContractCall{
-			ContractCall: &body,
-		},
-	}
-}
-
-func (transaction *ContractExecuteTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	transaction._RequireNotFrozen()
-
-	scheduled, err := transaction._ConstructScheduleProtobuf()
+	scheduled, err := this.buildProtoBody()
 	if err != nil {
 		return nil, err
 	}
@@ -180,314 +146,213 @@ func (transaction *ContractExecuteTransaction) Schedule() (*ScheduleCreateTransa
 	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *ContractExecuteTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
-	body := services.ContractCallTransactionBody{
-		Gas:                transaction.gas,
-		Amount:             transaction.amount,
-		FunctionParameters: transaction.parameters,
+func (this *ContractExecuteTransaction) IsFrozen() bool {
+	return this._IsFrozen()
+}
+
+// Sign uses the provided privateKey to sign the transaction.
+func (this *ContractExecuteTransaction) Sign(
+	privateKey PrivateKey,
+) *ContractExecuteTransaction {
+	this.transaction.Sign(privateKey)
+	return this
+}
+
+// SignWithOperator signs the transaction with client's operator privateKey.
+func (this *ContractExecuteTransaction) SignWithOperator(
+	client *Client,
+) (*ContractExecuteTransaction, error) {
+	// If the transaction is not signed by the _Operator, we need
+	// to sign the transaction with the _Operator
+	_,err := this.transaction.SignWithOperator(client)
+	return this, err
+}
+
+// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// with the publicKey as the map key.
+func (this *ContractExecuteTransaction) SignWith(
+	publicKey PublicKey,
+	signer TransactionSigner,
+) *ContractExecuteTransaction {
+	this.transaction.SignWith(publicKey, signer)
+	return this
+}
+
+func (this *ContractExecuteTransaction) Freeze() (*ContractExecuteTransaction, error) {
+	_,err := this.transaction.Freeze()
+	return this, err
+}
+
+func (this *ContractExecuteTransaction) FreezeWith(client *Client) (*ContractExecuteTransaction, error) {
+	_, err := this.transaction.FreezeWith(client)
+	return this, err
+}
+
+// GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
+func (this *ContractExecuteTransaction) GetMaxTransactionFee() Hbar {
+	return this.transaction.GetMaxTransactionFee()
+}
+
+// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
+func (this *ContractExecuteTransaction) SetMaxTransactionFee(fee Hbar) *ContractExecuteTransaction {
+	this._RequireNotFrozen()
+	this.transaction.SetMaxTransactionFee(fee)
+	return this
+}
+
+// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
+func (this *ContractExecuteTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *ContractExecuteTransaction {
+	this._RequireNotFrozen()
+	this.transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	return this
+}
+
+// GetRegenerateTransactionID returns true if transaction ID regeneration is enabled.
+func (this *ContractExecuteTransaction) GetRegenerateTransactionID() bool {
+	return this.transaction.GetRegenerateTransactionID()
+}
+
+// GetTransactionMemo returns the memo for this ContractExecuteTransaction.
+func (this *ContractExecuteTransaction) GetTransactionMemo() string {
+	return this.transaction.GetTransactionMemo()
+}
+
+// SetTransactionMemo sets the memo for this ContractExecuteTransaction.
+func (this *ContractExecuteTransaction) SetTransactionMemo(memo string) *ContractExecuteTransaction {
+	this._RequireNotFrozen()
+	this.transaction.SetTransactionMemo(memo)
+	return this
+}
+
+// GetTransactionValidDuration returns the duration that this transaction is valid for.
+func (this *ContractExecuteTransaction) GetTransactionValidDuration() time.Duration {
+	return this.transaction.GetTransactionValidDuration()
+}
+
+// SetTransactionValidDuration sets the valid duration for this ContractExecuteTransaction.
+func (this *ContractExecuteTransaction) SetTransactionValidDuration(duration time.Duration) *ContractExecuteTransaction {
+	this._RequireNotFrozen()
+	this.transaction.SetTransactionValidDuration(duration)
+	return this
+}
+
+// GetTransactionID gets the TransactionID for this	ContractExecuteTransaction.
+func (this *ContractExecuteTransaction) GetTransactionID() TransactionID {
+	return this.transaction.GetTransactionID()
+}
+
+// SetTransactionID sets the TransactionID for this ContractExecuteTransaction.
+func (this *ContractExecuteTransaction) SetTransactionID(transactionID TransactionID) *ContractExecuteTransaction {
+	this._RequireNotFrozen()
+
+	this.transaction.SetTransactionID(transactionID)
+	return this
+}
+
+// SetNodeAccountIDs sets the _Node AccountID for this ContractExecuteTransaction.
+func (this *ContractExecuteTransaction) SetNodeAccountIDs(nodeID []AccountID) *ContractExecuteTransaction {
+	this._RequireNotFrozen()
+	this.transaction.SetNodeAccountIDs(nodeID)
+	return this
+}
+
+// SetMaxRetry sets the max number of errors before execution will fail.
+func (this *ContractExecuteTransaction) SetMaxRetry(count int) *ContractExecuteTransaction {
+	this.transaction.SetMaxRetry(count)
+	return this
+}
+
+//AddSignature adds a signature to the transaction.
+func (this *ContractExecuteTransaction) AddSignature(publicKey PublicKey, signature []byte) *ContractExecuteTransaction {
+	this.transaction.AddSignature(publicKey, signature)
+	return this
+}
+
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
+func (this *ContractExecuteTransaction) SetMaxBackoff(max time.Duration) *ContractExecuteTransaction {
+	this.transaction.SetMaxBackoff(max)
+	return this
+}
+
+// SetMinBackoff sets the minimum amount of time to wait between retries.
+func (this *ContractExecuteTransaction) SetMinBackoff(min time.Duration) *ContractExecuteTransaction {
+	this.transaction.SetMinBackoff(min)
+	return this
+}
+
+func (this *ContractExecuteTransaction) _GetLogID() string {
+	timestamp := this.transactionIDs._GetCurrent().(TransactionID).ValidStart
+	return fmt.Sprintf("ContractExecuteTransaction:%d", timestamp.UnixNano())
+}
+
+func (this *ContractExecuteTransaction) SetLogLevel(level LogLevel) *ContractExecuteTransaction {
+	this.transaction.SetLogLevel(level)
+	return this
+}
+// ----------- overriden functions ----------------
+
+func (this *ContractExecuteTransaction) getName() string {
+	return "ContractExecuteTransaction"
+}
+func (this *ContractExecuteTransaction) validateNetworkOnIDs(client *Client) error {
+	if client == nil || !client.autoValidateChecksums {
+		return nil
 	}
 
-	if transaction.contractID != nil {
-		body.ContractID = transaction.contractID._ToProtobuf()
+	if this.contractID != nil {
+		if err := this.contractID.ValidateChecksum(client); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (this *ContractExecuteTransaction) build() *services.TransactionBody {
+	body := services.ContractCallTransactionBody{
+		Gas:                this.gas,
+		Amount:             this.amount,
+		FunctionParameters: this.parameters,
+	}
+
+	if this.contractID != nil {
+		body.ContractID = this.contractID._ToProtobuf()
+	}
+
+	return &services.TransactionBody{
+		TransactionFee:           this.transactionFee,
+		Memo:                     this.transaction.memo,
+		TransactionValidDuration: _DurationToProtobuf(this.GetTransactionValidDuration()),
+		TransactionID:            this.transactionID._ToProtobuf(),
+		Data: &services.TransactionBody_ContractCall{
+			ContractCall: &body,
+		},
+	}
+}
+
+func (this *ContractExecuteTransaction) buildProtoBody() (*services.SchedulableTransactionBody, error) {
+	body := services.ContractCallTransactionBody{
+		Gas:                this.gas,
+		Amount:             this.amount,
+		FunctionParameters: this.parameters,
+	}
+
+	if this.contractID != nil {
+		body.ContractID = this.contractID._ToProtobuf()
 	}
 
 	return &services.SchedulableTransactionBody{
-		TransactionFee: transaction.transactionFee,
-		Memo:           transaction.transaction.memo,
+		TransactionFee: this.transactionFee,
+		Memo:           this.transaction.memo,
 		Data: &services.SchedulableTransactionBody_ContractCall{
 			ContractCall: &body,
 		},
 	}, nil
 }
 
-func _ContractExecuteTransactionGetMethod(request interface{}, channel *_Channel) _Method {
+func (this *ContractExecuteTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetContract().ContractCallMethod,
 	}
-}
-
-func (transaction *ContractExecuteTransaction) IsFrozen() bool {
-	return transaction._IsFrozen()
-}
-
-// Sign uses the provided privateKey to sign the transaction.
-func (transaction *ContractExecuteTransaction) Sign(
-	privateKey PrivateKey,
-) *ContractExecuteTransaction {
-	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
-}
-
-// SignWithOperator signs the transaction with client's operator privateKey.
-func (transaction *ContractExecuteTransaction) SignWithOperator(
-	client *Client,
-) (*ContractExecuteTransaction, error) {
-	// If the transaction is not signed by the _Operator, we need
-	// to sign the transaction with the _Operator
-
-	if client == nil {
-		return nil, errNoClientProvided
-	} else if client.operator == nil {
-		return nil, errClientOperatorSigning
-	}
-
-	if !transaction.IsFrozen() {
-		_, err := transaction.FreezeWith(client)
-		if err != nil {
-			return transaction, err
-		}
-	}
-	return transaction.SignWith(client.operator.publicKey, client.operator.signer), nil
-}
-
-// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
-// with the publicKey as the map key.
-func (transaction *ContractExecuteTransaction) SignWith(
-	publicKey PublicKey,
-	signer TransactionSigner,
-) *ContractExecuteTransaction {
-	if !transaction._KeyAlreadySigned(publicKey) {
-		transaction._SignWith(publicKey, signer)
-	}
-
-	return transaction
-}
-
-// Execute executes the transaction with the provided client
-func (transaction *ContractExecuteTransaction) Execute(
-	client *Client,
-) (TransactionResponse, error) {
-	if client == nil {
-		return TransactionResponse{}, errNoClientProvided
-	}
-
-	if transaction.freezeError != nil {
-		return TransactionResponse{}, transaction.freezeError
-	}
-
-	if !transaction.IsFrozen() {
-		_, err := transaction.FreezeWith(client)
-		if err != nil {
-			return TransactionResponse{}, err
-		}
-	}
-
-	transactionID := transaction.transactionIDs._GetCurrent().(TransactionID)
-
-	if !client.GetOperatorAccountID()._IsZero() && client.GetOperatorAccountID()._Equals(*transactionID.AccountID) {
-		transaction.SignWith(
-			client.GetOperatorPublicKey(),
-			client.operator.signer,
-		)
-	}
-
-	resp, err := _Execute(
-		client,
-		&transaction.transaction,
-		_TransactionShouldRetry,
-		_TransactionMakeRequest,
-		_TransactionAdvanceRequest,
-		_TransactionGetNodeAccountID,
-		_ContractExecuteTransactionGetMethod,
-		_TransactionMapStatusError,
-		_TransactionMapResponse,
-		transaction._GetLogID(),
-		transaction.grpcDeadline,
-		transaction.maxBackoff,
-		transaction.minBackoff,
-		transaction.maxRetry,
-	)
-
-	if err != nil {
-		return TransactionResponse{
-			TransactionID:  transaction.GetTransactionID(),
-			NodeID:         resp.(TransactionResponse).NodeID,
-			ValidateStatus: true,
-		}, err
-	}
-
-	return TransactionResponse{
-		TransactionID:  transaction.GetTransactionID(),
-		NodeID:         resp.(TransactionResponse).NodeID,
-		Hash:           resp.(TransactionResponse).Hash,
-		ValidateStatus: true,
-	}, nil
-}
-
-func (transaction *ContractExecuteTransaction) Freeze() (*ContractExecuteTransaction, error) {
-	return transaction.FreezeWith(nil)
-}
-
-func (transaction *ContractExecuteTransaction) FreezeWith(client *Client) (*ContractExecuteTransaction, error) {
-	if transaction.IsFrozen() {
-		return transaction, nil
-	}
-	transaction._InitFee(client)
-	err := transaction._ValidateNetworkOnIDs(client)
-	if err != nil {
-		return &ContractExecuteTransaction{}, err
-	}
-	if err := transaction._InitTransactionID(client); err != nil {
-		return transaction, err
-	}
-	body := transaction._Build()
-
-	return transaction, _TransactionFreezeWith(&transaction.transaction, client, body)
-}
-
-// GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
-func (transaction *ContractExecuteTransaction) GetMaxTransactionFee() Hbar {
-	return transaction.transaction.GetMaxTransactionFee()
-}
-
-// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
-func (transaction *ContractExecuteTransaction) SetMaxTransactionFee(fee Hbar) *ContractExecuteTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetMaxTransactionFee(fee)
-	return transaction
-}
-
-// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
-func (transaction *ContractExecuteTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *ContractExecuteTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetRegenerateTransactionID(regenerateTransactionID)
-	return transaction
-}
-
-// GetRegenerateTransactionID returns true if transaction ID regeneration is enabled.
-func (transaction *ContractExecuteTransaction) GetRegenerateTransactionID() bool {
-	return transaction.transaction.GetRegenerateTransactionID()
-}
-
-// GetTransactionMemo returns the memo for this ContractExecuteTransaction.
-func (transaction *ContractExecuteTransaction) GetTransactionMemo() string {
-	return transaction.transaction.GetTransactionMemo()
-}
-
-// SetTransactionMemo sets the memo for this ContractExecuteTransaction.
-func (transaction *ContractExecuteTransaction) SetTransactionMemo(memo string) *ContractExecuteTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetTransactionMemo(memo)
-	return transaction
-}
-
-// GetTransactionValidDuration returns the duration that this transaction is valid for.
-func (transaction *ContractExecuteTransaction) GetTransactionValidDuration() time.Duration {
-	return transaction.transaction.GetTransactionValidDuration()
-}
-
-// SetTransactionValidDuration sets the valid duration for this ContractExecuteTransaction.
-func (transaction *ContractExecuteTransaction) SetTransactionValidDuration(duration time.Duration) *ContractExecuteTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetTransactionValidDuration(duration)
-	return transaction
-}
-
-// GetTransactionID gets the TransactionID for this	ContractExecuteTransaction.
-func (transaction *ContractExecuteTransaction) GetTransactionID() TransactionID {
-	return transaction.transaction.GetTransactionID()
-}
-
-// SetTransactionID sets the TransactionID for this ContractExecuteTransaction.
-func (transaction *ContractExecuteTransaction) SetTransactionID(transactionID TransactionID) *ContractExecuteTransaction {
-	transaction._RequireNotFrozen()
-
-	transaction.transaction.SetTransactionID(transactionID)
-	return transaction
-}
-
-// SetNodeAccountIDs sets the _Node AccountID for this ContractExecuteTransaction.
-func (transaction *ContractExecuteTransaction) SetNodeAccountIDs(nodeID []AccountID) *ContractExecuteTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetNodeAccountIDs(nodeID)
-	return transaction
-}
-
-// SetMaxRetry sets the max number of errors before execution will fail.
-func (transaction *ContractExecuteTransaction) SetMaxRetry(count int) *ContractExecuteTransaction {
-	transaction.transaction.SetMaxRetry(count)
-	return transaction
-}
-
-//AddSignature adds a signature to the transaction.
-func (transaction *ContractExecuteTransaction) AddSignature(publicKey PublicKey, signature []byte) *ContractExecuteTransaction {
-	transaction._RequireOneNodeAccountID()
-
-	if transaction._KeyAlreadySigned(publicKey) {
-		return transaction
-	}
-
-	if transaction.signedTransactions._Length() == 0 {
-		return transaction
-	}
-
-	transaction.transactions = _NewLockableSlice()
-	transaction.publicKeys = append(transaction.publicKeys, publicKey)
-	transaction.transactionSigners = append(transaction.transactionSigners, nil)
-	transaction.transactionIDs.locked = true
-
-	for index := 0; index < transaction.signedTransactions._Length(); index++ {
-		var temp *services.SignedTransaction
-		switch t := transaction.signedTransactions._Get(index).(type) { //nolint
-		case *services.SignedTransaction:
-			temp = t
-		}
-		temp.SigMap.SigPair = append(
-			temp.SigMap.SigPair,
-			publicKey._ToSignaturePairProtobuf(signature),
-		)
-		transaction.signedTransactions._Set(index, temp)
-	}
-
-	return transaction
-}
-
-// SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (transaction *ContractExecuteTransaction) SetMaxBackoff(max time.Duration) *ContractExecuteTransaction {
-	if max.Nanoseconds() < 0 {
-		panic("maxBackoff must be a positive duration")
-	} else if max.Nanoseconds() < transaction.minBackoff.Nanoseconds() {
-		panic("maxBackoff must be greater than or equal to minBackoff")
-	}
-	transaction.maxBackoff = &max
-	return transaction
-}
-
-// GetMaxBackoff returns the maximum amount of time to wait between retries.
-func (transaction *ContractExecuteTransaction) GetMaxBackoff() time.Duration {
-	if transaction.maxBackoff != nil {
-		return *transaction.maxBackoff
-	}
-
-	return 8 * time.Second
-}
-
-// SetMinBackoff sets the minimum amount of time to wait between retries.
-func (transaction *ContractExecuteTransaction) SetMinBackoff(min time.Duration) *ContractExecuteTransaction {
-	if min.Nanoseconds() < 0 {
-		panic("minBackoff must be a positive duration")
-	} else if transaction.maxBackoff.Nanoseconds() < min.Nanoseconds() {
-		panic("minBackoff must be less than or equal to maxBackoff")
-	}
-	transaction.minBackoff = &min
-	return transaction
-}
-
-// GetMinBackoff returns the minimum amount of time to wait between retries.
-func (transaction *ContractExecuteTransaction) GetMinBackoff() time.Duration {
-	if transaction.minBackoff != nil {
-		return *transaction.minBackoff
-	}
-
-	return 250 * time.Millisecond
-}
-
-func (transaction *ContractExecuteTransaction) _GetLogID() string {
-	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
-	return fmt.Sprintf("ContractExecuteTransaction:%d", timestamp.UnixNano())
-}
-
-func (transaction *ContractExecuteTransaction) SetLogLevel(level LogLevel) *ContractExecuteTransaction {
-	transaction.transaction.SetLogLevel(level)
-	return transaction
 }
