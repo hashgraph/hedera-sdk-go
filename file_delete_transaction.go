@@ -47,78 +47,49 @@ type FileDeleteTransaction struct {
 // transaction must be signed by 1-of-M KeyList keys. If keys contains additional KeyList or
 // ThresholdKey then 1-of-M secondary KeyList or ThresholdKey signing requirements must be meet.
 func NewFileDeleteTransaction() *FileDeleteTransaction {
-	transaction := FileDeleteTransaction{
+	this := FileDeleteTransaction{
 		transaction: _NewTransaction(),
 	}
-	transaction._SetDefaultMaxTransactionFee(NewHbar(5))
+	this._SetDefaultMaxTransactionFee(NewHbar(5))
+	this.e = &this
 
-	return &transaction
+	return &this
 }
 
-func _FileDeleteTransactionFromProtobuf(transaction transaction, pb *services.TransactionBody) *FileDeleteTransaction {
+func _FileDeleteTransactionFromProtobuf(this transaction, pb *services.TransactionBody) *FileDeleteTransaction {
 	return &FileDeleteTransaction{
-		transaction: transaction,
+		transaction: this,
 		fileID:      _FileIDFromProtobuf(pb.GetFileDelete().GetFileID()),
 	}
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (transaction *FileDeleteTransaction) SetGrpcDeadline(deadline *time.Duration) *FileDeleteTransaction {
-	transaction.transaction.SetGrpcDeadline(deadline)
-	return transaction
+func (this *FileDeleteTransaction) SetGrpcDeadline(deadline *time.Duration) *FileDeleteTransaction {
+	this.transaction.SetGrpcDeadline(deadline)
+	return this
 }
 
 // SetFileID Sets the FileID of the file to be deleted
-func (transaction *FileDeleteTransaction) SetFileID(fileID FileID) *FileDeleteTransaction {
-	transaction._RequireNotFrozen()
-	transaction.fileID = &fileID
-	return transaction
+func (this *FileDeleteTransaction) SetFileID(fileID FileID) *FileDeleteTransaction {
+	this._RequireNotFrozen()
+	this.fileID = &fileID
+	return this
 }
 
 // GetFileID returns the FileID of the file to be deleted
-func (transaction *FileDeleteTransaction) GetFileID() FileID {
-	if transaction.fileID == nil {
+func (this *FileDeleteTransaction) GetFileID() FileID {
+	if this.fileID == nil {
 		return FileID{}
 	}
 
-	return *transaction.fileID
+	return *this.fileID
 }
 
-func (transaction *FileDeleteTransaction) _ValidateNetworkOnIDs(client *Client) error {
-	if client == nil || !client.autoValidateChecksums {
-		return nil
-	}
 
-	if transaction.fileID != nil {
-		if err := transaction.fileID.ValidateChecksum(client); err != nil {
-			return err
-		}
-	}
+func (this *FileDeleteTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	this._RequireNotFrozen()
 
-	return nil
-}
-
-func (transaction *FileDeleteTransaction) _Build() *services.TransactionBody {
-	body := &services.FileDeleteTransactionBody{}
-	if transaction.fileID != nil {
-		body.FileID = transaction.fileID._ToProtobuf()
-	}
-
-	return &services.TransactionBody{
-		TransactionFee:           transaction.transactionFee,
-		Memo:                     transaction.transaction.memo,
-		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
-		TransactionID:            transaction.transactionID._ToProtobuf(),
-		Data: &services.TransactionBody_FileDelete{
-			FileDelete: body,
-		},
-	}
-}
-
-func (transaction *FileDeleteTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	transaction._RequireNotFrozen()
-
-	scheduled, err := transaction._ConstructScheduleProtobuf()
+	scheduled, err := this.buildProtoBody()
 	if err != nil {
 		return nil, err
 	}
@@ -126,309 +97,202 @@ func (transaction *FileDeleteTransaction) Schedule() (*ScheduleCreateTransaction
 	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *FileDeleteTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (this *FileDeleteTransaction) IsFrozen() bool {
+	return this._IsFrozen()
+}
+
+// Sign uses the provided privateKey to sign the transaction.
+func (this *FileDeleteTransaction) Sign(
+	privateKey PrivateKey,
+) *FileDeleteTransaction {
+	this.transaction.Sign(privateKey)
+	return this
+}
+
+// SignWithOperator signs the transaction with client's operator privateKey.
+func (this *FileDeleteTransaction) SignWithOperator(
+	client *Client,
+) (*FileDeleteTransaction, error) {
+	// If the transaction is not signed by the _Operator, we need
+	// to sign the transaction with the _Operator
+	_,err := this.transaction.SignWithOperator(client)
+	return this, err
+}
+
+// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// with the publicKey as the map key.
+func (this *FileDeleteTransaction) SignWith(
+	publicKey PublicKey,
+	signer TransactionSigner,
+) *FileDeleteTransaction {
+	this.transaction.SignWith(publicKey, signer)
+	return this
+}
+
+func (this *FileDeleteTransaction) Freeze() (*FileDeleteTransaction, error) {
+	_,err := this.transaction.Freeze()
+	return this, err
+}
+
+func (this *FileDeleteTransaction) FreezeWith(client *Client) (*FileDeleteTransaction, error) {
+	_, err := this.transaction.FreezeWith(client)
+	return this, err
+}
+
+// GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
+func (this *FileDeleteTransaction) GetMaxTransactionFee() Hbar {
+	return this.transaction.GetMaxTransactionFee()
+}
+
+// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
+func (this *FileDeleteTransaction) SetMaxTransactionFee(fee Hbar) *FileDeleteTransaction {
+	this._RequireNotFrozen()
+	this.transaction.SetMaxTransactionFee(fee)
+	return this
+}
+
+// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
+func (this *FileDeleteTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *FileDeleteTransaction {
+	this._RequireNotFrozen()
+	this.transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	return this
+}
+
+// GetRegenerateTransactionID returns true if transaction ID regeneration is enabled.
+func (this *FileDeleteTransaction) GetRegenerateTransactionID() bool {
+	return this.transaction.GetRegenerateTransactionID()
+}
+
+// GetTransactionMemo returns the memo for this FileDeleteTransaction.
+func (this *FileDeleteTransaction) GetTransactionMemo() string {
+	return this.transaction.GetTransactionMemo()
+}
+
+// SetTransactionMemo sets the memo for this FileDeleteTransaction.
+func (this *FileDeleteTransaction) SetTransactionMemo(memo string) *FileDeleteTransaction {
+	this._RequireNotFrozen()
+	this.transaction.SetTransactionMemo(memo)
+	return this
+}
+
+// GetTransactionValidDuration returns the duration that this transaction is valid for.
+func (this *FileDeleteTransaction) GetTransactionValidDuration() time.Duration {
+	return this.transaction.GetTransactionValidDuration()
+}
+
+// SetTransactionValidDuration sets the valid duration for this FileDeleteTransaction.
+func (this *FileDeleteTransaction) SetTransactionValidDuration(duration time.Duration) *FileDeleteTransaction {
+	this._RequireNotFrozen()
+	this.transaction.SetTransactionValidDuration(duration)
+	return this
+}
+
+// GetTransactionID gets the TransactionID for this	FileDeleteTransaction.
+func (this *FileDeleteTransaction) GetTransactionID() TransactionID {
+	return this.transaction.GetTransactionID()
+}
+
+// SetTransactionID sets the TransactionID for this FileDeleteTransaction.
+func (this *FileDeleteTransaction) SetTransactionID(transactionID TransactionID) *FileDeleteTransaction {
+	this._RequireNotFrozen()
+
+	this.transaction.SetTransactionID(transactionID)
+	return this
+}
+
+// SetNodeAccountID sets the _Node AccountID for this FileDeleteTransaction.
+func (this *FileDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *FileDeleteTransaction {
+	this._RequireNotFrozen()
+	this.transaction.SetNodeAccountIDs(nodeID)
+	return this
+}
+
+// SetMaxRetry sets the max number of errors before execution will fail.
+func (this *FileDeleteTransaction) SetMaxRetry(count int) *FileDeleteTransaction {
+	this.transaction.SetMaxRetry(count)
+	return this
+}
+
+// AddSignature adds a signature to the transaction.
+func (this *FileDeleteTransaction) AddSignature(publicKey PublicKey, signature []byte) *FileDeleteTransaction {
+	this.transaction.AddSignature(publicKey, signature)
+	return this
+}
+
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
+func (this *FileDeleteTransaction) SetMaxBackoff(max time.Duration) *FileDeleteTransaction {
+	this.transaction.SetMaxBackoff(max)
+	return this
+}
+
+// SetMinBackoff sets the minimum amount of time to wait between retries.
+func (this *FileDeleteTransaction) SetMinBackoff(min time.Duration) *FileDeleteTransaction {
+	this.transaction.SetMinBackoff(min)
+	return this
+}
+
+func (this *FileDeleteTransaction) _GetLogID() string {
+	timestamp := this.transactionIDs._GetCurrent().(TransactionID).ValidStart
+	return fmt.Sprintf("FileDeleteTransaction:%d", timestamp.UnixNano())
+}
+
+func (this *FileDeleteTransaction) SetLogLevel(level LogLevel) *FileDeleteTransaction {
+	this.transaction.SetLogLevel(level)
+	return this
+}
+// ----------- overriden functions ----------------
+
+func (this *FileDeleteTransaction) getName() string {
+	return "FileDeleteTransaction"
+}
+func (this *FileDeleteTransaction) validateNetworkOnIDs(client *Client) error {
+	if client == nil || !client.autoValidateChecksums {
+		return nil
+	}
+
+	if this.fileID != nil {
+		if err := this.fileID.ValidateChecksum(client); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (this *FileDeleteTransaction) build() *services.TransactionBody {
 	body := &services.FileDeleteTransactionBody{}
-	if transaction.fileID != nil {
-		body.FileID = transaction.fileID._ToProtobuf()
+	if this.fileID != nil {
+		body.FileID = this.fileID._ToProtobuf()
+	}
+
+	return &services.TransactionBody{
+		TransactionFee:           this.transactionFee,
+		Memo:                     this.transaction.memo,
+		TransactionValidDuration: _DurationToProtobuf(this.GetTransactionValidDuration()),
+		TransactionID:            this.transactionID._ToProtobuf(),
+		Data: &services.TransactionBody_FileDelete{
+			FileDelete: body,
+		},
+	}
+}
+
+func (this *FileDeleteTransaction) buildProtoBody() (*services.SchedulableTransactionBody, error) {
+	body := &services.FileDeleteTransactionBody{}
+	if this.fileID != nil {
+		body.FileID = this.fileID._ToProtobuf()
 	}
 	return &services.SchedulableTransactionBody{
-		TransactionFee: transaction.transactionFee,
-		Memo:           transaction.transaction.memo,
+		TransactionFee: this.transactionFee,
+		Memo:           this.transaction.memo,
 		Data: &services.SchedulableTransactionBody_FileDelete{
 			FileDelete: body,
 		},
 	}, nil
 }
 
-func _FileDeleteTransactionGetMethod(request interface{}, channel *_Channel) _Method {
+func (this *FileDeleteTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetFile().DeleteFile,
 	}
-}
-
-func (transaction *FileDeleteTransaction) IsFrozen() bool {
-	return transaction._IsFrozen()
-}
-
-// Sign uses the provided privateKey to sign the transaction.
-func (transaction *FileDeleteTransaction) Sign(
-	privateKey PrivateKey,
-) *FileDeleteTransaction {
-	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
-}
-
-// SignWithOperator signs the transaction with client's operator privateKey.
-func (transaction *FileDeleteTransaction) SignWithOperator(
-	client *Client,
-) (*FileDeleteTransaction, error) {
-	// If the transaction is not signed by the _Operator, we need
-	// to sign the transaction with the _Operator
-
-	if client == nil {
-		return nil, errNoClientProvided
-	} else if client.operator == nil {
-		return nil, errClientOperatorSigning
-	}
-
-	if !transaction.IsFrozen() {
-		_, err := transaction.FreezeWith(client)
-		if err != nil {
-			return transaction, err
-		}
-	}
-	return transaction.SignWith(client.operator.publicKey, client.operator.signer), nil
-}
-
-// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
-// with the publicKey as the map key.
-func (transaction *FileDeleteTransaction) SignWith(
-	publicKey PublicKey,
-	signer TransactionSigner,
-) *FileDeleteTransaction {
-	if !transaction._KeyAlreadySigned(publicKey) {
-		transaction._SignWith(publicKey, signer)
-	}
-
-	return transaction
-}
-
-// Execute executes the transaction with the provided client
-func (transaction *FileDeleteTransaction) Execute(
-	client *Client,
-) (TransactionResponse, error) {
-	if client == nil {
-		return TransactionResponse{}, errNoClientProvided
-	}
-
-	if transaction.freezeError != nil {
-		return TransactionResponse{}, transaction.freezeError
-	}
-
-	if !transaction.IsFrozen() {
-		_, err := transaction.FreezeWith(client)
-		if err != nil {
-			return TransactionResponse{}, err
-		}
-	}
-
-	transactionID := transaction.transactionIDs._GetCurrent().(TransactionID)
-
-	if !client.GetOperatorAccountID()._IsZero() && client.GetOperatorAccountID()._Equals(*transactionID.AccountID) {
-		transaction.SignWith(
-			client.GetOperatorPublicKey(),
-			client.operator.signer,
-		)
-	}
-
-	resp, err := _Execute(
-		client,
-		&transaction.transaction,
-		_TransactionShouldRetry,
-		_TransactionMakeRequest,
-		_TransactionAdvanceRequest,
-		_TransactionGetNodeAccountID,
-		_FileDeleteTransactionGetMethod,
-		_TransactionMapStatusError,
-		_TransactionMapResponse,
-		transaction._GetLogID(),
-		transaction.grpcDeadline,
-		transaction.maxBackoff,
-		transaction.minBackoff,
-		transaction.maxRetry,
-	)
-
-	if err != nil {
-		return TransactionResponse{
-			TransactionID:  transaction.GetTransactionID(),
-			NodeID:         resp.(TransactionResponse).NodeID,
-			ValidateStatus: true,
-		}, err
-	}
-
-	return TransactionResponse{
-		TransactionID:  transaction.GetTransactionID(),
-		NodeID:         resp.(TransactionResponse).NodeID,
-		Hash:           resp.(TransactionResponse).Hash,
-		ValidateStatus: true,
-	}, nil
-}
-
-func (transaction *FileDeleteTransaction) Freeze() (*FileDeleteTransaction, error) {
-	return transaction.FreezeWith(nil)
-}
-
-func (transaction *FileDeleteTransaction) FreezeWith(client *Client) (*FileDeleteTransaction, error) {
-	if transaction.IsFrozen() {
-		return transaction, nil
-	}
-
-	transaction._InitFee(client)
-	err := transaction._ValidateNetworkOnIDs(client)
-	if err != nil {
-		return &FileDeleteTransaction{}, err
-	}
-	if err := transaction._InitTransactionID(client); err != nil {
-		return transaction, err
-	}
-	body := transaction._Build()
-
-	return transaction, _TransactionFreezeWith(&transaction.transaction, client, body)
-}
-
-// GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
-func (transaction *FileDeleteTransaction) GetMaxTransactionFee() Hbar {
-	return transaction.transaction.GetMaxTransactionFee()
-}
-
-// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
-func (transaction *FileDeleteTransaction) SetMaxTransactionFee(fee Hbar) *FileDeleteTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetMaxTransactionFee(fee)
-	return transaction
-}
-
-// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
-func (transaction *FileDeleteTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *FileDeleteTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetRegenerateTransactionID(regenerateTransactionID)
-	return transaction
-}
-
-// GetRegenerateTransactionID returns true if transaction ID regeneration is enabled.
-func (transaction *FileDeleteTransaction) GetRegenerateTransactionID() bool {
-	return transaction.transaction.GetRegenerateTransactionID()
-}
-
-// GetTransactionMemo returns the memo for this FileDeleteTransaction.
-func (transaction *FileDeleteTransaction) GetTransactionMemo() string {
-	return transaction.transaction.GetTransactionMemo()
-}
-
-// SetTransactionMemo sets the memo for this FileDeleteTransaction.
-func (transaction *FileDeleteTransaction) SetTransactionMemo(memo string) *FileDeleteTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetTransactionMemo(memo)
-	return transaction
-}
-
-// GetTransactionValidDuration returns the duration that this transaction is valid for.
-func (transaction *FileDeleteTransaction) GetTransactionValidDuration() time.Duration {
-	return transaction.transaction.GetTransactionValidDuration()
-}
-
-// SetTransactionValidDuration sets the valid duration for this FileDeleteTransaction.
-func (transaction *FileDeleteTransaction) SetTransactionValidDuration(duration time.Duration) *FileDeleteTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetTransactionValidDuration(duration)
-	return transaction
-}
-
-// GetTransactionID gets the TransactionID for this	FileDeleteTransaction.
-func (transaction *FileDeleteTransaction) GetTransactionID() TransactionID {
-	return transaction.transaction.GetTransactionID()
-}
-
-// SetTransactionID sets the TransactionID for this FileDeleteTransaction.
-func (transaction *FileDeleteTransaction) SetTransactionID(transactionID TransactionID) *FileDeleteTransaction {
-	transaction._RequireNotFrozen()
-
-	transaction.transaction.SetTransactionID(transactionID)
-	return transaction
-}
-
-// SetNodeAccountID sets the _Node AccountID for this FileDeleteTransaction.
-func (transaction *FileDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *FileDeleteTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetNodeAccountIDs(nodeID)
-	return transaction
-}
-
-// SetMaxRetry sets the max number of errors before execution will fail.
-func (transaction *FileDeleteTransaction) SetMaxRetry(count int) *FileDeleteTransaction {
-	transaction.transaction.SetMaxRetry(count)
-	return transaction
-}
-
-// AddSignature adds a signature to the transaction.
-func (transaction *FileDeleteTransaction) AddSignature(publicKey PublicKey, signature []byte) *FileDeleteTransaction {
-	transaction._RequireOneNodeAccountID()
-
-	if transaction._KeyAlreadySigned(publicKey) {
-		return transaction
-	}
-
-	if transaction.signedTransactions._Length() == 0 {
-		return transaction
-	}
-
-	transaction.transactions = _NewLockableSlice()
-	transaction.publicKeys = append(transaction.publicKeys, publicKey)
-	transaction.transactionSigners = append(transaction.transactionSigners, nil)
-	transaction.transactionIDs.locked = true
-
-	for index := 0; index < transaction.signedTransactions._Length(); index++ {
-		var temp *services.SignedTransaction
-		switch t := transaction.signedTransactions._Get(index).(type) { //nolint
-		case *services.SignedTransaction:
-			temp = t
-		}
-		temp.SigMap.SigPair = append(
-			temp.SigMap.SigPair,
-			publicKey._ToSignaturePairProtobuf(signature),
-		)
-		transaction.signedTransactions._Set(index, temp)
-	}
-
-	return transaction
-}
-
-// SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (transaction *FileDeleteTransaction) SetMaxBackoff(max time.Duration) *FileDeleteTransaction {
-	if max.Nanoseconds() < 0 {
-		panic("maxBackoff must be a positive duration")
-	} else if max.Nanoseconds() < transaction.minBackoff.Nanoseconds() {
-		panic("maxBackoff must be greater than or equal to minBackoff")
-	}
-	transaction.maxBackoff = &max
-	return transaction
-}
-
-// GetMaxBackoff returns the maximum amount of time to wait between retries.
-func (transaction *FileDeleteTransaction) GetMaxBackoff() time.Duration {
-	if transaction.maxBackoff != nil {
-		return *transaction.maxBackoff
-	}
-
-	return 8 * time.Second
-}
-
-// SetMinBackoff sets the minimum amount of time to wait between retries.
-func (transaction *FileDeleteTransaction) SetMinBackoff(min time.Duration) *FileDeleteTransaction {
-	if min.Nanoseconds() < 0 {
-		panic("minBackoff must be a positive duration")
-	} else if transaction.maxBackoff.Nanoseconds() < min.Nanoseconds() {
-		panic("minBackoff must be less than or equal to maxBackoff")
-	}
-	transaction.minBackoff = &min
-	return transaction
-}
-
-// GetMinBackoff returns the minimum amount of time to wait between retries.
-func (transaction *FileDeleteTransaction) GetMinBackoff() time.Duration {
-	if transaction.minBackoff != nil {
-		return *transaction.minBackoff
-	}
-
-	return 250 * time.Millisecond
-}
-
-func (transaction *FileDeleteTransaction) _GetLogID() string {
-	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
-	return fmt.Sprintf("FileDeleteTransaction:%d", timestamp.UnixNano())
-}
-
-func (transaction *FileDeleteTransaction) SetLogLevel(level LogLevel) *FileDeleteTransaction {
-	transaction.transaction.SetLogLevel(level)
-	return transaction
 }
