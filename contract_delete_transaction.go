@@ -279,14 +279,14 @@ func (this *ContractDeleteTransaction) SetMinBackoff(min time.Duration) *Contrac
 	return this
 }
 
-func (transaction *ContractDeleteTransaction) _GetLogID() string {
-	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
+func (this *ContractDeleteTransaction) _GetLogID() string {
+	timestamp := this.transactionIDs._GetCurrent().(TransactionID).ValidStart
 	return fmt.Sprintf("ContractDeleteTransaction:%d", timestamp.UnixNano())
 }
 
-func (transaction *ContractDeleteTransaction) SetLogLevel(level LogLevel) *ContractDeleteTransaction {
-	transaction.transaction.SetLogLevel(level)
-	return transaction
+func (this *ContractDeleteTransaction) SetLogLevel(level LogLevel) *ContractDeleteTransaction {
+	this.transaction.SetLogLevel(level)
+	return this
 }
 
 // ----------- overriden functions ----------------
