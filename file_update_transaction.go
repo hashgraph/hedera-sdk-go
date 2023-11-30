@@ -21,7 +21,6 @@ package hedera
  */
 
 import (
-	"fmt"
 	"time"
 
 	"google.golang.org/protobuf/types/known/wrapperspb"
@@ -275,11 +274,6 @@ func (this *FileUpdateTransaction) SetMaxBackoff(max time.Duration) *FileUpdateT
 func (this *FileUpdateTransaction) SetMinBackoff(min time.Duration) *FileUpdateTransaction {
 	this.transaction.SetMinBackoff(min)
 	return this
-}
-
-func (this *FileUpdateTransaction) _GetLogID() string {
-	timestamp := this.transactionIDs._GetCurrent().(TransactionID).ValidStart
-	return fmt.Sprintf("FileUpdateTransaction:%d", timestamp.UnixNano())
 }
 
 func (this *FileUpdateTransaction) SetLogLevel(level LogLevel) *FileUpdateTransaction {
