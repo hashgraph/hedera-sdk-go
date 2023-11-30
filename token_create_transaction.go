@@ -21,7 +21,6 @@ package hedera
  */
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -133,18 +132,19 @@ type TokenCreateTransaction struct {
 // If a FINITE TokenSupplyType is used, maxSupply should be explicitly set to a
 // non-negative value. If it is not, the transaction will resolve to INVALID_TOKEN_MAX_SUPPLY.
 func NewTokenCreateTransaction() *TokenCreateTransaction {
-	transaction := TokenCreateTransaction{
+	tx := TokenCreateTransaction{
 		transaction: _NewTransaction(),
 	}
 
-	transaction.SetAutoRenewPeriod(7890000 * time.Second)
-	transaction._SetDefaultMaxTransactionFee(NewHbar(40))
-	transaction.SetTokenType(TokenTypeFungibleCommon)
+	tx.e = &tx
+	tx.SetAutoRenewPeriod(7890000 * time.Second)
+	tx._SetDefaultMaxTransactionFee(NewHbar(40))
+	tx.SetTokenType(TokenTypeFungibleCommon)
 
-	return &transaction
+	return &tx
 }
 
-func _TokenCreateTransactionFromProtobuf(transaction transaction, pb *services.TransactionBody) *TokenCreateTransaction {
+func _TokenCreateTransactionFromProtobuf(tx transaction, pb *services.TransactionBody) *TokenCreateTransaction {
 	customFees := make([]Fee, 0)
 
 	for _, fee := range pb.GetTokenCreation().GetCustomFees() {
@@ -163,8 +163,8 @@ func _TokenCreateTransactionFromProtobuf(transaction transaction, pb *services.T
 	expirationTime := _TimeFromProtobuf(pb.GetTokenCreation().GetExpiry())
 	autoRenew := _DurationFromProtobuf(pb.GetTokenCreation().GetAutoRenewPeriod())
 
-	return &TokenCreateTransaction{
-		transaction:        transaction,
+	resultTx := &TokenCreateTransaction{
+		transaction:        tx,
 		treasuryAccountID:  _AccountIDFromProtobuf(pb.GetTokenCreation().GetTreasury()),
 		autoRenewAccountID: _AccountIDFromProtobuf(pb.GetTokenCreation().GetAutoRenewAccount()),
 		customFees:         customFees,
@@ -187,220 +187,409 @@ func _TokenCreateTransactionFromProtobuf(transaction transaction, pb *services.T
 		expirationTime:     &expirationTime,
 		autoRenewPeriod:    &autoRenew,
 	}
-}
-
-// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (transaction *TokenCreateTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenCreateTransaction {
-	transaction.transaction.SetGrpcDeadline(deadline)
-	return transaction
+	resultTx.e = resultTx
+	return resultTx
 }
 
 // SetTokenName Sets the publicly visible name of the token, specified as a string of only ASCII characters
-func (transaction *TokenCreateTransaction) SetTokenName(name string) *TokenCreateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.tokenName = name
-	return transaction
+func (tx *TokenCreateTransaction) SetTokenName(name string) *TokenCreateTransaction {
+	tx._RequireNotFrozen()
+	tx.tokenName = name
+	return tx
 }
 
 // GetTokenName returns the token name
-func (transaction *TokenCreateTransaction) GetTokenName() string {
-	return transaction.tokenName
+func (tx *TokenCreateTransaction) GetTokenName() string {
+	return tx.tokenName
 }
 
 // SetTokenSymbol Sets the publicly visible token symbol. It is UTF-8 capitalized alphabetical string identifying the token
-func (transaction *TokenCreateTransaction) SetTokenSymbol(symbol string) *TokenCreateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.tokenSymbol = symbol
-	return transaction
+func (tx *TokenCreateTransaction) SetTokenSymbol(symbol string) *TokenCreateTransaction {
+	tx._RequireNotFrozen()
+	tx.tokenSymbol = symbol
+	return tx
 }
 
 // SetTokenMemo Sets the publicly visible token memo. It is max 100 bytes.
-func (transaction *TokenCreateTransaction) SetTokenMemo(memo string) *TokenCreateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.memo = memo
-	return transaction
+func (tx *TokenCreateTransaction) SetTokenMemo(memo string) *TokenCreateTransaction {
+	tx._RequireNotFrozen()
+	tx.memo = memo
+	return tx
 }
 
 // GetTokenMemo returns the token memo
-func (transaction *TokenCreateTransaction) GetTokenMemo() string {
-	return transaction.memo
+func (tx *TokenCreateTransaction) GetTokenMemo() string {
+	return tx.memo
 }
 
 // GetTokenSymbol returns the token symbol
-func (transaction *TokenCreateTransaction) GetTokenSymbol() string {
-	return transaction.tokenSymbol
+func (tx *TokenCreateTransaction) GetTokenSymbol() string {
+	return tx.tokenSymbol
 }
 
 // SetDecimals Sets the number of decimal places a token is divisible by. This field can never be changed!
-func (transaction *TokenCreateTransaction) SetDecimals(decimals uint) *TokenCreateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.decimals = uint32(decimals)
-	return transaction
+func (tx *TokenCreateTransaction) SetDecimals(decimals uint) *TokenCreateTransaction {
+	tx._RequireNotFrozen()
+	tx.decimals = uint32(decimals)
+	return tx
 }
 
 // GetDecimals returns the number of decimal places a token is divisible by
-func (transaction *TokenCreateTransaction) GetDecimals() uint {
-	return uint(transaction.decimals)
+func (tx *TokenCreateTransaction) GetDecimals() uint {
+	return uint(tx.decimals)
 }
 
 // SetTokenType Specifies the token type. Defaults to FUNGIBLE_COMMON
-func (transaction *TokenCreateTransaction) SetTokenType(t TokenType) *TokenCreateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.tokenType = t
-	return transaction
+func (tx *TokenCreateTransaction) SetTokenType(t TokenType) *TokenCreateTransaction {
+	tx._RequireNotFrozen()
+	tx.tokenType = t
+	return tx
 }
 
 // GetTokenType returns the token type
-func (transaction *TokenCreateTransaction) GetTokenType() TokenType {
-	return transaction.tokenType
+func (tx *TokenCreateTransaction) GetTokenType() TokenType {
+	return tx.tokenType
 }
 
 // SetSupplyType Specifies the token supply type. Defaults to INFINITE
-func (transaction *TokenCreateTransaction) SetSupplyType(tokenSupply TokenSupplyType) *TokenCreateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.tokenSupplyType = tokenSupply
-	return transaction
+func (tx *TokenCreateTransaction) SetSupplyType(tokenSupply TokenSupplyType) *TokenCreateTransaction {
+	tx._RequireNotFrozen()
+	tx.tokenSupplyType = tokenSupply
+	return tx
 }
 
 // GetSupplyType returns the token supply type
-func (transaction *TokenCreateTransaction) GetSupplyType() TokenSupplyType {
-	return transaction.tokenSupplyType
+func (tx *TokenCreateTransaction) GetSupplyType() TokenSupplyType {
+	return tx.tokenSupplyType
 }
 
 // SetMaxSupply Depends on TokenSupplyType. For tokens of type FUNGIBLE_COMMON - sets the
 // maximum number of tokens that can be in circulation. For tokens of type NON_FUNGIBLE_UNIQUE -
 // sets the maximum number of NFTs (serial numbers) that can be minted. This field can never be
 // changed!
-func (transaction *TokenCreateTransaction) SetMaxSupply(maxSupply int64) *TokenCreateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.maxSupply = maxSupply
-	return transaction
+func (tx *TokenCreateTransaction) SetMaxSupply(maxSupply int64) *TokenCreateTransaction {
+	tx._RequireNotFrozen()
+	tx.maxSupply = maxSupply
+	return tx
 }
 
 // GetMaxSupply returns the max supply
-func (transaction *TokenCreateTransaction) GetMaxSupply() int64 {
-	return transaction.maxSupply
+func (tx *TokenCreateTransaction) GetMaxSupply() int64 {
+	return tx.maxSupply
 }
 
 // SetTreasuryAccountID Sets the account which will act as a treasury for the token. This account will receive the specified initial supply
-func (transaction *TokenCreateTransaction) SetTreasuryAccountID(treasuryAccountID AccountID) *TokenCreateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.treasuryAccountID = &treasuryAccountID
-	return transaction
+func (tx *TokenCreateTransaction) SetTreasuryAccountID(treasuryAccountID AccountID) *TokenCreateTransaction {
+	tx._RequireNotFrozen()
+	tx.treasuryAccountID = &treasuryAccountID
+	return tx
 }
 
 // GetTreasuryAccountID returns the treasury account ID
-func (transaction *TokenCreateTransaction) GetTreasuryAccountID() AccountID {
-	if transaction.treasuryAccountID == nil {
+func (tx *TokenCreateTransaction) GetTreasuryAccountID() AccountID {
+	if tx.treasuryAccountID == nil {
 		return AccountID{}
 	}
 
-	return *transaction.treasuryAccountID
+	return *tx.treasuryAccountID
 }
 
 // SetAdminKey Sets the key which can perform update/delete operations on the token. If empty, the token can be perceived as immutable (not being able to be updated/deleted)
-func (transaction *TokenCreateTransaction) SetAdminKey(publicKey Key) *TokenCreateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.adminKey = publicKey
-	return transaction
+func (tx *TokenCreateTransaction) SetAdminKey(publicKey Key) *TokenCreateTransaction {
+	tx._RequireNotFrozen()
+	tx.adminKey = publicKey
+	return tx
 }
 
 // GetAdminKey returns the admin key
-func (transaction *TokenCreateTransaction) GetAdminKey() Key {
-	return transaction.adminKey
+func (tx *TokenCreateTransaction) GetAdminKey() Key {
+	return tx.adminKey
 }
 
 // SetKycKey Sets the key which can grant or revoke KYC of an account for the token's transactions. If empty, KYC is not required, and KYC grant or revoke operations are not possible.
-func (transaction *TokenCreateTransaction) SetKycKey(publicKey Key) *TokenCreateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.kycKey = publicKey
-	return transaction
+func (tx *TokenCreateTransaction) SetKycKey(publicKey Key) *TokenCreateTransaction {
+	tx._RequireNotFrozen()
+	tx.kycKey = publicKey
+	return tx
 }
 
-func (transaction *TokenCreateTransaction) GetKycKey() Key {
-	return transaction.kycKey
+func (tx *TokenCreateTransaction) GetKycKey() Key {
+	return tx.kycKey
 }
 
 // SetFreezeKey Sets the key which can sign to freeze or unfreeze an account for token transactions. If empty, freezing is not possible
-func (transaction *TokenCreateTransaction) SetFreezeKey(publicKey Key) *TokenCreateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.freezeKey = publicKey
-	return transaction
+func (tx *TokenCreateTransaction) SetFreezeKey(publicKey Key) *TokenCreateTransaction {
+	tx._RequireNotFrozen()
+	tx.freezeKey = publicKey
+	return tx
 }
 
 // GetFreezeKey returns the freeze key
-func (transaction *TokenCreateTransaction) GetFreezeKey() Key {
-	return transaction.freezeKey
+func (tx *TokenCreateTransaction) GetFreezeKey() Key {
+	return tx.freezeKey
 }
 
 // SetWipeKey Sets the key which can wipe the token balance of an account. If empty, wipe is not possible
-func (transaction *TokenCreateTransaction) SetWipeKey(publicKey Key) *TokenCreateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.wipeKey = publicKey
-	return transaction
+func (tx *TokenCreateTransaction) SetWipeKey(publicKey Key) *TokenCreateTransaction {
+	tx._RequireNotFrozen()
+	tx.wipeKey = publicKey
+	return tx
 }
 
 // GetWipeKey returns the wipe key
-func (transaction *TokenCreateTransaction) GetWipeKey() Key {
-	return transaction.wipeKey
+func (tx *TokenCreateTransaction) GetWipeKey() Key {
+	return tx.wipeKey
 }
 
 // SetFeeScheduleKey Set the key which can change the token's custom fee schedule; must sign a TokenFeeScheduleUpdate
 // transaction
-func (transaction *TokenCreateTransaction) SetFeeScheduleKey(key Key) *TokenCreateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.scheduleKey = key
-	return transaction
+func (tx *TokenCreateTransaction) SetFeeScheduleKey(key Key) *TokenCreateTransaction {
+	tx._RequireNotFrozen()
+	tx.scheduleKey = key
+	return tx
 }
 
 // GetFeeScheduleKey returns the fee schedule key
-func (transaction *TokenCreateTransaction) GetFeeScheduleKey() Key {
-	return transaction.scheduleKey
+func (tx *TokenCreateTransaction) GetFeeScheduleKey() Key {
+	return tx.scheduleKey
 }
 
 // SetPauseKey Set the Key which can pause and unpause the Token.
 // If Empty the token pause status defaults to PauseNotApplicable, otherwise Unpaused.
-func (transaction *TokenCreateTransaction) SetPauseKey(key Key) *TokenCreateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.pauseKey = key
-	return transaction
+func (tx *TokenCreateTransaction) SetPauseKey(key Key) *TokenCreateTransaction {
+	tx._RequireNotFrozen()
+	tx.pauseKey = key
+	return tx
 }
 
 // GetPauseKey returns the pause key
-func (transaction *TokenCreateTransaction) GetPauseKey() Key {
-	return transaction.pauseKey
+func (tx *TokenCreateTransaction) GetPauseKey() Key {
+	return tx.pauseKey
 }
 
 // SetCustomFees Set the custom fees to be assessed during a CryptoTransfer that transfers units of this token
-func (transaction *TokenCreateTransaction) SetCustomFees(customFee []Fee) *TokenCreateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.customFees = customFee
-	return transaction
+func (tx *TokenCreateTransaction) SetCustomFees(customFee []Fee) *TokenCreateTransaction {
+	tx._RequireNotFrozen()
+	tx.customFees = customFee
+	return tx
 }
 
 // GetCustomFees returns the custom fees
-func (transaction *TokenCreateTransaction) GetCustomFees() []Fee {
-	return transaction.customFees
+func (tx *TokenCreateTransaction) GetCustomFees() []Fee {
+	return tx.customFees
 }
 
-func (transaction *TokenCreateTransaction) _ValidateNetworkOnIDs(client *Client) error {
+// The key which can change the supply of a token. The key is used to sign Token Mint/Burn operations
+// SetInitialBalance sets the initial number of Hbar to put into the token
+func (tx *TokenCreateTransaction) SetSupplyKey(publicKey Key) *TokenCreateTransaction {
+	tx._RequireNotFrozen()
+	tx.supplyKey = publicKey
+	return tx
+}
+
+func (tx *TokenCreateTransaction) GetSupplyKey() Key {
+	return tx.supplyKey
+}
+
+// Specifies the initial supply of tokens to be put in circulation. The initial supply is sent to the Treasury Account. The supply is in the lowest denomination possible.
+func (tx *TokenCreateTransaction) SetInitialSupply(initialSupply uint64) *TokenCreateTransaction {
+	tx._RequireNotFrozen()
+	tx.initialSupply = initialSupply
+	return tx
+}
+
+func (tx *TokenCreateTransaction) GetInitialSupply() uint64 {
+	return tx.initialSupply
+}
+
+// The default Freeze status (frozen or unfrozen) of Hedera accounts relative to this token. If true, an account must be unfrozen before it can receive the token
+func (tx *TokenCreateTransaction) SetFreezeDefault(freezeDefault bool) *TokenCreateTransaction {
+	tx._RequireNotFrozen()
+	tx.freezeDefault = &freezeDefault
+	return tx
+}
+
+// GetFreezeDefault returns the freeze default
+func (tx *TokenCreateTransaction) GetFreezeDefault() bool {
+	return *tx.freezeDefault
+}
+
+// The epoch second at which the token should expire; if an auto-renew account and period are specified, this is coerced to the current epoch second plus the autoRenewPeriod
+func (tx *TokenCreateTransaction) SetExpirationTime(expirationTime time.Time) *TokenCreateTransaction {
+	tx._RequireNotFrozen()
+	tx.autoRenewPeriod = nil
+	tx.expirationTime = &expirationTime
+
+	return tx
+}
+
+func (tx *TokenCreateTransaction) GetExpirationTime() time.Time {
+	if tx.expirationTime != nil {
+		return *tx.expirationTime
+	}
+
+	return time.Time{}
+}
+
+// An account which will be automatically charged to renew the token's expiration, at autoRenewPeriod interval
+func (tx *TokenCreateTransaction) SetAutoRenewAccount(autoRenewAccountID AccountID) *TokenCreateTransaction {
+	tx._RequireNotFrozen()
+	tx.autoRenewAccountID = &autoRenewAccountID
+	return tx
+}
+
+func (tx *TokenCreateTransaction) GetAutoRenewAccount() AccountID {
+	if tx.autoRenewAccountID == nil {
+		return AccountID{}
+	}
+
+	return *tx.autoRenewAccountID
+}
+
+// The interval at which the auto-renew account will be charged to extend the token's expiry
+func (tx *TokenCreateTransaction) SetAutoRenewPeriod(autoRenewPeriod time.Duration) *TokenCreateTransaction {
+	tx._RequireNotFrozen()
+	tx.autoRenewPeriod = &autoRenewPeriod
+	return tx
+}
+
+func (tx *TokenCreateTransaction) GetAutoRenewPeriod() time.Duration {
+	if tx.autoRenewPeriod != nil {
+		return time.Duration(int64(tx.autoRenewPeriod.Seconds()) * time.Second.Nanoseconds())
+	}
+
+	return time.Duration(0)
+}
+
+// ---- Required Interfaces ---- //
+
+// Sign uses the provided privateKey to sign the transaction.
+func (tx *TokenCreateTransaction) Sign(privateKey PrivateKey) *TokenCreateTransaction {
+	tx.transaction.Sign(privateKey)
+	return tx
+}
+
+// SignWithOperator signs the transaction with client's operator privateKey.
+func (tx *TokenCreateTransaction) SignWithOperator(client *Client) (*TokenCreateTransaction, error) {
+	_, err := tx.transaction.SignWithOperator(client)
+	return tx, err
+}
+
+// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// with the publicKey as the map key.
+func (tx *TokenCreateTransaction) SignWith(
+	publicKey PublicKey,
+	signer TransactionSigner,
+) *TokenCreateTransaction {
+	tx.transaction.SignWith(publicKey, signer)
+	return tx
+}
+
+// AddSignature adds a signature to the transaction.
+func (tx *TokenCreateTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenCreateTransaction {
+	tx.transaction.AddSignature(publicKey, signature)
+	return tx
+}
+
+// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
+func (tx *TokenCreateTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenCreateTransaction {
+	tx.transaction.SetGrpcDeadline(deadline)
+	return tx
+}
+
+func (tx *TokenCreateTransaction) Freeze() (*TokenCreateTransaction, error) {
+	return tx.FreezeWith(nil)
+}
+
+func (tx *TokenCreateTransaction) FreezeWith(client *Client) (*TokenCreateTransaction, error) {
+	_, err := tx.transaction.FreezeWith(client)
+	return tx, err
+}
+
+// SetMaxTransactionFee sets the max transaction fee for this TokenCreateTransaction.
+func (tx *TokenCreateTransaction) SetMaxTransactionFee(fee Hbar) *TokenCreateTransaction {
+	tx.transaction.SetMaxTransactionFee(fee)
+	return tx
+}
+
+// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
+func (tx *TokenCreateTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *TokenCreateTransaction {
+	tx.transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	return tx
+}
+
+// SetTransactionMemo sets the memo for this TokenCreateTransaction.
+func (tx *TokenCreateTransaction) SetTransactionMemo(memo string) *TokenCreateTransaction {
+	tx.transaction.SetTransactionMemo(memo)
+	return tx
+}
+
+// SetTransactionValidDuration sets the valid duration for this TokenCreateTransaction.
+func (tx *TokenCreateTransaction) SetTransactionValidDuration(duration time.Duration) *TokenCreateTransaction {
+	tx.transaction.SetTransactionValidDuration(duration)
+	return tx
+}
+
+// SetTransactionID sets the TransactionID for this TokenCreateTransaction.
+func (tx *TokenCreateTransaction) SetTransactionID(transactionID TransactionID) *TokenCreateTransaction {
+	tx.transaction.SetTransactionID(transactionID)
+	return tx
+}
+
+// SetNodeAccountIDs sets the _Node AccountID for this TokenCreateTransaction.
+func (tx *TokenCreateTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenCreateTransaction {
+	tx.transaction.SetNodeAccountIDs(nodeID)
+	return tx
+}
+
+// SetMaxRetry sets the max number of errors before execution will fail.
+func (tx *TokenCreateTransaction) SetMaxRetry(count int) *TokenCreateTransaction {
+	tx.transaction.SetMaxRetry(count)
+	return tx
+}
+
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
+func (tx *TokenCreateTransaction) SetMaxBackoff(max time.Duration) *TokenCreateTransaction {
+	tx.transaction.SetMaxBackoff(max)
+	return tx
+}
+
+// SetMinBackoff sets the minimum amount of time to wait between retries.
+func (tx *TokenCreateTransaction) SetMinBackoff(min time.Duration) *TokenCreateTransaction {
+	tx.transaction.SetMinBackoff(min)
+	return tx
+}
+
+func (tx *TokenCreateTransaction) SetLogLevel(level LogLevel) *TokenCreateTransaction {
+	tx.transaction.SetLogLevel(level)
+	return tx
+}
+
+// ----------- overriden functions ----------------
+
+func (tx *TokenCreateTransaction) getName() string {
+	return "TokenCreateTransaction"
+}
+
+func (tx *TokenCreateTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
 
-	if transaction.treasuryAccountID != nil {
-		if err := transaction.treasuryAccountID.ValidateChecksum(client); err != nil {
+	if tx.treasuryAccountID != nil {
+		if err := tx.treasuryAccountID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}
 
-	if transaction.autoRenewAccountID != nil {
-		if err := transaction.autoRenewAccountID.ValidateChecksum(client); err != nil {
+	if tx.autoRenewAccountID != nil {
+		if err := tx.autoRenewAccountID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}
 
-	for _, customFee := range transaction.customFees {
+	for _, customFee := range tx.customFees {
 		if err := customFee._ValidateNetworkOnIDs(client); err != nil {
 			return err
 		}
@@ -409,545 +598,100 @@ func (transaction *TokenCreateTransaction) _ValidateNetworkOnIDs(client *Client)
 	return nil
 }
 
-func (transaction *TokenCreateTransaction) _Build() *services.TransactionBody {
-	body := &services.TokenCreateTransactionBody{
-		Name:          transaction.tokenName,
-		Symbol:        transaction.tokenSymbol,
-		Memo:          transaction.memo,
-		Decimals:      transaction.decimals,
-		TokenType:     services.TokenType(transaction.tokenType),
-		SupplyType:    services.TokenSupplyType(transaction.tokenSupplyType),
-		MaxSupply:     transaction.maxSupply,
-		InitialSupply: transaction.initialSupply,
-	}
-
-	if transaction.autoRenewPeriod != nil {
-		body.AutoRenewPeriod = _DurationToProtobuf(*transaction.autoRenewPeriod)
-	}
-
-	if transaction.expirationTime != nil {
-		body.Expiry = _TimeToProtobuf(*transaction.expirationTime)
-	}
-
-	if transaction.treasuryAccountID != nil {
-		body.Treasury = transaction.treasuryAccountID._ToProtobuf()
-	}
-
-	if transaction.autoRenewAccountID != nil {
-		body.AutoRenewAccount = transaction.autoRenewAccountID._ToProtobuf()
-	}
-
-	if body.CustomFees == nil {
-		body.CustomFees = make([]*services.CustomFee, 0)
-	}
-	for _, customFee := range transaction.customFees {
-		body.CustomFees = append(body.CustomFees, customFee._ToProtobuf())
-	}
-
-	if transaction.adminKey != nil {
-		body.AdminKey = transaction.adminKey._ToProtoKey()
-	}
-
-	if transaction.freezeKey != nil {
-		body.FreezeKey = transaction.freezeKey._ToProtoKey()
-	}
-
-	if transaction.scheduleKey != nil {
-		body.FeeScheduleKey = transaction.scheduleKey._ToProtoKey()
-	}
-
-	if transaction.kycKey != nil {
-		body.KycKey = transaction.kycKey._ToProtoKey()
-	}
-
-	if transaction.wipeKey != nil {
-		body.WipeKey = transaction.wipeKey._ToProtoKey()
-	}
-
-	if transaction.supplyKey != nil {
-		body.SupplyKey = transaction.supplyKey._ToProtoKey()
-	}
-
-	if transaction.pauseKey != nil {
-		body.PauseKey = transaction.pauseKey._ToProtoKey()
-	}
-
-	if transaction.freezeDefault != nil {
-		body.FreezeDefault = *transaction.freezeDefault
-	}
-
+func (tx *TokenCreateTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
-		TransactionFee:           transaction.transactionFee,
-		Memo:                     transaction.transaction.memo,
-		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
-		TransactionID:            transaction.transactionID._ToProtobuf(),
+		TransactionFee:           tx.transactionFee,
+		Memo:                     tx.transaction.memo,
+		TransactionValidDuration: _DurationToProtobuf(tx.GetTransactionValidDuration()),
+		TransactionID:            tx.transactionID._ToProtobuf(),
 		Data: &services.TransactionBody_TokenCreation{
-			TokenCreation: body,
+			TokenCreation: tx.buildProtoBody(),
 		},
 	}
 }
 
-func (transaction *TokenCreateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	transaction._RequireNotFrozen()
-
-	scheduled, err := transaction._ConstructScheduleProtobuf()
-	if err != nil {
-		return nil, err
-	}
-
-	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
-}
-
-func (transaction *TokenCreateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
-	body := &services.TokenCreateTransactionBody{
-		Name:          transaction.tokenName,
-		Symbol:        transaction.tokenSymbol,
-		Memo:          transaction.memo,
-		Decimals:      transaction.decimals,
-		TokenType:     services.TokenType(transaction.tokenType),
-		SupplyType:    services.TokenSupplyType(transaction.tokenSupplyType),
-		MaxSupply:     transaction.maxSupply,
-		InitialSupply: transaction.initialSupply,
-	}
-
-	if transaction.autoRenewPeriod != nil {
-		body.AutoRenewPeriod = _DurationToProtobuf(*transaction.autoRenewPeriod)
-	}
-
-	if transaction.expirationTime != nil {
-		body.Expiry = _TimeToProtobuf(*transaction.expirationTime)
-	}
-
-	if transaction.treasuryAccountID != nil {
-		body.Treasury = transaction.treasuryAccountID._ToProtobuf()
-	}
-
-	if transaction.autoRenewAccountID != nil {
-		body.AutoRenewAccount = transaction.autoRenewAccountID._ToProtobuf()
-	}
-
-	if body.CustomFees == nil {
-		body.CustomFees = make([]*services.CustomFee, 0)
-	}
-	for _, customFee := range transaction.customFees {
-		body.CustomFees = append(body.CustomFees, customFee._ToProtobuf())
-	}
-
-	if transaction.adminKey != nil {
-		body.AdminKey = transaction.adminKey._ToProtoKey()
-	}
-
-	if transaction.freezeKey != nil {
-		body.FreezeKey = transaction.freezeKey._ToProtoKey()
-	}
-
-	if transaction.scheduleKey != nil {
-		body.FeeScheduleKey = transaction.scheduleKey._ToProtoKey()
-	}
-
-	if transaction.kycKey != nil {
-		body.KycKey = transaction.kycKey._ToProtoKey()
-	}
-
-	if transaction.wipeKey != nil {
-		body.WipeKey = transaction.wipeKey._ToProtoKey()
-	}
-
-	if transaction.supplyKey != nil {
-		body.SupplyKey = transaction.supplyKey._ToProtoKey()
-	}
-
-	if transaction.pauseKey != nil {
-		body.PauseKey = transaction.pauseKey._ToProtoKey()
-	}
-
-	if transaction.freezeDefault != nil {
-		body.FreezeDefault = *transaction.freezeDefault
-	}
-
+func (tx *TokenCreateTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
-		TransactionFee: transaction.transactionFee,
-		Memo:           transaction.transaction.memo,
+		TransactionFee: tx.transactionFee,
+		Memo:           tx.transaction.memo,
 		Data: &services.SchedulableTransactionBody_TokenCreation{
-			TokenCreation: body,
+			TokenCreation: tx.buildProtoBody(),
 		},
 	}, nil
 }
 
-// The key which can change the supply of a token. The key is used to sign Token Mint/Burn operations
-// SetInitialBalance sets the initial number of Hbar to put into the token
-func (transaction *TokenCreateTransaction) SetSupplyKey(publicKey Key) *TokenCreateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.supplyKey = publicKey
-	return transaction
-}
-
-func (transaction *TokenCreateTransaction) GetSupplyKey() Key {
-	return transaction.supplyKey
-}
-
-// Specifies the initial supply of tokens to be put in circulation. The initial supply is sent to the Treasury Account. The supply is in the lowest denomination possible.
-func (transaction *TokenCreateTransaction) SetInitialSupply(initialSupply uint64) *TokenCreateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.initialSupply = initialSupply
-	return transaction
-}
-
-func (transaction *TokenCreateTransaction) GetInitialSupply() uint64 {
-	return transaction.initialSupply
-}
-
-// The default Freeze status (frozen or unfrozen) of Hedera accounts relative to this token. If true, an account must be unfrozen before it can receive the token
-func (transaction *TokenCreateTransaction) SetFreezeDefault(freezeDefault bool) *TokenCreateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.freezeDefault = &freezeDefault
-	return transaction
-}
-
-// GetFreezeDefault returns the freeze default
-func (transaction *TokenCreateTransaction) GetFreezeDefault() bool {
-	return *transaction.freezeDefault
-}
-
-// The epoch second at which the token should expire; if an auto-renew account and period are specified, this is coerced to the current epoch second plus the autoRenewPeriod
-func (transaction *TokenCreateTransaction) SetExpirationTime(expirationTime time.Time) *TokenCreateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.autoRenewPeriod = nil
-	transaction.expirationTime = &expirationTime
-
-	return transaction
-}
-
-func (transaction *TokenCreateTransaction) GetExpirationTime() time.Time {
-	if transaction.expirationTime != nil {
-		return *transaction.expirationTime
+func (tx *TokenCreateTransaction) buildProtoBody() *services.TokenCreateTransactionBody {
+	body := &services.TokenCreateTransactionBody{
+		Name:          tx.tokenName,
+		Symbol:        tx.tokenSymbol,
+		Memo:          tx.memo,
+		Decimals:      tx.decimals,
+		TokenType:     services.TokenType(tx.tokenType),
+		SupplyType:    services.TokenSupplyType(tx.tokenSupplyType),
+		MaxSupply:     tx.maxSupply,
+		InitialSupply: tx.initialSupply,
 	}
 
-	return time.Time{}
-}
-
-// An account which will be automatically charged to renew the token's expiration, at autoRenewPeriod interval
-func (transaction *TokenCreateTransaction) SetAutoRenewAccount(autoRenewAccountID AccountID) *TokenCreateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.autoRenewAccountID = &autoRenewAccountID
-	return transaction
-}
-
-func (transaction *TokenCreateTransaction) GetAutoRenewAccount() AccountID {
-	if transaction.autoRenewAccountID == nil {
-		return AccountID{}
+	if tx.autoRenewPeriod != nil {
+		body.AutoRenewPeriod = _DurationToProtobuf(*tx.autoRenewPeriod)
 	}
 
-	return *transaction.autoRenewAccountID
-}
-
-// The interval at which the auto-renew account will be charged to extend the token's expiry
-func (transaction *TokenCreateTransaction) SetAutoRenewPeriod(autoRenewPeriod time.Duration) *TokenCreateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.autoRenewPeriod = &autoRenewPeriod
-	return transaction
-}
-
-func (transaction *TokenCreateTransaction) GetAutoRenewPeriod() time.Duration {
-	if transaction.autoRenewPeriod != nil {
-		return time.Duration(int64(transaction.autoRenewPeriod.Seconds()) * time.Second.Nanoseconds())
+	if tx.expirationTime != nil {
+		body.Expiry = _TimeToProtobuf(*tx.expirationTime)
 	}
 
-	return time.Duration(0)
+	if tx.treasuryAccountID != nil {
+		body.Treasury = tx.treasuryAccountID._ToProtobuf()
+	}
+
+	if tx.autoRenewAccountID != nil {
+		body.AutoRenewAccount = tx.autoRenewAccountID._ToProtobuf()
+	}
+
+	if body.CustomFees == nil {
+		body.CustomFees = make([]*services.CustomFee, 0)
+	}
+	for _, customFee := range tx.customFees {
+		body.CustomFees = append(body.CustomFees, customFee._ToProtobuf())
+	}
+
+	if tx.adminKey != nil {
+		body.AdminKey = tx.adminKey._ToProtoKey()
+	}
+
+	if tx.freezeKey != nil {
+		body.FreezeKey = tx.freezeKey._ToProtoKey()
+	}
+
+	if tx.scheduleKey != nil {
+		body.FeeScheduleKey = tx.scheduleKey._ToProtoKey()
+	}
+
+	if tx.kycKey != nil {
+		body.KycKey = tx.kycKey._ToProtoKey()
+	}
+
+	if tx.wipeKey != nil {
+		body.WipeKey = tx.wipeKey._ToProtoKey()
+	}
+
+	if tx.supplyKey != nil {
+		body.SupplyKey = tx.supplyKey._ToProtoKey()
+	}
+
+	if tx.pauseKey != nil {
+		body.PauseKey = tx.pauseKey._ToProtoKey()
+	}
+
+	if tx.freezeDefault != nil {
+		body.FreezeDefault = *tx.freezeDefault
+	}
+
+	return body
 }
 
-func _TokenCreateTransactionGetMethod(request interface{}, channel *_Channel) _Method {
+func (tx *TokenCreateTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetToken().CreateToken,
 	}
-}
-
-func (transaction *TokenCreateTransaction) IsFrozen() bool {
-	return transaction._IsFrozen()
-}
-
-// Sign uses the provided privateKey to sign the transaction.
-func (transaction *TokenCreateTransaction) Sign(
-	privateKey PrivateKey,
-) *TokenCreateTransaction {
-	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
-}
-
-// SignWithOperator signs the transaction with client's operator privateKey.
-func (transaction *TokenCreateTransaction) SignWithOperator(
-	client *Client,
-) (*TokenCreateTransaction, error) {
-	// If the transaction is not signed by the _Operator, we need
-	// to sign the transaction with the _Operator
-
-	if client == nil {
-		return nil, errNoClientProvided
-	} else if client.operator == nil {
-		return nil, errClientOperatorSigning
-	}
-
-	if !transaction.IsFrozen() {
-		_, err := transaction.FreezeWith(client)
-		if err != nil {
-			return transaction, err
-		}
-	}
-	return transaction.SignWith(client.operator.publicKey, client.operator.signer), nil
-}
-
-// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
-// with the publicKey as the map key.
-func (transaction *TokenCreateTransaction) SignWith(
-	publicKey PublicKey,
-	signer TransactionSigner,
-) *TokenCreateTransaction {
-	if !transaction._KeyAlreadySigned(publicKey) {
-		transaction._SignWith(publicKey, signer)
-	}
-
-	return transaction
-}
-
-// Execute executes the transaction with the provided client
-func (transaction *TokenCreateTransaction) Execute(
-	client *Client,
-) (TransactionResponse, error) {
-	if client == nil {
-		return TransactionResponse{}, errNoClientProvided
-	}
-
-	if transaction.freezeError != nil {
-		return TransactionResponse{}, transaction.freezeError
-	}
-
-	if !transaction.IsFrozen() {
-		_, err := transaction.FreezeWith(client)
-		if err != nil {
-			return TransactionResponse{}, err
-		}
-	}
-
-	transactionID := transaction.transactionIDs._GetCurrent().(TransactionID)
-
-	if !client.GetOperatorAccountID()._IsZero() && client.GetOperatorAccountID()._Equals(*transactionID.AccountID) {
-		transaction.SignWith(
-			client.GetOperatorPublicKey(),
-			client.operator.signer,
-		)
-	}
-
-	resp, err := _Execute(
-		client,
-		&transaction.transaction,
-		_TransactionShouldRetry,
-		_TransactionMakeRequest,
-		_TransactionAdvanceRequest,
-		_TransactionGetNodeAccountID,
-		_TokenCreateTransactionGetMethod,
-		_TransactionMapStatusError,
-		_TransactionMapResponse,
-		transaction._GetLogID(),
-		transaction.grpcDeadline,
-		transaction.maxBackoff,
-		transaction.minBackoff,
-		transaction.maxRetry,
-	)
-
-	if err != nil {
-		return TransactionResponse{
-			TransactionID:  transaction.GetTransactionID(),
-			NodeID:         resp.(TransactionResponse).NodeID,
-			ValidateStatus: true,
-		}, err
-	}
-
-	return TransactionResponse{
-		TransactionID:  transaction.GetTransactionID(),
-		NodeID:         resp.(TransactionResponse).NodeID,
-		Hash:           resp.(TransactionResponse).Hash,
-		ValidateStatus: true,
-	}, nil
-}
-
-func (transaction *TokenCreateTransaction) Freeze() (*TokenCreateTransaction, error) {
-	return transaction.FreezeWith(nil)
-}
-
-func (transaction *TokenCreateTransaction) FreezeWith(client *Client) (*TokenCreateTransaction, error) {
-	if transaction.autoRenewAccountID == nil && transaction.autoRenewPeriod != nil && client != nil && !client.GetOperatorAccountID()._IsZero() {
-		transaction.SetAutoRenewAccount(client.GetOperatorAccountID())
-	}
-
-	if transaction.IsFrozen() {
-		return transaction, nil
-	}
-	transaction._InitFee(client)
-	err := transaction._ValidateNetworkOnIDs(client)
-	if err != nil {
-		return &TokenCreateTransaction{}, err
-	}
-	if err := transaction._InitTransactionID(client); err != nil {
-		return transaction, err
-	}
-	body := transaction._Build()
-
-	return transaction, _TransactionFreezeWith(&transaction.transaction, client, body)
-}
-
-// GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
-func (transaction *TokenCreateTransaction) GetMaxTransactionFee() Hbar {
-	return transaction.transaction.GetMaxTransactionFee()
-}
-
-// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
-func (transaction *TokenCreateTransaction) SetMaxTransactionFee(fee Hbar) *TokenCreateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetMaxTransactionFee(fee)
-	return transaction
-}
-
-// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
-func (transaction *TokenCreateTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *TokenCreateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetRegenerateTransactionID(regenerateTransactionID)
-	return transaction
-}
-
-// GetRegenerateTransactionID returns true if transaction ID regeneration is enabled.
-func (transaction *TokenCreateTransaction) GetRegenerateTransactionID() bool {
-	return transaction.transaction.GetRegenerateTransactionID()
-}
-
-// GetTransactionMemo returns the memo for this	TokenCreateTransaction.
-func (transaction *TokenCreateTransaction) GetTransactionMemo() string {
-	return transaction.transaction.GetTransactionMemo()
-}
-
-// SetTransactionMemo sets the memo for this TokenCreateTransaction.
-func (transaction *TokenCreateTransaction) SetTransactionMemo(memo string) *TokenCreateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetTransactionMemo(memo)
-	return transaction
-}
-
-// GetTransactionValidDuration returns the duration that this transaction is valid for.
-func (transaction *TokenCreateTransaction) GetTransactionValidDuration() time.Duration {
-	return transaction.transaction.GetTransactionValidDuration()
-}
-
-// SetTransactionValidDuration sets the valid duration for this TokenCreateTransaction.
-func (transaction *TokenCreateTransaction) SetTransactionValidDuration(duration time.Duration) *TokenCreateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetTransactionValidDuration(duration)
-	return transaction
-}
-
-// GetTransactionID gets the TransactionID for this	TokenCreateTransaction.
-func (transaction *TokenCreateTransaction) GetTransactionID() TransactionID {
-	return transaction.transaction.GetTransactionID()
-}
-
-// SetTransactionID sets the TransactionID for this TokenCreateTransaction.
-func (transaction *TokenCreateTransaction) SetTransactionID(transactionID TransactionID) *TokenCreateTransaction {
-	transaction._RequireNotFrozen()
-
-	transaction.transaction.SetTransactionID(transactionID)
-	return transaction
-}
-
-// SetNodeTokenID sets the _Node TokenID for this TokenCreateTransaction.
-func (transaction *TokenCreateTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenCreateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetNodeAccountIDs(nodeID)
-	return transaction
-}
-
-// SetMaxRetry sets the max number of errors before execution will fail.
-func (transaction *TokenCreateTransaction) SetMaxRetry(count int) *TokenCreateTransaction {
-	transaction.transaction.SetMaxRetry(count)
-	return transaction
-}
-
-// AddSignature adds a signature to the transaction.
-func (transaction *TokenCreateTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenCreateTransaction {
-	transaction._RequireOneNodeAccountID()
-
-	if transaction._KeyAlreadySigned(publicKey) {
-		return transaction
-	}
-
-	if transaction.signedTransactions._Length() == 0 {
-		return transaction
-	}
-
-	transaction.transactions = _NewLockableSlice()
-	transaction.publicKeys = append(transaction.publicKeys, publicKey)
-	transaction.transactionSigners = append(transaction.transactionSigners, nil)
-	transaction.transactionIDs.locked = true
-
-	for index := 0; index < transaction.signedTransactions._Length(); index++ {
-		var temp *services.SignedTransaction
-		switch t := transaction.signedTransactions._Get(index).(type) { //nolint
-		case *services.SignedTransaction:
-			temp = t
-		}
-		temp.SigMap.SigPair = append(
-			temp.SigMap.SigPair,
-			publicKey._ToSignaturePairProtobuf(signature),
-		)
-		transaction.signedTransactions._Set(index, temp)
-	}
-
-	return transaction
-}
-
-// SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (transaction *TokenCreateTransaction) SetMaxBackoff(max time.Duration) *TokenCreateTransaction {
-	if max.Nanoseconds() < 0 {
-		panic("maxBackoff must be a positive duration")
-	} else if max.Nanoseconds() < transaction.minBackoff.Nanoseconds() {
-		panic("maxBackoff must be greater than or equal to minBackoff")
-	}
-	transaction.maxBackoff = &max
-	return transaction
-}
-
-// GetMaxBackoff returns the maximum amount of time to wait between retries.
-func (transaction *TokenCreateTransaction) GetMaxBackoff() time.Duration {
-	if transaction.maxBackoff != nil {
-		return *transaction.maxBackoff
-	}
-
-	return 8 * time.Second
-}
-
-// SetMinBackoff sets the minimum amount of time to wait between retries.
-func (transaction *TokenCreateTransaction) SetMinBackoff(min time.Duration) *TokenCreateTransaction {
-	if min.Nanoseconds() < 0 {
-		panic("minBackoff must be a positive duration")
-	} else if transaction.maxBackoff.Nanoseconds() < min.Nanoseconds() {
-		panic("minBackoff must be less than or equal to maxBackoff")
-	}
-	transaction.minBackoff = &min
-	return transaction
-}
-
-// GetMinBackoff returns the minimum amount of time to wait between retries.
-func (transaction *TokenCreateTransaction) GetMinBackoff() time.Duration {
-	if transaction.minBackoff != nil {
-		return *transaction.minBackoff
-	}
-
-	return 250 * time.Millisecond
-}
-
-func (transaction *TokenCreateTransaction) _GetLogID() string {
-	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
-	return fmt.Sprintf("TokenCreateTransaction:%d", timestamp.UnixNano())
-}
-
-func (transaction *TokenCreateTransaction) SetLogLevel(level LogLevel) *TokenCreateTransaction {
-	transaction.transaction.SetLogLevel(level)
-	return transaction
 }

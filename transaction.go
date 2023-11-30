@@ -51,7 +51,7 @@ type Transaction interface {
 	AddSignature(publicKey PublicKey, signature []byte) Transaction
 	Freeze() (Transaction, error)
 	FreezeWith(client *Client) (Transaction, error)
-	Schedule() (*ScheduleCreateTransaction, error) 
+	Schedule() (*ScheduleCreateTransaction, error)
 
 	build() *services.TransactionBody
 	buildProtoBody() (*services.SchedulableTransactionBody, error)
@@ -424,7 +424,7 @@ func (this *transaction) GetTransactionHash() ([]byte, error) {
 
 func (this *transaction) GetTransactionHashPerNode() (map[AccountID][]byte, error) {
 	transactionHash := make(map[AccountID][]byte)
-	if !this._IsFrozen() {
+	if !this.IsFrozen() {
 		return transactionHash, errTransactionIsNotFrozen
 	}
 
@@ -484,12 +484,12 @@ func (this *transaction) _InitTransactionID(client *Client) error {
 	return nil
 }
 
-func (this *transaction) _IsFrozen() bool {
+func (this *transaction) IsFrozen() bool {
 	return this.signedTransactions._Length() > 0
 }
 
 func (this *transaction) _RequireNotFrozen() {
-	if this._IsFrozen() {
+	if this.IsFrozen() {
 		this.freezeError = errTransactionIsFrozen
 	}
 }
@@ -574,7 +574,7 @@ func (this *transaction) String() string {
 // ToBytes Builds then converts the current transaction to []byte
 // Requires transaction to be frozen
 func (this *transaction) ToBytes() ([]byte, error) {
-	if !this._IsFrozen() {
+	if !this.IsFrozen() {
 		return make([]byte, 0), errTransactionIsNotFrozen
 	}
 
@@ -827,7 +827,7 @@ func (this *transaction) Execute(client *Client) (TransactionResponse, error) {
 		return TransactionResponse{}, this.freezeError
 	}
 
-	if !this._IsFrozen() {
+	if !this.IsFrozen() {
 		_, err := this.FreezeWith(client)
 		if err != nil {
 			return TransactionResponse{}, err
@@ -876,7 +876,7 @@ func (this *transaction) SignWithOperator(client *Client) (Transaction, error) {
 		return nil, errClientOperatorSigning
 	}
 
-	if !this._IsFrozen() {
+	if !this.IsFrozen() {
 		_, err := this.FreezeWith(client)
 		if err != nil {
 			return this, err
@@ -926,7 +926,7 @@ func (this *transaction) Freeze() (Transaction, error) {
 	return this.FreezeWith(nil)
 }
 func (this *transaction) FreezeWith(client *Client) (Transaction, error) {
-	if this._IsFrozen() {
+	if this.IsFrozen() {
 		return this, nil
 	}
 
@@ -4782,6 +4782,7 @@ func TransactionExecute(transaction interface{}, client *Client) (TransactionRes
 		return TransactionResponse{}, errors.New("(BUG) non-exhaustive switch statement")
 	}
 }
+
 // ------------ Executable Functions ------------
 
 func (this *transaction) shouldRetry(_ interface{}, response interface{}) _ExecutionState {

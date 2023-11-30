@@ -80,7 +80,7 @@ func _ContractCreateTransactionFromProtobuf(this transaction, pb *services.Trans
 		autoRenewAccountID = _AccountIDFromProtobuf(pb.GetContractCreateInstance().GetAutoRenewAccountId())
 	}
 
-	return &ContractCreateTransaction{
+	resultTx := &ContractCreateTransaction{
 		transaction:                   this,
 		byteCodeFileID:                _FileIDFromProtobuf(pb.GetContractCreateInstance().GetFileID()),
 		adminKey:                      key,
@@ -96,6 +96,8 @@ func _ContractCreateTransactionFromProtobuf(this transaction, pb *services.Trans
 		stakedNodeID:                  &stakedNodeID,
 		declineReward:                 pb.GetContractCreateInstance().GetDeclineReward(),
 	}
+	resultTx.e = resultTx
+	return resultTx
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
@@ -338,10 +340,6 @@ func (this *ContractCreateTransaction) Schedule() (*ScheduleCreateTransaction, e
 	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (this *ContractCreateTransaction) IsFrozen() bool {
-	return this._IsFrozen()
-}
-
 // Sign uses the provided privateKey to sign the transaction.
 func (this *ContractCreateTransaction) Sign(
 	privateKey PrivateKey,
@@ -356,7 +354,7 @@ func (this *ContractCreateTransaction) SignWithOperator(
 ) (*ContractCreateTransaction, error) {
 	// If the transaction is not signed by the _Operator, we need
 	// to sign the transaction with the _Operator
-	_,err := this.transaction.SignWithOperator(client)
+	_, err := this.transaction.SignWithOperator(client)
 	return this, err
 }
 
@@ -371,7 +369,7 @@ func (this *ContractCreateTransaction) SignWith(
 }
 
 func (this *ContractCreateTransaction) Freeze() (*ContractCreateTransaction, error) {
-	_,err := this.transaction.Freeze()
+	_, err := this.transaction.Freeze()
 	return this, err
 }
 

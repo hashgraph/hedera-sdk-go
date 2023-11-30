@@ -108,7 +108,7 @@ func _ContractUpdateTransactionFromProtobuf(this transaction, pb *services.Trans
 		autoRenewAccountID = _AccountIDFromProtobuf(pb.GetContractUpdateInstance().GetAutoRenewAccountId())
 	}
 
-	return &ContractUpdateTransaction{
+	resultTx := &ContractUpdateTransaction{
 		transaction:                   this,
 		contractID:                    _ContractIDFromProtobuf(pb.GetContractUpdateInstance().GetContractID()),
 		adminKey:                      key,
@@ -121,6 +121,8 @@ func _ContractUpdateTransactionFromProtobuf(this transaction, pb *services.Trans
 		stakedNodeID:                  &stakedNodeID,
 		declineReward:                 pb.GetContractUpdateInstance().GetDeclineReward().GetValue(),
 	}
+	resultTx.e = resultTx
+	return resultTx
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
@@ -324,7 +326,6 @@ func (this *ContractUpdateTransaction) ClearStakedNodeID() *ContractUpdateTransa
 	return this
 }
 
-
 func (this *ContractUpdateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
 	this._RequireNotFrozen()
 
@@ -334,10 +335,6 @@ func (this *ContractUpdateTransaction) Schedule() (*ScheduleCreateTransaction, e
 	}
 
 	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
-}
-
-func (transaction *ContractUpdateTransaction) IsFrozen() bool {
-	return transaction._IsFrozen()
 }
 
 // Sign uses the provided privateKey to sign the transaction.
@@ -354,7 +351,7 @@ func (this *ContractUpdateTransaction) SignWithOperator(
 ) (*ContractUpdateTransaction, error) {
 	// If the transaction is not signed by the _Operator, we need
 	// to sign the transaction with the _Operator
-	_,err := this.transaction.SignWithOperator(client)
+	_, err := this.transaction.SignWithOperator(client)
 	return this, err
 }
 
@@ -369,7 +366,7 @@ func (this *ContractUpdateTransaction) SignWith(
 }
 
 func (this *ContractUpdateTransaction) Freeze() (*ContractUpdateTransaction, error) {
-	_,err := this.transaction.Freeze()
+	_, err := this.transaction.Freeze()
 	return this, err
 }
 

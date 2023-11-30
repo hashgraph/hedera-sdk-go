@@ -21,7 +21,6 @@ package hedera
  */
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/pkg/errors"
@@ -44,154 +43,250 @@ type TopicMessageSubmitTransaction struct {
 // NewTopicMessageSubmitTransaction createsTopicMessageSubmitTransaction which
 // sends a message/messages to the Topic ID
 func NewTopicMessageSubmitTransaction() *TopicMessageSubmitTransaction {
-	transaction := TopicMessageSubmitTransaction{
+	tx := TopicMessageSubmitTransaction{
 		transaction: _NewTransaction(),
 		maxChunks:   20,
 		message:     make([]byte, 0),
 	}
-	transaction._SetDefaultMaxTransactionFee(NewHbar(2))
 
-	return &transaction
+	tx.e = &tx
+	tx._SetDefaultMaxTransactionFee(NewHbar(2))
+
+	return &tx
 }
 
-func _TopicMessageSubmitTransactionFromProtobuf(transaction transaction, pb *services.TransactionBody) *TopicMessageSubmitTransaction {
-	tx := &TopicMessageSubmitTransaction{
-		transaction: transaction,
+func _TopicMessageSubmitTransactionFromProtobuf(tx transaction, pb *services.TransactionBody) *TopicMessageSubmitTransaction {
+	tmsTx := &TopicMessageSubmitTransaction{
+		transaction: tx,
 		maxChunks:   20,
 		message:     pb.GetConsensusSubmitMessage().GetMessage(),
 		topicID:     _TopicIDFromProtobuf(pb.GetConsensusSubmitMessage().GetTopicID()),
 	}
 
-	return tx
-}
-
-// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (transaction *TopicMessageSubmitTransaction) SetGrpcDeadline(deadline *time.Duration) *TopicMessageSubmitTransaction {
-	transaction.transaction.SetGrpcDeadline(deadline)
-	return transaction
+	return tmsTx
 }
 
 // SetTopicID Sets the topic to submit message to.
-func (transaction *TopicMessageSubmitTransaction) SetTopicID(topicID TopicID) *TopicMessageSubmitTransaction {
-	transaction._RequireNotFrozen()
-	transaction.topicID = &topicID
-	return transaction
+func (tx *TopicMessageSubmitTransaction) SetTopicID(topicID TopicID) *TopicMessageSubmitTransaction {
+	tx._RequireNotFrozen()
+	tx.topicID = &topicID
+	return tx
 }
 
 // GetTopicID returns the TopicID for this TopicMessageSubmitTransaction
-func (transaction *TopicMessageSubmitTransaction) GetTopicID() TopicID {
-	if transaction.topicID == nil {
+func (tx *TopicMessageSubmitTransaction) GetTopicID() TopicID {
+	if tx.topicID == nil {
 		return TopicID{}
 	}
 
-	return *transaction.topicID
+	return *tx.topicID
 }
 
 // SetMessage Sets the message to be submitted.
-func (transaction *TopicMessageSubmitTransaction) SetMessage(message []byte) *TopicMessageSubmitTransaction {
-	transaction._RequireNotFrozen()
-	transaction.message = message
-	return transaction
+func (tx *TopicMessageSubmitTransaction) SetMessage(message []byte) *TopicMessageSubmitTransaction {
+	tx._RequireNotFrozen()
+	tx.message = message
+	return tx
 }
 
-func (transaction *TopicMessageSubmitTransaction) GetMessage() []byte {
-	return transaction.message
+func (tx *TopicMessageSubmitTransaction) GetMessage() []byte {
+	return tx.message
 }
 
 // SetMaxChunks sets the maximum amount of chunks to use to send the message
-func (transaction *TopicMessageSubmitTransaction) SetMaxChunks(maxChunks uint64) *TopicMessageSubmitTransaction {
-	transaction._RequireNotFrozen()
-	transaction.maxChunks = maxChunks
-	return transaction
+func (tx *TopicMessageSubmitTransaction) SetMaxChunks(maxChunks uint64) *TopicMessageSubmitTransaction {
+	tx._RequireNotFrozen()
+	tx.maxChunks = maxChunks
+	return tx
 }
 
 // GetMaxChunks returns the maximum amount of chunks to use to send the message
-func (transaction *TopicMessageSubmitTransaction) GetMaxChunks() uint64 {
-	return transaction.maxChunks
+func (tx *TopicMessageSubmitTransaction) GetMaxChunks() uint64 {
+	return tx.maxChunks
 }
 
-func (transaction *TopicMessageSubmitTransaction) IsFrozen() bool {
-	return transaction.transaction._IsFrozen()
-}
+// ---- Required Interfaces ---- //
 
 // Sign uses the provided privateKey to sign the transaction.
-func (transaction *TopicMessageSubmitTransaction) Sign(
-	privateKey PrivateKey,
-) *TopicMessageSubmitTransaction {
-	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
+func (tx *TopicMessageSubmitTransaction) Sign(privateKey PrivateKey) *TopicMessageSubmitTransaction {
+	tx.transaction.Sign(privateKey)
+	return tx
 }
 
 // SignWithOperator signs the transaction with client's operator privateKey.
-func (transaction *TopicMessageSubmitTransaction) SignWithOperator(
-	client *Client,
-) (*TopicMessageSubmitTransaction, error) {
-	// If the transaction is not signed by the _Operator, we need
-	// to sign the transaction with the _Operator
-
-	if client == nil {
-		return nil, errNoClientProvided
-	} else if client.operator == nil {
-		return nil, errClientOperatorSigning
-	}
-
-	if !transaction.IsFrozen() {
-		_, err := transaction.FreezeWith(client)
-		if err != nil {
-			return transaction, err
-		}
-	}
-	return transaction.SignWith(client.operator.publicKey, client.operator.signer), nil
+func (tx *TopicMessageSubmitTransaction) SignWithOperator(client *Client) (*TopicMessageSubmitTransaction, error) {
+	_, err := tx.transaction.SignWithOperator(client)
+	return tx, err
 }
 
 // SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
 // with the publicKey as the map key.
-func (transaction *TopicMessageSubmitTransaction) SignWith(
+func (tx *TopicMessageSubmitTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *TopicMessageSubmitTransaction {
-	if !transaction._KeyAlreadySigned(publicKey) {
-		transaction._SignWith(publicKey, signer)
-	}
-
-	return transaction
+	tx.transaction.SignWith(publicKey, signer)
+	return tx
 }
 
-func (transaction *TopicMessageSubmitTransaction) _ValidateNetworkOnIDs(client *Client) error {
-	if client == nil || !client.autoValidateChecksums {
-		return nil
+// AddSignature adds a signature to the transaction.
+func (tx *TopicMessageSubmitTransaction) AddSignature(publicKey PublicKey, signature []byte) *TopicMessageSubmitTransaction {
+	tx.transaction.AddSignature(publicKey, signature)
+	return tx
+}
+
+// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
+func (tx *TopicMessageSubmitTransaction) SetGrpcDeadline(deadline *time.Duration) *TopicMessageSubmitTransaction {
+	tx.transaction.SetGrpcDeadline(deadline)
+	return tx
+}
+
+func (tx *TopicMessageSubmitTransaction) Freeze() (*TopicMessageSubmitTransaction, error) {
+	return tx.FreezeWith(nil)
+}
+
+func (tx *TopicMessageSubmitTransaction) FreezeWith(client *Client) (*TopicMessageSubmitTransaction, error) {
+	var err error
+	if tx.nodeAccountIDs._Length() == 0 {
+		if client == nil {
+			return tx, errNoClientOrTransactionIDOrNodeId
+		}
+
+		tx.SetNodeAccountIDs(client.network._GetNodeAccountIDsForExecute())
 	}
 
-	if transaction.topicID != nil {
-		if err := transaction.topicID.ValidateChecksum(client); err != nil {
-			return err
+	tx._InitFee(client)
+	err = tx.validateNetworkOnIDs(client)
+	if err != nil {
+		return &TopicMessageSubmitTransaction{}, err
+	}
+	if err := tx._InitTransactionID(client); err != nil {
+		return tx, err
+	}
+	body := tx.build()
+
+	chunks := uint64((len(tx.message) + (chunkSize - 1)) / chunkSize)
+	if chunks > tx.maxChunks {
+		return tx, ErrMaxChunksExceeded{
+			Chunks:    chunks,
+			MaxChunks: tx.maxChunks,
 		}
 	}
 
-	return nil
-}
+	initialTransactionID := tx.transactionIDs._GetCurrent().(TransactionID)
+	nextTransactionID, _ := TransactionIdFromString(initialTransactionID.String())
 
-func (transaction *TopicMessageSubmitTransaction) _Build() *services.TransactionBody {
-	body := &services.ConsensusSubmitMessageTransactionBody{}
-	if transaction.topicID != nil {
-		body.TopicID = transaction.topicID._ToProtobuf()
+	tx.transactionIDs = _NewLockableSlice()
+	tx.transactions = _NewLockableSlice()
+	tx.signedTransactions = _NewLockableSlice()
+	if b, ok := body.Data.(*services.TransactionBody_ConsensusSubmitMessage); ok {
+		for i := 0; uint64(i) < chunks; i++ {
+			start := i * chunkSize
+			end := start + chunkSize
+
+			if end > len(tx.message) {
+				end = len(tx.message)
+			}
+
+			tx.transactionIDs._Push(_TransactionIDFromProtobuf(nextTransactionID._ToProtobuf()))
+
+			b.ConsensusSubmitMessage.Message = tx.message[start:end]
+			b.ConsensusSubmitMessage.ChunkInfo = &services.ConsensusMessageChunkInfo{
+				InitialTransactionID: initialTransactionID._ToProtobuf(),
+				Total:                int32(chunks),
+				Number:               int32(i) + 1,
+			}
+
+			body.TransactionID = nextTransactionID._ToProtobuf()
+			body.Data = &services.TransactionBody_ConsensusSubmitMessage{
+				ConsensusSubmitMessage: b.ConsensusSubmitMessage,
+			}
+
+			for _, nodeAccountID := range tx.nodeAccountIDs.slice {
+				body.NodeAccountID = nodeAccountID.(AccountID)._ToProtobuf()
+
+				bodyBytes, err := protobuf.Marshal(body)
+				if err != nil {
+					return tx, errors.Wrap(err, "error serializing tx body for topic submission")
+				}
+
+				tx.signedTransactions._Push(&services.SignedTransaction{
+					BodyBytes: bodyBytes,
+					SigMap:    &services.SignatureMap{},
+				})
+			}
+
+			validStart := *nextTransactionID.ValidStart
+
+			*nextTransactionID.ValidStart = validStart.Add(1 * time.Nanosecond)
+		}
 	}
 
-	return &services.TransactionBody{
-		TransactionFee:           transaction.transactionFee,
-		Memo:                     transaction.transaction.memo,
-		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
-		TransactionID:            transaction.transactionID._ToProtobuf(),
-		Data: &services.TransactionBody_ConsensusSubmitMessage{
-			ConsensusSubmitMessage: body,
-		},
-	}
+	return tx, nil
 }
 
-func (transaction *TopicMessageSubmitTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	transaction._RequireNotFrozen()
+// SetMaxTransactionFee sets the max transaction fee for this TopicMessageSubmitTransaction.
+func (tx *TopicMessageSubmitTransaction) SetMaxTransactionFee(fee Hbar) *TopicMessageSubmitTransaction {
+	tx.transaction.SetMaxTransactionFee(fee)
+	return tx
+}
 
-	chunks := uint64((len(transaction.message) + (chunkSize - 1)) / chunkSize)
+// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
+func (tx *TopicMessageSubmitTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *TopicMessageSubmitTransaction {
+	tx.transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	return tx
+}
 
+// SetTransactionMemo sets the memo for this TopicMessageSubmitTransaction.
+func (tx *TopicMessageSubmitTransaction) SetTransactionMemo(memo string) *TopicMessageSubmitTransaction {
+	tx.transaction.SetTransactionMemo(memo)
+	return tx
+}
+
+// SetTransactionValidDuration sets the valid duration for this TopicMessageSubmitTransaction.
+func (tx *TopicMessageSubmitTransaction) SetTransactionValidDuration(duration time.Duration) *TopicMessageSubmitTransaction {
+	tx.transaction.SetTransactionValidDuration(duration)
+	return tx
+}
+
+// SetTransactionID sets the TransactionID for this TopicMessageSubmitTransaction.
+func (tx *TopicMessageSubmitTransaction) SetTransactionID(transactionID TransactionID) *TopicMessageSubmitTransaction {
+	tx.transaction.SetTransactionID(transactionID)
+	return tx
+}
+
+// SetNodeAccountIDs sets the _Node AccountID for this TopicMessageSubmitTransaction.
+func (tx *TopicMessageSubmitTransaction) SetNodeAccountIDs(nodeID []AccountID) *TopicMessageSubmitTransaction {
+	tx.transaction.SetNodeAccountIDs(nodeID)
+	return tx
+}
+
+// SetMaxRetry sets the max number of errors before execution will fail.
+func (tx *TopicMessageSubmitTransaction) SetMaxRetry(count int) *TopicMessageSubmitTransaction {
+	tx.transaction.SetMaxRetry(count)
+	return tx
+}
+
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
+func (tx *TopicMessageSubmitTransaction) SetMaxBackoff(max time.Duration) *TopicMessageSubmitTransaction {
+	tx.transaction.SetMaxBackoff(max)
+	return tx
+}
+
+// SetMinBackoff sets the minimum amount of time to wait between retries.
+func (tx *TopicMessageSubmitTransaction) SetMinBackoff(min time.Duration) *TopicMessageSubmitTransaction {
+	tx.transaction.SetMinBackoff(min)
+	return tx
+}
+
+func (tx *TopicMessageSubmitTransaction) SetLogLevel(level LogLevel) *TopicMessageSubmitTransaction {
+	tx.transaction.SetLogLevel(level)
+	return tx
+}
+
+func (tx *TopicMessageSubmitTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	chunks := uint64((len(tx.message) + (chunkSize - 1)) / chunkSize)
 	if chunks > 1 {
 		return &ScheduleCreateTransaction{}, ErrMaxChunksExceeded{
 			Chunks:    chunks,
@@ -199,45 +294,68 @@ func (transaction *TopicMessageSubmitTransaction) Schedule() (*ScheduleCreateTra
 		}
 	}
 
-	scheduled, err := transaction._ConstructScheduleProtobuf()
-	if err != nil {
-		return nil, err
-	}
-
-	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
+	return tx.transaction.Schedule()
 }
 
-func (transaction *TopicMessageSubmitTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
-	body := &services.ConsensusSubmitMessageTransactionBody{
-		Message: transaction.message,
-	}
+// ----------- overriden functions ----------------
 
-	if transaction.topicID != nil {
-		body.TopicID = transaction.topicID._ToProtobuf()
-	}
+func (tx *TopicMessageSubmitTransaction) getName() string {
+	return "TopicMessageSubmitTransaction"
+}
 
+func (tx *TopicMessageSubmitTransaction) build() *services.TransactionBody {
+	return &services.TransactionBody{
+		TransactionFee:           tx.transactionFee,
+		Memo:                     tx.transaction.memo,
+		TransactionValidDuration: _DurationToProtobuf(tx.GetTransactionValidDuration()),
+		TransactionID:            tx.transactionID._ToProtobuf(),
+		Data: &services.TransactionBody_ConsensusSubmitMessage{
+			ConsensusSubmitMessage: tx.buildProtoBody(),
+		},
+	}
+}
+
+func (tx *TopicMessageSubmitTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
-		TransactionFee: transaction.transactionFee,
-		Memo:           transaction.transaction.memo,
+		TransactionFee: tx.transactionFee,
+		Memo:           tx.transaction.memo,
 		Data: &services.SchedulableTransactionBody_ConsensusSubmitMessage{
-			ConsensusSubmitMessage: body,
+			ConsensusSubmitMessage: tx.buildProtoBody(),
 		},
 	}, nil
 }
 
+func (tx *TopicMessageSubmitTransaction) buildProtoBody() *services.ConsensusSubmitMessageTransactionBody {
+	body := &services.ConsensusSubmitMessageTransactionBody{
+		Message: tx.message,
+	}
+
+	if tx.topicID != nil {
+		body.TopicID = tx.topicID._ToProtobuf()
+	}
+
+	return body
+}
+
+func (tx *TopicMessageSubmitTransaction) getMethod(channel *_Channel) _Method {
+	return _Method{
+		transaction: channel._GetTopic().SubmitMessage,
+	}
+}
+
 // Execute executes the Query with the provided client
-func (transaction *TopicMessageSubmitTransaction) Execute(
+func (tx *TopicMessageSubmitTransaction) Execute(
 	client *Client,
 ) (TransactionResponse, error) {
 	if client == nil {
 		return TransactionResponse{}, errNoClientProvided
 	}
 
-	if transaction.freezeError != nil {
-		return TransactionResponse{}, transaction.freezeError
+	if tx.freezeError != nil {
+		return TransactionResponse{}, tx.freezeError
 	}
 
-	list, err := transaction.ExecuteAll(client)
+	list, err := tx.ExecuteAll(client)
 
 	if err != nil {
 		return TransactionResponse{}, err
@@ -251,48 +369,33 @@ func (transaction *TopicMessageSubmitTransaction) Execute(
 }
 
 // ExecuteAll executes the all the Transactions with the provided client
-func (transaction *TopicMessageSubmitTransaction) ExecuteAll(
+func (tx *TopicMessageSubmitTransaction) ExecuteAll(
 	client *Client,
 ) ([]TransactionResponse, error) {
-	if !transaction.IsFrozen() {
-		_, err := transaction.FreezeWith(client)
+	if !tx.IsFrozen() {
+		_, err := tx.FreezeWith(client)
 		if err != nil {
 			return []TransactionResponse{}, err
 		}
 	}
-	transactionID := transaction.GetTransactionID()
+	transactionID := tx.GetTransactionID()
 	accountID := AccountID{}
 	if transactionID.AccountID != nil {
 		accountID = *transactionID.AccountID
 	}
 
 	if !client.GetOperatorAccountID()._IsZero() && client.GetOperatorAccountID()._Equals(accountID) {
-		transaction.SignWith(
+		tx.SignWith(
 			client.GetOperatorPublicKey(),
 			client.operator.signer,
 		)
 	}
 
-	size := transaction.signedTransactions._Length() / transaction.nodeAccountIDs._Length()
+	size := tx.signedTransactions._Length() / tx.nodeAccountIDs._Length()
 	list := make([]TransactionResponse, size)
 
 	for i := 0; i < size; i++ {
-		resp, err := _Execute(
-			client,
-			&transaction.transaction,
-			_TransactionShouldRetry,
-			_TransactionMakeRequest,
-			_TransactionAdvanceRequest,
-			_TransactionGetNodeAccountID,
-			_TopicMessageSubmitTransactionGetMethod,
-			_TransactionMapStatusError,
-			_TransactionMapResponse,
-			transaction._GetLogID(),
-			transaction.grpcDeadline,
-			transaction.maxBackoff,
-			transaction.minBackoff,
-			transaction.maxRetry,
-		)
+		resp, err := _Execute(client, tx)
 
 		if err != nil {
 			return []TransactionResponse{}, err
@@ -302,252 +405,4 @@ func (transaction *TopicMessageSubmitTransaction) ExecuteAll(
 	}
 
 	return list, nil
-}
-
-func (transaction *TopicMessageSubmitTransaction) Freeze() (*TopicMessageSubmitTransaction, error) {
-	return transaction.FreezeWith(nil)
-}
-
-func (transaction *TopicMessageSubmitTransaction) FreezeWith(client *Client) (*TopicMessageSubmitTransaction, error) {
-	var err error
-	if transaction.nodeAccountIDs._Length() == 0 {
-		if client == nil {
-			return transaction, errNoClientOrTransactionIDOrNodeId
-		}
-
-		transaction.SetNodeAccountIDs(client.network._GetNodeAccountIDsForExecute())
-	}
-
-	transaction._InitFee(client)
-	err = transaction._ValidateNetworkOnIDs(client)
-	if err != nil {
-		return &TopicMessageSubmitTransaction{}, err
-	}
-	if err := transaction._InitTransactionID(client); err != nil {
-		return transaction, err
-	}
-	body := transaction._Build()
-
-	chunks := uint64((len(transaction.message) + (chunkSize - 1)) / chunkSize)
-	if chunks > transaction.maxChunks {
-		return transaction, ErrMaxChunksExceeded{
-			Chunks:    chunks,
-			MaxChunks: transaction.maxChunks,
-		}
-	}
-
-	initialTransactionID := transaction.transactionIDs._GetCurrent().(TransactionID)
-	nextTransactionID, _ := TransactionIdFromString(initialTransactionID.String())
-
-	transaction.transactionIDs = _NewLockableSlice()
-	transaction.transactions = _NewLockableSlice()
-	transaction.signedTransactions = _NewLockableSlice()
-	if b, ok := body.Data.(*services.TransactionBody_ConsensusSubmitMessage); ok {
-		for i := 0; uint64(i) < chunks; i++ {
-			start := i * chunkSize
-			end := start + chunkSize
-
-			if end > len(transaction.message) {
-				end = len(transaction.message)
-			}
-
-			transaction.transactionIDs._Push(_TransactionIDFromProtobuf(nextTransactionID._ToProtobuf()))
-
-			b.ConsensusSubmitMessage.Message = transaction.message[start:end]
-			b.ConsensusSubmitMessage.ChunkInfo = &services.ConsensusMessageChunkInfo{
-				InitialTransactionID: initialTransactionID._ToProtobuf(),
-				Total:                int32(chunks),
-				Number:               int32(i) + 1,
-			}
-
-			body.TransactionID = nextTransactionID._ToProtobuf()
-			body.Data = &services.TransactionBody_ConsensusSubmitMessage{
-				ConsensusSubmitMessage: b.ConsensusSubmitMessage,
-			}
-
-			for _, nodeAccountID := range transaction.nodeAccountIDs.slice {
-				body.NodeAccountID = nodeAccountID.(AccountID)._ToProtobuf()
-
-				bodyBytes, err := protobuf.Marshal(body)
-				if err != nil {
-					return transaction, errors.Wrap(err, "error serializing transaction body for topic submission")
-				}
-
-				transaction.signedTransactions._Push(&services.SignedTransaction{
-					BodyBytes: bodyBytes,
-					SigMap:    &services.SignatureMap{},
-				})
-			}
-
-			validStart := *nextTransactionID.ValidStart
-
-			*nextTransactionID.ValidStart = validStart.Add(1 * time.Nanosecond)
-		}
-	}
-
-	return transaction, nil
-}
-
-func _TopicMessageSubmitTransactionGetMethod(request interface{}, channel *_Channel) _Method {
-	return _Method{
-		transaction: channel._GetTopic().SubmitMessage,
-	}
-}
-
-// GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
-func (transaction *TopicMessageSubmitTransaction) GetMaxTransactionFee() Hbar {
-	return transaction.transaction.GetMaxTransactionFee()
-}
-
-// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
-func (transaction *TopicMessageSubmitTransaction) SetMaxTransactionFee(fee Hbar) *TopicMessageSubmitTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetMaxTransactionFee(fee)
-	return transaction
-}
-
-// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
-func (transaction *TopicMessageSubmitTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *TopicMessageSubmitTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetRegenerateTransactionID(regenerateTransactionID)
-	return transaction
-}
-
-// GetRegenerateTransactionID returns true if transaction ID regeneration is enabled.
-func (transaction *TopicMessageSubmitTransaction) GetRegenerateTransactionID() bool {
-	return transaction.transaction.GetRegenerateTransactionID()
-}
-
-// GetTransactionMemo returns the memo for this	TopicMessageSubmitTransaction.
-func (transaction *TopicMessageSubmitTransaction) GetTransactionMemo() string {
-	return transaction.transaction.GetTransactionMemo()
-}
-
-// SetTransactionMemo sets the memo for this TopicMessageSubmitTransaction.
-func (transaction *TopicMessageSubmitTransaction) SetTransactionMemo(memo string) *TopicMessageSubmitTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetTransactionMemo(memo)
-	return transaction
-}
-
-// GetTransactionValidDuration returns the duration that this transaction is valid for.
-func (transaction *TopicMessageSubmitTransaction) GetTransactionValidDuration() time.Duration {
-	return transaction.transaction.GetTransactionValidDuration()
-}
-
-// SetTransactionValidDuration sets the valid duration for this TopicMessageSubmitTransaction.
-func (transaction *TopicMessageSubmitTransaction) SetTransactionValidDuration(duration time.Duration) *TopicMessageSubmitTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetTransactionValidDuration(duration)
-	return transaction
-}
-
-// GetTransactionID gets the TransactionID for this TopicMessageSubmitTransaction.
-func (transaction *TopicMessageSubmitTransaction) GetTransactionID() TransactionID {
-	return transaction.transaction.GetTransactionID()
-}
-
-// SetTransactionID sets the TransactionID for this TopicMessageSubmitTransaction.
-func (transaction *TopicMessageSubmitTransaction) SetTransactionID(transactionID TransactionID) *TopicMessageSubmitTransaction {
-	transaction._RequireNotFrozen()
-
-	transaction.transaction.SetTransactionID(transactionID)
-	return transaction
-}
-
-// SetNodeAccountID sets the _Node AccountID for this TopicMessageSubmitTransaction.
-func (transaction *TopicMessageSubmitTransaction) SetNodeAccountIDs(nodeID []AccountID) *TopicMessageSubmitTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetNodeAccountIDs(nodeID)
-	return transaction
-}
-
-// SetMaxRetry sets the max number of errors before execution will fail.
-func (transaction *TopicMessageSubmitTransaction) SetMaxRetry(count int) *TopicMessageSubmitTransaction {
-	transaction.transaction.SetMaxRetry(count)
-	return transaction
-}
-
-// AddSignature adds a signature to the transaction.
-func (transaction *TopicMessageSubmitTransaction) AddSignature(publicKey PublicKey, signature []byte) *TopicMessageSubmitTransaction {
-	transaction._RequireOneNodeAccountID()
-
-	if transaction._KeyAlreadySigned(publicKey) {
-		return transaction
-	}
-
-	if transaction.signedTransactions._Length() == 0 {
-		return transaction
-	}
-
-	transaction.transactions = _NewLockableSlice()
-	transaction.publicKeys = append(transaction.publicKeys, publicKey)
-	transaction.transactionSigners = append(transaction.transactionSigners, nil)
-	transaction.transactionIDs.locked = true
-
-	for index := 0; index < transaction.signedTransactions._Length(); index++ {
-		var temp *services.SignedTransaction
-		switch t := transaction.signedTransactions._Get(index).(type) { //nolint
-		case *services.SignedTransaction:
-			temp = t
-		}
-		temp.SigMap.SigPair = append(
-			temp.SigMap.SigPair,
-			publicKey._ToSignaturePairProtobuf(signature),
-		)
-		transaction.signedTransactions._Set(index, temp)
-	}
-
-	return transaction
-}
-
-// SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (transaction *TopicMessageSubmitTransaction) SetMaxBackoff(max time.Duration) *TopicMessageSubmitTransaction {
-	if max.Nanoseconds() < 0 {
-		panic("maxBackoff must be a positive duration")
-	} else if max.Nanoseconds() < transaction.minBackoff.Nanoseconds() {
-		panic("maxBackoff must be greater than or equal to minBackoff")
-	}
-	transaction.maxBackoff = &max
-	return transaction
-}
-
-// GetMaxBackoff returns the maximum amount of time to wait between retries.
-func (transaction *TopicMessageSubmitTransaction) GetMaxBackoff() time.Duration {
-	if transaction.maxBackoff != nil {
-		return *transaction.maxBackoff
-	}
-
-	return 8 * time.Second
-}
-
-// SetMinBackoff sets the minimum amount of time to wait between retries.
-func (transaction *TopicMessageSubmitTransaction) SetMinBackoff(min time.Duration) *TopicMessageSubmitTransaction {
-	if min.Nanoseconds() < 0 {
-		panic("minBackoff must be a positive duration")
-	} else if transaction.maxBackoff.Nanoseconds() < min.Nanoseconds() {
-		panic("minBackoff must be less than or equal to maxBackoff")
-	}
-	transaction.minBackoff = &min
-	return transaction
-}
-
-// GetMinBackoff returns the minimum amount of time to wait between retries.
-func (transaction *TopicMessageSubmitTransaction) GetMinBackoff() time.Duration {
-	if transaction.minBackoff != nil {
-		return *transaction.minBackoff
-	}
-
-	return 250 * time.Millisecond
-}
-
-func (transaction *TopicMessageSubmitTransaction) _GetLogID() string {
-	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
-	return fmt.Sprintf("TopicMessageSubmitTransaction:%d", timestamp.UnixNano())
-}
-
-func (transaction *TopicMessageSubmitTransaction) SetLogLevel(level LogLevel) *TopicMessageSubmitTransaction {
-	transaction.transaction.SetLogLevel(level)
-	return transaction
 }

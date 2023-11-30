@@ -43,7 +43,7 @@ func NewFreezeTransaction() *FreezeTransaction {
 	}
 
 	this._SetDefaultMaxTransactionFee(NewHbar(2))
-	this.e= &this
+	this.e = &this
 
 	return &this
 }
@@ -61,13 +61,15 @@ func _FreezeTransactionFromProtobuf(this transaction, pb *services.TransactionBo
 		0, time.Now().Nanosecond(), time.Now().Location(),
 	)
 
-	return &FreezeTransaction{
+	resultTx := &FreezeTransaction{
 		transaction: this,
 		startTime:   startTime,
 		endTime:     endTime,
 		fileID:      _FileIDFromProtobuf(pb.GetFreeze().GetUpdateFile()),
 		fileHash:    pb.GetFreeze().FileHash,
 	}
+	resultTx.e = resultTx
+	return resultTx
 }
 
 func (this *FreezeTransaction) SetStartTime(startTime time.Time) *FreezeTransaction {
@@ -133,10 +135,6 @@ func (this *FreezeTransaction) Schedule() (*ScheduleCreateTransaction, error) {
 	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *FreezeTransaction) IsFrozen() bool {
-	return transaction._IsFrozen()
-}
-
 // Sign uses the provided privateKey to sign the transaction.
 func (this *FreezeTransaction) Sign(
 	privateKey PrivateKey,
@@ -151,7 +149,7 @@ func (this *FreezeTransaction) SignWithOperator(
 ) (*FreezeTransaction, error) {
 	// If the transaction is not signed by the _Operator, we need
 	// to sign the transaction with the _Operator
-	_,err := this.transaction.SignWithOperator(client)
+	_, err := this.transaction.SignWithOperator(client)
 	return this, err
 }
 
@@ -166,7 +164,7 @@ func (this *FreezeTransaction) SignWith(
 }
 
 func (this *FreezeTransaction) Freeze() (*FreezeTransaction, error) {
-	_,err := this.transaction.Freeze()
+	_, err := this.transaction.Freeze()
 	return this, err
 }
 
@@ -277,6 +275,7 @@ func (this *FreezeTransaction) SetLogLevel(level LogLevel) *FreezeTransaction {
 	this.transaction.SetLogLevel(level)
 	return this
 }
+
 // ----------- overriden functions ----------------
 
 func (this *FreezeTransaction) getName() string {

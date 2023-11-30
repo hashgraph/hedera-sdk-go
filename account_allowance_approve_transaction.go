@@ -83,12 +83,14 @@ func _AccountAllowanceApproveTransactionFromProtobuf(this transaction, pb *servi
 		nftApproval = append(nftApproval, &temp)
 	}
 
-	return &AccountAllowanceApproveTransaction{
+	resultTx := &AccountAllowanceApproveTransaction{
 		transaction:     this,
 		hbarAllowances:  accountApproval,
 		tokenAllowances: tokenApproval,
 		nftAllowances:   nftApproval,
 	}
+	resultTx.e = resultTx
+	return resultTx
 }
 
 func (this *AccountAllowanceApproveTransaction) _ApproveHbarApproval(ownerAccountID *AccountID, id AccountID, amount Hbar) *AccountAllowanceApproveTransaction {
@@ -267,10 +269,6 @@ func (this *AccountAllowanceApproveTransaction) Schedule() (*ScheduleCreateTrans
 	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (this *AccountAllowanceApproveTransaction) IsFrozen() bool {
-	return this._IsFrozen()
-}
-
 // Sign uses the provided privateKey to sign the transaction.
 func (this *AccountAllowanceApproveTransaction) Sign(
 	privateKey PrivateKey,
@@ -283,7 +281,7 @@ func (this *AccountAllowanceApproveTransaction) Sign(
 func (this *AccountAllowanceApproveTransaction) SignWithOperator(
 	client *Client,
 ) (*AccountAllowanceApproveTransaction, error) {
-	_,err := this.transaction.SignWithOperator(client)
+	_, err := this.transaction.SignWithOperator(client)
 	return this, err
 }
 
@@ -298,7 +296,7 @@ func (this *AccountAllowanceApproveTransaction) SignWith(
 }
 
 func (this *AccountAllowanceApproveTransaction) Freeze() (*AccountAllowanceApproveTransaction, error) {
-	_,err := this.transaction.Freeze()
+	_, err := this.transaction.Freeze()
 	return this, err
 }
 
@@ -404,7 +402,6 @@ func (this *AccountAllowanceApproveTransaction) _GetLogID() string {
 	timestamp := this.transactionIDs._GetCurrent().(TransactionID).ValidStart
 	return fmt.Sprintf("AccountAllowanceApproveTransaction:%d", timestamp.UnixNano())
 }
-
 
 // ----------- overriden functions ----------------
 
@@ -539,4 +536,4 @@ func (this *AccountAllowanceApproveTransaction) getMethod(channel *_Channel) _Me
 	return _Method{
 		transaction: channel._GetCrypto().ApproveAllowances,
 	}
- }
+}

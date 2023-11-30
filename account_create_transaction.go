@@ -252,8 +252,6 @@ func (this *AccountCreateTransaction) GetAlias() []byte {
 	return this.alias
 }
 
-
-
 // SetReceiverSignatureRequired sets the receiverSigRequired flag. If the receiverSigRequired flag is set to true, then
 // all cryptocurrency transfers must be signed by this account's key, both for transfers in and out. If it is false,
 // then only transfers out have to be signed by it. This transaction must be signed by the
@@ -281,15 +279,11 @@ func (this *AccountCreateTransaction) Schedule() (*ScheduleCreateTransaction, er
 	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (this *AccountCreateTransaction) IsFrozen() bool {
-	return this._IsFrozen()
-}
-
 // Sign uses the provided privateKey to sign the transaction.
 func (this *AccountCreateTransaction) Sign(
 	privateKey PrivateKey,
 ) *AccountCreateTransaction {
-	this.transaction.Sign(privateKey);
+	this.transaction.Sign(privateKey)
 	return this
 }
 
@@ -297,8 +291,8 @@ func (this *AccountCreateTransaction) Sign(
 func (this *AccountCreateTransaction) SignWithOperator(
 	client *Client,
 ) (*AccountCreateTransaction, error) {
-	_,err := this.transaction.SignWithOperator(client)
-	return this,err
+	_, err := this.transaction.SignWithOperator(client)
+	return this, err
 }
 
 // SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
@@ -307,18 +301,17 @@ func (this *AccountCreateTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *AccountCreateTransaction {
-	this.transaction.SignWith(publicKey,signer);
+	this.transaction.SignWith(publicKey, signer)
 	return this
 }
 
-
 func (this *AccountCreateTransaction) Freeze() (*AccountCreateTransaction, error) {
-    _,err := this.transaction.Freeze()
-	return this,err
+	_, err := this.transaction.Freeze()
+	return this, err
 }
 
 func (this *AccountCreateTransaction) FreezeWith(client *Client) (*AccountCreateTransaction, error) {
-	_,err := this.transaction.FreezeWith(client)
+	_, err := this.transaction.FreezeWith(client)
 	return this, err
 }
 
@@ -405,7 +398,7 @@ func (this *AccountCreateTransaction) AddSignature(publicKey PublicKey, signatur
 // Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (this *AccountCreateTransaction) SetMaxBackoff(max time.Duration) *AccountCreateTransaction {
 	this.transaction.SetMaxBackoff(max)
-    return this
+	return this
 }
 
 // SetMinBackoff sets the minimum amount of time to wait between retries.
@@ -457,6 +450,7 @@ func (this *AccountCreateTransaction) build() *services.TransactionBody {
 		},
 	}
 }
+
 func (this *AccountCreateTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: this.transactionFee,
@@ -498,4 +492,8 @@ func (this *AccountCreateTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetCrypto().CreateAccount,
 	}
+}
+
+func (this *AccountCreateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	return this.buildScheduled()
 }

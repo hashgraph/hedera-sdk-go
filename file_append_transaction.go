@@ -50,19 +50,21 @@ func NewFileAppendTransaction() *FileAppendTransaction {
 		chunkSize:   2048,
 	}
 	this._SetDefaultMaxTransactionFee(NewHbar(5))
-	this.e=&this
+	this.e = &this
 
 	return &this
 }
 
 func _FileAppendTransactionFromProtobuf(this transaction, pb *services.TransactionBody) *FileAppendTransaction {
-	return &FileAppendTransaction{
+	resultTx := &FileAppendTransaction{
 		transaction: this,
 		maxChunks:   20,
 		contents:    pb.GetFileAppend().GetContents(),
 		chunkSize:   2048,
 		fileID:      _FileIDFromProtobuf(pb.GetFileAppend().GetFileID()),
 	}
+	resultTx.e = resultTx
+	return resultTx
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
@@ -123,7 +125,6 @@ func (this *FileAppendTransaction) GetContents() []byte {
 	return this.contents
 }
 
-
 func (this *FileAppendTransaction) Schedule() (*ScheduleCreateTransaction, error) {
 	this._RequireNotFrozen()
 
@@ -143,10 +144,6 @@ func (this *FileAppendTransaction) Schedule() (*ScheduleCreateTransaction, error
 	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (this *FileAppendTransaction) IsFrozen() bool {
-	return this._IsFrozen()
-}
-
 // Sign uses the provided privateKey to sign the transaction.
 func (this *FileAppendTransaction) Sign(
 	privateKey PrivateKey,
@@ -161,7 +158,7 @@ func (this *FileAppendTransaction) SignWithOperator(
 ) (*FileAppendTransaction, error) {
 	// If the transaction is not signed by the _Operator, we need
 	// to sign the transaction with the _Operator
-	_,err := this.transaction.SignWithOperator(client)
+	_, err := this.transaction.SignWithOperator(client)
 	return this, err
 }
 

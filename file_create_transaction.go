@@ -60,7 +60,7 @@ func NewFileCreateTransaction() *FileCreateTransaction {
 
 	this.SetExpirationTime(time.Now().Add(7890000 * time.Second))
 	this._SetDefaultMaxTransactionFee(NewHbar(5))
-	this.e= &this
+	this.e = &this
 
 	return &this
 }
@@ -69,13 +69,15 @@ func _FileCreateTransactionFromProtobuf(this transaction, pb *services.Transacti
 	keys, _ := _KeyListFromProtobuf(pb.GetFileCreate().GetKeys())
 	expiration := _TimeFromProtobuf(pb.GetFileCreate().GetExpirationTime())
 
-	return &FileCreateTransaction{
+	resultTx := &FileCreateTransaction{
 		transaction:    this,
 		keys:           &keys,
 		expirationTime: &expiration,
 		contents:       pb.GetFileCreate().GetContents(),
 		memo:           pb.GetMemo(),
 	}
+	resultTx.e = resultTx
+	return resultTx
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
@@ -170,11 +172,6 @@ func (this *FileCreateTransaction) Schedule() (*ScheduleCreateTransaction, error
 	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-
-func (this *FileCreateTransaction) IsFrozen() bool {
-	return this._IsFrozen()
-}
-
 // Sign uses the provided privateKey to sign the transaction.
 func (this *FileCreateTransaction) Sign(
 	privateKey PrivateKey,
@@ -189,7 +186,7 @@ func (this *FileCreateTransaction) SignWithOperator(
 ) (*FileCreateTransaction, error) {
 	// If the transaction is not signed by the _Operator, we need
 	// to sign the transaction with the _Operator
-	_,err := this.transaction.SignWithOperator(client)
+	_, err := this.transaction.SignWithOperator(client)
 	return this, err
 }
 
@@ -204,7 +201,7 @@ func (this *FileCreateTransaction) SignWith(
 }
 
 func (this *FileCreateTransaction) Freeze() (*FileCreateTransaction, error) {
-	_,err := this.transaction.Freeze()
+	_, err := this.transaction.Freeze()
 	return this, err
 }
 
