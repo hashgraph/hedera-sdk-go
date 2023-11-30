@@ -51,13 +51,15 @@ func NewContractDeleteTransaction() *ContractDeleteTransaction {
 }
 
 func _ContractDeleteTransactionFromProtobuf(this transaction, pb *services.TransactionBody) *ContractDeleteTransaction {
-	return &ContractDeleteTransaction{
+	resultTx := &ContractDeleteTransaction{
 		transaction:       this,
 		contractID:        _ContractIDFromProtobuf(pb.GetContractDeleteInstance().GetContractID()),
 		transferContactID: _ContractIDFromProtobuf(pb.GetContractDeleteInstance().GetTransferContractID()),
 		transferAccountID: _AccountIDFromProtobuf(pb.GetContractDeleteInstance().GetTransferAccountID()),
 		permanentRemoval:  pb.GetContractDeleteInstance().GetPermanentRemoval(),
 	}
+	resultTx.e = resultTx
+	return resultTx
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
@@ -145,10 +147,6 @@ func (this *ContractDeleteTransaction) Schedule() (*ScheduleCreateTransaction, e
 	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *ContractDeleteTransaction) IsFrozen() bool {
-	return transaction._IsFrozen()
-}
-
 // Sign uses the provided privateKey to sign the transaction.
 func (this *ContractDeleteTransaction) Sign(
 	privateKey PrivateKey,
@@ -163,7 +161,7 @@ func (this *ContractDeleteTransaction) SignWithOperator(
 ) (*ContractDeleteTransaction, error) {
 	// If the transaction is not signed by the _Operator, we need
 	// to sign the transaction with the _Operator
-	_,err := this.transaction.SignWithOperator(client)
+	_, err := this.transaction.SignWithOperator(client)
 	return this, err
 }
 
@@ -178,7 +176,7 @@ func (this *ContractDeleteTransaction) SignWith(
 }
 
 func (this *ContractDeleteTransaction) Freeze() (*ContractDeleteTransaction, error) {
-	_,err := this.transaction.Freeze()
+	_, err := this.transaction.Freeze()
 	return this, err
 }
 

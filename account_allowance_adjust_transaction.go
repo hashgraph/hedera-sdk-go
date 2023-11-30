@@ -208,11 +208,6 @@ func (this *AccountAllowanceAdjustTransaction) Schedule() (*ScheduleCreateTransa
 }
 
 // Deprecated
-func (this *AccountAllowanceAdjustTransaction) IsFrozen() bool {
-	return this._IsFrozen()
-}
-
-// Deprecated
 func (this *AccountAllowanceAdjustTransaction) Sign(
 	privateKey PrivateKey,
 ) *AccountAllowanceAdjustTransaction {
@@ -226,8 +221,8 @@ func (this *AccountAllowanceAdjustTransaction) SignWithOperator(
 ) (*AccountAllowanceAdjustTransaction, error) {
 	// If the transaction is not signed by the _Operator, we need
 	// to sign the transaction with the _Operator
-	_,err := this.transaction.SignWithOperator(client)
-	return this,err
+	_, err := this.transaction.SignWithOperator(client)
+	return this, err
 }
 
 // Deprecated
@@ -235,19 +230,19 @@ func (this *AccountAllowanceAdjustTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *AccountAllowanceAdjustTransaction {
-	this.transaction.SignWith(publicKey,signer);
+	this.transaction.SignWith(publicKey, signer)
 	return this
 }
 
 // Deprecated
 func (this *AccountAllowanceAdjustTransaction) Freeze() (*AccountAllowanceAdjustTransaction, error) {
-	_,err := this.transaction.Freeze()
-	return this,err
+	_, err := this.transaction.Freeze()
+	return this, err
 }
 
 // Deprecated
 func (this *AccountAllowanceAdjustTransaction) FreezeWith(client *Client) (*AccountAllowanceAdjustTransaction, error) {
-	_,err := this.transaction.FreezeWith(client)
+	_, err := this.transaction.FreezeWith(client)
 	return this, err
 }
 
@@ -413,4 +408,3 @@ func (this *AccountAllowanceAdjustTransaction) build() *services.TransactionBody
 func (this *AccountAllowanceAdjustTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{}, nil
 }
-

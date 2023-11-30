@@ -62,10 +62,12 @@ func _AccountAllowanceDeleteTransactionFromProtobuf(transaction transaction, pb 
 		nftWipe = append(nftWipe, &temp)
 	}
 
-	return &AccountAllowanceDeleteTransaction{
+	resultTx := &AccountAllowanceDeleteTransaction{
 		transaction: transaction,
 		nftWipe:     nftWipe,
 	}
+	resultTx.e = resultTx
+	return resultTx
 }
 
 // Deprecated
@@ -147,10 +149,6 @@ func (this *AccountAllowanceDeleteTransaction) Schedule() (*ScheduleCreateTransa
 	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (this *AccountAllowanceDeleteTransaction) IsFrozen() bool {
-	return this._IsFrozen()
-}
-
 // Sign uses the provided privateKey to sign the transaction.
 func (this *AccountAllowanceDeleteTransaction) Sign(
 	privateKey PrivateKey,
@@ -165,8 +163,8 @@ func (this *AccountAllowanceDeleteTransaction) SignWithOperator(
 ) (*AccountAllowanceDeleteTransaction, error) {
 	// If the transaction is not signed by the _Operator, we need
 	// to sign the transaction with the _Operator
-	_,err := this.transaction.SignWithOperator(client)
-	return this,err
+	_, err := this.transaction.SignWithOperator(client)
+	return this, err
 }
 
 // SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
@@ -175,17 +173,17 @@ func (this *AccountAllowanceDeleteTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *AccountAllowanceDeleteTransaction {
-	this.transaction.SignWith(publicKey,signer);
+	this.transaction.SignWith(publicKey, signer)
 	return this
 }
 
 func (this *AccountAllowanceDeleteTransaction) Freeze() (*AccountAllowanceDeleteTransaction, error) {
-	_,err := this.transaction.Freeze()
-	return this,err
+	_, err := this.transaction.Freeze()
+	return this, err
 }
 
 func (this *AccountAllowanceDeleteTransaction) FreezeWith(client *Client) (*AccountAllowanceDeleteTransaction, error) {
-	_,err := this.transaction.FreezeWith(client)
+	_, err := this.transaction.FreezeWith(client)
 	return this, err
 }
 
@@ -273,7 +271,7 @@ func (this *AccountAllowanceDeleteTransaction) AddSignature(publicKey PublicKey,
 // Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (this *AccountAllowanceDeleteTransaction) SetMaxBackoff(max time.Duration) *AccountAllowanceDeleteTransaction {
 	this.transaction.SetMaxBackoff(max)
-    return this
+	return this
 }
 
 // SetMinBackoff sets the min back off for this AccountAllowanceDeleteTransaction.

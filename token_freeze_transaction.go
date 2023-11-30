@@ -21,7 +21,6 @@ package hedera
  */
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -56,74 +55,183 @@ type TokenFreezeTransaction struct {
 // Once executed the Account is marked as Frozen and will not be able to receive or send tokens
 // unless unfrozen. The operation is idempotent.
 func NewTokenFreezeTransaction() *TokenFreezeTransaction {
-	transaction := TokenFreezeTransaction{
+	tx := TokenFreezeTransaction{
 		transaction: _NewTransaction(),
 	}
-	transaction._SetDefaultMaxTransactionFee(NewHbar(30))
 
-	return &transaction
+	tx.e = &tx
+	tx._SetDefaultMaxTransactionFee(NewHbar(30))
+
+	return &tx
 }
 
-func _TokenFreezeTransactionFromProtobuf(transaction transaction, pb *services.TransactionBody) *TokenFreezeTransaction {
-	return &TokenFreezeTransaction{
-		transaction: transaction,
+func _TokenFreezeTransactionFromProtobuf(tx transaction, pb *services.TransactionBody) *TokenFreezeTransaction {
+	resultTx := &TokenFreezeTransaction{
+		transaction: tx,
 		tokenID:     _TokenIDFromProtobuf(pb.GetTokenFreeze().GetToken()),
 		accountID:   _AccountIDFromProtobuf(pb.GetTokenFreeze().GetAccount()),
 	}
-}
-
-// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (transaction *TokenFreezeTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenFreezeTransaction {
-	transaction.transaction.SetGrpcDeadline(deadline)
-	return transaction
+	resultTx.e = resultTx
+	return resultTx
 }
 
 // SetTokenID Sets the token for which this account will be frozen. If token does not exist, transaction results
 // in INVALID_TOKEN_ID
-func (transaction *TokenFreezeTransaction) SetTokenID(tokenID TokenID) *TokenFreezeTransaction {
-	transaction._RequireNotFrozen()
-	transaction.tokenID = &tokenID
-	return transaction
+func (tx *TokenFreezeTransaction) SetTokenID(tokenID TokenID) *TokenFreezeTransaction {
+	tx._RequireNotFrozen()
+	tx.tokenID = &tokenID
+	return tx
 }
 
 // GetTokenID returns the token for which this account will be frozen.
-func (transaction *TokenFreezeTransaction) GetTokenID() TokenID {
-	if transaction.tokenID == nil {
+func (tx *TokenFreezeTransaction) GetTokenID() TokenID {
+	if tx.tokenID == nil {
 		return TokenID{}
 	}
 
-	return *transaction.tokenID
+	return *tx.tokenID
 }
 
 // SetAccountID Sets the account to be frozen
-func (transaction *TokenFreezeTransaction) SetAccountID(accountID AccountID) *TokenFreezeTransaction {
-	transaction._RequireNotFrozen()
-	transaction.accountID = &accountID
-	return transaction
+func (tx *TokenFreezeTransaction) SetAccountID(accountID AccountID) *TokenFreezeTransaction {
+	tx._RequireNotFrozen()
+	tx.accountID = &accountID
+	return tx
 }
 
 // GetAccountID returns the account to be frozen
-func (transaction *TokenFreezeTransaction) GetAccountID() AccountID {
-	if transaction.accountID == nil {
+func (tx *TokenFreezeTransaction) GetAccountID() AccountID {
+	if tx.accountID == nil {
 		return AccountID{}
 	}
 
-	return *transaction.accountID
+	return *tx.accountID
 }
 
-func (transaction *TokenFreezeTransaction) _ValidateNetworkOnIDs(client *Client) error {
+// ---- Required Interfaces ---- //
+
+// Sign uses the provided privateKey to sign the transaction.
+func (tx *TokenFreezeTransaction) Sign(privateKey PrivateKey) *TokenFreezeTransaction {
+	tx.transaction.Sign(privateKey)
+	return tx
+}
+
+// SignWithOperator signs the transaction with client's operator privateKey.
+func (tx *TokenFreezeTransaction) SignWithOperator(client *Client) (*TokenFreezeTransaction, error) {
+	_, err := tx.transaction.SignWithOperator(client)
+	return tx, err
+}
+
+// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// with the publicKey as the map key.
+func (tx *TokenFreezeTransaction) SignWith(
+	publicKey PublicKey,
+	signer TransactionSigner,
+) *TokenFreezeTransaction {
+	tx.transaction.SignWith(publicKey, signer)
+	return tx
+}
+
+// AddSignature adds a signature to the transaction.
+func (tx *TokenFreezeTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenFreezeTransaction {
+	tx.transaction.AddSignature(publicKey, signature)
+	return tx
+}
+
+// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
+func (tx *TokenFreezeTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenFreezeTransaction {
+	tx.transaction.SetGrpcDeadline(deadline)
+	return tx
+}
+
+func (tx *TokenFreezeTransaction) Freeze() (*TokenFreezeTransaction, error) {
+	return tx.FreezeWith(nil)
+}
+
+func (tx *TokenFreezeTransaction) FreezeWith(client *Client) (*TokenFreezeTransaction, error) {
+	_, err := tx.transaction.FreezeWith(client)
+	return tx, err
+}
+
+// SetMaxTransactionFee sets the max transaction fee for this TokenFreezeTransaction.
+func (tx *TokenFreezeTransaction) SetMaxTransactionFee(fee Hbar) *TokenFreezeTransaction {
+	tx.transaction.SetMaxTransactionFee(fee)
+	return tx
+}
+
+// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
+func (tx *TokenFreezeTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *TokenFreezeTransaction {
+	tx.transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	return tx
+}
+
+// SetTransactionMemo sets the memo for this TokenFreezeTransaction.
+func (tx *TokenFreezeTransaction) SetTransactionMemo(memo string) *TokenFreezeTransaction {
+	tx.transaction.SetTransactionMemo(memo)
+	return tx
+}
+
+// SetTransactionValidDuration sets the valid duration for this TokenFreezeTransaction.
+func (tx *TokenFreezeTransaction) SetTransactionValidDuration(duration time.Duration) *TokenFreezeTransaction {
+	tx.transaction.SetTransactionValidDuration(duration)
+	return tx
+}
+
+// SetTransactionID sets the TransactionID for this TokenFreezeTransaction.
+func (tx *TokenFreezeTransaction) SetTransactionID(transactionID TransactionID) *TokenFreezeTransaction {
+	tx.transaction.SetTransactionID(transactionID)
+	return tx
+}
+
+// SetNodeAccountIDs sets the _Node AccountID for this TokenFreezeTransaction.
+func (tx *TokenFreezeTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenFreezeTransaction {
+	tx.transaction.SetNodeAccountIDs(nodeID)
+	return tx
+}
+
+// SetMaxRetry sets the max number of errors before execution will fail.
+func (tx *TokenFreezeTransaction) SetMaxRetry(count int) *TokenFreezeTransaction {
+	tx.transaction.SetMaxRetry(count)
+	return tx
+}
+
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
+func (tx *TokenFreezeTransaction) SetMaxBackoff(max time.Duration) *TokenFreezeTransaction {
+	tx.transaction.SetMaxBackoff(max)
+	return tx
+}
+
+// SetMinBackoff sets the minimum amount of time to wait between retries.
+func (tx *TokenFreezeTransaction) SetMinBackoff(min time.Duration) *TokenFreezeTransaction {
+	tx.transaction.SetMinBackoff(min)
+	return tx
+}
+
+func (tx *TokenFreezeTransaction) SetLogLevel(level LogLevel) *TokenFreezeTransaction {
+	tx.transaction.SetLogLevel(level)
+	return tx
+}
+
+// ----------- overriden functions ----------------
+
+func (tx *TokenFreezeTransaction) getName() string {
+	return "TokenFreezeTransaction"
+}
+
+func (tx *TokenFreezeTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
 
-	if transaction.tokenID != nil {
-		if err := transaction.tokenID.ValidateChecksum(client); err != nil {
+	if tx.tokenID != nil {
+		if err := tx.tokenID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}
 
-	if transaction.accountID != nil {
-		if err := transaction.accountID.ValidateChecksum(client); err != nil {
+	if tx.accountID != nil {
+		if err := tx.accountID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}
@@ -131,345 +239,43 @@ func (transaction *TokenFreezeTransaction) _ValidateNetworkOnIDs(client *Client)
 	return nil
 }
 
-func (transaction *TokenFreezeTransaction) _Build() *services.TransactionBody {
-	body := &services.TokenFreezeAccountTransactionBody{}
-	if transaction.tokenID != nil {
-		body.Token = transaction.tokenID._ToProtobuf()
-	}
-
-	if transaction.accountID != nil {
-		body.Account = transaction.accountID._ToProtobuf()
-	}
-
+func (tx *TokenFreezeTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
-		TransactionFee:           transaction.transactionFee,
-		Memo:                     transaction.transaction.memo,
-		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
-		TransactionID:            transaction.transactionID._ToProtobuf(),
+		TransactionFee:           tx.transactionFee,
+		Memo:                     tx.transaction.memo,
+		TransactionValidDuration: _DurationToProtobuf(tx.GetTransactionValidDuration()),
+		TransactionID:            tx.transactionID._ToProtobuf(),
 		Data: &services.TransactionBody_TokenFreeze{
-			TokenFreeze: body,
+			TokenFreeze: tx.buildProtoBody(),
 		},
 	}
 }
 
-func (transaction *TokenFreezeTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	transaction._RequireNotFrozen()
-
-	scheduled, err := transaction._ConstructScheduleProtobuf()
-	if err != nil {
-		return nil, err
-	}
-
-	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
-}
-
-func (transaction *TokenFreezeTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
-	body := &services.TokenFreezeAccountTransactionBody{}
-	if transaction.tokenID != nil {
-		body.Token = transaction.tokenID._ToProtobuf()
-	}
-
-	if transaction.accountID != nil {
-		body.Account = transaction.accountID._ToProtobuf()
-	}
-
+func (tx *TokenFreezeTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
-		TransactionFee: transaction.transactionFee,
-		Memo:           transaction.transaction.memo,
+		TransactionFee: tx.transactionFee,
+		Memo:           tx.transaction.memo,
 		Data: &services.SchedulableTransactionBody_TokenFreeze{
-			TokenFreeze: body,
+			TokenFreeze: tx.buildProtoBody(),
 		},
 	}, nil
 }
 
-func _TokenFreezeTransactionGetMethod(request interface{}, channel *_Channel) _Method {
+func (tx *TokenFreezeTransaction) buildProtoBody() *services.TokenFreezeAccountTransactionBody {
+	body := &services.TokenFreezeAccountTransactionBody{}
+	if tx.tokenID != nil {
+		body.Token = tx.tokenID._ToProtobuf()
+	}
+
+	if tx.accountID != nil {
+		body.Account = tx.accountID._ToProtobuf()
+	}
+
+	return body
+}
+
+func (tx *TokenFreezeTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetToken().FreezeTokenAccount,
 	}
-}
-
-func (transaction *TokenFreezeTransaction) IsFrozen() bool {
-	return transaction._IsFrozen()
-}
-
-// Sign uses the provided privateKey to sign the transaction.
-func (transaction *TokenFreezeTransaction) Sign(
-	privateKey PrivateKey,
-) *TokenFreezeTransaction {
-	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
-}
-
-// SignWithOperator signs the transaction with client's operator privateKey.
-func (transaction *TokenFreezeTransaction) SignWithOperator(
-	client *Client,
-) (*TokenFreezeTransaction, error) {
-	// If the transaction is not signed by the _Operator, we need
-	// to sign the transaction with the _Operator
-
-	if client == nil {
-		return nil, errNoClientProvided
-	} else if client.operator == nil {
-		return nil, errClientOperatorSigning
-	}
-
-	if !transaction.IsFrozen() {
-		_, err := transaction.FreezeWith(client)
-		if err != nil {
-			return transaction, err
-		}
-	}
-	return transaction.SignWith(client.operator.publicKey, client.operator.signer), nil
-}
-
-// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
-// with the publicKey as the map key.
-func (transaction *TokenFreezeTransaction) SignWith(
-	publicKey PublicKey,
-	signer TransactionSigner,
-) *TokenFreezeTransaction {
-	if !transaction._KeyAlreadySigned(publicKey) {
-		transaction._SignWith(publicKey, signer)
-	}
-
-	return transaction
-}
-
-// Execute executes the transaction with the provided client
-func (transaction *TokenFreezeTransaction) Execute(
-	client *Client,
-) (TransactionResponse, error) {
-	if client == nil {
-		return TransactionResponse{}, errNoClientProvided
-	}
-
-	if transaction.freezeError != nil {
-		return TransactionResponse{}, transaction.freezeError
-	}
-
-	if !transaction.IsFrozen() {
-		_, err := transaction.FreezeWith(client)
-		if err != nil {
-			return TransactionResponse{}, err
-		}
-	}
-
-	transactionID := transaction.transactionIDs._GetCurrent().(TransactionID)
-
-	if !client.GetOperatorAccountID()._IsZero() && client.GetOperatorAccountID()._Equals(*transactionID.AccountID) {
-		transaction.SignWith(
-			client.GetOperatorPublicKey(),
-			client.operator.signer,
-		)
-	}
-
-	resp, err := _Execute(
-		client,
-		&transaction.transaction,
-		_TransactionShouldRetry,
-		_TransactionMakeRequest,
-		_TransactionAdvanceRequest,
-		_TransactionGetNodeAccountID,
-		_TokenFreezeTransactionGetMethod,
-		_TransactionMapStatusError,
-		_TransactionMapResponse,
-		transaction._GetLogID(),
-		transaction.grpcDeadline,
-		transaction.maxBackoff,
-		transaction.minBackoff,
-		transaction.maxRetry,
-	)
-
-	if err != nil {
-		return TransactionResponse{
-			TransactionID:  transaction.GetTransactionID(),
-			NodeID:         resp.(TransactionResponse).NodeID,
-			ValidateStatus: true,
-		}, err
-	}
-
-	return TransactionResponse{
-		TransactionID:  transaction.GetTransactionID(),
-		NodeID:         resp.(TransactionResponse).NodeID,
-		Hash:           resp.(TransactionResponse).Hash,
-		ValidateStatus: true,
-	}, nil
-}
-
-func (transaction *TokenFreezeTransaction) Freeze() (*TokenFreezeTransaction, error) {
-	return transaction.FreezeWith(nil)
-}
-
-func (transaction *TokenFreezeTransaction) FreezeWith(client *Client) (*TokenFreezeTransaction, error) {
-	if transaction.IsFrozen() {
-		return transaction, nil
-	}
-	transaction._InitFee(client)
-	err := transaction._ValidateNetworkOnIDs(client)
-	if err != nil {
-		return &TokenFreezeTransaction{}, err
-	}
-	if err := transaction._InitTransactionID(client); err != nil {
-		return transaction, err
-	}
-	body := transaction._Build()
-
-	return transaction, _TransactionFreezeWith(&transaction.transaction, client, body)
-}
-
-// GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
-func (transaction *TokenFreezeTransaction) GetMaxTransactionFee() Hbar {
-	return transaction.transaction.GetMaxTransactionFee()
-}
-
-// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
-func (transaction *TokenFreezeTransaction) SetMaxTransactionFee(fee Hbar) *TokenFreezeTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetMaxTransactionFee(fee)
-	return transaction
-}
-
-// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
-func (transaction *TokenFreezeTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *TokenFreezeTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetRegenerateTransactionID(regenerateTransactionID)
-	return transaction
-}
-
-// GetRegenerateTransactionID returns true if transaction ID regeneration is enabled.
-func (transaction *TokenFreezeTransaction) GetRegenerateTransactionID() bool {
-	return transaction.transaction.GetRegenerateTransactionID()
-}
-
-// GetTransactionMemo returns the memo for this	TokenFreezeTransaction.
-func (transaction *TokenFreezeTransaction) GetTransactionMemo() string {
-	return transaction.transaction.GetTransactionMemo()
-}
-
-// SetTransactionMemo sets the memo for this TokenFreezeTransaction.
-func (transaction *TokenFreezeTransaction) SetTransactionMemo(memo string) *TokenFreezeTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetTransactionMemo(memo)
-	return transaction
-}
-
-// GetTransactionValidDuration returns the duration that this transaction is valid for.
-func (transaction *TokenFreezeTransaction) GetTransactionValidDuration() time.Duration {
-	return transaction.transaction.GetTransactionValidDuration()
-}
-
-// SetTransactionValidDuration sets the valid duration for this TokenFreezeTransaction.
-func (transaction *TokenFreezeTransaction) SetTransactionValidDuration(duration time.Duration) *TokenFreezeTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetTransactionValidDuration(duration)
-	return transaction
-}
-
-// GetTransactionID gets the TransactionID for this	TokenFreezeTransaction.
-func (transaction *TokenFreezeTransaction) GetTransactionID() TransactionID {
-	return transaction.transaction.GetTransactionID()
-}
-
-// SetTransactionID sets the TransactionID for this TokenFreezeTransaction.
-func (transaction *TokenFreezeTransaction) SetTransactionID(transactionID TransactionID) *TokenFreezeTransaction {
-	transaction._RequireNotFrozen()
-
-	transaction.transaction.SetTransactionID(transactionID)
-	return transaction
-}
-
-// SetNodeTokenID sets the _Node TokenID for this TokenFreezeTransaction.
-func (transaction *TokenFreezeTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenFreezeTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetNodeAccountIDs(nodeID)
-	return transaction
-}
-
-// SetMaxRetry sets the max number of errors before execution will fail.
-func (transaction *TokenFreezeTransaction) SetMaxRetry(count int) *TokenFreezeTransaction {
-	transaction.transaction.SetMaxRetry(count)
-	return transaction
-}
-
-// AddSignature adds a signature to the transaction.
-func (transaction *TokenFreezeTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenFreezeTransaction {
-	transaction._RequireOneNodeAccountID()
-
-	if transaction._KeyAlreadySigned(publicKey) {
-		return transaction
-	}
-
-	if transaction.signedTransactions._Length() == 0 {
-		return transaction
-	}
-
-	transaction.transactions = _NewLockableSlice()
-	transaction.publicKeys = append(transaction.publicKeys, publicKey)
-	transaction.transactionSigners = append(transaction.transactionSigners, nil)
-	transaction.transactionIDs.locked = true
-
-	for index := 0; index < transaction.signedTransactions._Length(); index++ {
-		var temp *services.SignedTransaction
-		switch t := transaction.signedTransactions._Get(index).(type) { //nolint
-		case *services.SignedTransaction:
-			temp = t
-		}
-		temp.SigMap.SigPair = append(
-			temp.SigMap.SigPair,
-			publicKey._ToSignaturePairProtobuf(signature),
-		)
-		transaction.signedTransactions._Set(index, temp)
-	}
-
-	return transaction
-}
-
-// SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (transaction *TokenFreezeTransaction) SetMaxBackoff(max time.Duration) *TokenFreezeTransaction {
-	if max.Nanoseconds() < 0 {
-		panic("maxBackoff must be a positive duration")
-	} else if max.Nanoseconds() < transaction.minBackoff.Nanoseconds() {
-		panic("maxBackoff must be greater than or equal to minBackoff")
-	}
-	transaction.maxBackoff = &max
-	return transaction
-}
-
-// GetMaxBackoff returns the maximum amount of time to wait between retries.
-func (transaction *TokenFreezeTransaction) GetMaxBackoff() time.Duration {
-	if transaction.maxBackoff != nil {
-		return *transaction.maxBackoff
-	}
-
-	return 8 * time.Second
-}
-
-// SetMinBackoff sets the minimum amount of time to wait between retries.
-func (transaction *TokenFreezeTransaction) SetMinBackoff(min time.Duration) *TokenFreezeTransaction {
-	if min.Nanoseconds() < 0 {
-		panic("minBackoff must be a positive duration")
-	} else if transaction.maxBackoff.Nanoseconds() < min.Nanoseconds() {
-		panic("minBackoff must be less than or equal to maxBackoff")
-	}
-	transaction.minBackoff = &min
-	return transaction
-}
-
-// GetMinBackoff returns the minimum amount of time to wait between retries.
-func (transaction *TokenFreezeTransaction) GetMinBackoff() time.Duration {
-	if transaction.minBackoff != nil {
-		return *transaction.minBackoff
-	}
-
-	return 250 * time.Millisecond
-}
-
-func (transaction *TokenFreezeTransaction) _GetLogID() string {
-	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
-	return fmt.Sprintf("TokenFreezeTransaction:%d", timestamp.UnixNano())
-}
-
-func (transaction *TokenFreezeTransaction) SetLogLevel(level LogLevel) *TokenFreezeTransaction {
-	transaction.transaction.SetLogLevel(level)
-	return transaction
 }

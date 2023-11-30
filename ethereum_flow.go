@@ -24,7 +24,7 @@ import "github.com/pkg/errors"
 
 // Execute an Ethereum transaction on Hedera
 type EthereumFlow struct {
-	Transaction
+	transaction
 	ethereumData    *EthereumTransactionData
 	callDataFileID  *FileID
 	maxGasAllowance *Hbar
@@ -33,13 +33,14 @@ type EthereumFlow struct {
 
 // Execute an Ethereum transaction on Hedera
 func NewEthereumFlow() *EthereumFlow {
-	transaction := EthereumFlow{
-		Transaction: _NewTransaction(),
+	tx := EthereumFlow{
+		transaction: _NewTransaction(),
 	}
 
-	transaction._SetDefaultMaxTransactionFee(NewHbar(20))
+	tx.e = &tx
+	tx._SetDefaultMaxTransactionFee(NewHbar(20))
 
-	return &transaction
+	return &tx
 }
 
 // SetEthereumData sets the raw Ethereum transaction.

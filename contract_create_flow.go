@@ -28,7 +28,7 @@ import (
 )
 
 type ContractCreateFlow struct {
-	Transaction
+	transaction
 	bytecode                      []byte
 	proxyAccountID                *AccountID
 	adminKey                      *Key
@@ -47,9 +47,10 @@ type ContractCreateFlow struct {
 // NewContractCreateFlow creates a new ContractCreateFlow transaction builder object.
 func NewContractCreateFlow() *ContractCreateFlow {
 	this := ContractCreateFlow{
-		Transaction: _NewTransaction(),
+		transaction: _NewTransaction(),
 	}
 
+	this.e = &this
 	this.SetAutoRenewPeriod(131500 * time.Minute)
 	this.SetMaxTransactionFee(NewHbar(20))
 
@@ -57,22 +58,22 @@ func NewContractCreateFlow() *ContractCreateFlow {
 }
 
 // SetBytecodeWithString sets the bytecode of the contract in hex-encoded string format.
-func (this *ContractCreateFlow) SetBytecodeWithString(bytecode string) *ContractCreateFlow {
-	this._RequireNotFrozen()
-	this.bytecode, _ = hex.DecodeString(bytecode)
-	return this
+func (tx *ContractCreateFlow) SetBytecodeWithString(bytecode string) *ContractCreateFlow {
+	tx._RequireNotFrozen()
+	tx.bytecode, _ = hex.DecodeString(bytecode)
+	return tx
 }
 
 // SetBytecode sets the bytecode of the contract in raw bytes.
-func (this *ContractCreateFlow) SetBytecode(bytecode []byte) *ContractCreateFlow {
-	this._RequireNotFrozen()
-	this.bytecode = bytecode
-	return this
+func (tx *ContractCreateFlow) SetBytecode(bytecode []byte) *ContractCreateFlow {
+	tx._RequireNotFrozen()
+	tx.bytecode = bytecode
+	return tx
 }
 
 // GetBytecode returns the hex-encoded bytecode of the contract.
-func (this *ContractCreateFlow) GetBytecode() string {
-	return hex.EncodeToString(this.bytecode)
+func (tx *ContractCreateFlow) GetBytecode() string {
+	return hex.EncodeToString(tx.bytecode)
 }
 
 // Sets the state of the instance and its fields can be modified arbitrarily if this key signs a transaction
@@ -80,250 +81,250 @@ func (this *ContractCreateFlow) GetBytecode() string {
 // that can override the normal operation of this smart contract instance. Note that if it is created with no
 // admin keys, then there is no administrator to authorize changing the admin keys, so
 // there can never be any admin keys for that instance.
-func (this *ContractCreateFlow) SetAdminKey(adminKey Key) *ContractCreateFlow {
-	this._RequireNotFrozen()
-	this.adminKey = &adminKey
-	return this
+func (tx *ContractCreateFlow) SetAdminKey(adminKey Key) *ContractCreateFlow {
+	tx._RequireNotFrozen()
+	tx.adminKey = &adminKey
+	return tx
 }
 
 // GetAdminKey returns the admin key of the contract.
-func (this *ContractCreateFlow) GetAdminKey() Key {
-	if this.adminKey != nil {
-		return *this.adminKey
+func (tx *ContractCreateFlow) GetAdminKey() Key {
+	if tx.adminKey != nil {
+		return *tx.adminKey
 	}
 
 	return PrivateKey{}
 }
 
 // SetGas sets the gas to run the constructor.
-func (this *ContractCreateFlow) SetGas(gas int64) *ContractCreateFlow {
-	this._RequireNotFrozen()
-	this.gas = gas
-	return this
+func (tx *ContractCreateFlow) SetGas(gas int64) *ContractCreateFlow {
+	tx._RequireNotFrozen()
+	tx.gas = gas
+	return tx
 }
 
 // GetGas returns the gas to run the constructor.
-func (this *ContractCreateFlow) GetGas() int64 {
-	return this.gas
+func (tx *ContractCreateFlow) GetGas() int64 {
+	return tx.gas
 }
 
 // SetInitialBalance sets the initial number of hbars to put into the cryptocurrency account
 // associated with and owned by the smart contract.
-func (this *ContractCreateFlow) SetInitialBalance(initialBalance Hbar) *ContractCreateFlow {
-	this._RequireNotFrozen()
-	this.initialBalance = initialBalance.AsTinybar()
-	return this
+func (tx *ContractCreateFlow) SetInitialBalance(initialBalance Hbar) *ContractCreateFlow {
+	tx._RequireNotFrozen()
+	tx.initialBalance = initialBalance.AsTinybar()
+	return tx
 }
 
 // GetInitialBalance returns the initial number of hbars to put into the cryptocurrency account
 // associated with and owned by the smart contract.
-func (this *ContractCreateFlow) GetInitialBalance() Hbar {
-	return HbarFromTinybar(this.initialBalance)
+func (tx *ContractCreateFlow) GetInitialBalance() Hbar {
+	return HbarFromTinybar(tx.initialBalance)
 }
 
 // SetAutoRenewPeriod sets the period that the instance will charge its account every this many seconds to renew.
-func (this *ContractCreateFlow) SetAutoRenewPeriod(autoRenewPeriod time.Duration) *ContractCreateFlow {
-	this._RequireNotFrozen()
-	this.autoRenewPeriod = &autoRenewPeriod
-	return this
+func (tx *ContractCreateFlow) SetAutoRenewPeriod(autoRenewPeriod time.Duration) *ContractCreateFlow {
+	tx._RequireNotFrozen()
+	tx.autoRenewPeriod = &autoRenewPeriod
+	return tx
 }
 
 // GetAutoRenewPeriod returns the period that the instance will charge its account every this many seconds to renew.
-func (this *ContractCreateFlow) GetAutoRenewPeriod() time.Duration {
-	if this.autoRenewPeriod != nil {
-		return *this.autoRenewPeriod
+func (tx *ContractCreateFlow) GetAutoRenewPeriod() time.Duration {
+	if tx.autoRenewPeriod != nil {
+		return *tx.autoRenewPeriod
 	}
 
 	return time.Duration(0)
 }
 
 // Deprecated
-func (this *ContractCreateFlow) SetProxyAccountID(proxyAccountID AccountID) *ContractCreateFlow {
-	this._RequireNotFrozen()
-	this.proxyAccountID = &proxyAccountID
-	return this
+func (tx *ContractCreateFlow) SetProxyAccountID(proxyAccountID AccountID) *ContractCreateFlow {
+	tx._RequireNotFrozen()
+	tx.proxyAccountID = &proxyAccountID
+	return tx
 }
 
 // Deprecated
-func (this *ContractCreateFlow) GetProxyAccountID() AccountID {
-	if this.proxyAccountID == nil {
+func (tx *ContractCreateFlow) GetProxyAccountID() AccountID {
+	if tx.proxyAccountID == nil {
 		return AccountID{}
 	}
 
-	return *this.proxyAccountID
+	return *tx.proxyAccountID
 }
 
 // Sets the constructor parameters
-func (this *ContractCreateFlow) SetConstructorParameters(params *ContractFunctionParameters) *ContractCreateFlow {
-	this._RequireNotFrozen()
-	this.parameters = params._Build(nil)
-	return this
+func (tx *ContractCreateFlow) SetConstructorParameters(params *ContractFunctionParameters) *ContractCreateFlow {
+	tx._RequireNotFrozen()
+	tx.parameters = params._Build(nil)
+	return tx
 }
 
 // Sets the constructor parameters as their raw bytes.
-func (this *ContractCreateFlow) SetConstructorParametersRaw(params []byte) *ContractCreateFlow {
-	this._RequireNotFrozen()
-	this.parameters = params
-	return this
+func (tx *ContractCreateFlow) SetConstructorParametersRaw(params []byte) *ContractCreateFlow {
+	tx._RequireNotFrozen()
+	tx.parameters = params
+	return tx
 }
 
-func (this *ContractCreateFlow) GetConstructorParameters() []byte {
-	return this.parameters
+func (tx *ContractCreateFlow) GetConstructorParameters() []byte {
+	return tx.parameters
 }
 
 // Sets the memo to be associated with this contract.
-func (this *ContractCreateFlow) SetContractMemo(memo string) *ContractCreateFlow {
-	this._RequireNotFrozen()
-	this.memo = memo
-	return this
+func (tx *ContractCreateFlow) SetContractMemo(memo string) *ContractCreateFlow {
+	tx._RequireNotFrozen()
+	tx.memo = memo
+	return tx
 }
 
 // Gets the memo to be associated with this contract.
-func (this *ContractCreateFlow) GetContractMemo() string {
-	return this.memo
+func (tx *ContractCreateFlow) GetContractMemo() string {
+	return tx.memo
 }
 
 // SetMaxChunks sets the maximum number of chunks that the contract bytecode can be split into.
-func (this *ContractCreateFlow) SetMaxChunks(max uint64) *ContractCreateFlow {
-	this._RequireNotFrozen()
-	this.maxChunks = &max
-	return this
+func (tx *ContractCreateFlow) SetMaxChunks(max uint64) *ContractCreateFlow {
+	tx._RequireNotFrozen()
+	tx.maxChunks = &max
+	return tx
 }
 
 // GetMaxChunks returns the maximum number of chunks that the contract bytecode can be split into.
-func (this *ContractCreateFlow) GetMaxChunks() uint64 {
-	if this.maxChunks == nil {
+func (tx *ContractCreateFlow) GetMaxChunks() uint64 {
+	if tx.maxChunks == nil {
 		return 0
 	}
 
-	return *this.maxChunks
+	return *tx.maxChunks
 }
 
 // SetAutoRenewAccountID
 // An account to charge for auto-renewal of this contract. If not set, or set to an
 // account with zero hbar balance, the contract's own hbar balance will be used to
 // cover auto-renewal fees.
-func (this *ContractCreateFlow) SetAutoRenewAccountID(id AccountID) *ContractCreateFlow {
-	this._RequireNotFrozen()
-	this.autoRenewAccountID = &id
-	return this
+func (tx *ContractCreateFlow) SetAutoRenewAccountID(id AccountID) *ContractCreateFlow {
+	tx._RequireNotFrozen()
+	tx.autoRenewAccountID = &id
+	return tx
 }
 
 // GetAutoRenewAccountID returns the account to charge for auto-renewal of this contract.
-func (this *ContractCreateFlow) GetAutoRenewAccountID() AccountID {
-	if this.autoRenewAccountID == nil {
+func (tx *ContractCreateFlow) GetAutoRenewAccountID() AccountID {
+	if tx.autoRenewAccountID == nil {
 		return AccountID{}
 	}
 
-	return *this.autoRenewAccountID
+	return *tx.autoRenewAccountID
 }
 
 // SetMaxAutomaticTokenAssociations
 // The maximum number of tokens that this contract can be automatically associated
 // with (i.e., receive air-drops from).
-func (this *ContractCreateFlow) SetMaxAutomaticTokenAssociations(max int32) *ContractCreateFlow {
-	this._RequireNotFrozen()
-	this.maxAutomaticTokenAssociations = max
-	return this
+func (tx *ContractCreateFlow) SetMaxAutomaticTokenAssociations(max int32) *ContractCreateFlow {
+	tx._RequireNotFrozen()
+	tx.maxAutomaticTokenAssociations = max
+	return tx
 }
 
 // GetMaxAutomaticTokenAssociations returns the maximum number of tokens that this
 // contract can be automatically associated with.
-func (this *ContractCreateFlow) GetMaxAutomaticTokenAssociations() int32 {
-	return this.maxAutomaticTokenAssociations
+func (tx *ContractCreateFlow) GetMaxAutomaticTokenAssociations() int32 {
+	return tx.maxAutomaticTokenAssociations
 }
 
-func (this *ContractCreateFlow) _SplitBytecode() *ContractCreateFlow {
-	if len(this.bytecode) > 2048 {
-		this.createBytecode = this.bytecode[0:2048]
-		this.appendBytecode = this.bytecode[2048:]
-		return this
+func (tx *ContractCreateFlow) splitBytecode() *ContractCreateFlow {
+	if len(tx.bytecode) > 2048 {
+		tx.createBytecode = tx.bytecode[0:2048]
+		tx.appendBytecode = tx.bytecode[2048:]
+		return tx
 	}
 
-	this.createBytecode = this.bytecode
-	this.appendBytecode = []byte{}
-	return this
+	tx.createBytecode = tx.bytecode
+	tx.appendBytecode = []byte{}
+	return tx
 }
 
-func (this *ContractCreateFlow) _CreateFileCreateTransaction(client *Client) *FileCreateTransaction {
+func (tx *ContractCreateFlow) _CreateFileCreateTransaction(client *Client) *FileCreateTransaction {
 	if client == nil {
 		return &FileCreateTransaction{}
 	}
 	fileCreateTx := NewFileCreateTransaction().
 		SetKeys(client.GetOperatorPublicKey()).
-		SetContents(this.createBytecode)
+		SetContents(tx.createBytecode)
 
-	if len(this.nodeAccountIDs) > 0 {
-		fileCreateTx.SetNodeAccountIDs(this.nodeAccountIDs)
+	if len(tx.nodeAccountIDs) > 0 {
+		fileCreateTx.SetNodeAccountIDs(tx.nodeAccountIDs)
 	}
 
 	return fileCreateTx
 }
 
-func (this *ContractCreateFlow) _CreateFileAppendTransaction(fileID FileID) *FileAppendTransaction {
+func (tx *ContractCreateFlow) _CreateFileAppendTransaction(fileID FileID) *FileAppendTransaction {
 	fileAppendTx := NewFileAppendTransaction().
 		SetFileID(fileID).
-		SetContents(this.appendBytecode)
+		SetContents(tx.appendBytecode)
 
-	if len(this.nodeAccountIDs) > 0 {
-		fileAppendTx.SetNodeAccountIDs(this.nodeAccountIDs)
+	if len(tx.nodeAccountIDs) > 0 {
+		fileAppendTx.SetNodeAccountIDs(tx.nodeAccountIDs)
 	}
-	if this.maxChunks != nil {
-		fileAppendTx.SetMaxChunks(*this.maxChunks)
+	if tx.maxChunks != nil {
+		fileAppendTx.SetMaxChunks(*tx.maxChunks)
 	}
 
 	return fileAppendTx
 }
 
-func (this *ContractCreateFlow) _CreateContractCreateTransaction(fileID FileID) *ContractCreateTransaction {
+func (tx *ContractCreateFlow) _CreateContractCreateTransaction(fileID FileID) *ContractCreateTransaction {
 	contractCreateTx := NewContractCreateTransaction().
-		SetGas(uint64(this.gas)).
-		SetConstructorParametersRaw(this.parameters).
-		SetInitialBalance(HbarFromTinybar(this.initialBalance)).
+		SetGas(uint64(tx.gas)).
+		SetConstructorParametersRaw(tx.parameters).
+		SetInitialBalance(HbarFromTinybar(tx.initialBalance)).
 		SetBytecodeFileID(fileID).
-		SetContractMemo(this.memo)
+		SetContractMemo(tx.memo)
 
-	if len(this.nodeAccountIDs) > 0 {
-		contractCreateTx.SetNodeAccountIDs(this.nodeAccountIDs)
+	if len(tx.nodeAccountIDs) > 0 {
+		contractCreateTx.SetNodeAccountIDs(tx.nodeAccountIDs)
 	}
 
-	if this.adminKey != nil {
-		contractCreateTx.SetAdminKey(*this.adminKey)
+	if tx.adminKey != nil {
+		contractCreateTx.SetAdminKey(*tx.adminKey)
 	}
 
-	if this.proxyAccountID != nil {
-		contractCreateTx.SetProxyAccountID(*this.proxyAccountID)
+	if tx.proxyAccountID != nil {
+		contractCreateTx.SetProxyAccountID(*tx.proxyAccountID)
 	}
 
-	if this.autoRenewPeriod != nil {
-		contractCreateTx.SetAutoRenewPeriod(*this.autoRenewPeriod)
+	if tx.autoRenewPeriod != nil {
+		contractCreateTx.SetAutoRenewPeriod(*tx.autoRenewPeriod)
 	}
 
-	if this.autoRenewAccountID != nil {
-		contractCreateTx.SetAutoRenewAccountID(*this.autoRenewAccountID)
+	if tx.autoRenewAccountID != nil {
+		contractCreateTx.SetAutoRenewAccountID(*tx.autoRenewAccountID)
 	}
 
-	if this.maxAutomaticTokenAssociations != 0 {
-		contractCreateTx.SetMaxAutomaticTokenAssociations(this.maxAutomaticTokenAssociations)
+	if tx.maxAutomaticTokenAssociations != 0 {
+		contractCreateTx.SetMaxAutomaticTokenAssociations(tx.maxAutomaticTokenAssociations)
 	}
 
 	return contractCreateTx
 }
 
-func (this *ContractCreateFlow) _CreateTransactionReceiptQuery(response TransactionResponse) *TransactionReceiptQuery {
+func (tx *ContractCreateFlow) _CreateTransactionReceiptQuery(response TransactionResponse) *TransactionReceiptQuery {
 	return NewTransactionReceiptQuery().
 		SetNodeAccountIDs([]AccountID{response.NodeID}).
 		SetTransactionID(response.TransactionID)
 }
 
-func (this *ContractCreateFlow) Execute(client *Client) (TransactionResponse, error) {
-	this._SplitBytecode()
+func (tx *ContractCreateFlow) Execute(client *Client) (TransactionResponse, error) {
+	tx.splitBytecode()
 
-	fileCreateResponse, err := this._CreateFileCreateTransaction(client).Execute(client)
+	fileCreateResponse, err := tx._CreateFileCreateTransaction(client).Execute(client)
 	if err != nil {
 		return TransactionResponse{}, err
 	}
-	fileCreateReceipt, err := this._CreateTransactionReceiptQuery(fileCreateResponse).Execute(client)
+	fileCreateReceipt, err := tx._CreateTransactionReceiptQuery(fileCreateResponse).Execute(client)
 	if err != nil {
 		return TransactionResponse{}, err
 	}
@@ -331,22 +332,22 @@ func (this *ContractCreateFlow) Execute(client *Client) (TransactionResponse, er
 		return TransactionResponse{}, errors.New("fileID is nil")
 	}
 	fileID := *fileCreateReceipt.FileID
-	if len(this.appendBytecode) > 0 {
-		fileAppendResponse, err := this._CreateFileAppendTransaction(fileID).Execute(client)
+	if len(tx.appendBytecode) > 0 {
+		fileAppendResponse, err := tx._CreateFileAppendTransaction(fileID).Execute(client)
 		if err != nil {
 			return TransactionResponse{}, err
 		}
 
-		_, err = this._CreateTransactionReceiptQuery(fileAppendResponse).Execute(client)
+		_, err = tx._CreateTransactionReceiptQuery(fileAppendResponse).Execute(client)
 		if err != nil {
 			return TransactionResponse{}, err
 		}
 	}
-	contractCreateResponse, err := this._CreateContractCreateTransaction(fileID).Execute(client)
+	contractCreateResponse, err := tx._CreateContractCreateTransaction(fileID).Execute(client)
 	if err != nil {
 		return TransactionResponse{}, err
 	}
-	_, err = this._CreateTransactionReceiptQuery(contractCreateResponse).Execute(client)
+	_, err = tx._CreateTransactionReceiptQuery(contractCreateResponse).Execute(client)
 	if err != nil {
 		return TransactionResponse{}, err
 	}
@@ -355,13 +356,13 @@ func (this *ContractCreateFlow) Execute(client *Client) (TransactionResponse, er
 }
 
 // SetNodeAccountIDs sets the node AccountID for this ContractCreateFlow.
-func (this *ContractCreateFlow) SetNodeAccountIDs(nodeID []AccountID) *ContractCreateFlow {
-	this._RequireNotFrozen()
-	this.nodeAccountIDs = nodeID
-	return this
+func (tx *ContractCreateFlow) SetNodeAccountIDs(nodeID []AccountID) *ContractCreateFlow {
+	tx._RequireNotFrozen()
+	tx.nodeAccountIDs = nodeID
+	return tx
 }
 
 // GetNodeAccountIDs returns the node AccountID for this ContractCreateFlow.
-func (this *ContractCreateFlow) GetNodeAccountIDs() []AccountID {
-	return this.nodeAccountIDs
+func (tx *ContractCreateFlow) GetNodeAccountIDs() []AccountID {
+	return tx.nodeAccountIDs
 }

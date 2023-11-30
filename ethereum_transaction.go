@@ -51,12 +51,14 @@ func NewEthereumTransaction() *EthereumTransaction {
 }
 
 func _EthereumTransactionFromProtobuf(this transaction, pb *services.TransactionBody) *EthereumTransaction {
-	return &EthereumTransaction{
+	resultTx := &EthereumTransaction{
 		transaction:   this,
 		ethereumData:  pb.GetEthereumTransaction().EthereumData,
 		callData:      _FileIDFromProtobuf(pb.GetEthereumTransaction().CallData),
 		MaxGasAllowed: pb.GetEthereumTransaction().MaxGasAllowance,
 	}
+	resultTx.e = resultTx
+	return resultTx
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
@@ -130,10 +132,6 @@ func (this *EthereumTransaction) GetMaxGasAllowed() int64 {
 	return this.MaxGasAllowed
 }
 
-func (this *EthereumTransaction) IsFrozen() bool {
-	return this._IsFrozen()
-}
-
 // Sign uses the provided privateKey to sign the transaction.
 func (this *EthereumTransaction) Sign(
 	privateKey PrivateKey,
@@ -148,7 +146,7 @@ func (this *EthereumTransaction) SignWithOperator(
 ) (*EthereumTransaction, error) {
 	// If the transaction is not signed by the _Operator, we need
 	// to sign the transaction with the _Operator
-	_,err := this.transaction.SignWithOperator(client)
+	_, err := this.transaction.SignWithOperator(client)
 	return this, err
 }
 
@@ -163,7 +161,7 @@ func (this *EthereumTransaction) SignWith(
 }
 
 func (this *EthereumTransaction) Freeze() (*EthereumTransaction, error) {
-	_,err := this.transaction.Freeze()
+	_, err := this.transaction.Freeze()
 	return this, err
 }
 
@@ -258,6 +256,7 @@ func (this *EthereumTransaction) SetMaxBackoff(max time.Duration) *EthereumTrans
 	this.transaction.SetMaxBackoff(max)
 	return this
 }
+
 // SetMinBackoff sets the minimum amount of time to wait between retries.
 func (this *EthereumTransaction) SetMinBackoff(min time.Duration) *EthereumTransaction {
 	this.transaction.SetMinBackoff(min)

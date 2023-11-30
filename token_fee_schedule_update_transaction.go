@@ -21,7 +21,6 @@ package hedera
  */
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/pkg/errors"
@@ -54,12 +53,14 @@ type TokenFeeScheduleUpdateTransaction struct {
 // If the custom_fees list is empty, clears the fee schedule or resolves to
 // CUSTOM_SCHEDULE_ALREADY_HAS_NO_FEES if the fee schedule was already empty.
 func NewTokenFeeScheduleUpdateTransaction() *TokenFeeScheduleUpdateTransaction {
-	transaction := TokenFeeScheduleUpdateTransaction{
+	tx := TokenFeeScheduleUpdateTransaction{
 		transaction: _NewTransaction(),
 	}
-	transaction._SetDefaultMaxTransactionFee(NewHbar(5))
 
-	return &transaction
+	tx.e = &tx
+	tx._SetDefaultMaxTransactionFee(NewHbar(5))
+
+	return &tx
 }
 
 func _TokenFeeScheduleUpdateTransactionFromProtobuf(transaction transaction, pb *services.TransactionBody) *TokenFeeScheduleUpdateTransaction {
@@ -69,59 +70,166 @@ func _TokenFeeScheduleUpdateTransactionFromProtobuf(transaction transaction, pb 
 		customFees = append(customFees, _CustomFeeFromProtobuf(fee))
 	}
 
-	return &TokenFeeScheduleUpdateTransaction{
+	resultTx := &TokenFeeScheduleUpdateTransaction{
 		transaction: transaction,
 		tokenID:     _TokenIDFromProtobuf(pb.GetTokenFeeScheduleUpdate().TokenId),
 		customFees:  customFees,
 	}
-}
-
-// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (transaction *TokenFeeScheduleUpdateTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenFeeScheduleUpdateTransaction {
-	transaction.transaction.SetGrpcDeadline(deadline)
-	return transaction
+	resultTx.e = resultTx
+	return resultTx
 }
 
 // SetTokenID Sets the token whose fee schedule is to be updated
-func (transaction *TokenFeeScheduleUpdateTransaction) SetTokenID(tokenID TokenID) *TokenFeeScheduleUpdateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.tokenID = &tokenID
-	return transaction
+func (tx *TokenFeeScheduleUpdateTransaction) SetTokenID(tokenID TokenID) *TokenFeeScheduleUpdateTransaction {
+	tx._RequireNotFrozen()
+	tx.tokenID = &tokenID
+	return tx
 }
 
 // GetTokenID returns the token whose fee schedule is to be updated
-func (transaction *TokenFeeScheduleUpdateTransaction) GetTokenID() TokenID {
-	if transaction.tokenID == nil {
+func (tx *TokenFeeScheduleUpdateTransaction) GetTokenID() TokenID {
+	if tx.tokenID == nil {
 		return TokenID{}
 	}
 
-	return *transaction.tokenID
+	return *tx.tokenID
 }
 
 // SetCustomFees Sets the new custom fees to be assessed during a CryptoTransfer that transfers units of this token
-func (transaction *TokenFeeScheduleUpdateTransaction) SetCustomFees(fees []Fee) *TokenFeeScheduleUpdateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.customFees = fees
-	return transaction
+func (tx *TokenFeeScheduleUpdateTransaction) SetCustomFees(fees []Fee) *TokenFeeScheduleUpdateTransaction {
+	tx._RequireNotFrozen()
+	tx.customFees = fees
+	return tx
 }
 
 // GetCustomFees returns the new custom fees to be assessed during a CryptoTransfer that transfers units of this token
-func (transaction *TokenFeeScheduleUpdateTransaction) GetCustomFees() []Fee {
-	return transaction.customFees
+func (tx *TokenFeeScheduleUpdateTransaction) GetCustomFees() []Fee {
+	return tx.customFees
 }
 
-func (transaction *TokenFeeScheduleUpdateTransaction) _ValidateNetworkOnIDs(client *Client) error {
+// ---- Required Interfaces ---- //
+
+// Sign uses the provided privateKey to sign the transaction.
+func (tx *TokenFeeScheduleUpdateTransaction) Sign(privateKey PrivateKey) *TokenFeeScheduleUpdateTransaction {
+	tx.transaction.Sign(privateKey)
+	return tx
+}
+
+// SignWithOperator signs the transaction with client's operator privateKey.
+func (tx *TokenFeeScheduleUpdateTransaction) SignWithOperator(client *Client) (*TokenFeeScheduleUpdateTransaction, error) {
+	_, err := tx.transaction.SignWithOperator(client)
+	return tx, err
+}
+
+// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// with the publicKey as the map key.
+func (tx *TokenFeeScheduleUpdateTransaction) SignWith(
+	publicKey PublicKey,
+	signer TransactionSigner,
+) *TokenFeeScheduleUpdateTransaction {
+	tx.transaction.SignWith(publicKey, signer)
+	return tx
+}
+
+// AddSignature adds a signature to the transaction.
+func (tx *TokenFeeScheduleUpdateTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenFeeScheduleUpdateTransaction {
+	tx.transaction.AddSignature(publicKey, signature)
+	return tx
+}
+
+// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
+func (tx *TokenFeeScheduleUpdateTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenFeeScheduleUpdateTransaction {
+	tx.transaction.SetGrpcDeadline(deadline)
+	return tx
+}
+
+func (tx *TokenFeeScheduleUpdateTransaction) Freeze() (*TokenFeeScheduleUpdateTransaction, error) {
+	return tx.FreezeWith(nil)
+}
+
+func (tx *TokenFeeScheduleUpdateTransaction) FreezeWith(client *Client) (*TokenFeeScheduleUpdateTransaction, error) {
+	_, err := tx.transaction.FreezeWith(client)
+	return tx, err
+}
+
+// SetMaxTransactionFee sets the max transaction fee for this TokenFeeScheduleUpdateTransaction.
+func (tx *TokenFeeScheduleUpdateTransaction) SetMaxTransactionFee(fee Hbar) *TokenFeeScheduleUpdateTransaction {
+	tx.transaction.SetMaxTransactionFee(fee)
+	return tx
+}
+
+// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
+func (tx *TokenFeeScheduleUpdateTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *TokenFeeScheduleUpdateTransaction {
+	tx.transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	return tx
+}
+
+// SetTransactionMemo sets the memo for this TokenFeeScheduleUpdateTransaction.
+func (tx *TokenFeeScheduleUpdateTransaction) SetTransactionMemo(memo string) *TokenFeeScheduleUpdateTransaction {
+	tx.transaction.SetTransactionMemo(memo)
+	return tx
+}
+
+// SetTransactionValidDuration sets the valid duration for this TokenFeeScheduleUpdateTransaction.
+func (tx *TokenFeeScheduleUpdateTransaction) SetTransactionValidDuration(duration time.Duration) *TokenFeeScheduleUpdateTransaction {
+	tx.transaction.SetTransactionValidDuration(duration)
+	return tx
+}
+
+// SetTransactionID sets the TransactionID for this TokenFeeScheduleUpdateTransaction.
+func (tx *TokenFeeScheduleUpdateTransaction) SetTransactionID(transactionID TransactionID) *TokenFeeScheduleUpdateTransaction {
+	tx.transaction.SetTransactionID(transactionID)
+	return tx
+}
+
+// SetNodeAccountIDs sets the _Node AccountID for this TokenFeeScheduleUpdateTransaction.
+func (tx *TokenFeeScheduleUpdateTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenFeeScheduleUpdateTransaction {
+	tx.transaction.SetNodeAccountIDs(nodeID)
+	return tx
+}
+
+// SetMaxRetry sets the max number of errors before execution will fail.
+func (tx *TokenFeeScheduleUpdateTransaction) SetMaxRetry(count int) *TokenFeeScheduleUpdateTransaction {
+	tx.transaction.SetMaxRetry(count)
+	return tx
+}
+
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
+func (tx *TokenFeeScheduleUpdateTransaction) SetMaxBackoff(max time.Duration) *TokenFeeScheduleUpdateTransaction {
+	tx.transaction.SetMaxBackoff(max)
+	return tx
+}
+
+// SetMinBackoff sets the minimum amount of time to wait between retries.
+func (tx *TokenFeeScheduleUpdateTransaction) SetMinBackoff(min time.Duration) *TokenFeeScheduleUpdateTransaction {
+	tx.transaction.SetMinBackoff(min)
+	return tx
+}
+
+func (tx *TokenFeeScheduleUpdateTransaction) SetLogLevel(level LogLevel) *TokenFeeScheduleUpdateTransaction {
+	tx.transaction.SetLogLevel(level)
+	return tx
+}
+
+// ----------- overriden functions ----------------
+
+func (tx *TokenFeeScheduleUpdateTransaction) getName() string {
+	return "TokenFeeScheduleUpdateTransaction"
+}
+
+func (tx *TokenFeeScheduleUpdateTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
 
-	if transaction.tokenID != nil {
-		if err := transaction.tokenID.ValidateChecksum(client); err != nil {
+	if tx.tokenID != nil {
+		if err := tx.tokenID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}
 
-	for _, customFee := range transaction.customFees {
+	for _, customFee := range tx.customFees {
 		if err := customFee._ValidateNetworkOnIDs(client); err != nil {
 			return err
 		}
@@ -130,14 +238,30 @@ func (transaction *TokenFeeScheduleUpdateTransaction) _ValidateNetworkOnIDs(clie
 	return nil
 }
 
-func (transaction *TokenFeeScheduleUpdateTransaction) _Build() *services.TransactionBody {
+func (tx *TokenFeeScheduleUpdateTransaction) build() *services.TransactionBody {
+	return &services.TransactionBody{
+		TransactionFee:           tx.transactionFee,
+		Memo:                     tx.transaction.memo,
+		TransactionValidDuration: _DurationToProtobuf(tx.GetTransactionValidDuration()),
+		TransactionID:            tx.transactionID._ToProtobuf(),
+		Data: &services.TransactionBody_TokenFeeScheduleUpdate{
+			TokenFeeScheduleUpdate: tx.buildProtoBody(),
+		},
+	}
+}
+
+func (tx *TokenFeeScheduleUpdateTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+	return nil, errors.New("cannot schedule `TokenFeeScheduleUpdateTransaction")
+}
+
+func (tx *TokenFeeScheduleUpdateTransaction) buildProtoBody() *services.TokenFeeScheduleUpdateTransactionBody {
 	body := &services.TokenFeeScheduleUpdateTransactionBody{}
-	if transaction.tokenID != nil {
-		body.TokenId = transaction.tokenID._ToProtobuf()
+	if tx.tokenID != nil {
+		body.TokenId = tx.tokenID._ToProtobuf()
 	}
 
-	if len(transaction.customFees) > 0 {
-		for _, customFee := range transaction.customFees {
+	if len(tx.customFees) > 0 {
+		for _, customFee := range tx.customFees {
 			if body.CustomFees == nil {
 				body.CustomFees = make([]*services.CustomFee, 0)
 			}
@@ -145,309 +269,11 @@ func (transaction *TokenFeeScheduleUpdateTransaction) _Build() *services.Transac
 		}
 	}
 
-	return &services.TransactionBody{
-		TransactionFee:           transaction.transactionFee,
-		Memo:                     transaction.transaction.memo,
-		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
-		TransactionID:            transaction.transactionID._ToProtobuf(),
-		Data: &services.TransactionBody_TokenFeeScheduleUpdate{
-			TokenFeeScheduleUpdate: body,
-		},
-	}
+	return body
 }
 
-func (transaction *TokenFeeScheduleUpdateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
-	return nil, errors.New("cannot schedule `TokenFeeScheduleUpdateTransaction")
-}
-
-func _TokenFeeScheduleUpdateTransactionGetMethod(request interface{}, channel *_Channel) _Method {
+func (tx *TokenFeeScheduleUpdateTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetToken().UpdateTokenFeeSchedule,
 	}
-}
-
-func (transaction *TokenFeeScheduleUpdateTransaction) IsFrozen() bool {
-	return transaction._IsFrozen()
-}
-
-// Sign uses the provided privateKey to sign the transaction.
-func (transaction *TokenFeeScheduleUpdateTransaction) Sign(
-	privateKey PrivateKey,
-) *TokenFeeScheduleUpdateTransaction {
-	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
-}
-
-// SignWithOperator signs the transaction with client's operator privateKey.
-func (transaction *TokenFeeScheduleUpdateTransaction) SignWithOperator(
-	client *Client,
-) (*TokenFeeScheduleUpdateTransaction, error) {
-	// If the transaction is not signed by the _Operator, we need
-	// to sign the transaction with the _Operator
-
-	if client == nil {
-		return nil, errNoClientProvided
-	} else if client.operator == nil {
-		return nil, errClientOperatorSigning
-	}
-
-	if !transaction.IsFrozen() {
-		_, err := transaction.FreezeWith(client)
-		if err != nil {
-			return transaction, err
-		}
-	}
-	return transaction.SignWith(client.operator.publicKey, client.operator.signer), nil
-}
-
-// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
-// with the publicKey as the map key.
-func (transaction *TokenFeeScheduleUpdateTransaction) SignWith(
-	publicKey PublicKey,
-	signer TransactionSigner,
-) *TokenFeeScheduleUpdateTransaction {
-	if !transaction._KeyAlreadySigned(publicKey) {
-		transaction._SignWith(publicKey, signer)
-	}
-
-	return transaction
-}
-
-// Execute executes the transaction with the provided client
-func (transaction *TokenFeeScheduleUpdateTransaction) Execute(
-	client *Client,
-) (TransactionResponse, error) {
-	if client == nil {
-		return TransactionResponse{}, errNoClientProvided
-	}
-
-	if transaction.freezeError != nil {
-		return TransactionResponse{}, transaction.freezeError
-	}
-
-	if !transaction.IsFrozen() {
-		_, err := transaction.FreezeWith(client)
-		if err != nil {
-			return TransactionResponse{}, err
-		}
-	}
-
-	transactionID := transaction.transactionIDs._GetCurrent().(TransactionID)
-
-	if !client.GetOperatorAccountID()._IsZero() && client.GetOperatorAccountID()._Equals(*transactionID.AccountID) {
-		transaction.SignWith(
-			client.GetOperatorPublicKey(),
-			client.operator.signer,
-		)
-	}
-
-	resp, err := _Execute(
-		client,
-		&transaction.transaction,
-		_TransactionShouldRetry,
-		_TransactionMakeRequest,
-		_TransactionAdvanceRequest,
-		_TransactionGetNodeAccountID,
-		_TokenFeeScheduleUpdateTransactionGetMethod,
-		_TransactionMapStatusError,
-		_TransactionMapResponse,
-		transaction._GetLogID(),
-		transaction.grpcDeadline,
-		transaction.maxBackoff,
-		transaction.minBackoff,
-		transaction.maxRetry,
-	)
-
-	if err != nil {
-		return TransactionResponse{
-			TransactionID:  transaction.GetTransactionID(),
-			NodeID:         resp.(TransactionResponse).NodeID,
-			ValidateStatus: true,
-		}, err
-	}
-
-	return TransactionResponse{
-		TransactionID:  transaction.GetTransactionID(),
-		NodeID:         resp.(TransactionResponse).NodeID,
-		Hash:           resp.(TransactionResponse).Hash,
-		ValidateStatus: true,
-	}, nil
-}
-
-func (transaction *TokenFeeScheduleUpdateTransaction) Freeze() (*TokenFeeScheduleUpdateTransaction, error) {
-	return transaction.FreezeWith(nil)
-}
-
-func (transaction *TokenFeeScheduleUpdateTransaction) FreezeWith(client *Client) (*TokenFeeScheduleUpdateTransaction, error) {
-	if transaction.IsFrozen() {
-		return transaction, nil
-	}
-	transaction._InitFee(client)
-	err := transaction._ValidateNetworkOnIDs(client)
-	if err != nil {
-		return &TokenFeeScheduleUpdateTransaction{}, err
-	}
-	if err := transaction._InitTransactionID(client); err != nil {
-		return transaction, err
-	}
-	body := transaction._Build()
-
-	return transaction, _TransactionFreezeWith(&transaction.transaction, client, body)
-}
-
-// GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
-func (transaction *TokenFeeScheduleUpdateTransaction) GetMaxTransactionFee() Hbar {
-	return transaction.transaction.GetMaxTransactionFee()
-}
-
-// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
-func (transaction *TokenFeeScheduleUpdateTransaction) SetMaxTransactionFee(fee Hbar) *TokenFeeScheduleUpdateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetMaxTransactionFee(fee)
-	return transaction
-}
-
-// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
-func (transaction *TokenFeeScheduleUpdateTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *TokenFeeScheduleUpdateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetRegenerateTransactionID(regenerateTransactionID)
-	return transaction
-}
-
-// GetRegenerateTransactionID returns true if transaction ID regeneration is enabled.
-func (transaction *TokenFeeScheduleUpdateTransaction) GetRegenerateTransactionID() bool {
-	return transaction.transaction.GetRegenerateTransactionID()
-}
-
-// GetTransactionMemo returns the memo for this	TokenFeeScheduleUpdateTransaction.
-func (transaction *TokenFeeScheduleUpdateTransaction) GetTransactionMemo() string {
-	return transaction.transaction.GetTransactionMemo()
-}
-
-// SetTransactionMemo sets the memo for this TokenFeeScheduleUpdateTransaction.
-func (transaction *TokenFeeScheduleUpdateTransaction) SetTransactionMemo(memo string) *TokenFeeScheduleUpdateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetTransactionMemo(memo)
-	return transaction
-}
-
-// GetTransactionValidDuration returns the duration that this transaction is valid for.
-func (transaction *TokenFeeScheduleUpdateTransaction) GetTransactionValidDuration() time.Duration {
-	return transaction.transaction.GetTransactionValidDuration()
-}
-
-// SetTransactionValidDuration sets the valid duration for this TokenFeeScheduleUpdateTransaction.
-func (transaction *TokenFeeScheduleUpdateTransaction) SetTransactionValidDuration(duration time.Duration) *TokenFeeScheduleUpdateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetTransactionValidDuration(duration)
-	return transaction
-}
-
-// GetTransactionID returns the TransactionID for this TokenFeeScheduleUpdateTransaction.
-func (transaction *TokenFeeScheduleUpdateTransaction) GetTransactionID() TransactionID {
-	return transaction.transaction.GetTransactionID()
-}
-
-// SetTransactionID sets the TransactionID for this TokenFeeScheduleUpdateTransaction.
-func (transaction *TokenFeeScheduleUpdateTransaction) SetTransactionID(transactionID TransactionID) *TokenFeeScheduleUpdateTransaction {
-	transaction._RequireNotFrozen()
-
-	transaction.transaction.SetTransactionID(transactionID)
-	return transaction
-}
-
-// SetNodeTokenID sets the _Node TokenID for this TokenFeeScheduleUpdateTransaction.
-func (transaction *TokenFeeScheduleUpdateTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenFeeScheduleUpdateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetNodeAccountIDs(nodeID)
-	return transaction
-}
-
-// SetMaxRetry sets the max number of errors before execution will fail.
-func (transaction *TokenFeeScheduleUpdateTransaction) SetMaxRetry(count int) *TokenFeeScheduleUpdateTransaction {
-	transaction.transaction.SetMaxRetry(count)
-	return transaction
-}
-
-// AddSignature adds a signature to the transaction.
-func (transaction *TokenFeeScheduleUpdateTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenFeeScheduleUpdateTransaction {
-	transaction._RequireOneNodeAccountID()
-
-	if transaction._KeyAlreadySigned(publicKey) {
-		return transaction
-	}
-
-	if transaction.signedTransactions._Length() == 0 {
-		return transaction
-	}
-
-	transaction.transactions = _NewLockableSlice()
-	transaction.publicKeys = append(transaction.publicKeys, publicKey)
-	transaction.transactionSigners = append(transaction.transactionSigners, nil)
-	transaction.transactionIDs.locked = true
-
-	for index := 0; index < transaction.signedTransactions._Length(); index++ {
-		var temp *services.SignedTransaction
-		switch t := transaction.signedTransactions._Get(index).(type) { //nolint
-		case *services.SignedTransaction:
-			temp = t
-		}
-		temp.SigMap.SigPair = append(
-			temp.SigMap.SigPair,
-			publicKey._ToSignaturePairProtobuf(signature),
-		)
-		transaction.signedTransactions._Set(index, temp)
-	}
-
-	return transaction
-}
-
-// SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (transaction *TokenFeeScheduleUpdateTransaction) SetMaxBackoff(max time.Duration) *TokenFeeScheduleUpdateTransaction {
-	if max.Nanoseconds() < 0 {
-		panic("maxBackoff must be a positive duration")
-	} else if max.Nanoseconds() < transaction.minBackoff.Nanoseconds() {
-		panic("maxBackoff must be greater than or equal to minBackoff")
-	}
-	transaction.maxBackoff = &max
-	return transaction
-}
-
-// GetMaxBackoff returns the maximum amount of time to wait between retries.
-func (transaction *TokenFeeScheduleUpdateTransaction) GetMaxBackoff() time.Duration {
-	if transaction.maxBackoff != nil {
-		return *transaction.maxBackoff
-	}
-
-	return 8 * time.Second
-}
-
-// SetMinBackoff sets the minimum amount of time to wait between retries.
-func (transaction *TokenFeeScheduleUpdateTransaction) SetMinBackoff(min time.Duration) *TokenFeeScheduleUpdateTransaction {
-	if min.Nanoseconds() < 0 {
-		panic("minBackoff must be a positive duration")
-	} else if transaction.maxBackoff.Nanoseconds() < min.Nanoseconds() {
-		panic("minBackoff must be less than or equal to maxBackoff")
-	}
-	transaction.minBackoff = &min
-	return transaction
-}
-
-// GetMinBackoff returns the minimum amount of time to wait between retries.
-func (transaction *TokenFeeScheduleUpdateTransaction) GetMinBackoff() time.Duration {
-	if transaction.minBackoff != nil {
-		return *transaction.minBackoff
-	}
-
-	return 250 * time.Millisecond
-}
-
-func (transaction *TokenFeeScheduleUpdateTransaction) _GetLogID() string {
-	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
-	return fmt.Sprintf("TokenFeeScheduleUpdateTransaction:%d", timestamp.UnixNano())
-}
-
-func (transaction *TokenFeeScheduleUpdateTransaction) SetLogLevel(level LogLevel) *TokenFeeScheduleUpdateTransaction {
-	transaction.transaction.SetLogLevel(level)
-	return transaction
 }

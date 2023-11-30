@@ -60,7 +60,7 @@ func NewLiveHashAddTransaction() *LiveHashAddTransaction {
 		transaction: _NewTransaction(),
 	}
 	this._SetDefaultMaxTransactionFee(NewHbar(2))
-	this.e= &this
+	this.e = &this
 	return &this
 }
 
@@ -68,13 +68,15 @@ func _LiveHashAddTransactionFromProtobuf(this transaction, pb *services.Transact
 	keys, _ := _KeyListFromProtobuf(pb.GetCryptoAddLiveHash().LiveHash.GetKeys())
 	duration := _DurationFromProtobuf(pb.GetCryptoAddLiveHash().LiveHash.Duration)
 
-	return &LiveHashAddTransaction{
+	resultTx := &LiveHashAddTransaction{
 		transaction: this,
 		accountID:   _AccountIDFromProtobuf(pb.GetCryptoAddLiveHash().GetLiveHash().GetAccountId()),
 		hash:        pb.GetCryptoAddLiveHash().LiveHash.Hash,
 		keys:        &keys,
 		duration:    &duration,
 	}
+	resultTx.e = resultTx
+	return resultTx
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
@@ -149,10 +151,6 @@ func (this *LiveHashAddTransaction) GetAccountID() AccountID {
 	return *this.accountID
 }
 
-func (this *LiveHashAddTransaction) IsFrozen() bool {
-	return this._IsFrozen()
-}
-
 // Sign uses the provided privateKey to sign the transaction.
 func (this *LiveHashAddTransaction) Sign(
 	privateKey PrivateKey,
@@ -167,7 +165,7 @@ func (this *LiveHashAddTransaction) SignWithOperator(
 ) (*LiveHashAddTransaction, error) {
 	// If the transaction is not signed by the _Operator, we need
 	// to sign the transaction with the _Operator
-	_,err := this.transaction.SignWithOperator(client)
+	_, err := this.transaction.SignWithOperator(client)
 	return this, err
 }
 
@@ -182,7 +180,7 @@ func (this *LiveHashAddTransaction) SignWith(
 }
 
 func (this *LiveHashAddTransaction) Freeze() (*LiveHashAddTransaction, error) {
-	_,err := this.transaction.Freeze()
+	_, err := this.transaction.Freeze()
 	return this, err
 }
 
@@ -314,6 +312,22 @@ func (this *LiveHashAddTransaction) validateNetworkOnIDs(client *Client) error {
 }
 
 func (this *LiveHashAddTransaction) build() *services.TransactionBody {
+	return &services.TransactionBody{
+		TransactionFee:           this.transactionFee,
+		Memo:                     this.transaction.memo,
+		TransactionValidDuration: _DurationToProtobuf(this.GetTransactionValidDuration()),
+		TransactionID:            this.transactionID._ToProtobuf(),
+		Data: &services.TransactionBody_CryptoAddLiveHash{
+			CryptoAddLiveHash: this.buildProtoBody(),
+		},
+	}
+}
+
+func (this *LiveHashAddTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+	return nil, errors.New("cannot schedule `LiveHashAddTransaction`")
+}
+
+func (this *LiveHashAddTransaction) buildProtoBody() *services.CryptoAddLiveHashTransactionBody {
 	body := &services.CryptoAddLiveHashTransactionBody{
 		LiveHash: &services.LiveHash{},
 	}
@@ -334,19 +348,7 @@ func (this *LiveHashAddTransaction) build() *services.TransactionBody {
 		body.LiveHash.Hash = this.hash
 	}
 
-	return &services.TransactionBody{
-		TransactionFee:           this.transactionFee,
-		Memo:                     this.transaction.memo,
-		TransactionValidDuration: _DurationToProtobuf(this.GetTransactionValidDuration()),
-		TransactionID:            this.transactionID._ToProtobuf(),
-		Data: &services.TransactionBody_CryptoAddLiveHash{
-			CryptoAddLiveHash: body,
-		},
-	}
-}
-
-func (this *LiveHashAddTransaction) buildProtoBody() (*services.SchedulableTransactionBody, error) {
-	return nil, errors.New("cannot schedule `LiveHashAddTransaction`")
+	return body
 }
 
 func (this *LiveHashAddTransaction) getMethod(channel *_Channel) _Method {

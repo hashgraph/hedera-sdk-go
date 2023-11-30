@@ -55,7 +55,7 @@ func NewFileUpdateTransaction() *FileUpdateTransaction {
 		transaction: _NewTransaction(),
 	}
 	this._SetDefaultMaxTransactionFee(NewHbar(5))
-	this.e= &this
+	this.e = &this
 	return &this
 }
 
@@ -63,7 +63,7 @@ func _FileUpdateTransactionFromProtobuf(this transaction, pb *services.Transacti
 	keys, _ := _KeyListFromProtobuf(pb.GetFileUpdate().GetKeys())
 	expiration := _TimeFromProtobuf(pb.GetFileUpdate().GetExpirationTime())
 
-	return &FileUpdateTransaction{
+	resultTx := &FileUpdateTransaction{
 		transaction:    this,
 		fileID:         _FileIDFromProtobuf(pb.GetFileUpdate().GetFileID()),
 		keys:           &keys,
@@ -71,6 +71,8 @@ func _FileUpdateTransactionFromProtobuf(this transaction, pb *services.Transacti
 		contents:       pb.GetFileUpdate().GetContents(),
 		memo:           pb.GetFileUpdate().GetMemo().Value,
 	}
+	resultTx.e = resultTx
+	return resultTx
 }
 
 // SetFileID Sets the FileID to be updated
@@ -179,7 +181,7 @@ func (this *FileUpdateTransaction) SignWithOperator(
 ) (*FileUpdateTransaction, error) {
 	// If the transaction is not signed by the _Operator, we need
 	// to sign the transaction with the _Operator
-	_,err := this.transaction.SignWithOperator(client)
+	_, err := this.transaction.SignWithOperator(client)
 	return this, err
 }
 
@@ -194,7 +196,7 @@ func (this *FileUpdateTransaction) SignWith(
 }
 
 func (this *FileUpdateTransaction) Freeze() (*FileUpdateTransaction, error) {
-	_,err := this.transaction.Freeze()
+	_, err := this.transaction.Freeze()
 	return this, err
 }
 
@@ -280,6 +282,7 @@ func (this *FileUpdateTransaction) SetLogLevel(level LogLevel) *FileUpdateTransa
 	this.transaction.SetLogLevel(level)
 	return this
 }
+
 // ----------- overriden functions ----------------
 
 func (this *FileUpdateTransaction) getName() string {

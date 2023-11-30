@@ -21,7 +21,6 @@ package hedera
  */
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -64,15 +63,17 @@ type TokenDissociateTransaction struct {
 // balance is not zero. The transaction will resolve to TRANSACTION_REQUIRED_ZERO_TOKEN_BALANCES.
 // On success, associations between the provided account and tokens are removed.
 func NewTokenDissociateTransaction() *TokenDissociateTransaction {
-	transaction := TokenDissociateTransaction{
+	tx := TokenDissociateTransaction{
 		transaction: _NewTransaction(),
 	}
-	transaction._SetDefaultMaxTransactionFee(NewHbar(5))
 
-	return &transaction
+	tx.e = &tx
+	tx._SetDefaultMaxTransactionFee(NewHbar(5))
+
+	return &tx
 }
 
-func _TokenDissociateTransactionFromProtobuf(transaction transaction, pb *services.TransactionBody) *TokenDissociateTransaction {
+func _TokenDissociateTransactionFromProtobuf(tx transaction, pb *services.TransactionBody) *TokenDissociateTransaction {
 	tokens := make([]TokenID, 0)
 	for _, token := range pb.GetTokenDissociate().Tokens {
 		if tokenID := _TokenIDFromProtobuf(token); tokenID != nil {
@@ -80,75 +81,182 @@ func _TokenDissociateTransactionFromProtobuf(transaction transaction, pb *servic
 		}
 	}
 
-	return &TokenDissociateTransaction{
-		transaction: transaction,
+	resultTx := &TokenDissociateTransaction{
+		transaction: tx,
 		accountID:   _AccountIDFromProtobuf(pb.GetTokenDissociate().GetAccount()),
 		tokens:      tokens,
 	}
-}
-
-// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (transaction *TokenDissociateTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenDissociateTransaction {
-	transaction.transaction.SetGrpcDeadline(deadline)
-	return transaction
+	resultTx.e = resultTx
+	return resultTx
 }
 
 // SetAccountID Sets the account to be dissociated with the provided tokens
-func (transaction *TokenDissociateTransaction) SetAccountID(accountID AccountID) *TokenDissociateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.accountID = &accountID
-	return transaction
+func (tx *TokenDissociateTransaction) SetAccountID(accountID AccountID) *TokenDissociateTransaction {
+	tx._RequireNotFrozen()
+	tx.accountID = &accountID
+	return tx
 }
 
-func (transaction *TokenDissociateTransaction) GetAccountID() AccountID {
-	if transaction.accountID == nil {
+func (tx *TokenDissociateTransaction) GetAccountID() AccountID {
+	if tx.accountID == nil {
 		return AccountID{}
 	}
 
-	return *transaction.accountID
+	return *tx.accountID
 }
 
 // SetTokenIDs Sets the tokens to be dissociated with the provided account
-func (transaction *TokenDissociateTransaction) SetTokenIDs(ids ...TokenID) *TokenDissociateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.tokens = make([]TokenID, len(ids))
-	copy(transaction.tokens, ids)
+func (tx *TokenDissociateTransaction) SetTokenIDs(ids ...TokenID) *TokenDissociateTransaction {
+	tx._RequireNotFrozen()
+	tx.tokens = make([]TokenID, len(ids))
+	copy(tx.tokens, ids)
 
-	return transaction
+	return tx
 }
 
 // AddTokenID Adds the token to the list of tokens to be dissociated.
-func (transaction *TokenDissociateTransaction) AddTokenID(id TokenID) *TokenDissociateTransaction {
-	transaction._RequireNotFrozen()
-	if transaction.tokens == nil {
-		transaction.tokens = make([]TokenID, 0)
+func (tx *TokenDissociateTransaction) AddTokenID(id TokenID) *TokenDissociateTransaction {
+	tx._RequireNotFrozen()
+	if tx.tokens == nil {
+		tx.tokens = make([]TokenID, 0)
 	}
 
-	transaction.tokens = append(transaction.tokens, id)
+	tx.tokens = append(tx.tokens, id)
 
-	return transaction
+	return tx
 }
 
 // GetTokenIDs returns the tokens to be associated with the provided account
-func (transaction *TokenDissociateTransaction) GetTokenIDs() []TokenID {
-	tokenIDs := make([]TokenID, len(transaction.tokens))
-	copy(tokenIDs, transaction.tokens)
+func (tx *TokenDissociateTransaction) GetTokenIDs() []TokenID {
+	tokenIDs := make([]TokenID, len(tx.tokens))
+	copy(tokenIDs, tx.tokens)
 
 	return tokenIDs
 }
 
-func (transaction *TokenDissociateTransaction) _ValidateNetworkOnIDs(client *Client) error {
+// ---- Required Interfaces ---- //
+
+// Sign uses the provided privateKey to sign the transaction.
+func (tx *TokenDissociateTransaction) Sign(privateKey PrivateKey) *TokenDissociateTransaction {
+	tx.transaction.Sign(privateKey)
+	return tx
+}
+
+// SignWithOperator signs the transaction with client's operator privateKey.
+func (tx *TokenDissociateTransaction) SignWithOperator(client *Client) (*TokenDissociateTransaction, error) {
+	_, err := tx.transaction.SignWithOperator(client)
+	return tx, err
+}
+
+// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// with the publicKey as the map key.
+func (tx *TokenDissociateTransaction) SignWith(
+	publicKey PublicKey,
+	signer TransactionSigner,
+) *TokenDissociateTransaction {
+	tx.transaction.SignWith(publicKey, signer)
+	return tx
+}
+
+// AddSignature adds a signature to the transaction.
+func (tx *TokenDissociateTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenDissociateTransaction {
+	tx.transaction.AddSignature(publicKey, signature)
+	return tx
+}
+
+// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
+func (tx *TokenDissociateTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenDissociateTransaction {
+	tx.transaction.SetGrpcDeadline(deadline)
+	return tx
+}
+
+func (tx *TokenDissociateTransaction) Freeze() (*TokenDissociateTransaction, error) {
+	return tx.FreezeWith(nil)
+}
+
+func (tx *TokenDissociateTransaction) FreezeWith(client *Client) (*TokenDissociateTransaction, error) {
+	_, err := tx.transaction.FreezeWith(client)
+	return tx, err
+}
+
+// SetMaxTransactionFee sets the max transaction fee for this TokenDissociateTransaction.
+func (tx *TokenDissociateTransaction) SetMaxTransactionFee(fee Hbar) *TokenDissociateTransaction {
+	tx.transaction.SetMaxTransactionFee(fee)
+	return tx
+}
+
+// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
+func (tx *TokenDissociateTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *TokenDissociateTransaction {
+	tx.transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	return tx
+}
+
+// SetTransactionMemo sets the memo for this TokenDissociateTransaction.
+func (tx *TokenDissociateTransaction) SetTransactionMemo(memo string) *TokenDissociateTransaction {
+	tx.transaction.SetTransactionMemo(memo)
+	return tx
+}
+
+// SetTransactionValidDuration sets the valid duration for this TokenDissociateTransaction.
+func (tx *TokenDissociateTransaction) SetTransactionValidDuration(duration time.Duration) *TokenDissociateTransaction {
+	tx.transaction.SetTransactionValidDuration(duration)
+	return tx
+}
+
+// SetTransactionID sets the TransactionID for this TokenDissociateTransaction.
+func (tx *TokenDissociateTransaction) SetTransactionID(transactionID TransactionID) *TokenDissociateTransaction {
+	tx.transaction.SetTransactionID(transactionID)
+	return tx
+}
+
+// SetNodeAccountIDs sets the _Node AccountID for this TokenDissociateTransaction.
+func (tx *TokenDissociateTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenDissociateTransaction {
+	tx.transaction.SetNodeAccountIDs(nodeID)
+	return tx
+}
+
+// SetMaxRetry sets the max number of errors before execution will fail.
+func (tx *TokenDissociateTransaction) SetMaxRetry(count int) *TokenDissociateTransaction {
+	tx.transaction.SetMaxRetry(count)
+	return tx
+}
+
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
+func (tx *TokenDissociateTransaction) SetMaxBackoff(max time.Duration) *TokenDissociateTransaction {
+	tx.transaction.SetMaxBackoff(max)
+	return tx
+}
+
+// SetMinBackoff sets the minimum amount of time to wait between retries.
+func (tx *TokenDissociateTransaction) SetMinBackoff(min time.Duration) *TokenDissociateTransaction {
+	tx.transaction.SetMinBackoff(min)
+	return tx
+}
+
+func (tx *TokenDissociateTransaction) SetLogLevel(level LogLevel) *TokenDissociateTransaction {
+	tx.transaction.SetLogLevel(level)
+	return tx
+}
+
+// ----------- overriden functions ----------------
+
+func (tx *TokenDissociateTransaction) getName() string {
+	return "TokenDissociateTransaction"
+}
+
+func (tx *TokenDissociateTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
 
-	if transaction.accountID != nil {
-		if err := transaction.accountID.ValidateChecksum(client); err != nil {
+	if tx.accountID != nil {
+		if err := tx.accountID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}
 
-	for _, tokenID := range transaction.tokens {
+	for _, tokenID := range tx.tokens {
 		if err := tokenID.ValidateChecksum(client); err != nil {
 			return err
 		}
@@ -157,355 +265,48 @@ func (transaction *TokenDissociateTransaction) _ValidateNetworkOnIDs(client *Cli
 	return nil
 }
 
-func (transaction *TokenDissociateTransaction) _Build() *services.TransactionBody {
-	body := &services.TokenDissociateTransactionBody{}
-	if transaction.accountID != nil {
-		body.Account = transaction.accountID._ToProtobuf()
-	}
-
-	if len(transaction.tokens) > 0 {
-		for _, tokenID := range transaction.tokens {
-			if body.Tokens == nil {
-				body.Tokens = make([]*services.TokenID, 0)
-			}
-			body.Tokens = append(body.Tokens, tokenID._ToProtobuf())
-		}
-	}
-
+func (tx *TokenDissociateTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
-		TransactionFee:           transaction.transactionFee,
-		Memo:                     transaction.transaction.memo,
-		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
-		TransactionID:            transaction.transactionID._ToProtobuf(),
+		TransactionFee:           tx.transactionFee,
+		Memo:                     tx.transaction.memo,
+		TransactionValidDuration: _DurationToProtobuf(tx.GetTransactionValidDuration()),
+		TransactionID:            tx.transactionID._ToProtobuf(),
 		Data: &services.TransactionBody_TokenDissociate{
-			TokenDissociate: body,
+			TokenDissociate: tx.buildProtoBody(),
 		},
 	}
 }
 
-func (transaction *TokenDissociateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	transaction._RequireNotFrozen()
-
-	scheduled, err := transaction._ConstructScheduleProtobuf()
-	if err != nil {
-		return nil, err
-	}
-
-	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
-}
-
-func (transaction *TokenDissociateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
-	body := &services.TokenDissociateTransactionBody{}
-	if transaction.accountID != nil {
-		body.Account = transaction.accountID._ToProtobuf()
-	}
-
-	if len(transaction.tokens) > 0 {
-		for _, tokenID := range transaction.tokens {
-			if body.Tokens == nil {
-				body.Tokens = make([]*services.TokenID, 0)
-			}
-			body.Tokens = append(body.Tokens, tokenID._ToProtobuf())
-		}
-	}
-
+func (tx *TokenDissociateTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
-		TransactionFee: transaction.transactionFee,
-		Memo:           transaction.transaction.memo,
+		TransactionFee: tx.transactionFee,
+		Memo:           tx.transaction.memo,
 		Data: &services.SchedulableTransactionBody_TokenDissociate{
-			TokenDissociate: body,
+			TokenDissociate: tx.buildProtoBody(),
 		},
 	}, nil
 }
 
-func _TokenDissociateTransactionGetMethod(request interface{}, channel *_Channel) _Method {
+func (tx *TokenDissociateTransaction) buildProtoBody() *services.TokenDissociateTransactionBody {
+	body := &services.TokenDissociateTransactionBody{}
+	if tx.accountID != nil {
+		body.Account = tx.accountID._ToProtobuf()
+	}
+
+	if len(tx.tokens) > 0 {
+		for _, tokenID := range tx.tokens {
+			if body.Tokens == nil {
+				body.Tokens = make([]*services.TokenID, 0)
+			}
+			body.Tokens = append(body.Tokens, tokenID._ToProtobuf())
+		}
+	}
+
+	return body
+}
+
+func (tx *TokenDissociateTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetToken().DissociateTokens,
 	}
-}
-
-func (transaction *TokenDissociateTransaction) IsFrozen() bool {
-	return transaction._IsFrozen()
-}
-
-// Sign uses the provided privateKey to sign the transaction.
-func (transaction *TokenDissociateTransaction) Sign(
-	privateKey PrivateKey,
-) *TokenDissociateTransaction {
-	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
-}
-
-// SignWithOperator signs the transaction with client's operator privateKey.
-func (transaction *TokenDissociateTransaction) SignWithOperator(
-	client *Client,
-) (*TokenDissociateTransaction, error) {
-	// If the transaction is not signed by the _Operator, we need
-	// to sign the transaction with the _Operator
-
-	if client == nil {
-		return nil, errNoClientProvided
-	} else if client.operator == nil {
-		return nil, errClientOperatorSigning
-	}
-
-	if !transaction.IsFrozen() {
-		_, err := transaction.FreezeWith(client)
-		if err != nil {
-			return transaction, err
-		}
-	}
-	return transaction.SignWith(client.operator.publicKey, client.operator.signer), nil
-}
-
-// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
-// with the publicKey as the map key.
-func (transaction *TokenDissociateTransaction) SignWith(
-	publicKey PublicKey,
-	signer TransactionSigner,
-) *TokenDissociateTransaction {
-	if !transaction._KeyAlreadySigned(publicKey) {
-		transaction._SignWith(publicKey, signer)
-	}
-
-	return transaction
-}
-
-// Execute executes the transaction with the provided client
-func (transaction *TokenDissociateTransaction) Execute(
-	client *Client,
-) (TransactionResponse, error) {
-	if client == nil {
-		return TransactionResponse{}, errNoClientProvided
-	}
-
-	if transaction.freezeError != nil {
-		return TransactionResponse{}, transaction.freezeError
-	}
-
-	if !transaction.IsFrozen() {
-		_, err := transaction.FreezeWith(client)
-		if err != nil {
-			return TransactionResponse{}, err
-		}
-	}
-
-	transactionID := transaction.transactionIDs._GetCurrent().(TransactionID)
-
-	if !client.GetOperatorAccountID()._IsZero() && client.GetOperatorAccountID()._Equals(*transactionID.AccountID) {
-		transaction.SignWith(
-			client.GetOperatorPublicKey(),
-			client.operator.signer,
-		)
-	}
-
-	resp, err := _Execute(
-		client,
-		&transaction.transaction,
-		_TransactionShouldRetry,
-		_TransactionMakeRequest,
-		_TransactionAdvanceRequest,
-		_TransactionGetNodeAccountID,
-		_TokenDissociateTransactionGetMethod,
-		_TransactionMapStatusError,
-		_TransactionMapResponse,
-		transaction._GetLogID(),
-		transaction.grpcDeadline,
-		transaction.maxBackoff,
-		transaction.minBackoff,
-		transaction.maxRetry,
-	)
-
-	if err != nil {
-		return TransactionResponse{
-			TransactionID:  transaction.GetTransactionID(),
-			NodeID:         resp.(TransactionResponse).NodeID,
-			ValidateStatus: true,
-		}, err
-	}
-
-	return TransactionResponse{
-		TransactionID:  transaction.GetTransactionID(),
-		NodeID:         resp.(TransactionResponse).NodeID,
-		Hash:           resp.(TransactionResponse).Hash,
-		ValidateStatus: true,
-	}, nil
-}
-
-func (transaction *TokenDissociateTransaction) Freeze() (*TokenDissociateTransaction, error) {
-	return transaction.FreezeWith(nil)
-}
-
-func (transaction *TokenDissociateTransaction) FreezeWith(client *Client) (*TokenDissociateTransaction, error) {
-	if transaction.IsFrozen() {
-		return transaction, nil
-	}
-	transaction._InitFee(client)
-	err := transaction._ValidateNetworkOnIDs(client)
-	if err != nil {
-		return &TokenDissociateTransaction{}, err
-	}
-	if err := transaction._InitTransactionID(client); err != nil {
-		return transaction, err
-	}
-	body := transaction._Build()
-
-	return transaction, _TransactionFreezeWith(&transaction.transaction, client, body)
-}
-
-// GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
-func (transaction *TokenDissociateTransaction) GetMaxTransactionFee() Hbar {
-	return transaction.transaction.GetMaxTransactionFee()
-}
-
-// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
-func (transaction *TokenDissociateTransaction) SetMaxTransactionFee(fee Hbar) *TokenDissociateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetMaxTransactionFee(fee)
-	return transaction
-}
-
-// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
-func (transaction *TokenDissociateTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *TokenDissociateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetRegenerateTransactionID(regenerateTransactionID)
-	return transaction
-}
-
-// GetRegenerateTransactionID returns true if transaction ID regeneration is enabled.
-func (transaction *TokenDissociateTransaction) GetRegenerateTransactionID() bool {
-	return transaction.transaction.GetRegenerateTransactionID()
-}
-
-// GetTransactionMemo returns the memo for this	TokenDissociateTransaction.
-func (transaction *TokenDissociateTransaction) GetTransactionMemo() string {
-	return transaction.transaction.GetTransactionMemo()
-}
-
-// SetTransactionMemo sets the memo for this TokenDissociateTransaction.
-func (transaction *TokenDissociateTransaction) SetTransactionMemo(memo string) *TokenDissociateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetTransactionMemo(memo)
-	return transaction
-}
-
-// GetTransactionValidDuration returns the duration that this transaction is valid for.
-func (transaction *TokenDissociateTransaction) GetTransactionValidDuration() time.Duration {
-	return transaction.transaction.GetTransactionValidDuration()
-}
-
-// SetTransactionValidDuration sets the valid duration for this TokenDissociateTransaction.
-func (transaction *TokenDissociateTransaction) SetTransactionValidDuration(duration time.Duration) *TokenDissociateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetTransactionValidDuration(duration)
-	return transaction
-}
-
-// GetTransactionID gets the TransactionID for this TokenDissociateTransaction.
-func (transaction *TokenDissociateTransaction) GetTransactionID() TransactionID {
-	return transaction.transaction.GetTransactionID()
-}
-
-// SetTransactionID sets the TransactionID for this TokenDissociateTransaction.
-func (transaction *TokenDissociateTransaction) SetTransactionID(transactionID TransactionID) *TokenDissociateTransaction {
-	transaction._RequireNotFrozen()
-
-	transaction.transaction.SetTransactionID(transactionID)
-	return transaction
-}
-
-// SetNodeTokenID sets the _Node TokenID for this TokenDissociateTransaction.
-func (transaction *TokenDissociateTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenDissociateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetNodeAccountIDs(nodeID)
-	return transaction
-}
-
-// SetMaxRetry sets the max number of errors before execution will fail.
-func (transaction *TokenDissociateTransaction) SetMaxRetry(count int) *TokenDissociateTransaction {
-	transaction.transaction.SetMaxRetry(count)
-	return transaction
-}
-
-// AddSignature adds a signature to the transaction.
-func (transaction *TokenDissociateTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenDissociateTransaction {
-	transaction._RequireOneNodeAccountID()
-
-	if transaction._KeyAlreadySigned(publicKey) {
-		return transaction
-	}
-
-	if transaction.signedTransactions._Length() == 0 {
-		return transaction
-	}
-
-	transaction.transactions = _NewLockableSlice()
-	transaction.publicKeys = append(transaction.publicKeys, publicKey)
-	transaction.transactionSigners = append(transaction.transactionSigners, nil)
-	transaction.transactionIDs.locked = true
-
-	for index := 0; index < transaction.signedTransactions._Length(); index++ {
-		var temp *services.SignedTransaction
-		switch t := transaction.signedTransactions._Get(index).(type) { //nolint
-		case *services.SignedTransaction:
-			temp = t
-		}
-		temp.SigMap.SigPair = append(
-			temp.SigMap.SigPair,
-			publicKey._ToSignaturePairProtobuf(signature),
-		)
-		transaction.signedTransactions._Set(index, temp)
-	}
-
-	return transaction
-}
-
-// SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (transaction *TokenDissociateTransaction) SetMaxBackoff(max time.Duration) *TokenDissociateTransaction {
-	if max.Nanoseconds() < 0 {
-		panic("maxBackoff must be a positive duration")
-	} else if max.Nanoseconds() < transaction.minBackoff.Nanoseconds() {
-		panic("maxBackoff must be greater than or equal to minBackoff")
-	}
-	transaction.maxBackoff = &max
-	return transaction
-}
-
-// GetMaxBackoff returns the maximum amount of time to wait between retries.
-func (transaction *TokenDissociateTransaction) GetMaxBackoff() time.Duration {
-	if transaction.maxBackoff != nil {
-		return *transaction.maxBackoff
-	}
-
-	return 8 * time.Second
-}
-
-// SetMinBackoff sets the minimum amount of time to wait between retries.
-func (transaction *TokenDissociateTransaction) SetMinBackoff(min time.Duration) *TokenDissociateTransaction {
-	if min.Nanoseconds() < 0 {
-		panic("minBackoff must be a positive duration")
-	} else if transaction.maxBackoff.Nanoseconds() < min.Nanoseconds() {
-		panic("minBackoff must be less than or equal to maxBackoff")
-	}
-	transaction.minBackoff = &min
-	return transaction
-}
-
-// GetMinBackoff returns the minimum amount of time to wait between retries.
-func (transaction *TokenDissociateTransaction) GetMinBackoff() time.Duration {
-	if transaction.minBackoff != nil {
-		return *transaction.minBackoff
-	}
-
-	return 250 * time.Millisecond
-}
-
-func (transaction *TokenDissociateTransaction) _GetLogID() string {
-	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
-	return fmt.Sprintf("TokenDissociateTransaction:%d", timestamp.UnixNano())
-}
-
-func (transaction *TokenDissociateTransaction) SetLogLevel(level LogLevel) *TokenDissociateTransaction {
-	transaction.transaction.SetLogLevel(level)
-	return transaction
 }

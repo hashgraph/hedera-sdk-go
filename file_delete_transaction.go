@@ -57,10 +57,12 @@ func NewFileDeleteTransaction() *FileDeleteTransaction {
 }
 
 func _FileDeleteTransactionFromProtobuf(this transaction, pb *services.TransactionBody) *FileDeleteTransaction {
-	return &FileDeleteTransaction{
+	resultTx := &FileDeleteTransaction{
 		transaction: this,
 		fileID:      _FileIDFromProtobuf(pb.GetFileDelete().GetFileID()),
 	}
+	resultTx.e = resultTx
+	return resultTx
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
@@ -85,7 +87,6 @@ func (this *FileDeleteTransaction) GetFileID() FileID {
 	return *this.fileID
 }
 
-
 func (this *FileDeleteTransaction) Schedule() (*ScheduleCreateTransaction, error) {
 	this._RequireNotFrozen()
 
@@ -95,10 +96,6 @@ func (this *FileDeleteTransaction) Schedule() (*ScheduleCreateTransaction, error
 	}
 
 	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
-}
-
-func (this *FileDeleteTransaction) IsFrozen() bool {
-	return this._IsFrozen()
 }
 
 // Sign uses the provided privateKey to sign the transaction.
@@ -115,7 +112,7 @@ func (this *FileDeleteTransaction) SignWithOperator(
 ) (*FileDeleteTransaction, error) {
 	// If the transaction is not signed by the _Operator, we need
 	// to sign the transaction with the _Operator
-	_,err := this.transaction.SignWithOperator(client)
+	_, err := this.transaction.SignWithOperator(client)
 	return this, err
 }
 
@@ -130,7 +127,7 @@ func (this *FileDeleteTransaction) SignWith(
 }
 
 func (this *FileDeleteTransaction) Freeze() (*FileDeleteTransaction, error) {
-	_,err := this.transaction.Freeze()
+	_, err := this.transaction.Freeze()
 	return this, err
 }
 
@@ -241,6 +238,7 @@ func (this *FileDeleteTransaction) SetLogLevel(level LogLevel) *FileDeleteTransa
 	this.transaction.SetLogLevel(level)
 	return this
 }
+
 // ----------- overriden functions ----------------
 
 func (this *FileDeleteTransaction) getName() string {

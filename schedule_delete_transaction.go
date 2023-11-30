@@ -21,8 +21,6 @@ package hedera
  */
 
 import (
-	"fmt"
-
 	"github.com/hashgraph/hedera-protobufs-go/services"
 
 	"time"
@@ -40,49 +38,156 @@ type ScheduleDeleteTransaction struct {
 // Must be signed by the admin key of the target schedule.
 // A deleted schedule cannot receive any additional signing keys, nor will it be executed.
 func NewScheduleDeleteTransaction() *ScheduleDeleteTransaction {
-	transaction := ScheduleDeleteTransaction{
+	tx := ScheduleDeleteTransaction{
 		transaction: _NewTransaction(),
 	}
-	transaction._SetDefaultMaxTransactionFee(NewHbar(5))
+	tx._SetDefaultMaxTransactionFee(NewHbar(5))
 
-	return &transaction
+	return &tx
 }
 
-func _ScheduleDeleteTransactionFromProtobuf(transaction transaction, pb *services.TransactionBody) *ScheduleDeleteTransaction {
-	return &ScheduleDeleteTransaction{
-		transaction: transaction,
+func _ScheduleDeleteTransactionFromProtobuf(tx transaction, pb *services.TransactionBody) *ScheduleDeleteTransaction {
+	resultTx := &ScheduleDeleteTransaction{
+		transaction: tx,
 		scheduleID:  _ScheduleIDFromProtobuf(pb.GetScheduleDelete().GetScheduleID()),
 	}
-}
-
-// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (transaction *ScheduleDeleteTransaction) SetGrpcDeadline(deadline *time.Duration) *ScheduleDeleteTransaction {
-	transaction.transaction.SetGrpcDeadline(deadline)
-	return transaction
+	resultTx.e = resultTx
+	return resultTx
 }
 
 // SetScheduleID Sets the ScheduleID of the scheduled transaction to be deleted
-func (transaction *ScheduleDeleteTransaction) SetScheduleID(scheduleID ScheduleID) *ScheduleDeleteTransaction {
-	transaction._RequireNotFrozen()
-	transaction.scheduleID = &scheduleID
-	return transaction
+func (tx *ScheduleDeleteTransaction) SetScheduleID(scheduleID ScheduleID) *ScheduleDeleteTransaction {
+	tx._RequireNotFrozen()
+	tx.scheduleID = &scheduleID
+	return tx
 }
 
-func (transaction *ScheduleDeleteTransaction) GetScheduleID() ScheduleID {
-	if transaction.scheduleID == nil {
+func (tx *ScheduleDeleteTransaction) GetScheduleID() ScheduleID {
+	if tx.scheduleID == nil {
 		return ScheduleID{}
 	}
 
-	return *transaction.scheduleID
+	return *tx.scheduleID
 }
 
-func (transaction *ScheduleDeleteTransaction) _ValidateNetworkOnIDs(client *Client) error {
+// ---- Required Interfaces ---- //
+
+// Sign uses the provided privateKey to sign the transaction.
+func (tx *ScheduleDeleteTransaction) Sign(privateKey PrivateKey) *ScheduleDeleteTransaction {
+	tx.transaction.Sign(privateKey)
+	return tx
+}
+
+// SignWithOperator signs the transaction with client's operator privateKey.
+func (tx *ScheduleDeleteTransaction) SignWithOperator(client *Client) (*ScheduleDeleteTransaction, error) {
+	_, err := tx.transaction.SignWithOperator(client)
+	return tx, err
+}
+
+// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// with the publicKey as the map key.
+func (tx *ScheduleDeleteTransaction) SignWith(
+	publicKey PublicKey,
+	signer TransactionSigner,
+) *ScheduleDeleteTransaction {
+	tx.transaction.SignWith(publicKey, signer)
+	return tx
+}
+
+// AddSignature adds a signature to the transaction.
+func (tx *ScheduleDeleteTransaction) AddSignature(publicKey PublicKey, signature []byte) *ScheduleDeleteTransaction {
+	tx.transaction.AddSignature(publicKey, signature)
+	return tx
+}
+
+// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
+func (tx *ScheduleDeleteTransaction) SetGrpcDeadline(deadline *time.Duration) *ScheduleDeleteTransaction {
+	tx.transaction.SetGrpcDeadline(deadline)
+	return tx
+}
+
+func (tx *ScheduleDeleteTransaction) Freeze() (*ScheduleDeleteTransaction, error) {
+	return tx.FreezeWith(nil)
+}
+
+func (tx *ScheduleDeleteTransaction) FreezeWith(client *Client) (*ScheduleDeleteTransaction, error) {
+	_, err := tx.transaction.FreezeWith(client)
+	return tx, err
+}
+
+// SetMaxTransactionFee sets the max transaction fee for this ScheduleDeleteTransaction.
+func (tx *ScheduleDeleteTransaction) SetMaxTransactionFee(fee Hbar) *ScheduleDeleteTransaction {
+	tx.transaction.SetMaxTransactionFee(fee)
+	return tx
+}
+
+// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
+func (tx *ScheduleDeleteTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *ScheduleDeleteTransaction {
+	tx.transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	return tx
+}
+
+// SetTransactionMemo sets the memo for this ScheduleDeleteTransaction.
+func (tx *ScheduleDeleteTransaction) SetTransactionMemo(memo string) *ScheduleDeleteTransaction {
+	tx.transaction.SetTransactionMemo(memo)
+	return tx
+}
+
+// SetTransactionValidDuration sets the valid duration for this ScheduleDeleteTransaction.
+func (tx *ScheduleDeleteTransaction) SetTransactionValidDuration(duration time.Duration) *ScheduleDeleteTransaction {
+	tx.transaction.SetTransactionValidDuration(duration)
+	return tx
+}
+
+// SetTransactionID sets the TransactionID for this ScheduleDeleteTransaction.
+func (tx *ScheduleDeleteTransaction) SetTransactionID(transactionID TransactionID) *ScheduleDeleteTransaction {
+	tx.transaction.SetTransactionID(transactionID)
+	return tx
+}
+
+// SetNodeAccountIDs sets the _Node AccountID for this ScheduleDeleteTransaction.
+func (tx *ScheduleDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *ScheduleDeleteTransaction {
+	tx.transaction.SetNodeAccountIDs(nodeID)
+	return tx
+}
+
+// SetMaxRetry sets the max number of errors before execution will fail.
+func (tx *ScheduleDeleteTransaction) SetMaxRetry(count int) *ScheduleDeleteTransaction {
+	tx.transaction.SetMaxRetry(count)
+	return tx
+}
+
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
+func (tx *ScheduleDeleteTransaction) SetMaxBackoff(max time.Duration) *ScheduleDeleteTransaction {
+	tx.transaction.SetMaxBackoff(max)
+	return tx
+}
+
+// SetMinBackoff sets the minimum amount of time to wait between retries.
+func (tx *ScheduleDeleteTransaction) SetMinBackoff(min time.Duration) *ScheduleDeleteTransaction {
+	tx.transaction.SetMinBackoff(min)
+	return tx
+}
+
+func (tx *ScheduleDeleteTransaction) SetLogLevel(level LogLevel) *ScheduleDeleteTransaction {
+	tx.transaction.SetLogLevel(level)
+	return tx
+}
+
+// ----------- overriden functions ----------------
+
+func (tx *ScheduleDeleteTransaction) getName() string {
+	return "ScheduleDeleteTransaction"
+}
+
+func (tx *ScheduleDeleteTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
 
-	if transaction.scheduleID != nil {
-		if err := transaction.scheduleID.ValidateChecksum(client); err != nil {
+	if tx.scheduleID != nil {
+		if err := tx.scheduleID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}
@@ -90,304 +195,39 @@ func (transaction *ScheduleDeleteTransaction) _ValidateNetworkOnIDs(client *Clie
 	return nil
 }
 
-func (transaction *ScheduleDeleteTransaction) _Build() *services.TransactionBody {
-	body := &services.ScheduleDeleteTransactionBody{}
-	if transaction.scheduleID != nil {
-		body.ScheduleID = transaction.scheduleID._ToProtobuf()
-	}
-
+func (tx *ScheduleDeleteTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
-		TransactionFee:           transaction.transactionFee,
-		Memo:                     transaction.transaction.memo,
-		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
-		TransactionID:            transaction.transactionID._ToProtobuf(),
+		TransactionFee:           tx.transactionFee,
+		Memo:                     tx.transaction.memo,
+		TransactionValidDuration: _DurationToProtobuf(tx.GetTransactionValidDuration()),
+		TransactionID:            tx.transactionID._ToProtobuf(),
 		Data: &services.TransactionBody_ScheduleDelete{
-			ScheduleDelete: body,
+			ScheduleDelete: tx.buildProtoBody(),
 		},
 	}
 }
 
-func (transaction *ScheduleDeleteTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	transaction._RequireNotFrozen()
-
-	scheduled, err := transaction._ConstructScheduleProtobuf()
-	if err != nil {
-		return nil, err
-	}
-
-	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
-}
-
-func (transaction *ScheduleDeleteTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
-	body := &services.ScheduleDeleteTransactionBody{}
-	if transaction.scheduleID != nil {
-		body.ScheduleID = transaction.scheduleID._ToProtobuf()
-	}
-
+func (tx *ScheduleDeleteTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
-		TransactionFee: transaction.transactionFee,
-		Memo:           transaction.transaction.memo,
+		TransactionFee: tx.transactionFee,
+		Memo:           tx.transaction.memo,
 		Data: &services.SchedulableTransactionBody_ScheduleDelete{
-			ScheduleDelete: body,
+			ScheduleDelete: tx.buildProtoBody(),
 		},
 	}, nil
 }
 
-func _ScheduleDeleteTransactionGetMethod(request interface{}, channel *_Channel) _Method {
+func (tx *ScheduleDeleteTransaction) buildProtoBody() *services.ScheduleDeleteTransactionBody {
+	body := &services.ScheduleDeleteTransactionBody{}
+	if tx.scheduleID != nil {
+		body.ScheduleID = tx.scheduleID._ToProtobuf()
+	}
+
+	return body
+}
+
+func (tx *ScheduleDeleteTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetSchedule().DeleteSchedule,
 	}
-}
-
-func (transaction *ScheduleDeleteTransaction) IsFrozen() bool {
-	return transaction._IsFrozen()
-}
-
-// Sign uses the provided privateKey to sign the transaction.
-func (transaction *ScheduleDeleteTransaction) Sign(
-	privateKey PrivateKey,
-) *ScheduleDeleteTransaction {
-	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
-}
-
-// SignWithOperator signs the transaction with client's operator privateKey.
-func (transaction *ScheduleDeleteTransaction) SignWithOperator(
-	client *Client,
-) (*ScheduleDeleteTransaction, error) {
-	// If the transaction is not signed by the _Operator, we need
-	// to sign the transaction with the _Operator
-
-	if client == nil {
-		return nil, errNoClientProvided
-	} else if client.operator == nil {
-		return nil, errClientOperatorSigning
-	}
-
-	if !transaction.IsFrozen() {
-		_, err := transaction.FreezeWith(client)
-		if err != nil {
-			return transaction, err
-		}
-	}
-	return transaction.SignWith(client.operator.publicKey, client.operator.signer), nil
-}
-
-// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
-// with the publicKey as the map key.
-func (transaction *ScheduleDeleteTransaction) SignWith(
-	publicKey PublicKey,
-	signer TransactionSigner,
-) *ScheduleDeleteTransaction {
-	if !transaction._KeyAlreadySigned(publicKey) {
-		transaction._SignWith(publicKey, signer)
-	}
-
-	return transaction
-}
-
-// Execute executes the transaction with the provided client
-func (transaction *ScheduleDeleteTransaction) Execute(
-	client *Client,
-) (TransactionResponse, error) {
-	if client == nil {
-		return TransactionResponse{}, errNoClientProvided
-	}
-
-	if transaction.freezeError != nil {
-		return TransactionResponse{}, transaction.freezeError
-	}
-
-	if !transaction.IsFrozen() {
-		_, err := transaction.FreezeWith(client)
-		if err != nil {
-			return TransactionResponse{}, err
-		}
-	}
-
-	transactionID := transaction.transactionIDs._GetCurrent().(TransactionID)
-
-	if !client.GetOperatorAccountID()._IsZero() && client.GetOperatorAccountID()._Equals(*transactionID.AccountID) {
-		transaction.SignWith(
-			client.GetOperatorPublicKey(),
-			client.operator.signer,
-		)
-	}
-
-	resp, err := _Execute(
-		client,
-		&transaction.transaction,
-		_TransactionShouldRetry,
-		_TransactionMakeRequest,
-		_TransactionAdvanceRequest,
-		_TransactionGetNodeAccountID,
-		_ScheduleDeleteTransactionGetMethod,
-		_TransactionMapStatusError,
-		_TransactionMapResponse,
-		transaction._GetLogID(),
-		transaction.grpcDeadline,
-		transaction.maxBackoff,
-		transaction.minBackoff,
-		transaction.maxRetry,
-	)
-
-	if err != nil {
-		return TransactionResponse{
-			TransactionID:  transaction.GetTransactionID(),
-			NodeID:         resp.(TransactionResponse).NodeID,
-			ValidateStatus: true,
-		}, err
-	}
-
-	return TransactionResponse{
-		TransactionID:  transaction.GetTransactionID(),
-		NodeID:         resp.(TransactionResponse).NodeID,
-		Hash:           resp.(TransactionResponse).Hash,
-		ValidateStatus: true,
-	}, nil
-}
-
-func (transaction *ScheduleDeleteTransaction) Freeze() (*ScheduleDeleteTransaction, error) {
-	return transaction.FreezeWith(nil)
-}
-
-func (transaction *ScheduleDeleteTransaction) FreezeWith(client *Client) (*ScheduleDeleteTransaction, error) {
-	if transaction.IsFrozen() {
-		return transaction, nil
-	}
-	transaction._InitFee(client)
-	err := transaction._ValidateNetworkOnIDs(client)
-	if err != nil {
-		return &ScheduleDeleteTransaction{}, err
-	}
-	if err := transaction._InitTransactionID(client); err != nil {
-		return transaction, err
-	}
-	body := transaction._Build()
-
-	return transaction, _TransactionFreezeWith(&transaction.transaction, client, body)
-}
-
-// GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
-func (transaction *ScheduleDeleteTransaction) GetMaxTransactionFee() Hbar {
-	return transaction.transaction.GetMaxTransactionFee()
-}
-
-// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
-func (transaction *ScheduleDeleteTransaction) SetMaxTransactionFee(fee Hbar) *ScheduleDeleteTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetMaxTransactionFee(fee)
-	return transaction
-}
-
-// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
-func (transaction *ScheduleDeleteTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *ScheduleDeleteTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetRegenerateTransactionID(regenerateTransactionID)
-	return transaction
-}
-
-// GetRegenerateTransactionID returns true if transaction ID regeneration is enabled.
-func (transaction *ScheduleDeleteTransaction) GetRegenerateTransactionID() bool {
-	return transaction.transaction.GetRegenerateTransactionID()
-}
-
-// GetTransactionMemo returns the memo for this	ScheduleDeleteTransaction.
-func (transaction *ScheduleDeleteTransaction) GetTransactionMemo() string {
-	return transaction.transaction.GetTransactionMemo()
-}
-
-// SetTransactionMemo sets the memo for this ScheduleDeleteTransaction.
-func (transaction *ScheduleDeleteTransaction) SetTransactionMemo(memo string) *ScheduleDeleteTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetTransactionMemo(memo)
-	return transaction
-}
-
-// GetTransactionValidDuration returns the duration that this transaction is valid for.
-func (transaction *ScheduleDeleteTransaction) GetTransactionValidDuration() time.Duration {
-	return transaction.transaction.GetTransactionValidDuration()
-}
-
-// SetTransactionValidDuration sets the valid duration for this ScheduleDeleteTransaction.
-func (transaction *ScheduleDeleteTransaction) SetTransactionValidDuration(duration time.Duration) *ScheduleDeleteTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetTransactionValidDuration(duration)
-	return transaction
-}
-
-// GetTransactionID gets the TransactionID for this	ScheduleDeleteTransaction.
-func (transaction *ScheduleDeleteTransaction) GetTransactionID() TransactionID {
-	return transaction.transaction.GetTransactionID()
-}
-
-// SetTransactionID sets the TransactionID for this ScheduleDeleteTransaction.
-func (transaction *ScheduleDeleteTransaction) SetTransactionID(transactionID TransactionID) *ScheduleDeleteTransaction {
-	transaction._RequireNotFrozen()
-
-	transaction.transaction.SetTransactionID(transactionID)
-	return transaction
-}
-
-// SetNodeAccountID sets the _Node AccountID for this ScheduleDeleteTransaction.
-func (transaction *ScheduleDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *ScheduleDeleteTransaction {
-	transaction._RequireNotFrozen()
-	transaction.transaction.SetNodeAccountIDs(nodeID)
-	return transaction
-}
-
-// SetMaxRetry sets the max number of errors before execution will fail.
-func (transaction *ScheduleDeleteTransaction) SetMaxRetry(count int) *ScheduleDeleteTransaction {
-	transaction.transaction.SetMaxRetry(count)
-	return transaction
-}
-
-// SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (transaction *ScheduleDeleteTransaction) SetMaxBackoff(max time.Duration) *ScheduleDeleteTransaction {
-	if max.Nanoseconds() < 0 {
-		panic("maxBackoff must be a positive duration")
-	} else if max.Nanoseconds() < transaction.minBackoff.Nanoseconds() {
-		panic("maxBackoff must be greater than or equal to minBackoff")
-	}
-	transaction.maxBackoff = &max
-	return transaction
-}
-
-// GetMaxBackoff returns the maximum amount of time to wait between retries.
-func (transaction *ScheduleDeleteTransaction) GetMaxBackoff() time.Duration {
-	if transaction.maxBackoff != nil {
-		return *transaction.maxBackoff
-	}
-
-	return 8 * time.Second
-}
-
-// SetMinBackoff sets the minimum amount of time to wait between retries.
-func (transaction *ScheduleDeleteTransaction) SetMinBackoff(min time.Duration) *ScheduleDeleteTransaction {
-	if min.Nanoseconds() < 0 {
-		panic("minBackoff must be a positive duration")
-	} else if transaction.maxBackoff.Nanoseconds() < min.Nanoseconds() {
-		panic("minBackoff must be less than or equal to maxBackoff")
-	}
-	transaction.minBackoff = &min
-	return transaction
-}
-
-// GetMinBackoff returns the minimum amount of time to wait between retries.
-func (transaction *ScheduleDeleteTransaction) GetMinBackoff() time.Duration {
-	if transaction.minBackoff != nil {
-		return *transaction.minBackoff
-	}
-
-	return 250 * time.Millisecond
-}
-
-func (transaction *ScheduleDeleteTransaction) _GetLogID() string {
-	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
-	return fmt.Sprintf("ScheduleDeleteTransaction:%d", timestamp.UnixNano())
-}
-
-func (transaction *ScheduleDeleteTransaction) SetLogLevel(level LogLevel) *ScheduleDeleteTransaction {
-	transaction.transaction.SetLogLevel(level)
-	return transaction
 }
