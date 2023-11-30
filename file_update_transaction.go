@@ -74,12 +74,6 @@ func _FileUpdateTransactionFromProtobuf(this transaction, pb *services.Transacti
 	}
 }
 
-// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (this *FileUpdateTransaction) SetGrpcDeadline(deadline *time.Duration) *FileUpdateTransaction {
-	this.transaction.SetGrpcDeadline(deadline)
-	return this
-}
-
 // SetFileID Sets the FileID to be updated
 func (this *FileUpdateTransaction) SetFileID(fileID FileID) *FileUpdateTransaction {
 	this._RequireNotFrozen()
@@ -164,19 +158,12 @@ func (this *FileUpdateTransaction) GetFileMemo() string {
 	return this.memo
 }
 
-func (this *FileUpdateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	this._RequireNotFrozen()
+// ----- Required Interfaces ------- //
 
-	scheduled, err := this.buildProtoBody()
-	if err != nil {
-		return nil, err
-	}
-
-	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
-}
-
-func (this *FileUpdateTransaction) IsFrozen() bool {
-	return this._IsFrozen()
+// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
+func (this *FileUpdateTransaction) SetGrpcDeadline(deadline *time.Duration) *FileUpdateTransaction {
+	this.transaction.SetGrpcDeadline(deadline)
+	return this
 }
 
 // Sign uses the provided privateKey to sign the transaction.
@@ -217,11 +204,6 @@ func (this *FileUpdateTransaction) FreezeWith(client *Client) (*FileUpdateTransa
 	return this, err
 }
 
-// GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
-func (this *FileUpdateTransaction) GetMaxTransactionFee() Hbar {
-	return this.transaction.GetMaxTransactionFee()
-}
-
 // SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
 func (this *FileUpdateTransaction) SetMaxTransactionFee(fee Hbar) *FileUpdateTransaction {
 	this._RequireNotFrozen()
@@ -236,25 +218,11 @@ func (this *FileUpdateTransaction) SetRegenerateTransactionID(regenerateTransact
 	return this
 }
 
-// GetRegenerateTransactionID returns true if transaction ID regeneration is enabled.
-func (this *FileUpdateTransaction) GetRegenerateTransactionID() bool {
-	return this.transaction.GetRegenerateTransactionID()
-}
-
-func (this *FileUpdateTransaction) GetTransactionMemo() string {
-	return this.transaction.GetTransactionMemo()
-}
-
 // SetTransactionMemo sets the memo for this FileUpdateTransaction.
 func (this *FileUpdateTransaction) SetTransactionMemo(memo string) *FileUpdateTransaction {
 	this._RequireNotFrozen()
 	this.transaction.SetTransactionMemo(memo)
 	return this
-}
-
-// GetTransactionValidDuration returns the duration that this transaction is valid for.
-func (this *FileUpdateTransaction) GetTransactionValidDuration() time.Duration {
-	return this.transaction.GetTransactionValidDuration()
 }
 
 // SetTransactionValidDuration sets the valid duration for this FileUpdateTransaction.
