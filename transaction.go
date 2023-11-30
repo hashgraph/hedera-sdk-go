@@ -51,9 +51,10 @@ type Transaction interface {
 	AddSignature(publicKey PublicKey, signature []byte) Transaction
 	Freeze() (Transaction, error)
 	FreezeWith(client *Client) (Transaction, error)
+	Schedule() (*ScheduleCreateTransaction, error) 
 
 	build() *services.TransactionBody
-	buildScheduled() (*services.SchedulableTransactionBody, error)
+	buildProtoBody() (*services.SchedulableTransactionBody, error)
 }
 
 // transaction is base struct for all transactions that may be built and submitted to Hedera.
@@ -943,13 +944,24 @@ func (this *transaction) FreezeWith(client *Client) (Transaction, error) {
 	return this, _TransactionFreezeWith(this, client, body)
 }
 
+func (this *transaction) Schedule() (*ScheduleCreateTransaction, error) {
+	this._RequireNotFrozen()
+
+	scheduled, err := this.buildProtoBody()
+	if err != nil {
+		return nil, err
+	}
+
+	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
+}
+
 // Building empty object as "default" implementation. All inhertents must implement their own implementation.
 func (this *transaction) build() *services.TransactionBody {
 	return &services.TransactionBody{}
 }
 
 // Building empty object as "default" implementation. All inhertents must implement their own implementation.
-func (this *transaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (this *transaction) buildProtoBody() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{}, nil
 }
 
