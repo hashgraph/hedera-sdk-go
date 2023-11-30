@@ -105,7 +105,7 @@ func TestUnitTransactionRecordQueryGet(t *testing.T) {
 	require.Equal(t, HbarFromTinybar(25), query.GetQueryPayment())
 	require.Equal(t, NewHbar(500), query.GetMaxQueryPayment())
 	require.Equal(t, &deadline, query.GetGrpcDeadline())
-	require.Equal(t, fmt.Sprintf("TransactionRecordQuery:%v", transactionID.ValidStart.UnixNano()), query._GetLogID())
+	require.Equal(t, fmt.Sprintf("TransactionRecordQuery:%v", transactionID.ValidStart.UnixNano()), query.getName())
 }
 
 func TestUnitTransactionRecordQueryNothingSet(t *testing.T) {

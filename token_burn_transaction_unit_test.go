@@ -48,7 +48,7 @@ func TestUnitTokenBurnTransactionValidate(t *testing.T) {
 	tokenBurn := NewTokenBurnTransaction().
 		SetTokenID(tokenID)
 
-	err = tokenBurn._ValidateNetworkOnIDs(client)
+	err = tokenBurn.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 }
 
@@ -65,7 +65,7 @@ func TestUnitTokenBurnTransactionValidateWrong(t *testing.T) {
 	tokenBurn := NewTokenBurnTransaction().
 		SetTokenID(tokenID)
 
-	err = tokenBurn._ValidateNetworkOnIDs(client)
+	err = tokenBurn.validateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
@@ -167,7 +167,7 @@ func TestUnitTokenBurnTransactionProtoCheck(t *testing.T) {
 	transaction.GetTransactionID()
 	transaction.GetNodeAccountIDs()
 
-	proto := transaction._Build().GetTokenBurn()
+	proto := transaction.build().GetTokenBurn()
 	require.Equal(t, proto.Token.String(), tokenID._ToProtobuf().String())
 	require.Equal(t, proto.Amount, uint64(5))
 	require.Equal(t, proto.SerialNumbers, []int64{1, 5, 6, 7})
@@ -205,7 +205,7 @@ func TestUnitTokenBurnTransactionCoverage(t *testing.T) {
 		Freeze()
 	require.NoError(t, err)
 
-	err = transaction._ValidateNetworkOnIDs(client)
+	err = transaction.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 	_, err = transaction.Schedule()
 	require.NoError(t, err)
@@ -220,7 +220,7 @@ func TestUnitTokenBurnTransactionCoverage(t *testing.T) {
 	require.NoError(t, err)
 	txFromBytes, err := TransactionFromBytes(byt)
 	require.NoError(t, err)
-	sig, err := newKey.SignTransaction(&transaction.Transaction)
+	sig, err := newKey.SignTransaction(&transaction.transaction)
 	require.NoError(t, err)
 
 	_, err = transaction.GetTransactionHash()
@@ -232,7 +232,7 @@ func TestUnitTokenBurnTransactionCoverage(t *testing.T) {
 	transaction.GetAmount()
 	_, err = transaction.GetSignatures()
 	require.NoError(t, err)
-	transaction._GetLogID()
+	transaction.getName()
 	switch b := txFromBytes.(type) {
 	case TokenBurnTransaction:
 		b.AddSignature(newKey.PublicKey(), sig)

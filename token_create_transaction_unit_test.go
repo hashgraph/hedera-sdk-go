@@ -57,7 +57,7 @@ func TestUnitTokenCreateTransactionValidate(t *testing.T) {
 		SetAutoRenewAccount(accountID).
 		SetTreasuryAccountID(accountID)
 
-	err = tokenCreate._ValidateNetworkOnIDs(client)
+	err = tokenCreate.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 }
 
@@ -75,7 +75,7 @@ func TestUnitTokenCreateTransactionValidateWrong(t *testing.T) {
 		SetAutoRenewAccount(accountID).
 		SetTreasuryAccountID(accountID)
 
-	err = tokenCreate._ValidateNetworkOnIDs(client)
+	err = tokenCreate.validateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
@@ -137,7 +137,7 @@ func TestUnitTokenCreateTransactionGet(t *testing.T) {
 	transaction.GetTransactionID()
 	transaction.GetNodeAccountIDs()
 
-	err = transaction._ValidateNetworkOnIDs(client)
+	err = transaction.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 	_, err = transaction.Schedule()
 	require.NoError(t, err)
@@ -174,9 +174,9 @@ func TestUnitTokenCreateTransactionGet(t *testing.T) {
 	require.NoError(t, err)
 	txFromBytes, err := TransactionFromBytes(byt)
 	require.NoError(t, err)
-	sig, err := newKey.SignTransaction(&transaction.Transaction)
+	sig, err := newKey.SignTransaction(&transaction.transaction)
 	require.NoError(t, err)
-	transaction._GetLogID()
+	transaction.getName()
 	switch b := txFromBytes.(type) {
 	case TokenCreateTransaction:
 		b.AddSignature(newKey.PublicKey(), sig)
@@ -226,7 +226,7 @@ func TestUnitTokenCreateTransactionNothingSet(t *testing.T) {
 	transaction.GetRegenerateTransactionID()
 	transaction.GetMaxTransactionFee()
 	transaction.GetRegenerateTransactionID()
-	proto := transaction._Build().GetTokenCreation()
+	proto := transaction.build().GetTokenCreation()
 	require.Nil(t, proto.AutoRenewAccount)
 	require.Nil(t, proto.AdminKey)
 	require.Nil(t, proto.Expiry)
@@ -269,7 +269,7 @@ func TestUnitTokenCreateTransactionKeyCheck(t *testing.T) {
 	transaction.GetTransactionID()
 	transaction.GetNodeAccountIDs()
 
-	proto := transaction._Build().GetTokenCreation()
+	proto := transaction.build().GetTokenCreation()
 	require.Equal(t, proto.AdminKey.String(), keys[0]._ToProtoKey().String())
 	require.Equal(t, proto.FreezeKey.String(), keys[1]._ToProtoKey().String())
 	require.Equal(t, proto.WipeKey.String(), keys[2]._ToProtoKey().String())

@@ -49,7 +49,7 @@ func TestUnitTokenPause(t *testing.T) {
 		Freeze()
 	require.NoError(t, err)
 
-	pb := tx._Build()
+	pb := tx.build()
 	require.Equal(t, pb.GetTokenPause().GetToken().String(), tokenID._ToProtobuf().String())
 }
 
@@ -68,7 +68,7 @@ func TestUnitTokenUnpause(t *testing.T) {
 		Freeze()
 	require.NoError(t, err)
 
-	pb := tx._Build()
+	pb := tx.build()
 	require.Equal(t, pb.GetTokenUnpause().GetToken().String(), tokenID._ToProtobuf().String())
 }
 func TestUnitTokenPauseSchedule(t *testing.T) {
@@ -250,7 +250,7 @@ func TestUnitTokenUnpauseTransactionCoverage(t *testing.T) {
 		Freeze()
 	require.NoError(t, err)
 
-	err = transaction._ValidateNetworkOnIDs(client)
+	err = transaction.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 	_, err = transaction.Schedule()
 	require.NoError(t, err)
@@ -265,7 +265,7 @@ func TestUnitTokenUnpauseTransactionCoverage(t *testing.T) {
 	require.NoError(t, err)
 	txFromBytes, err := TransactionFromBytes(byt)
 	require.NoError(t, err)
-	sig, err := newKey.SignTransaction(&transaction.Transaction)
+	sig, err := newKey.SignTransaction(&transaction.transaction)
 	require.NoError(t, err)
 
 	_, err = transaction.GetTransactionHash()
@@ -276,7 +276,7 @@ func TestUnitTokenUnpauseTransactionCoverage(t *testing.T) {
 	transaction.GetTokenID()
 	_, err = transaction.GetSignatures()
 	require.NoError(t, err)
-	transaction._GetLogID()
+	transaction.getName()
 	switch b := txFromBytes.(type) {
 	case TokenUnpauseTransaction:
 		b.AddSignature(newKey.PublicKey(), sig)
@@ -352,7 +352,7 @@ func TestUnitTokenPauseTransaction_AddSignature(t *testing.T) {
 
 	privateKey, _ := PrivateKeyGenerateEd25519()
 
-	signature, err := privateKey.SignTransaction(&transaction.Transaction)
+	signature, err := privateKey.SignTransaction(&transaction.transaction)
 	require.NoError(t, err)
 
 	signs, err := transaction.GetSignatures()
@@ -403,8 +403,8 @@ func TestUnitTokenPauseTransaction_SignWithOperator(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, transactionSignedWithOp)
 
-	assert.Contains(t, transactionSignedWithOp.Transaction.publicKeys, publicKey)
-	assert.Contains(t, transactionSignedWithOp.Transaction.publicKeys, publicKey2)
+	assert.Contains(t, transactionSignedWithOp.transaction.publicKeys, publicKey)
+	assert.Contains(t, transactionSignedWithOp.transaction.publicKeys, publicKey2)
 
 	// test errors
 	client.operator = nil

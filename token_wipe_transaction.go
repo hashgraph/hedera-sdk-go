@@ -153,6 +153,12 @@ func (tx *TokenWipeTransaction) SetSerialNumbers(serial []int64) *TokenWipeTrans
 
 // ---- Required Interfaces ---- //
 
+// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
+func (tx *TokenWipeTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenWipeTransaction {
+	tx.transaction.SetGrpcDeadline(deadline)
+	return tx
+}
+
 // Sign uses the provided privateKey to sign the transaction.
 func (tx *TokenWipeTransaction) Sign(privateKey PrivateKey) *TokenWipeTransaction {
 	tx.transaction.Sign(privateKey)

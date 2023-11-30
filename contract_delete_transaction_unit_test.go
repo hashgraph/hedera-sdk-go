@@ -245,7 +245,7 @@ func TestUnitContractDeleteTransactionCoverage(t *testing.T) {
 	transaction.GetTransferAccountID()
 	_, err = transaction.GetSignatures()
 	require.NoError(t, err)
-	transaction._GetLogID()
+	transaction.getName()
 	switch b := txFromBytes.(type) {
 	case ContractDeleteTransaction:
 		b.AddSignature(newKey.PublicKey(), sig)

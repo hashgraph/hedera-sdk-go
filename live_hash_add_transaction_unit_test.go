@@ -222,7 +222,7 @@ func TestUnitLiveHashAddTransactionCoverage(t *testing.T) {
 	transaction.GetDuration()
 	_, err = transaction.GetSignatures()
 	require.NoError(t, err)
-	transaction._GetLogID()
+	transaction.getName()
 	switch b := txFromBytes.(type) {
 	case LiveHashAddTransaction:
 		b.AddSignature(newKey.PublicKey(), sig)

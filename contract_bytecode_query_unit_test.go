@@ -183,6 +183,6 @@ func TestUnitContractBytecodeQueryCoverage(t *testing.T) {
 	query.GetNodeAccountIDs()
 	query.GetMaxBackoff()
 	query.GetMinBackoff()
-	query._GetLogID()
+	query.getName()
 	query.GetContractID()
 }

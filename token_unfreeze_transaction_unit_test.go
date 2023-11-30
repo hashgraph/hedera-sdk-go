@@ -51,7 +51,7 @@ func TestUnitTokenUnfreezeTransactionValidate(t *testing.T) {
 		SetTokenID(tokenID).
 		SetAccountID(accountID)
 
-	err = tokenUnfreeze._ValidateNetworkOnIDs(client)
+	err = tokenUnfreeze.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 }
 
@@ -71,7 +71,7 @@ func TestUnitTokenUnfreezeTransactionValidateWrong(t *testing.T) {
 		SetTokenID(tokenID).
 		SetAccountID(accountID)
 
-	err = tokenUnfreeze._ValidateNetworkOnIDs(client)
+	err = tokenUnfreeze.validateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
@@ -180,7 +180,7 @@ func TestUnitTokenUnfreezeTransactionCoverage(t *testing.T) {
 		Freeze()
 	require.NoError(t, err)
 
-	err = transaction._ValidateNetworkOnIDs(client)
+	err = transaction.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 	_, err = transaction.Schedule()
 	require.NoError(t, err)
@@ -195,7 +195,7 @@ func TestUnitTokenUnfreezeTransactionCoverage(t *testing.T) {
 	require.NoError(t, err)
 	txFromBytes, err := TransactionFromBytes(byt)
 	require.NoError(t, err)
-	sig, err := newKey.SignTransaction(&transaction.Transaction)
+	sig, err := newKey.SignTransaction(&transaction.transaction)
 	require.NoError(t, err)
 
 	_, err = transaction.GetTransactionHash()
@@ -207,7 +207,7 @@ func TestUnitTokenUnfreezeTransactionCoverage(t *testing.T) {
 	transaction.GetAccountID()
 	_, err = transaction.GetSignatures()
 	require.NoError(t, err)
-	transaction._GetLogID()
+	transaction.getName()
 	switch b := txFromBytes.(type) {
 	case TokenUnfreezeTransaction:
 		b.AddSignature(newKey.PublicKey(), sig)

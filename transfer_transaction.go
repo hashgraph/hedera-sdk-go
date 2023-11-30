@@ -716,3 +716,7 @@ func (tx *TransferTransaction) getMethod(channel *_Channel) _Method {
 		transaction: channel._GetCrypto().CryptoTransfer,
 	}
 }
+
+func (this *TransferTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	return this.buildScheduled()
+}

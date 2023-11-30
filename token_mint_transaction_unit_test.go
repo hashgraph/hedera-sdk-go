@@ -48,7 +48,7 @@ func TestUnitTokenMintTransactionValidate(t *testing.T) {
 	tokenMint := NewTokenMintTransaction().
 		SetTokenID(tokenID)
 
-	err = tokenMint._ValidateNetworkOnIDs(client)
+	err = tokenMint.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 }
 
@@ -65,7 +65,7 @@ func TestUnitTokenMintTransactionValidateWrong(t *testing.T) {
 	tokenMint := NewTokenMintTransaction().
 		SetTokenID(tokenID)
 
-	err = tokenMint._ValidateNetworkOnIDs(client)
+	err = tokenMint.validateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
@@ -167,7 +167,7 @@ func TestUnitTokenMintTransactionProtoCheck(t *testing.T) {
 	transaction.GetTransactionID()
 	transaction.GetNodeAccountIDs()
 
-	proto := transaction._Build().GetTokenMint()
+	proto := transaction.build().GetTokenMint()
 	require.Equal(t, proto.Token.String(), tokenID._ToProtobuf().String())
 	require.Equal(t, proto.Amount, uint64(323))
 	require.Equal(t, proto.Metadata, [][]byte{{50}, {50}})
@@ -208,7 +208,7 @@ func TestUnitTokenMintTransactionCoverage(t *testing.T) {
 		Freeze()
 	require.NoError(t, err)
 
-	err = transaction._ValidateNetworkOnIDs(client)
+	err = transaction.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 	_, err = transaction.Schedule()
 	require.NoError(t, err)
@@ -223,7 +223,7 @@ func TestUnitTokenMintTransactionCoverage(t *testing.T) {
 	require.NoError(t, err)
 	txFromBytes, err := TransactionFromBytes(byt)
 	require.NoError(t, err)
-	sig, err := newKey.SignTransaction(&transaction.Transaction)
+	sig, err := newKey.SignTransaction(&transaction.transaction)
 	require.NoError(t, err)
 
 	_, err = transaction.GetTransactionHash()
@@ -236,7 +236,7 @@ func TestUnitTokenMintTransactionCoverage(t *testing.T) {
 	transaction.GetAmount()
 	_, err = transaction.GetSignatures()
 	require.NoError(t, err)
-	transaction._GetLogID()
+	transaction.getName()
 	switch b := txFromBytes.(type) {
 	case TokenMintTransaction:
 		b.AddSignature(newKey.PublicKey(), sig)

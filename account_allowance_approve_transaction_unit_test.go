@@ -111,20 +111,19 @@ func TestUnitAccountAllowanceApproveTransaction(t *testing.T) {
 		})
 	}
 }
-func TestUnit_ValidateNetworkOnIDs(t *testing.T){
+func TestUnitvalidateNetworkOnIDs(t *testing.T) {
 	transactionID := TransactionIDGenerate(AccountID{Account: 324})
 
-
 	transaction, err := NewAccountAllowanceApproveTransaction().
-	SetTransactionID(transactionID).
-	SetNodeAccountIDs(nodeAccountID).
-	ApproveHbarAllowance(owner, spenderAccountID1, hbarAmount).
-	ApproveTokenAllowance(tokenID1, owner, spenderAccountID1, tokenAmount).
-	ApproveTokenNftAllowance(nftID1, owner, spenderAccountID1).
-	ApproveTokenNftAllowance(nftID2, owner, spenderAccountID1).
-	ApproveTokenNftAllowance(nftID2, owner, spenderAccountID2).
-	AddAllTokenNftApproval(tokenID1, spenderAccountID1).
-	Freeze()
+		SetTransactionID(transactionID).
+		SetNodeAccountIDs(nodeAccountID).
+		ApproveHbarAllowance(owner, spenderAccountID1, hbarAmount).
+		ApproveTokenAllowance(tokenID1, owner, spenderAccountID1, tokenAmount).
+		ApproveTokenNftAllowance(nftID1, owner, spenderAccountID1).
+		ApproveTokenNftAllowance(nftID2, owner, spenderAccountID1).
+		ApproveTokenNftAllowance(nftID2, owner, spenderAccountID2).
+		AddAllTokenNftApproval(tokenID1, spenderAccountID1).
+		Freeze()
 	require.NoError(t, err)
 
 	client, err := _NewMockClient()
@@ -335,7 +334,7 @@ func TestUnitAccountAllowanceDeleteTransactionCoverage(t *testing.T) {
 		Freeze()
 	require.NoError(t, err)
 
-	transaction._ValidateNetworkOnIDs(client)
+	transaction.validateNetworkOnIDs(client)
 
 	_, err = transaction.Schedule()
 	require.NoError(t, err)
@@ -365,7 +364,7 @@ func TestUnitAccountAllowanceDeleteTransactionCoverage(t *testing.T) {
 	require.NoError(t, err)
 	transaction.GetAllHbarDeleteAllowances()
 	transaction.GetAllTokenDeleteAllowances()
-	transaction._GetLogID()
+	transaction.getName()
 	txFromBytes.AddSignature(newKey.PublicKey(), sig)
 }
 

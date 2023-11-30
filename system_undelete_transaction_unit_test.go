@@ -59,7 +59,7 @@ func TestUnitSystemUndeleteTrxValidateNetworkOnIDs(t *testing.T) {
 	client.SetLedgerID(*NewLedgerIDTestnet())
 	require.NoError(t, err)
 
-	error := undeleteTrx._ValidateNetworkOnIDs(client)
+	error := undeleteTrx.validateNetworkOnIDs(client)
 	require.NoError(t, error)
 }
 
@@ -67,7 +67,7 @@ func TestUnitSystemUndeleteTrxBuild(t *testing.T) {
 	t.Parallel()
 	deleteTrx := _SetupSystemUndeleteTrx()
 
-	trxBody := deleteTrx._Build()
+	trxBody := deleteTrx.build()
 	require.NotNil(t, trxBody)
 	require.Equal(t, "memo", trxBody.Memo)
 	require.Equal(t, uint64(0), trxBody.TransactionFee)
@@ -99,15 +99,15 @@ func TestUnitSystemConstructNewScheduleUndeleteTransactionProtobuf(t *testing.T)
 	t.Parallel()
 	undeleteTrx := _SetupSystemUndeleteTrx()
 
-	protoBody, err := undeleteTrx._ConstructScheduleProtobuf()
+	protoBody, err := undeleteTrx.buildScheduled()
 	require.NoError(t, err)
 	require.NotNil(t, protoBody)
 	require.Equal(t, "memo", protoBody.Memo)
 	require.Equal(t, uint64(0), protoBody.TransactionFee)
 }
 
-func _CreateProtoBufUndeleteTrxBody() (Transaction, *services.TransactionBody) {
-	transaction := Transaction{transactionFee: 5, memo: "memo", defaultMaxTransactionFee: 10}
+func _CreateProtoBufUndeleteTrxBody() (transaction, *services.TransactionBody) {
+	transaction := transaction{transactionFee: 5, memo: "memo", defaultMaxTransactionFee: 10}
 	transactionBody := &services.TransactionBody{
 		Data: &services.TransactionBody_SystemUndelete{SystemUndelete: &services.SystemUndeleteTransactionBody{}}}
 

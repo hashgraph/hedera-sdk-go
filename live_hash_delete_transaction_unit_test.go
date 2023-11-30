@@ -65,7 +65,7 @@ func TestUnitLiveHashDeleteTransactionCoverage(t *testing.T) {
 		Freeze()
 	require.NoError(t, err)
 
-	transaction._ValidateNetworkOnIDs(client)
+	transaction.validateNetworkOnIDs(client)
 
 	transaction.GetTransactionID()
 	transaction.GetNodeAccountIDs()
@@ -78,7 +78,7 @@ func TestUnitLiveHashDeleteTransactionCoverage(t *testing.T) {
 	require.NoError(t, err)
 	txFromBytes, err := TransactionFromBytes(byt)
 	require.NoError(t, err)
-	sig, err := newKey.SignTransaction(&transaction.Transaction)
+	sig, err := newKey.SignTransaction(&transaction.transaction)
 	require.NoError(t, err)
 
 	_, err = transaction.GetTransactionHash()
@@ -90,7 +90,7 @@ func TestUnitLiveHashDeleteTransactionCoverage(t *testing.T) {
 	transaction.GetHash()
 	_, err = transaction.GetSignatures()
 	require.NoError(t, err)
-	transaction._GetLogID()
+	transaction.getName()
 	switch b := txFromBytes.(type) {
 	case LiveHashDeleteTransaction:
 		b.AddSignature(newKey.PublicKey(), sig)

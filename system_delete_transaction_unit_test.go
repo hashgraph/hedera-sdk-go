@@ -37,7 +37,6 @@ var testExpirationTime = time.Now().Add(24 * time.Hour)
 var testFileId = FileID{File: 3}
 var testTrxValidDuration = 24 * time.Hour
 
-
 func TestUnitSystemDeleteTransactionFromProtobuf(t *testing.T) {
 	t.Parallel()
 
@@ -66,7 +65,7 @@ func TestUnitSystemDeleteTrxValidateNetworkOnIDs(t *testing.T) {
 	client.SetLedgerID(*NewLedgerIDTestnet())
 	require.NoError(t, err)
 
-	error := deleteTrx._ValidateNetworkOnIDs(client)
+	error := deleteTrx.validateNetworkOnIDs(client)
 	require.NoError(t, error)
 }
 
@@ -74,7 +73,7 @@ func TestUnitSystemDeleteTrxBuild(t *testing.T) {
 	t.Parallel()
 	deleteTrx := _SetupSystemDeleteTrx()
 
-	trxBody := deleteTrx._Build()
+	trxBody := deleteTrx.build()
 
 	fmt.Println(trxBody)
 	require.NotNil(t, trxBody)
@@ -110,15 +109,15 @@ func TestUnitSystemConstructNewScheduleDeleteTransactionProtobuf(t *testing.T) {
 	t.Parallel()
 	deleteTrx := _SetupSystemUndeleteTrx()
 
-	protoBody, err := deleteTrx._ConstructScheduleProtobuf()
+	protoBody, err := deleteTrx.buildScheduled()
 	require.NoError(t, err)
 	require.NotNil(t, protoBody)
 	require.Equal(t, "memo", protoBody.Memo)
 	require.Equal(t, uint64(0), protoBody.TransactionFee)
 }
 
-func _CreateProtoBufTrxBody() (Transaction, *services.TransactionBody) {
-	transaction := Transaction{transactionFee: 5, memo: "memo", defaultMaxTransactionFee: 10}
+func _CreateProtoBufTrxBody() (transaction, *services.TransactionBody) {
+	transaction := transaction{transactionFee: 5, memo: "memo", defaultMaxTransactionFee: 10}
 	transactionBody := &services.TransactionBody{
 		Data: &services.TransactionBody_SystemDelete{SystemDelete: &services.SystemDeleteTransactionBody{ExpirationTime: &services.TimestampSeconds{Seconds: 100}}}}
 

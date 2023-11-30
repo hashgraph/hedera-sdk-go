@@ -51,7 +51,7 @@ func TestUnitTopicUpdateTransactionValidate(t *testing.T) {
 		SetTopicID(topicID).
 		SetAutoRenewAccountID(accountID)
 
-	err = topicUpdate._ValidateNetworkOnIDs(client)
+	err = topicUpdate.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 }
 
@@ -71,7 +71,7 @@ func TestUnitTopicUpdateTransactionValidateWrong(t *testing.T) {
 		SetTopicID(topicID).
 		SetAutoRenewAccountID(accountID)
 
-	err = topicUpdate._ValidateNetworkOnIDs(client)
+	err = topicUpdate.validateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
@@ -190,7 +190,7 @@ func TestUnitTopicUpdateTransactionProtoCheck(t *testing.T) {
 	transaction.GetTransactionID()
 	transaction.GetNodeAccountIDs()
 
-	proto := transaction._Build().GetConsensusUpdateTopic()
+	proto := transaction.build().GetConsensusUpdateTopic()
 	require.Equal(t, proto.AdminKey.String(), newKey._ToProtoKey().String())
 	require.Equal(t, proto.TopicID.String(), topicID._ToProtobuf().String())
 	require.Equal(t, proto.AutoRenewAccount.String(), accountID._ToProtobuf().String())
@@ -238,7 +238,7 @@ func TestUnitTopicUpdateTransactionCoverage(t *testing.T) {
 		Freeze()
 	require.NoError(t, err)
 
-	err = transaction._ValidateNetworkOnIDs(client)
+	err = transaction.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 	_, err = transaction.Schedule()
 	require.NoError(t, err)
@@ -253,7 +253,7 @@ func TestUnitTopicUpdateTransactionCoverage(t *testing.T) {
 	require.NoError(t, err)
 	txFromBytes, err := TransactionFromBytes(byt)
 	require.NoError(t, err)
-	sig, err := newKey.SignTransaction(&transaction.Transaction)
+	sig, err := newKey.SignTransaction(&transaction.transaction)
 	require.NoError(t, err)
 
 	_, err = transaction.GetTransactionHash()
@@ -268,7 +268,7 @@ func TestUnitTopicUpdateTransactionCoverage(t *testing.T) {
 	transaction.GetAutoRenewPeriod()
 	_, err = transaction.GetSignatures()
 	require.NoError(t, err)
-	transaction._GetLogID()
+	transaction.getName()
 	switch b := txFromBytes.(type) {
 	case TopicCreateTransaction:
 		b.AddSignature(newKey.PublicKey(), sig)

@@ -258,17 +258,6 @@ func (this *AccountAllowanceApproveTransaction) GetTokenNftAllowances() []*Token
 	return this.nftAllowances
 }
 
-func (this *AccountAllowanceApproveTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	this._RequireNotFrozen()
-
-	scheduled, err := this.buildProtoBody()
-	if err != nil {
-		return nil, err
-	}
-
-	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
-}
-
 // Sign uses the provided privateKey to sign the transaction.
 func (this *AccountAllowanceApproveTransaction) Sign(
 	privateKey PrivateKey,
@@ -471,65 +460,47 @@ func (this *AccountAllowanceApproveTransaction) validateNetworkOnIDs(client *Cli
 }
 
 func (this *AccountAllowanceApproveTransaction) build() *services.TransactionBody {
-	accountApproval := make([]*services.CryptoAllowance, 0)
-	tokenApproval := make([]*services.TokenAllowance, 0)
-	nftApproval := make([]*services.NftAllowance, 0)
-
-	for _, ap := range this.hbarAllowances {
-		accountApproval = append(accountApproval, ap._ToProtobuf())
-	}
-
-	for _, ap := range this.tokenAllowances {
-		tokenApproval = append(tokenApproval, ap._ToProtobuf())
-	}
-
-	for _, ap := range this.nftAllowances {
-		nftApproval = append(nftApproval, ap._ToProtobuf())
-	}
-
 	return &services.TransactionBody{
 		TransactionID:            this.transactionID._ToProtobuf(),
 		TransactionFee:           this.transactionFee,
 		TransactionValidDuration: _DurationToProtobuf(this.GetTransactionValidDuration()),
 		Memo:                     this.transaction.memo,
 		Data: &services.TransactionBody_CryptoApproveAllowance{
-			CryptoApproveAllowance: &services.CryptoApproveAllowanceTransactionBody{
-				CryptoAllowances: accountApproval,
-				NftAllowances:    nftApproval,
-				TokenAllowances:  tokenApproval,
-			},
+			CryptoApproveAllowance: this.buildProtoBody(),
 		},
 	}
 }
 
-func (this *AccountAllowanceApproveTransaction) buildProtoBody() (*services.SchedulableTransactionBody, error) {
-	accountApproval := make([]*services.CryptoAllowance, 0)
-	tokenApproval := make([]*services.TokenAllowance, 0)
-	nftApproval := make([]*services.NftAllowance, 0)
-
-	for _, ap := range this.hbarAllowances {
-		accountApproval = append(accountApproval, ap._ToProtobuf())
-	}
-
-	for _, ap := range this.tokenAllowances {
-		tokenApproval = append(tokenApproval, ap._ToProtobuf())
-	}
-
-	for _, ap := range this.nftAllowances {
-		nftApproval = append(nftApproval, ap._ToProtobuf())
-	}
-
+func (this *AccountAllowanceApproveTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: this.transactionFee,
 		Memo:           this.transaction.memo,
 		Data: &services.SchedulableTransactionBody_CryptoApproveAllowance{
-			CryptoApproveAllowance: &services.CryptoApproveAllowanceTransactionBody{
-				CryptoAllowances: accountApproval,
-				NftAllowances:    nftApproval,
-				TokenAllowances:  tokenApproval,
-			},
+			CryptoApproveAllowance: this.buildProtoBody(),
 		},
 	}, nil
+}
+
+func (this *AccountAllowanceApproveTransaction) buildProtoBody() *services.CryptoApproveAllowanceTransactionBody {
+	body := &services.CryptoApproveAllowanceTransactionBody{
+		CryptoAllowances: make([]*services.CryptoAllowance, 0),
+		TokenAllowances:  make([]*services.TokenAllowance, 0),
+		NftAllowances:    make([]*services.NftAllowance, 0),
+	}
+
+	for _, ap := range this.hbarAllowances {
+		body.CryptoAllowances = append(body.CryptoAllowances, ap._ToProtobuf())
+	}
+
+	for _, ap := range this.tokenAllowances {
+		body.TokenAllowances = append(body.TokenAllowances, ap._ToProtobuf())
+	}
+
+	for _, ap := range this.nftAllowances {
+		body.NftAllowances = append(body.NftAllowances, ap._ToProtobuf())
+	}
+
+	return body
 }
 
 func (this *AccountAllowanceApproveTransaction) getMethod(channel *_Channel) _Method {

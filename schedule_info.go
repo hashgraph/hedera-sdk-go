@@ -417,4 +417,5 @@ func (scheduleInfo *ScheduleInfo) GetScheduledTransaction() (ITransaction, error
 	//default:
 	//	return nil, errors.New("(BUG) non-exhaustive switch statement")
 	//}
+	return nil, nil
 }

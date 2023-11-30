@@ -29,7 +29,7 @@ import (
 
 type Fee interface {
 	_ToProtobuf() *services.CustomFee
-	_ValidateNetworkOnIDs(client *Client) error
+	validateNetworkOnIDs(client *Client) error
 }
 
 // A fixed fee transfers a specified amount of the token, to the specified collection account(s),
@@ -60,7 +60,7 @@ func _CustomFixedFeeFromProtobuf(fixedFee *services.FixedFee, customFee CustomFe
 	}
 }
 
-func (fee CustomFixedFee) _ValidateNetworkOnIDs(client *Client) error {
+func (fee CustomFixedFee) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}

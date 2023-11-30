@@ -348,7 +348,7 @@ func TestUnitContractCreateTransactionCoverage(t *testing.T) {
 	transaction.GetGas()
 	_, err = transaction.GetSignatures()
 	require.NoError(t, err)
-	transaction._GetLogID()
+	transaction.getName()
 	switch b := txFromBytes.(type) {
 	case ContractCreateTransaction:
 		b.AddSignature(newKey.PublicKey(), sig)

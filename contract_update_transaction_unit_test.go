@@ -346,7 +346,7 @@ func TestUnitContractUpdateTransactionCoverage(t *testing.T) {
 	transaction.ClearStakedNodeID()
 	_, err = transaction.GetSignatures()
 	require.NoError(t, err)
-	transaction._GetLogID()
+	transaction.getName()
 	switch b := txFromBytes.(type) {
 	case ContractUpdateTransaction:
 		b.AddSignature(newKey.PublicKey(), sig)

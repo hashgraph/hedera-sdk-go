@@ -94,7 +94,7 @@ func TestUnitAccountAllowanceAdjustTransactionGet(t *testing.T) {
 	require.Equal(t, 1, tx.GetMaxRetry())
 	require.Equal(t, time.Second*120, tx.GetMaxBackoff())
 	require.Equal(t, time.Second*1, tx.GetMinBackoff())
-	require.Equal(t, fmt.Sprintf("AccountAllowanceAdjustTransaction:%v", transactionID.ValidStart.UnixNano()), tx._GetLogID())
+	require.Equal(t, fmt.Sprintf("AccountAllowanceAdjustTransaction:%v", transactionID.ValidStart.UnixNano()), tx.getName())
 }
 
 func TestUnitAccountAllowanceAdjustTransactionGrantHbarAllowance(t *testing.T) {

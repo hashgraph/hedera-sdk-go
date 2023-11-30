@@ -52,7 +52,7 @@ func TestUnitTokenDissociateTransactionValidate(t *testing.T) {
 		SetAccountID(accountID).
 		SetTokenIDs(tokenID)
 
-	err = tokenDissociate._ValidateNetworkOnIDs(client)
+	err = tokenDissociate.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 }
 
@@ -72,7 +72,7 @@ func TestUnitTokenDissociateTransactionValidateWrong(t *testing.T) {
 		SetAccountID(accountID).
 		SetTokenIDs(tokenID)
 
-	err = tokenDissociate._ValidateNetworkOnIDs(client)
+	err = tokenDissociate.validateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
@@ -172,7 +172,7 @@ func TestUnitTokenDissociateTransactionProtoCheck(t *testing.T) {
 	transaction.GetTransactionID()
 	transaction.GetNodeAccountIDs()
 
-	proto := transaction._Build().GetTokenDissociate()
+	proto := transaction.build().GetTokenDissociate()
 	require.Equal(t, proto.Tokens[0].String(), tokenID._ToProtobuf().String())
 	require.Equal(t, proto.Tokens[1].String(), tokenID2._ToProtobuf().String())
 	require.Equal(t, proto.Tokens[2].String(), tokenID3._ToProtobuf().String())
@@ -214,7 +214,7 @@ func TestUnitTokenDissociateTransactionCoverage(t *testing.T) {
 		Freeze()
 	require.NoError(t, err)
 
-	err = transaction._ValidateNetworkOnIDs(client)
+	err = transaction.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 	_, err = transaction.Schedule()
 	require.NoError(t, err)
@@ -229,7 +229,7 @@ func TestUnitTokenDissociateTransactionCoverage(t *testing.T) {
 	require.NoError(t, err)
 	txFromBytes, err := TransactionFromBytes(byt)
 	require.NoError(t, err)
-	sig, err := newKey.SignTransaction(&transaction.Transaction)
+	sig, err := newKey.SignTransaction(&transaction.transaction)
 	require.NoError(t, err)
 
 	_, err = transaction.GetTransactionHash()
@@ -241,7 +241,7 @@ func TestUnitTokenDissociateTransactionCoverage(t *testing.T) {
 	transaction.GetAccountID()
 	_, err = transaction.GetSignatures()
 	require.NoError(t, err)
-	transaction._GetLogID()
+	transaction.getName()
 	switch b := txFromBytes.(type) {
 	case TokenDissociateTransaction:
 		b.AddSignature(newKey.PublicKey(), sig)

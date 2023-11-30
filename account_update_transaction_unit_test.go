@@ -340,7 +340,7 @@ func TestUnitAccountUpdateTransactionCoverage(t *testing.T) {
 
 	_, err = transaction.GetSignatures()
 	require.NoError(t, err)
-	transaction._GetLogID()
+	transaction.getName()
 	switch b := txFromBytes.(type) {
 	case *AccountUpdateTransaction:
 		b.AddSignature(key.PublicKey(), sig)

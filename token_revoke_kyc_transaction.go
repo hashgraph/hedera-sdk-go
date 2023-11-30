@@ -73,12 +73,6 @@ func _TokenRevokeKycTransactionFromProtobuf(transaction transaction, pb *service
 	return resultTx
 }
 
-// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (tx *TokenRevokeKycTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenRevokeKycTransaction {
-	tx.transaction.SetGrpcDeadline(deadline)
-	return tx
-}
-
 // SetTokenID Sets the token for which this account will get his KYC revoked.
 // If token does not exist, transaction results in INVALID_TOKEN_ID
 func (tx *TokenRevokeKycTransaction) SetTokenID(tokenID TokenID) *TokenRevokeKycTransaction {
@@ -112,7 +106,118 @@ func (tx *TokenRevokeKycTransaction) GetAccountID() AccountID {
 	return *tx.accountID
 }
 
-func (tx *TokenRevokeKycTransaction) _ValidateNetworkOnIDs(client *Client) error {
+// ---- Required Interfaces ---- //
+
+// Sign uses the provided privateKey to sign the transaction.
+func (tx *TokenRevokeKycTransaction) Sign(privateKey PrivateKey) *TokenRevokeKycTransaction {
+	tx.transaction.Sign(privateKey)
+	return tx
+}
+
+// SignWithOperator signs the transaction with client's operator privateKey.
+func (tx *TokenRevokeKycTransaction) SignWithOperator(client *Client) (*TokenRevokeKycTransaction, error) {
+	_, err := tx.transaction.SignWithOperator(client)
+	return tx, err
+}
+
+// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// with the publicKey as the map key.
+func (tx *TokenRevokeKycTransaction) SignWith(
+	publicKey PublicKey,
+	signer TransactionSigner,
+) *TokenRevokeKycTransaction {
+	tx.transaction.SignWith(publicKey, signer)
+	return tx
+}
+
+// AddSignature adds a signature to the transaction.
+func (tx *TokenRevokeKycTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenRevokeKycTransaction {
+	tx.transaction.AddSignature(publicKey, signature)
+	return tx
+}
+
+// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
+func (tx *TokenRevokeKycTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenRevokeKycTransaction {
+	tx.transaction.SetGrpcDeadline(deadline)
+	return tx
+}
+
+func (tx *TokenRevokeKycTransaction) Freeze() (*TokenRevokeKycTransaction, error) {
+	return tx.FreezeWith(nil)
+}
+
+func (tx *TokenRevokeKycTransaction) FreezeWith(client *Client) (*TokenRevokeKycTransaction, error) {
+	_, err := tx.transaction.FreezeWith(client)
+	return tx, err
+}
+
+// SetMaxTransactionFee sets the max transaction fee for this TokenRevokeKycTransaction.
+func (tx *TokenRevokeKycTransaction) SetMaxTransactionFee(fee Hbar) *TokenRevokeKycTransaction {
+	tx.transaction.SetMaxTransactionFee(fee)
+	return tx
+}
+
+// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
+func (tx *TokenRevokeKycTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *TokenRevokeKycTransaction {
+	tx.transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	return tx
+}
+
+// SetTransactionMemo sets the memo for this TokenRevokeKycTransaction.
+func (tx *TokenRevokeKycTransaction) SetTransactionMemo(memo string) *TokenRevokeKycTransaction {
+	tx.transaction.SetTransactionMemo(memo)
+	return tx
+}
+
+// SetTransactionValidDuration sets the valid duration for this TokenRevokeKycTransaction.
+func (tx *TokenRevokeKycTransaction) SetTransactionValidDuration(duration time.Duration) *TokenRevokeKycTransaction {
+	tx.transaction.SetTransactionValidDuration(duration)
+	return tx
+}
+
+// SetTransactionID sets the TransactionID for this TokenRevokeKycTransaction.
+func (tx *TokenRevokeKycTransaction) SetTransactionID(transactionID TransactionID) *TokenRevokeKycTransaction {
+	tx.transaction.SetTransactionID(transactionID)
+	return tx
+}
+
+// SetNodeAccountIDs sets the _Node AccountID for this TokenRevokeKycTransaction.
+func (tx *TokenRevokeKycTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenRevokeKycTransaction {
+	tx.transaction.SetNodeAccountIDs(nodeID)
+	return tx
+}
+
+// SetMaxRetry sets the max number of errors before execution will fail.
+func (tx *TokenRevokeKycTransaction) SetMaxRetry(count int) *TokenRevokeKycTransaction {
+	tx.transaction.SetMaxRetry(count)
+	return tx
+}
+
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
+func (tx *TokenRevokeKycTransaction) SetMaxBackoff(max time.Duration) *TokenRevokeKycTransaction {
+	tx.transaction.SetMaxBackoff(max)
+	return tx
+}
+
+// SetMinBackoff sets the minimum amount of time to wait between retries.
+func (tx *TokenRevokeKycTransaction) SetMinBackoff(min time.Duration) *TokenRevokeKycTransaction {
+	tx.transaction.SetMinBackoff(min)
+	return tx
+}
+
+func (tx *TokenRevokeKycTransaction) SetLogLevel(level LogLevel) *TokenRevokeKycTransaction {
+	tx.transaction.SetLogLevel(level)
+	return tx
+}
+
+// ----------- overriden functions ----------------
+
+func (tx *TokenRevokeKycTransaction) getName() string {
+	return "TokenRevokeKycTransaction"
+}
+
+func (tx *TokenRevokeKycTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}

@@ -48,7 +48,7 @@ func TestUnitTopicDeleteTransactionValidate(t *testing.T) {
 	topicDelete := NewTopicDeleteTransaction().
 		SetTopicID(topicID)
 
-	err = topicDelete._ValidateNetworkOnIDs(client)
+	err = topicDelete.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 }
 
@@ -65,7 +65,7 @@ func TestUnitTopicDeleteTransactionValidateWrong(t *testing.T) {
 	topicDelete := NewTopicDeleteTransaction().
 		SetTopicID(topicID)
 
-	err = topicDelete._ValidateNetworkOnIDs(client)
+	err = topicDelete.validateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
@@ -169,7 +169,7 @@ func TestUnitTopicDeleteTransactionCoverage(t *testing.T) {
 		Freeze()
 	require.NoError(t, err)
 
-	err = transaction._ValidateNetworkOnIDs(client)
+	err = transaction.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 	_, err = transaction.Schedule()
 	require.NoError(t, err)
@@ -184,7 +184,7 @@ func TestUnitTopicDeleteTransactionCoverage(t *testing.T) {
 	require.NoError(t, err)
 	txFromBytes, err := TransactionFromBytes(byt)
 	require.NoError(t, err)
-	sig, err := newKey.SignTransaction(&transaction.Transaction)
+	sig, err := newKey.SignTransaction(&transaction.transaction)
 	require.NoError(t, err)
 
 	_, err = transaction.GetTransactionHash()
@@ -195,7 +195,7 @@ func TestUnitTopicDeleteTransactionCoverage(t *testing.T) {
 	transaction.GetTopicID()
 	_, err = transaction.GetSignatures()
 	require.NoError(t, err)
-	transaction._GetLogID()
+	transaction.getName()
 	switch b := txFromBytes.(type) {
 	case TopicDeleteTransaction:
 		b.AddSignature(newKey.PublicKey(), sig)

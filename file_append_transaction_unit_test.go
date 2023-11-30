@@ -357,7 +357,7 @@ func TestUnitFileAppendTransactionCoverage(t *testing.T) {
 	transaction.GetRegenerateTransactionID()
 	_, err = transaction.GetSignatures()
 	require.NoError(t, err)
-	transaction._GetLogID()
+	transaction.getName()
 	switch b := txFromBytes.(type) {
 	case FileAppendTransaction:
 		b.AddSignature(newKey.PublicKey(), sig)

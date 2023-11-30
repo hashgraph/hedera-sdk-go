@@ -155,12 +155,12 @@ func TestUnitScheduleInfoQueryCoverage(t *testing.T) {
 	require.Equal(t, nodeAccountID, query.GetNodeAccountIDs())
 	require.Equal(t, 30*time.Second, query.GetMaxBackoff())
 	require.Equal(t, 10*time.Second, query.GetMinBackoff())
-	require.NotEmpty(t, query._GetLogID())
+	require.NotEmpty(t, query.getName())
 	require.Equal(t, schedule, query.GetScheduleID())
 	require.Equal(t, NewHbar(3), query.GetQueryPayment())
 	require.Equal(t, NewHbar(23), query.GetMaxQueryPayment())
 	require.Equal(t, &deadline, query.GetGrpcDeadline())
-	require.Equal(t, fmt.Sprintf("ScheduleInfoQuery:%v", transactionID.ValidStart.UnixNano()), query._GetLogID())
+	require.Equal(t, fmt.Sprintf("ScheduleInfoQuery:%v", transactionID.ValidStart.UnixNano()), query.getName())
 }
 
 func TestUnitScheduleInfoQueryMock(t *testing.T) {

@@ -347,7 +347,7 @@ func TestUnitAccountCreateTransactionCoverage(t *testing.T) {
 	trx.GetAlias()
 	_, err = trx.GetSignatures()
 	require.NoError(t, err)
-	trx._GetLogID()
+	trx.getName()
 	switch b := txFromBytes.(type) {
 	case AccountCreateTransaction:
 		b.AddSignature(key.PublicKey(), sig)

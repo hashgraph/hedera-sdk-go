@@ -259,7 +259,7 @@ func TestUnitFileCreateTransactionCoverage(t *testing.T) {
 	transaction.GetContents()
 	_, err = transaction.GetSignatures()
 	require.NoError(t, err)
-	transaction._GetLogID()
+	transaction.getName()
 	switch b := txFromBytes.(type) {
 	case FileCreateTransaction:
 		b.AddSignature(newKey.PublicKey(), sig)

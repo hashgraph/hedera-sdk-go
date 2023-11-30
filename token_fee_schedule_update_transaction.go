@@ -230,7 +230,7 @@ func (tx *TokenFeeScheduleUpdateTransaction) validateNetworkOnIDs(client *Client
 	}
 
 	for _, customFee := range tx.customFees {
-		if err := customFee._ValidateNetworkOnIDs(client); err != nil {
+		if err := customFee.validateNetworkOnIDs(client); err != nil {
 			return err
 		}
 	}

@@ -142,7 +142,7 @@ func TestUnitLiveHashQueryCoverage(t *testing.T) {
 	query.GetNodeAccountIDs()
 	query.GetMaxBackoff()
 	query.GetMinBackoff()
-	query._GetLogID()
+	query.getName()
 	query.GetAccountID()
 	query.GetGetHash()
 	query.GetQueryPayment()

@@ -66,7 +66,7 @@ func TestUnitScheduleSignTransactionCoverage(t *testing.T) {
 
 	transaction.Sign(newKey)
 
-	transaction._ValidateNetworkOnIDs(client)
+	transaction.validateNetworkOnIDs(client)
 
 	transaction.GetTransactionID()
 	transaction.GetNodeAccountIDs()
@@ -79,7 +79,7 @@ func TestUnitScheduleSignTransactionCoverage(t *testing.T) {
 	require.NoError(t, err)
 	_, err = TransactionFromBytes(byt)
 	require.NoError(t, err)
-	_, err = newKey.SignTransaction(&transaction.Transaction)
+	_, err = newKey.SignTransaction(&transaction.transaction)
 	require.NoError(t, err)
 
 	_, err = transaction.GetTransactionHash()
@@ -90,7 +90,7 @@ func TestUnitScheduleSignTransactionCoverage(t *testing.T) {
 	transaction.GetScheduleID()
 	_, err = transaction.GetSignatures()
 	require.NoError(t, err)
-	transaction._GetLogID()
+	transaction.getName()
 	//switch b := txFromBytes.(type) {
 	//case ScheduleSignTransaction:
 	//	b.AddSignature(newKey.PublicKey(), sig)
