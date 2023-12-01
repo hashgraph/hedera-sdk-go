@@ -35,24 +35,22 @@ type query struct {
 	pbHeader *services.QueryHeader //nolint
 
 	paymentTransactionIDs *_LockableSlice
-	nodeAccountIDs        *_LockableSlice
 	maxQueryPayment       Hbar
 	queryPayment          Hbar
-	maxRetry              int
 
 	paymentTransactions []*services.Transaction
 
 	isPaymentRequired bool
-	timestamp    time.Time
+	timestamp         time.Time
 }
 
 type Query interface {
-	Executable 
+	Executable
 
 	Execute(client *Client) (TransactionResponse, error)
 
 	build() *services.TransactionBody
-	getQueryStatus (response interface{}) (Status)
+	getQueryStatus(response interface{}) Status
 }
 
 // -------- Executable functions ----------
@@ -64,62 +62,65 @@ func _NewQuery(isPaymentRequired bool, header *services.QueryHeader) query {
 		pb:                    &services.Query{},
 		pbHeader:              header,
 		paymentTransactionIDs: _NewLockableSlice(),
-		maxRetry:              10,
 		paymentTransactions:   make([]*services.Transaction, 0),
 		isPaymentRequired:     isPaymentRequired,
 		maxQueryPayment:       NewHbar(0),
 		queryPayment:          NewHbar(0),
-		executable: executable{nodeAccountIDs: _NewLockableSlice(),
-			maxBackoff: &maxBackoff,
-			minBackoff: &minBackoff},
+		executable: executable{
+			nodeAccountIDs: _NewLockableSlice(),
+			maxBackoff:     &maxBackoff,
+			minBackoff:     &minBackoff,
+			maxRetry:       10,
+		},
 	}
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (this *query) SetGrpcDeadline(deadline *time.Duration) *query {
-	this.grpcDeadline = deadline
-	return this
+func (q *query) SetGrpcDeadline(deadline *time.Duration) *query {
+	q.grpcDeadline = deadline
+	return q
 }
 
 // SetNodeAccountID sets the node account ID for this Query.
-func (this *query) SetNodeAccountIDs(nodeAccountIDs []AccountID) *query {
+func (q *query) SetNodeAccountIDs(nodeAccountIDs []AccountID) *query {
+
 	for _, nodeAccountID := range nodeAccountIDs {
-		this.nodeAccountIDs._Push(nodeAccountID)
+		q.nodeAccountIDs._Push(nodeAccountID)
 	}
-	this.nodeAccountIDs._SetLocked(true)
-	return this
+	q.nodeAccountIDs._SetLocked(true)
+	return q
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.
-func (this *query) SetMaxQueryPayment(maxPayment Hbar) *query {
-	this.maxQueryPayment = maxPayment
-	return this
+func (q *query) SetMaxQueryPayment(maxPayment Hbar) *query {
+	q.maxQueryPayment = maxPayment
+	return q
 }
 
 // SetQueryPayment sets the payment amount for this Query.
-func (this *query) SetQueryPayment(paymentAmount Hbar) *query {
-	this.queryPayment = paymentAmount
-	return this
+func (q *query) SetQueryPayment(paymentAmount Hbar) *query {
+	q.queryPayment = paymentAmount
+	return q
 }
 
 // GetMaxQueryPayment returns the maximum payment allowed for this Query.
-func (this *query) GetMaxQueryPayment() Hbar {
-	return this.maxQueryPayment
+func (q *query) GetMaxQueryPayment() Hbar {
+	return q.maxQueryPayment
 }
 
 // GetQueryPayment returns the payment amount for this Query.
-func (this *query) GetQueryPayment() Hbar {
-	return this.queryPayment
+func (q *query) GetQueryPayment() Hbar {
+	return q.queryPayment
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
-func (this *query) SetMaxRetry(count int) *query {
-	this.maxRetry = count
-	return this
+func (q *query) SetMaxRetry(count int) *query {
+	q.maxRetry = count
+	return q
 }
 
-func (this *query) shouldRetry(_ interface{}, response interface{}) _ExecutionState {
-	status := this.getQueryStatus(response)
+func (q *query) shouldRetry(_ interface{}, response interface{}) _ExecutionState {
+	status := q.getQueryStatus(response)
 	switch status {
 	case StatusPlatformTransactionNotCreated, StatusPlatformNotActive, StatusBusy:
 		return executionStateRetry
@@ -130,11 +131,10 @@ func (this *query) shouldRetry(_ interface{}, response interface{}) _ExecutionSt
 	return executionStateError
 }
 
-
-func (this *query)_QueryGeneratePayments(client *Client, cost Hbar) error {
-	for _, nodeID := range this.nodeAccountIDs.slice {
+func (q *query) _QueryGeneratePayments(client *Client, cost Hbar) error {
+	for _, nodeID := range q.nodeAccountIDs.slice {
 		transaction, err := _QueryMakePaymentTransaction(
-			this.paymentTransactionIDs._GetCurrent().(TransactionID),
+			q.paymentTransactionIDs._GetCurrent().(TransactionID),
 			nodeID.(AccountID),
 			client.operator,
 			cost,
@@ -143,7 +143,7 @@ func (this *query)_QueryGeneratePayments(client *Client, cost Hbar) error {
 			return err
 		}
 
-		this.paymentTransactions = append(this.paymentTransactions, transaction)
+		q.paymentTransactions = append(q.paymentTransactions, transaction)
 	}
 
 	return nil
@@ -194,39 +194,39 @@ func _QueryMakePaymentTransaction(transactionID TransactionID, nodeAccountID Acc
 }
 
 // GetPaymentTransactionID returns the payment transaction id.
-func (this *query) GetPaymentTransactionID() TransactionID {
-	if !this.paymentTransactionIDs._IsEmpty() {
-		return this.paymentTransactionIDs._GetCurrent().(TransactionID)
+func (q *query) GetPaymentTransactionID() TransactionID {
+	if !q.paymentTransactionIDs._IsEmpty() {
+		return q.paymentTransactionIDs._GetCurrent().(TransactionID)
 	}
 
 	return TransactionID{}
 }
 
 // GetMaxRetryCount returns the max number of errors before execution will fail.
-func (this *query) GetMaxRetryCount() int {
-	return this.GetMaxRetry()
+func (q *query) GetMaxRetryCount() int {
+	return q.GetMaxRetry()
 }
 
 // SetPaymentTransactionID assigns the payment transaction id.
-func (this *query) SetPaymentTransactionID(transactionID TransactionID) *query {
-	this.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
-	return this
+func (q *query) SetPaymentTransactionID(transactionID TransactionID) *query {
+	q.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
+	return q
 }
 
-func (this *query) SetLogLevel(level LogLevel) *query {
-	this.logLevel = &level
-	return this
+func (q *query) SetLogLevel(level LogLevel) *query {
+	q.logLevel = &level
+	return q
 }
 
-func (this *query) advanceRequest(request interface{}) {
+func (q *query) advanceRequest(request interface{}) {
 	query := request.(*query)
 	query.nodeAccountIDs._Advance()
 }
-func (this *query) getNodeAccountID(request interface{}) AccountID {
+func (q *query) getNodeAccountID(request interface{}) AccountID {
 	return request.(*query).nodeAccountIDs._GetCurrent().(AccountID)
 }
 
-func (this *query) makeRequest(request interface{}) interface{} {
+func (q *query) makeRequest(request interface{}) interface{} {
 	query := request.(*query)
 	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
 		query.pbHeader.Payment = query.paymentTransactions[query.paymentTransactionIDs.index]
@@ -235,7 +235,7 @@ func (this *query) makeRequest(request interface{}) interface{} {
 	return query.pb
 }
 
-func (this *query) mapResponse(request interface{}, response interface{}, _ AccountID, protoRequest interface{}) (interface{}, error) {
+func (q *query) mapResponse(request interface{}, response interface{}, _ AccountID, protoRequest interface{}) (interface{}, error) {
 	return response.(*services.Response), nil
 }
 
@@ -246,28 +246,31 @@ func (this *query) mapResponse(request interface{}, response interface{}, _ Acco
 //	return ErrHederaPreCheckStatus{
 //		Status: Status(response.(*services.Response).GetNetworkGetVersionInfo().Header.NodeTransactionPrecheckCode),
 //	}
-func (this *query) getMethod(*_Channel) _Method {
+func (q *query) getMethod(*_Channel) _Method {
 	return _Method{}
 }
 
 // NOTE: Should be implemented in every inheritor. Example:
-// return ErrHederaPreCheckStatus{
-// 	Status: Status(response.(*services.Response).GetCryptoGetInfo().Header.NodeTransactionPrecheckCode),
-// }
-func (this *query) mapStatusError(interface{}, interface{}) error{
+//
+//	return ErrHederaPreCheckStatus{
+//		Status: Status(response.(*services.Response).GetCryptoGetInfo().Header.NodeTransactionPrecheckCode),
+//	}
+func (q *query) mapStatusError(interface{}, interface{}) error {
 	return errors.New("Not implemented")
 }
-func (this *query) getName() string {
+func (q *query) getName() string {
 	return "Query"
 }
+
 // NOTE: Should be implemented in every inheritor.
-func (this *query) build() *services.TransactionBody {
+func (q *query) build() *services.TransactionBody {
 	return nil
 }
+
 // NOTE: Should be implemented in every inheritor.
-func (this *query) validateNetworkOnIDs(client *Client) error {
+func (q *query) validateNetworkOnIDs(client *Client) error {
 	return errors.New("Not implemented")
 }
-func (this *query) getQueryStatus(response interface{}) (Status) {
+func (q *query) getQueryStatus(response interface{}) Status {
 	return Status(1)
 }

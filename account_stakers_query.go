@@ -21,7 +21,6 @@ package hedera
  */
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -50,59 +49,59 @@ func NewAccountStakersQuery() *AccountStakersQuery {
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (this *AccountStakersQuery) SetGrpcDeadline(deadline *time.Duration) *AccountStakersQuery {
-	this.query.SetGrpcDeadline(deadline)
-	return this
+func (q *AccountStakersQuery) SetGrpcDeadline(deadline *time.Duration) *AccountStakersQuery {
+	q.query.SetGrpcDeadline(deadline)
+	return q
 }
 
 // SetAccountID sets the Account ID for which the stakers should be retrieved
-func (this *AccountStakersQuery) SetAccountID(accountID AccountID) *AccountStakersQuery {
-	this.accountID = &accountID
-	return this
+func (q *AccountStakersQuery) SetAccountID(accountID AccountID) *AccountStakersQuery {
+	q.accountID = &accountID
+	return q
 }
 
 // GetAccountID returns the AccountID for this AccountStakersQuery.
-func (this *AccountStakersQuery) GetAccountID() AccountID {
-	if this.accountID == nil {
+func (q *AccountStakersQuery) GetAccountID() AccountID {
+	if q.accountID == nil {
 		return AccountID{}
 	}
 
-	return *this.accountID
+	return *q.accountID
 }
 
 // GetCost returns the fee that would be charged to get the requested information (if a cost was requested).
-func (this *AccountStakersQuery) GetCost(client *Client) (Hbar, error) {
+func (q *AccountStakersQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
 		return Hbar{}, errNoClientProvided
 	}
 
-	err := this.validateNetworkOnIDs(client)
+	err := q.validateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
-	if this.query.nodeAccountIDs.locked {
-		for range this.nodeAccountIDs.slice {
+	if q.query.nodeAccountIDs.locked {
+		for range q.nodeAccountIDs.slice {
 			paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 			if err != nil {
 				return Hbar{}, err
 			}
-			this.paymentTransactions = append(this.paymentTransactions, paymentTransaction)
+			q.paymentTransactions = append(q.paymentTransactions, paymentTransaction)
 		}
 	}
 
-	pb := this.build()
-	pb.CryptoGetProxyStakers.Header = this.pbHeader
+	pb := q.build()
+	pb.CryptoGetProxyStakers.Header = q.pbHeader
 
-	this.pb = &services.Query{
+	q.pb = &services.Query{
 		Query: pb,
 	}
 
-	this.pbHeader.ResponseType = services.ResponseType_COST_ANSWER
-	this.paymentTransactionIDs._Advance()
+	q.pbHeader.ResponseType = services.ResponseType_COST_ANSWER
+	q.paymentTransactionIDs._Advance()
 
 	resp, err := _Execute(
 		client,
-		this.e,
+		q.e,
 	)
 
 	if err != nil {
@@ -113,33 +112,33 @@ func (this *AccountStakersQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func (this *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) {
+func (q *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) {
 	if client == nil || client.operator == nil {
 		return []Transfer{}, errNoClientProvided
 	}
 
 	var err error
 
-	err = this.validateNetworkOnIDs(client)
+	err = q.validateNetworkOnIDs(client)
 	if err != nil {
 		return []Transfer{}, err
 	}
 
-	if !this.paymentTransactionIDs.locked {
-		this.paymentTransactionIDs._Clear()._Push(TransactionIDGenerate(client.operator.accountID))
+	if !q.paymentTransactionIDs.locked {
+		q.paymentTransactionIDs._Clear()._Push(TransactionIDGenerate(client.operator.accountID))
 	}
 
 	var cost Hbar
-	if this.queryPayment.tinybar != 0 {
-		cost = this.queryPayment
+	if q.queryPayment.tinybar != 0 {
+		cost = q.queryPayment
 	} else {
-		if this.maxQueryPayment.tinybar == 0 {
+		if q.maxQueryPayment.tinybar == 0 {
 			cost = client.GetDefaultMaxQueryPayment()
 		} else {
-			cost = this.maxQueryPayment
+			cost = q.maxQueryPayment
 		}
 
-		actualCost, err := this.GetCost(client)
+		actualCost, err := q.GetCost(client)
 		if err != nil {
 			return []Transfer{}, err
 		}
@@ -155,35 +154,35 @@ func (this *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) {
 		cost = actualCost
 	}
 
-	this.paymentTransactions = make([]*services.Transaction, 0)
+	q.paymentTransactions = make([]*services.Transaction, 0)
 
-	if this.nodeAccountIDs.locked {
-		err = this._QueryGeneratePayments(client, cost)
+	if q.nodeAccountIDs.locked {
+		err = q._QueryGeneratePayments(client, cost)
 		if err != nil {
 			return []Transfer{}, err
 		}
 	} else {
-		paymentTransaction, err := _QueryMakePaymentTransaction(this.paymentTransactionIDs._GetCurrent().(TransactionID), AccountID{}, client.operator, cost)
+		paymentTransaction, err := _QueryMakePaymentTransaction(q.paymentTransactionIDs._GetCurrent().(TransactionID), AccountID{}, client.operator, cost)
 		if err != nil {
 			return []Transfer{}, err
 		}
-		this.paymentTransactions = append(this.paymentTransactions, paymentTransaction)
+		q.paymentTransactions = append(q.paymentTransactions, paymentTransaction)
 	}
 
-	pb := this.build()
-	pb.CryptoGetProxyStakers.Header = this.pbHeader
-	this.pb = &services.Query{
+	pb := q.build()
+	pb.CryptoGetProxyStakers.Header = q.pbHeader
+	q.pb = &services.Query{
 		Query: pb,
 	}
 
-	if this.isPaymentRequired && len(this.paymentTransactions) > 0 {
-		this.paymentTransactionIDs._Advance()
+	if q.isPaymentRequired && len(q.paymentTransactions) > 0 {
+		q.paymentTransactionIDs._Advance()
 	}
-	this.pbHeader.ResponseType = services.ResponseType_ANSWER_ONLY
+	q.pbHeader.ResponseType = services.ResponseType_ANSWER_ONLY
 
 	resp, err := _Execute(
 		client,
-		this.e,
+		q.e,
 	)
 
 	if err != nil {
@@ -192,7 +191,7 @@ func (this *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) {
 
 	var stakers = make([]Transfer, len(resp.(*services.Response).GetCryptoGetProxyStakers().Stakers.ProxyStaker))
 
-	// TODO: This is wrong, this _Method shold return `[]ProxyStaker` not `[]Transfer`
+	// TODO: This is wrong, q _Method shold return `[]ProxyStaker` not `[]Transfer`
 	for i, element := range resp.(*services.Response).GetCryptoGetProxyStakers().Stakers.ProxyStaker {
 		id := _AccountIDFromProtobuf(element.AccountID)
 		accountID := AccountID{}
@@ -211,110 +210,92 @@ func (this *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) {
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.
-func (this *AccountStakersQuery) SetMaxQueryPayment(maxPayment Hbar) *AccountStakersQuery {
-	this.query.SetMaxQueryPayment(maxPayment)
-	return this
+func (q *AccountStakersQuery) SetMaxQueryPayment(maxPayment Hbar) *AccountStakersQuery {
+	q.query.SetMaxQueryPayment(maxPayment)
+	return q
 }
 
 // SetQueryPayment sets the payment amount for this Query.
-func (this *AccountStakersQuery) SetQueryPayment(paymentAmount Hbar) *AccountStakersQuery {
-	this.query.SetQueryPayment(paymentAmount)
-	return this
+func (q *AccountStakersQuery) SetQueryPayment(paymentAmount Hbar) *AccountStakersQuery {
+	q.query.SetQueryPayment(paymentAmount)
+	return q
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for this AccountStakersQuery.
-func (this *AccountStakersQuery) SetNodeAccountIDs(accountID []AccountID) *AccountStakersQuery {
-	this.query.SetNodeAccountIDs(accountID)
-	return this
+func (q *AccountStakersQuery) SetNodeAccountIDs(accountID []AccountID) *AccountStakersQuery {
+	q.query.SetNodeAccountIDs(accountID)
+	return q
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
-func (this *AccountStakersQuery) SetMaxRetry(count int) *AccountStakersQuery {
-	this.query.SetMaxRetry(count)
-	return this
+func (q *AccountStakersQuery) SetMaxRetry(count int) *AccountStakersQuery {
+	q.query.SetMaxRetry(count)
+	return q
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
 // Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (this *AccountStakersQuery) SetMaxBackoff(max time.Duration) *AccountStakersQuery {
-	this.query.SetMaxBackoff(max)
-	return this
-}
-
-// GetMaxBackoff returns the maximum amount of time to wait between retries.
-func (this *AccountStakersQuery) GetMaxBackoff() time.Duration {
-	return this.GetMaxBackoff()
+func (q *AccountStakersQuery) SetMaxBackoff(max time.Duration) *AccountStakersQuery {
+	q.query.SetMaxBackoff(max)
+	return q
 }
 
 // SetMinBackoff sets the minimum amount of time to wait between retries.
-func (this *AccountStakersQuery) SetMinBackoff(min time.Duration) *AccountStakersQuery {
-	this.query.SetMinBackoff(min)
-	return this
-}
-
-// GetMinBackoff returns the minimum amount of time to wait between retries.
-func (this *AccountStakersQuery) GetMinBackoff() time.Duration {
-	return this.query.GetMinBackoff()
-}
-
-func (this *AccountStakersQuery) _GetLogID() string {
-	timestamp := this.timestamp.UnixNano()
-	if this.paymentTransactionIDs._Length() > 0 && this.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart != nil {
-		timestamp = this.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart.UnixNano()
-	}
-	return fmt.Sprintf("AccountStakersQuery:%d", timestamp)
+func (q *AccountStakersQuery) SetMinBackoff(min time.Duration) *AccountStakersQuery {
+	q.query.SetMinBackoff(min)
+	return q
 }
 
 // SetPaymentTransactionID assigns the payment transaction id.
-func (this *AccountStakersQuery) SetPaymentTransactionID(transactionID TransactionID) *AccountStakersQuery {
-	this.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
-	return this
+func (q *AccountStakersQuery) SetPaymentTransactionID(transactionID TransactionID) *AccountStakersQuery {
+	q.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
+	return q
 }
 
-func (this *AccountStakersQuery) SetLogLevel(level LogLevel) *AccountStakersQuery {
-	this.query.SetLogLevel(level)
-	return this
+func (q *AccountStakersQuery) SetLogLevel(level LogLevel) *AccountStakersQuery {
+	q.query.SetLogLevel(level)
+	return q
 }
 
 // ---------- Parent functions specific implementation ----------
 
-func (this *AccountStakersQuery) getMethod(channel *_Channel) _Method {
+func (q *AccountStakersQuery) getMethod(channel *_Channel) _Method {
 	return _Method{
 		query: channel._GetCrypto().GetStakersByAccountID,
 	}
 }
 
-func (this *AccountStakersQuery) mapStatusError(_ interface{}, response interface{}) error {
+func (q *AccountStakersQuery) mapStatusError(_ interface{}, response interface{}) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.(*services.Response).GetCryptoGetProxyStakers().Header.NodeTransactionPrecheckCode),
 	}
 }
 
-func (this *AccountStakersQuery) getName() string {
+func (q *AccountStakersQuery) getName() string {
 	return "AccountStakersQuery"
 }
 
-func (this *AccountStakersQuery) build() *services.Query_CryptoGetProxyStakers {
+func (q *AccountStakersQuery) build() *services.Query_CryptoGetProxyStakers {
 	pb := services.Query_CryptoGetProxyStakers{
 		CryptoGetProxyStakers: &services.CryptoGetStakersQuery{
 			Header: &services.QueryHeader{},
 		},
 	}
 
-	if this.accountID != nil {
-		pb.CryptoGetProxyStakers.AccountID = this.accountID._ToProtobuf()
+	if q.accountID != nil {
+		pb.CryptoGetProxyStakers.AccountID = q.accountID._ToProtobuf()
 	}
 
 	return &pb
 }
 
-func (this *AccountStakersQuery) validateNetworkOnIDs(client *Client) error {
+func (q *AccountStakersQuery) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
 
-	if this.accountID != nil {
-		if err := this.accountID.ValidateChecksum(client); err != nil {
+	if q.accountID != nil {
+		if err := q.accountID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}
@@ -322,6 +303,6 @@ func (this *AccountStakersQuery) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (this *AccountStakersQuery) getQueryStatus(response interface{}) Status {
+func (q *AccountStakersQuery) getQueryStatus(response interface{}) Status {
 	return Status(response.(*services.Response).GetCryptoGetProxyStakers().Header.NodeTransactionPrecheckCode)
 }

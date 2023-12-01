@@ -60,7 +60,6 @@ type Transaction interface {
 // transaction is base struct for all transactions that may be built and submitted to Hedera.
 type transaction struct {
 	executable
-	maxRetry int
 
 	transactionFee           uint64
 	defaultMaxTransactionFee uint64
@@ -84,16 +83,18 @@ func _NewTransaction() transaction {
 	minBackoff := 250 * time.Millisecond
 	maxBackoff := 8 * time.Second
 	return transaction{
-		maxRetry:                 10,
 		transactionValidDuration: &duration,
 		transactions:             _NewLockableSlice(),
 		signedTransactions:       _NewLockableSlice(),
 		freezeError:              nil,
 		regenerateTransactionID:  true,
-		executable: executable{transactionIDs: _NewLockableSlice(),
+		executable: executable{
+			transactionIDs: _NewLockableSlice(),
 			nodeAccountIDs: _NewLockableSlice(),
 			minBackoff:     &minBackoff,
-			maxBackoff:     &maxBackoff},
+			maxBackoff:     &maxBackoff,
+			maxRetry:                 10,
+		},
 	}
 }
 
@@ -120,17 +121,19 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 	}
 
 	tx := transaction{
-		maxRetry:                10,
 		transactions:            transactions,
 		signedTransactions:      _NewLockableSlice(),
 		publicKeys:              make([]PublicKey, 0),
 		transactionSigners:      make([]TransactionSigner, 0),
 		freezeError:             nil,
 		regenerateTransactionID: true,
-		executable: executable{transactionIDs: _NewLockableSlice(),
+		executable: executable{
+			transactionIDs: _NewLockableSlice(),
 			nodeAccountIDs: _NewLockableSlice(),
 			minBackoff:     &minBackoff,
-			maxBackoff:     &maxBackoff},
+			maxBackoff:     &maxBackoff,
+			maxRetry:                10,
+		},
 	}
 
 	comp, err := _TransactionCompare(&list)
@@ -808,12 +811,6 @@ func (tx *transaction) SetNodeAccountIDs(nodeAccountIDs []AccountID) *transactio
 		tx.nodeAccountIDs._Push(nodeAccountID)
 	}
 	tx.nodeAccountIDs._SetLocked(true)
-	return tx
-}
-
-// SetMaxRetry sets the max number of errors before execution will fail.
-func (tx *transaction) SetMaxRetry(count int) *transaction {
-	tx.maxRetry = count
 	return tx
 }
 

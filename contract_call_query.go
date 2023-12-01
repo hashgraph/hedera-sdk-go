@@ -21,7 +21,6 @@ package hedera
  */
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -59,116 +58,116 @@ func NewContractCallQuery() *ContractCallQuery {
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (this *ContractCallQuery) SetGrpcDeadline(deadline *time.Duration) *ContractCallQuery {
-	this.query.SetGrpcDeadline(deadline)
-	return this
+func (q *ContractCallQuery) SetGrpcDeadline(deadline *time.Duration) *ContractCallQuery {
+	q.query.SetGrpcDeadline(deadline)
+	return q
 }
 
 // SetContractID sets the contract instance to call
-func (this *ContractCallQuery) SetContractID(contractID ContractID) *ContractCallQuery {
-	this.contractID = &contractID
-	return this
+func (q *ContractCallQuery) SetContractID(contractID ContractID) *ContractCallQuery {
+	q.contractID = &contractID
+	return q
 }
 
 // GetContractID returns the contract instance to call
-func (this *ContractCallQuery) GetContractID() ContractID {
-	if this.contractID == nil {
+func (q *ContractCallQuery) GetContractID() ContractID {
+	if q.contractID == nil {
 		return ContractID{}
 	}
 
-	return *this.contractID
+	return *q.contractID
 }
 
 // SetSenderID
 // The account that is the "sender." If not present it is the accountId from the transactionId.
 // Typically a different value than specified in the transactionId requires a valid signature
 // over either the hedera transaction or foreign transaction data.
-func (this *ContractCallQuery) SetSenderID(id AccountID) *ContractCallQuery {
-	this.senderID = &id
-	return this
+func (q *ContractCallQuery) SetSenderID(id AccountID) *ContractCallQuery {
+	q.senderID = &id
+	return q
 }
 
 // GetSenderID returns the AccountID that is the "sender."
-func (this *ContractCallQuery) GetSenderID() AccountID {
-	if this.senderID == nil {
+func (q *ContractCallQuery) GetSenderID() AccountID {
+	if q.senderID == nil {
 		return AccountID{}
 	}
 
-	return *this.senderID
+	return *q.senderID
 }
 
 // SetGas sets the amount of gas to use for the call. All of the gas offered will be charged for.
-func (this *ContractCallQuery) SetGas(gas uint64) *ContractCallQuery {
-	this.gas = gas
-	return this
+func (q *ContractCallQuery) SetGas(gas uint64) *ContractCallQuery {
+	q.gas = gas
+	return q
 }
 
 // GetGas returns the amount of gas to use for the call.
-func (this *ContractCallQuery) GetGas() uint64 {
-	return this.gas
+func (q *ContractCallQuery) GetGas() uint64 {
+	return q.gas
 }
 
 // Deprecated
-func (this *ContractCallQuery) SetMaxResultSize(size uint64) *ContractCallQuery {
-	this.maxResultSize = size
-	return this
+func (q *ContractCallQuery) SetMaxResultSize(size uint64) *ContractCallQuery {
+	q.maxResultSize = size
+	return q
 }
 
 // SetFunction sets which function to call, and the ContractFunctionParams to pass to the function
-func (this *ContractCallQuery) SetFunction(name string, params *ContractFunctionParameters) *ContractCallQuery {
+func (q *ContractCallQuery) SetFunction(name string, params *ContractFunctionParameters) *ContractCallQuery {
 	if params == nil {
 		params = NewContractFunctionParameters()
 	}
 
-	this.functionParameters = params._Build(&name)
-	return this
+	q.functionParameters = params._Build(&name)
+	return q
 }
 
 // SetFunctionParameters sets the function parameters as their raw bytes.
-func (this *ContractCallQuery) SetFunctionParameters(byteArray []byte) *ContractCallQuery {
-	this.functionParameters = byteArray
-	return this
+func (q *ContractCallQuery) SetFunctionParameters(byteArray []byte) *ContractCallQuery {
+	q.functionParameters = byteArray
+	return q
 }
 
 // GetFunctionParameters returns the function parameters as their raw bytes.
-func (this *ContractCallQuery) GetFunctionParameters() []byte {
-	return this.functionParameters
+func (q *ContractCallQuery) GetFunctionParameters() []byte {
+	return q.functionParameters
 }
 
 // GetCost returns the fee that would be charged to get the requested information (if a cost was requested).
-func (this *ContractCallQuery) GetCost(client *Client) (Hbar, error) {
+func (q *ContractCallQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
 		return Hbar{}, errNoClientProvided
 	}
 
 	var err error
 
-	err = this.validateNetworkOnIDs(client)
+	err = q.validateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	for range this.nodeAccountIDs.slice {
+	for range q.nodeAccountIDs.slice {
 		paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 		if err != nil {
 			return Hbar{}, err
 		}
-		this.paymentTransactions = append(this.paymentTransactions, paymentTransaction)
+		q.paymentTransactions = append(q.paymentTransactions, paymentTransaction)
 	}
 
-	pb := this.build()
-	pb.ContractCallLocal.Header = this.pbHeader
+	pb := q.build()
+	pb.ContractCallLocal.Header = q.pbHeader
 
-	this.pb = &services.Query{
+	q.pb = &services.Query{
 		Query: pb,
 	}
 
-	this.pbHeader.ResponseType = services.ResponseType_COST_ANSWER
-	this.paymentTransactionIDs._Advance()
+	q.pbHeader.ResponseType = services.ResponseType_COST_ANSWER
+	q.paymentTransactionIDs._Advance()
 
 	resp, err := _Execute(
 		client,
-		this.e,
+		q.e,
 	)
 
 	if err != nil {
@@ -180,33 +179,33 @@ func (this *ContractCallQuery) GetCost(client *Client) (Hbar, error) {
 }
 
 // Execute executes the Query with the provided client
-func (this *ContractCallQuery) Execute(client *Client) (ContractFunctionResult, error) {
+func (q *ContractCallQuery) Execute(client *Client) (ContractFunctionResult, error) {
 	if client == nil || client.operator == nil {
 		return ContractFunctionResult{}, errNoClientProvided
 	}
 
 	var err error
 
-	err = this.validateNetworkOnIDs(client)
+	err = q.validateNetworkOnIDs(client)
 	if err != nil {
 		return ContractFunctionResult{}, err
 	}
 
-	if !this.paymentTransactionIDs.locked {
-		this.paymentTransactionIDs._Clear()._Push(TransactionIDGenerate(client.operator.accountID))
+	if !q.paymentTransactionIDs.locked {
+		q.paymentTransactionIDs._Clear()._Push(TransactionIDGenerate(client.operator.accountID))
 	}
 
 	var cost Hbar
-	if this.queryPayment.tinybar != 0 {
-		cost = this.queryPayment
+	if q.queryPayment.tinybar != 0 {
+		cost = q.queryPayment
 	} else {
-		if this.maxQueryPayment.tinybar == 0 {
+		if q.maxQueryPayment.tinybar == 0 {
 			cost = client.GetDefaultMaxQueryPayment()
 		} else {
-			cost = this.maxQueryPayment
+			cost = q.maxQueryPayment
 		}
 
-		actualCost, err := this.GetCost(client)
+		actualCost, err := q.GetCost(client)
 		if err != nil {
 			return ContractFunctionResult{}, err
 		}
@@ -222,35 +221,35 @@ func (this *ContractCallQuery) Execute(client *Client) (ContractFunctionResult, 
 		cost = actualCost
 	}
 
-	this.paymentTransactions = make([]*services.Transaction, 0)
+	q.paymentTransactions = make([]*services.Transaction, 0)
 
-	if this.nodeAccountIDs.locked {
-		err = this._QueryGeneratePayments(client, cost)
+	if q.nodeAccountIDs.locked {
+		err = q._QueryGeneratePayments(client, cost)
 		if err != nil {
 			return ContractFunctionResult{}, err
 		}
 	} else {
-		paymentTransaction, err := _QueryMakePaymentTransaction(this.paymentTransactionIDs._GetCurrent().(TransactionID), AccountID{}, client.operator, cost)
+		paymentTransaction, err := _QueryMakePaymentTransaction(q.paymentTransactionIDs._GetCurrent().(TransactionID), AccountID{}, client.operator, cost)
 		if err != nil {
 			return ContractFunctionResult{}, err
 		}
-		this.paymentTransactions = append(this.paymentTransactions, paymentTransaction)
+		q.paymentTransactions = append(q.paymentTransactions, paymentTransaction)
 	}
 
-	pb := this.build()
-	pb.ContractCallLocal.Header = this.pbHeader
-	this.pb = &services.Query{
+	pb := q.build()
+	pb.ContractCallLocal.Header = q.pbHeader
+	q.pb = &services.Query{
 		Query: pb,
 	}
 
-	if this.isPaymentRequired && len(this.paymentTransactions) > 0 {
-		this.paymentTransactionIDs._Advance()
+	if q.isPaymentRequired && len(q.paymentTransactions) > 0 {
+		q.paymentTransactionIDs._Advance()
 	}
-	this.pbHeader.ResponseType = services.ResponseType_ANSWER_ONLY
+	q.pbHeader.ResponseType = services.ResponseType_ANSWER_ONLY
 
 	resp, err := _Execute(
 		client,
-		this.e,
+		q.e,
 	)
 
 	if err != nil {
@@ -261,125 +260,107 @@ func (this *ContractCallQuery) Execute(client *Client) (ContractFunctionResult, 
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.
-func (this *ContractCallQuery) SetMaxQueryPayment(maxPayment Hbar) *ContractCallQuery {
-	this.query.SetMaxQueryPayment(maxPayment)
-	return this
+func (q *ContractCallQuery) SetMaxQueryPayment(maxPayment Hbar) *ContractCallQuery {
+	q.query.SetMaxQueryPayment(maxPayment)
+	return q
 }
 
 // SetQueryPayment sets the payment amount for this Query.
-func (this *ContractCallQuery) SetQueryPayment(paymentAmount Hbar) *ContractCallQuery {
-	this.query.SetQueryPayment(paymentAmount)
-	return this
+func (q *ContractCallQuery) SetQueryPayment(paymentAmount Hbar) *ContractCallQuery {
+	q.query.SetQueryPayment(paymentAmount)
+	return q
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for this ContractCallQuery.
-func (this *ContractCallQuery) SetNodeAccountIDs(accountID []AccountID) *ContractCallQuery {
-	this.query.SetNodeAccountIDs(accountID)
-	return this
+func (q *ContractCallQuery) SetNodeAccountIDs(accountID []AccountID) *ContractCallQuery {
+	q.query.SetNodeAccountIDs(accountID)
+	return q
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
-func (this *ContractCallQuery) SetMaxRetry(count int) *ContractCallQuery {
-	this.query.SetMaxRetry(count)
-	return this
+func (q *ContractCallQuery) SetMaxRetry(count int) *ContractCallQuery {
+	q.query.SetMaxRetry(count)
+	return q
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
 // Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (this *ContractCallQuery) SetMaxBackoff(max time.Duration) *ContractCallQuery {
-	this.query.SetMaxBackoff(max)
-	return this
-}
-
-// GetMaxBackoff returns the maximum amount of time to wait between retries.
-func (this *ContractCallQuery) GetMaxBackoff() time.Duration {
-	return this.query.GetMaxBackoff()
+func (q *ContractCallQuery) SetMaxBackoff(max time.Duration) *ContractCallQuery {
+	q.query.SetMaxBackoff(max)
+	return q
 }
 
 // SetMinBackoff sets the minimum amount of time to wait between retries.
-func (this *ContractCallQuery) SetMinBackoff(min time.Duration) *ContractCallQuery {
-	this.query.SetMinBackoff(min)
-	return this
-}
-
-// GetMinBackoff returns the minimum amount of time to wait between retries.
-func (this *ContractCallQuery) GetMinBackoff() time.Duration {
-	return this.query.GetMinBackoff()
-}
-
-func (this *ContractCallQuery) _GetLogID() string {
-	timestamp := this.timestamp.UnixNano()
-	if this.paymentTransactionIDs._Length() > 0 && this.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart != nil {
-		timestamp = this.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart.UnixNano()
-	}
-	return fmt.Sprintf("ContractCallQuery:%d", timestamp)
+func (q *ContractCallQuery) SetMinBackoff(min time.Duration) *ContractCallQuery {
+	q.query.SetMinBackoff(min)
+	return q
 }
 
 // SetPaymentTransactionID assigns the payment transaction id.
-func (this *ContractCallQuery) SetPaymentTransactionID(transactionID TransactionID) *ContractCallQuery {
-	this.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
-	return this
+func (q *ContractCallQuery) SetPaymentTransactionID(transactionID TransactionID) *ContractCallQuery {
+	q.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
+	return q
 }
 
-func (this *ContractCallQuery) SetLogLevel(level LogLevel) *ContractCallQuery {
-	this.query.SetLogLevel(level)
-	return this
+func (q *ContractCallQuery) SetLogLevel(level LogLevel) *ContractCallQuery {
+	q.query.SetLogLevel(level)
+	return q
 }
 
 // ---------- Parent functions specific implementation ----------
 
-func (this *ContractCallQuery) getMethod(channel *_Channel) _Method {
+func (q *ContractCallQuery) getMethod(channel *_Channel) _Method {
 	return _Method{
 		query: channel._GetContract().ContractCallLocalMethod,
 	}
 }
 
-func (this *ContractCallQuery) mapStatusError(_ interface{}, response interface{}) error {
+func (q *ContractCallQuery) mapStatusError(_ interface{}, response interface{}) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.(*services.Response).GetContractCallLocal().Header.NodeTransactionPrecheckCode),
 	}
 }
 
-func (this *ContractCallQuery) getName() string {
+func (q *ContractCallQuery) getName() string {
 	return "ContractCallQuery"
 }
 
-func (this *ContractCallQuery) build() *services.Query_ContractCallLocal {
+func (q *ContractCallQuery) build() *services.Query_ContractCallLocal {
 	pb := services.Query_ContractCallLocal{
 		ContractCallLocal: &services.ContractCallLocalQuery{
 			Header: &services.QueryHeader{},
-			Gas:    int64(this.gas),
+			Gas:    int64(q.gas),
 		},
 	}
 
-	if this.contractID != nil {
-		pb.ContractCallLocal.ContractID = this.contractID._ToProtobuf()
+	if q.contractID != nil {
+		pb.ContractCallLocal.ContractID = q.contractID._ToProtobuf()
 	}
 
-	if this.senderID != nil {
-		pb.ContractCallLocal.SenderId = this.senderID._ToProtobuf()
+	if q.senderID != nil {
+		pb.ContractCallLocal.SenderId = q.senderID._ToProtobuf()
 	}
 
-	if len(this.functionParameters) > 0 {
-		pb.ContractCallLocal.FunctionParameters = this.functionParameters
+	if len(q.functionParameters) > 0 {
+		pb.ContractCallLocal.FunctionParameters = q.functionParameters
 	}
 
 	return &pb
 }
 
-func (this *ContractCallQuery) validateNetworkOnIDs(client *Client) error {
+func (q *ContractCallQuery) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
 
-	if this.contractID != nil {
-		if err := this.contractID.ValidateChecksum(client); err != nil {
+	if q.contractID != nil {
+		if err := q.contractID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}
 
-	if this.senderID != nil {
-		if err := this.senderID.ValidateChecksum(client); err != nil {
+	if q.senderID != nil {
+		if err := q.senderID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}
@@ -387,6 +368,6 @@ func (this *ContractCallQuery) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (this *ContractCallQuery) getQueryStatus(response interface{}) Status {
+func (q *ContractCallQuery) getQueryStatus(response interface{}) Status {
 	return Status(response.(*services.Response).GetContractCallLocal().Header.NodeTransactionPrecheckCode)
 }

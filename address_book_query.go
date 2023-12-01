@@ -49,47 +49,47 @@ func NewAddressBookQuery() *AddressBookQuery {
 }
 
 // SetFileID set the ID of the address book file on the network. Can be either 0.0.101 or 0.0.102.
-func (query *AddressBookQuery) SetFileID(id FileID) *AddressBookQuery {
-	query.fileID = &id
-	return query
+func (q *AddressBookQuery) SetFileID(id FileID) *AddressBookQuery {
+	q.fileID = &id
+	return q
 }
 
-func (query *AddressBookQuery) GetFileID() FileID {
-	if query.fileID == nil {
+func (q *AddressBookQuery) GetFileID() FileID {
+	if q.fileID == nil {
 		return FileID{}
 	}
 
-	return *query.fileID
+	return *q.fileID
 }
 
 // SetLimit
 // Set the maximum number of node addresses to receive before stopping.
 // If not set or set to zero it will return all node addresses in the database.
-func (query *AddressBookQuery) SetLimit(limit int32) *AddressBookQuery {
-	query.limit = limit
-	return query
+func (q *AddressBookQuery) SetLimit(limit int32) *AddressBookQuery {
+	q.limit = limit
+	return q
 }
 
-func (query *AddressBookQuery) GetLimit() int32 {
-	return query.limit
+func (q *AddressBookQuery) GetLimit() int32 {
+	return q.limit
 }
 
-func (query *AddressBookQuery) SetMaxAttempts(maxAttempts uint64) *AddressBookQuery {
-	query.maxAttempts = maxAttempts
-	return query
+func (q *AddressBookQuery) SetMaxAttempts(maxAttempts uint64) *AddressBookQuery {
+	q.maxAttempts = maxAttempts
+	return q
 }
 
-func (query *AddressBookQuery) GetMaxAttempts() uint64 {
-	return query.maxAttempts
+func (q *AddressBookQuery) GetMaxAttempts() uint64 {
+	return q.maxAttempts
 }
 
-func (query *AddressBookQuery) validateNetworkOnIDs(client *Client) error {
+func (q *AddressBookQuery) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
 
-	if query.fileID != nil {
-		if err := query.fileID.ValidateChecksum(client); err != nil {
+	if q.fileID != nil {
+		if err := q.fileID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}
@@ -97,28 +97,28 @@ func (query *AddressBookQuery) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (query *AddressBookQuery) build() *mirror.AddressBookQuery {
+func (q *AddressBookQuery) build() *mirror.AddressBookQuery {
 	body := &mirror.AddressBookQuery{
-		Limit: query.limit,
+		Limit: q.limit,
 	}
-	if query.fileID != nil {
-		body.FileId = query.fileID._ToProtobuf()
+	if q.fileID != nil {
+		body.FileId = q.fileID._ToProtobuf()
 	}
 
 	return body
 }
 
 // Execute executes the Query with the provided client
-func (query *AddressBookQuery) Execute(client *Client) (NodeAddressBook, error) {
+func (q *AddressBookQuery) Execute(client *Client) (NodeAddressBook, error) {
 	var cancel func()
 	var ctx context.Context
 	var subClientError error
-	err := query.validateNetworkOnIDs(client)
+	err := q.validateNetworkOnIDs(client)
 	if err != nil {
 		return NodeAddressBook{}, err
 	}
 
-	pb := query.build()
+	pb := q.build()
 
 	messages := make([]*services.NodeAddress, 0)
 
@@ -137,12 +137,12 @@ func (query *AddressBookQuery) Execute(client *Client) (NodeAddressBook, error) 
 				cancel()
 
 				if grpcErr, ok := status.FromError(err); ok { // nolint
-					if query.attempt < query.maxAttempts {
+					if q.attempt < q.maxAttempts {
 						subClient = nil
 
-						delay := math.Min(250.0*math.Pow(2.0, float64(query.attempt)), 8000)
+						delay := math.Min(250.0*math.Pow(2.0, float64(q.attempt)), 8000)
 						time.Sleep(time.Duration(delay) * time.Millisecond)
-						query.attempt++
+						q.attempt++
 					} else {
 						subClientError = grpcErr.Err()
 						break

@@ -376,7 +376,7 @@ func (this *TransactionRecordQuery) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (this *ContractInfoQuery) shouldRetry(_ interface{}, response interface{}) _ExecutionState {
+func (q *ContractInfoQuery) shouldRetry(_ interface{}, response interface{}) _ExecutionState {
 	status := Status(response.(*services.Response).GetTransactionGetRecord().GetHeader().GetNodeTransactionPrecheckCode())
 
 	switch status {

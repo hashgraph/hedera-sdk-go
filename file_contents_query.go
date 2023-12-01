@@ -21,7 +21,6 @@ package hedera
  */
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -41,64 +40,64 @@ func NewFileContentsQuery() *FileContentsQuery {
 	}
 
 	result.e = &result
-	return	&result	
+	return &result
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (this *FileContentsQuery) SetGrpcDeadline(deadline *time.Duration) *FileContentsQuery {
-	this.query.SetGrpcDeadline(deadline)
-	return this
+func (q *FileContentsQuery) SetGrpcDeadline(deadline *time.Duration) *FileContentsQuery {
+	q.query.SetGrpcDeadline(deadline)
+	return q
 }
 
 // SetFileID sets the FileID of the file whose contents are requested.
-func (this *FileContentsQuery) SetFileID(fileID FileID) *FileContentsQuery {
-	this.fileID = &fileID
-	return this
+func (q *FileContentsQuery) SetFileID(fileID FileID) *FileContentsQuery {
+	q.fileID = &fileID
+	return q
 }
 
 // GetFileID returns the FileID of the file whose contents are requested.
-func (this *FileContentsQuery) GetFileID() FileID {
-	if this.fileID == nil {
+func (q *FileContentsQuery) GetFileID() FileID {
+	if q.fileID == nil {
 		return FileID{}
 	}
 
-	return *this.fileID
+	return *q.fileID
 }
 
 // GetCost returns the fee that would be charged to get the requested information (if a cost was requested).
-func (this *FileContentsQuery) GetCost(client *Client) (Hbar, error) {
+func (q *FileContentsQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
 		return Hbar{}, errNoClientProvided
 	}
 
 	var err error
 
-	err = this.validateNetworkOnIDs(client)
+	err = q.validateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	for range this.nodeAccountIDs.slice {
+	for range q.nodeAccountIDs.slice {
 
 		paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 		if err != nil {
 			return Hbar{}, err
 		}
-		this.paymentTransactions = append(this.paymentTransactions, paymentTransaction)
+		q.paymentTransactions = append(q.paymentTransactions, paymentTransaction)
 	}
 
-	pb := this.build()
-	pb.FileGetContents.Header = this.pbHeader
+	pb := q.build()
+	pb.FileGetContents.Header = q.pbHeader
 
-	this.pb = &services.Query{
+	q.pb = &services.Query{
 		Query: pb,
 	}
 
-	this.pbHeader.ResponseType = services.ResponseType_COST_ANSWER
-	this.paymentTransactionIDs._Advance()
+	q.pbHeader.ResponseType = services.ResponseType_COST_ANSWER
+	q.paymentTransactionIDs._Advance()
 	resp, err := _Execute(
 		client,
-		this.e,
+		q.e,
 	)
 
 	if err != nil {
@@ -110,33 +109,33 @@ func (this *FileContentsQuery) GetCost(client *Client) (Hbar, error) {
 }
 
 // Execute executes the Query with the provided client
-func (this *FileContentsQuery) Execute(client *Client) ([]byte, error) {
+func (q *FileContentsQuery) Execute(client *Client) ([]byte, error) {
 	if client == nil || client.operator == nil {
 		return make([]byte, 0), errNoClientProvided
 	}
 
 	var err error
 
-	err = this.validateNetworkOnIDs(client)
+	err = q.validateNetworkOnIDs(client)
 	if err != nil {
 		return []byte{}, err
 	}
 
-	if !this.paymentTransactionIDs.locked {
-		this.paymentTransactionIDs._Clear()._Push(TransactionIDGenerate(client.operator.accountID))
+	if !q.paymentTransactionIDs.locked {
+		q.paymentTransactionIDs._Clear()._Push(TransactionIDGenerate(client.operator.accountID))
 	}
 
 	var cost Hbar
-	if this.queryPayment.tinybar != 0 {
-		cost = this.queryPayment
+	if q.queryPayment.tinybar != 0 {
+		cost = q.queryPayment
 	} else {
-		if this.maxQueryPayment.tinybar == 0 {
+		if q.maxQueryPayment.tinybar == 0 {
 			cost = client.GetDefaultMaxQueryPayment()
 		} else {
-			cost = this.maxQueryPayment
+			cost = q.maxQueryPayment
 		}
 
-		actualCost, err := this.GetCost(client)
+		actualCost, err := q.GetCost(client)
 		if err != nil {
 			return []byte{}, err
 		}
@@ -152,34 +151,34 @@ func (this *FileContentsQuery) Execute(client *Client) ([]byte, error) {
 		cost = actualCost
 	}
 
-	this.paymentTransactions = make([]*services.Transaction, 0)
+	q.paymentTransactions = make([]*services.Transaction, 0)
 
-	if this.nodeAccountIDs.locked {
-		err = this._QueryGeneratePayments(client, cost)
+	if q.nodeAccountIDs.locked {
+		err = q._QueryGeneratePayments(client, cost)
 		if err != nil {
 			return []byte{}, err
 		}
 	} else {
-		paymentTransaction, err := _QueryMakePaymentTransaction(this.paymentTransactionIDs._GetCurrent().(TransactionID), AccountID{}, client.operator, cost)
+		paymentTransaction, err := _QueryMakePaymentTransaction(q.paymentTransactionIDs._GetCurrent().(TransactionID), AccountID{}, client.operator, cost)
 		if err != nil {
 			return []byte{}, err
 		}
-		this.paymentTransactions = append(this.paymentTransactions, paymentTransaction)
+		q.paymentTransactions = append(q.paymentTransactions, paymentTransaction)
 	}
 
-	pb := this.build()
-	pb.FileGetContents.Header = this.pbHeader
-	this.pb = &services.Query{
+	pb := q.build()
+	pb.FileGetContents.Header = q.pbHeader
+	q.pb = &services.Query{
 		Query: pb,
 	}
 
-	if this.isPaymentRequired && len(this.paymentTransactions) > 0 {
-		this.paymentTransactionIDs._Advance()
+	if q.isPaymentRequired && len(q.paymentTransactions) > 0 {
+		q.paymentTransactionIDs._Advance()
 	}
-	this.pbHeader.ResponseType = services.ResponseType_ANSWER_ONLY
+	q.pbHeader.ResponseType = services.ResponseType_ANSWER_ONLY
 	resp, err := _Execute(
 		client,
-		this.e,
+		q.e,
 	)
 
 	if err != nil {
@@ -190,96 +189,78 @@ func (this *FileContentsQuery) Execute(client *Client) ([]byte, error) {
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.
-func (this *FileContentsQuery) SetMaxQueryPayment(maxPayment Hbar) *FileContentsQuery {
-	this.query.SetMaxQueryPayment(maxPayment)
-	return this
+func (q *FileContentsQuery) SetMaxQueryPayment(maxPayment Hbar) *FileContentsQuery {
+	q.query.SetMaxQueryPayment(maxPayment)
+	return q
 }
 
 // SetQueryPayment sets the payment amount for this Query.
-func (this *FileContentsQuery) SetQueryPayment(paymentAmount Hbar) *FileContentsQuery {
-	this.query.SetQueryPayment(paymentAmount)
-	return this
+func (q *FileContentsQuery) SetQueryPayment(paymentAmount Hbar) *FileContentsQuery {
+	q.query.SetQueryPayment(paymentAmount)
+	return q
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for this FileContentsQuery.
-func (this *FileContentsQuery) SetNodeAccountIDs(accountID []AccountID) *FileContentsQuery {
-	this.query.SetNodeAccountIDs(accountID)
-	return this
+func (q *FileContentsQuery) SetNodeAccountIDs(accountID []AccountID) *FileContentsQuery {
+	q.query.SetNodeAccountIDs(accountID)
+	return q
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
-func (this *FileContentsQuery) SetMaxRetry(count int) *FileContentsQuery {
-	this.query.SetMaxRetry(count)
-	return this
+func (q *FileContentsQuery) SetMaxRetry(count int) *FileContentsQuery {
+	q.query.SetMaxRetry(count)
+	return q
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
 // Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (this *FileContentsQuery) SetMaxBackoff(max time.Duration) *FileContentsQuery {
-	this.query.SetMaxBackoff(max)
-	return this
-}
-
-// GetMaxBackoff returns the maximum amount of time to wait between retries.
-func (this *FileContentsQuery) GetMaxBackoff() time.Duration {
-	return this.query.GetMaxBackoff()
+func (q *FileContentsQuery) SetMaxBackoff(max time.Duration) *FileContentsQuery {
+	q.query.SetMaxBackoff(max)
+	return q
 }
 
 // SetMinBackoff sets the minimum amount of time to wait between retries.
-func (this *FileContentsQuery) SetMinBackoff(min time.Duration) *FileContentsQuery {
-	this.query.SetMinBackoff(min)
-	return this
-}
-
-// GetMinBackoff returns the minimum amount of time to wait between retries.
-func (this *FileContentsQuery) GetMinBackoff() time.Duration {
-	return this.query.GetMinBackoff()
-}
-
-func (this *FileContentsQuery) _GetLogID() string {
-	timestamp := this.timestamp.UnixNano()
-	if this.paymentTransactionIDs._Length() > 0 && this.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart != nil {
-		timestamp = this.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart.UnixNano()
-	}
-	return fmt.Sprintf("FileContentsQuery:%d", timestamp)
+func (q *FileContentsQuery) SetMinBackoff(min time.Duration) *FileContentsQuery {
+	q.query.SetMinBackoff(min)
+	return q
 }
 
 // SetPaymentTransactionID assigns the payment transaction id.
-func (this *FileContentsQuery) SetPaymentTransactionID(transactionID TransactionID) *FileContentsQuery {
-	this.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
-	return this
+func (q *FileContentsQuery) SetPaymentTransactionID(transactionID TransactionID) *FileContentsQuery {
+	q.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
+	return q
 }
 
-func (this *FileContentsQuery) SetLogLevel(level LogLevel) *FileContentsQuery {
-	this.query.SetLogLevel(level)
-	return this
+func (q *FileContentsQuery) SetLogLevel(level LogLevel) *FileContentsQuery {
+	q.query.SetLogLevel(level)
+	return q
 }
 
 // ---------- Parent functions specific implementation ----------
 
-func (this *FileContentsQuery) getMethod(channel *_Channel) _Method {
+func (q *FileContentsQuery) getMethod(channel *_Channel) _Method {
 	return _Method{
 		query: channel._GetFile().GetFileContent,
 	}
 }
 
-func (this *FileContentsQuery) mapStatusError(_ interface{}, response interface{}) error {
+func (q *FileContentsQuery) mapStatusError(_ interface{}, response interface{}) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.(*services.Response).GetFileGetContents().Header.NodeTransactionPrecheckCode),
 	}
 }
 
 // Get the name of the query
-func (this *FileContentsQuery) getName() string {
+func (q *FileContentsQuery) getName() string {
 	return "FileContentsQuery"
 }
-func (this *FileContentsQuery) build() *services.Query_FileGetContents {
+func (q *FileContentsQuery) build() *services.Query_FileGetContents {
 	body := &services.FileGetContentsQuery{
 		Header: &services.QueryHeader{},
 	}
 
-	if this.fileID != nil {
-		body.FileID = this.fileID._ToProtobuf()
+	if q.fileID != nil {
+		body.FileID = q.fileID._ToProtobuf()
 	}
 
 	return &services.Query_FileGetContents{
@@ -287,13 +268,13 @@ func (this *FileContentsQuery) build() *services.Query_FileGetContents {
 	}
 }
 
-func (this *FileContentsQuery) validateNetworkOnIDs(client *Client) error {
+func (q *FileContentsQuery) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
 
-	if this.fileID != nil {
-		if err := this.fileID.ValidateChecksum(client); err != nil {
+	if q.fileID != nil {
+		if err := q.fileID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}
@@ -301,8 +282,6 @@ func (this *FileContentsQuery) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (this *FileContentsQuery) getQueryStatus(response interface{}) Status {
+func (q *FileContentsQuery) getQueryStatus(response interface{}) Status {
 	return Status(response.(*services.Response).GetFileGetContents().Header.NodeTransactionPrecheckCode)
 }
-
-

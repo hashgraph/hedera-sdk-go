@@ -21,7 +21,6 @@ package hedera
  */
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -48,60 +47,60 @@ func NewFileInfoQuery() *FileInfoQuery {
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (this *FileInfoQuery) SetGrpcDeadline(deadline *time.Duration) *FileInfoQuery {
-	this.query.SetGrpcDeadline(deadline)
-	return this
+func (q *FileInfoQuery) SetGrpcDeadline(deadline *time.Duration) *FileInfoQuery {
+	q.query.SetGrpcDeadline(deadline)
+	return q
 }
 
 // SetFileID sets the FileID of the file whose info is requested.
-func (this *FileInfoQuery) SetFileID(fileID FileID) *FileInfoQuery {
-	this.fileID = &fileID
-	return this
+func (q *FileInfoQuery) SetFileID(fileID FileID) *FileInfoQuery {
+	q.fileID = &fileID
+	return q
 }
 
 // GetFileID returns the FileID of the file whose info is requested.
-func (this *FileInfoQuery) GetFileID() FileID {
-	if this.fileID == nil {
+func (q *FileInfoQuery) GetFileID() FileID {
+	if q.fileID == nil {
 		return FileID{}
 	}
 
-	return *this.fileID
+	return *q.fileID
 }
 
 // GetCost returns the fee that would be charged to get the requested information (if a cost was requested).
-func (this *FileInfoQuery) GetCost(client *Client) (Hbar, error) {
+func (q *FileInfoQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
 		return Hbar{}, errNoClientProvided
 	}
 
 	var err error
 
-	err = this.validateNetworkOnIDs(client)
+	err = q.validateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	for range this.nodeAccountIDs.slice {
+	for range q.nodeAccountIDs.slice {
 		paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 		if err != nil {
 			return Hbar{}, err
 		}
-		this.paymentTransactions = append(this.paymentTransactions, paymentTransaction)
+		q.paymentTransactions = append(q.paymentTransactions, paymentTransaction)
 	}
 
-	pb := this.build()
-	pb.FileGetInfo.Header = this.pbHeader
+	pb := q.build()
+	pb.FileGetInfo.Header = q.pbHeader
 
-	this.pb = &services.Query{
+	q.pb = &services.Query{
 		Query: pb,
 	}
 
-	this.pbHeader.ResponseType = services.ResponseType_COST_ANSWER
-	this.paymentTransactionIDs._Advance()
+	q.pbHeader.ResponseType = services.ResponseType_COST_ANSWER
+	q.paymentTransactionIDs._Advance()
 
 	resp, err := _Execute(
 		client,
-		this.e,
+		q.e,
 	)
 
 	if err != nil {
@@ -113,33 +112,33 @@ func (this *FileInfoQuery) GetCost(client *Client) (Hbar, error) {
 }
 
 // Execute executes the Query with the provided client
-func (this *FileInfoQuery) Execute(client *Client) (FileInfo, error) {
+func (q *FileInfoQuery) Execute(client *Client) (FileInfo, error) {
 	if client == nil || client.operator == nil {
 		return FileInfo{}, errNoClientProvided
 	}
 
 	var err error
 
-	err = this.validateNetworkOnIDs(client)
+	err = q.validateNetworkOnIDs(client)
 	if err != nil {
 		return FileInfo{}, err
 	}
 
-	if !this.paymentTransactionIDs.locked {
-		this.paymentTransactionIDs._Clear()._Push(TransactionIDGenerate(client.operator.accountID))
+	if !q.paymentTransactionIDs.locked {
+		q.paymentTransactionIDs._Clear()._Push(TransactionIDGenerate(client.operator.accountID))
 	}
 
 	var cost Hbar
-	if this.queryPayment.tinybar != 0 {
-		cost = this.queryPayment
+	if q.queryPayment.tinybar != 0 {
+		cost = q.queryPayment
 	} else {
-		if this.maxQueryPayment.tinybar == 0 {
+		if q.maxQueryPayment.tinybar == 0 {
 			cost = client.GetDefaultMaxQueryPayment()
 		} else {
-			cost = this.maxQueryPayment
+			cost = q.maxQueryPayment
 		}
 
-		actualCost, err := this.GetCost(client)
+		actualCost, err := q.GetCost(client)
 		if err != nil {
 			return FileInfo{}, err
 		}
@@ -155,39 +154,39 @@ func (this *FileInfoQuery) Execute(client *Client) (FileInfo, error) {
 		cost = actualCost
 	}
 
-	this.paymentTransactions = make([]*services.Transaction, 0)
+	q.paymentTransactions = make([]*services.Transaction, 0)
 
-	if this.nodeAccountIDs.locked {
-		err = this._QueryGeneratePayments(client, cost)
+	if q.nodeAccountIDs.locked {
+		err = q._QueryGeneratePayments(client, cost)
 		if err != nil {
 			if err != nil {
 				return FileInfo{}, err
 			}
 		}
 	} else {
-		paymentTransaction, err := _QueryMakePaymentTransaction(this.paymentTransactionIDs._GetCurrent().(TransactionID), AccountID{}, client.operator, cost)
+		paymentTransaction, err := _QueryMakePaymentTransaction(q.paymentTransactionIDs._GetCurrent().(TransactionID), AccountID{}, client.operator, cost)
 		if err != nil {
 			if err != nil {
 				return FileInfo{}, err
 			}
 		}
-		this.paymentTransactions = append(this.paymentTransactions, paymentTransaction)
+		q.paymentTransactions = append(q.paymentTransactions, paymentTransaction)
 	}
 
-	pb := this.build()
-	pb.FileGetInfo.Header = this.pbHeader
-	this.pb = &services.Query{
+	pb := q.build()
+	pb.FileGetInfo.Header = q.pbHeader
+	q.pb = &services.Query{
 		Query: pb,
 	}
 
-	if this.isPaymentRequired && len(this.paymentTransactions) > 0 {
-		this.paymentTransactionIDs._Advance()
+	if q.isPaymentRequired && len(q.paymentTransactions) > 0 {
+		q.paymentTransactionIDs._Advance()
 	}
-	this.pbHeader.ResponseType = services.ResponseType_ANSWER_ONLY
+	q.pbHeader.ResponseType = services.ResponseType_ANSWER_ONLY
 
 	resp, err := _Execute(
 		client,
-		this.e,
+		q.e,
 	)
 
 	if err != nil {
@@ -203,101 +202,83 @@ func (this *FileInfoQuery) Execute(client *Client) (FileInfo, error) {
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.
-func (this *FileInfoQuery) SetMaxQueryPayment(maxPayment Hbar) *FileInfoQuery {
-	this.query.SetMaxQueryPayment(maxPayment)
-	return this
+func (q *FileInfoQuery) SetMaxQueryPayment(maxPayment Hbar) *FileInfoQuery {
+	q.query.SetMaxQueryPayment(maxPayment)
+	return q
 }
 
 // SetQueryPayment sets the payment amount for this Query.
-func (this *FileInfoQuery) SetQueryPayment(paymentAmount Hbar) *FileInfoQuery {
-	this.query.SetQueryPayment(paymentAmount)
-	return this
+func (q *FileInfoQuery) SetQueryPayment(paymentAmount Hbar) *FileInfoQuery {
+	q.query.SetQueryPayment(paymentAmount)
+	return q
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for this FileInfoQuery.
-func (this *FileInfoQuery) SetNodeAccountIDs(accountID []AccountID) *FileInfoQuery {
-	this.query.SetNodeAccountIDs(accountID)
-	return this
+func (q *FileInfoQuery) SetNodeAccountIDs(accountID []AccountID) *FileInfoQuery {
+	q.query.SetNodeAccountIDs(accountID)
+	return q
 }
 
 // GetNodeAccountIDs returns the _Node AccountID for this FileInfoQuery.
-func (this *FileInfoQuery) GetNodeAccountIDs() []AccountID {
-	return this.query.GetNodeAccountIDs()
+func (q *FileInfoQuery) GetNodeAccountIDs() []AccountID {
+	return q.query.GetNodeAccountIDs()
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
-func (this *FileInfoQuery) SetMaxRetry(count int) *FileInfoQuery {
-	this.query.SetMaxRetry(count)
-	return this
+func (q *FileInfoQuery) SetMaxRetry(count int) *FileInfoQuery {
+	q.query.SetMaxRetry(count)
+	return q
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
 // Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (this *FileInfoQuery) SetMaxBackoff(max time.Duration) *FileInfoQuery {
-	this.query.SetMaxBackoff(max)
-	return this
-}
-
-// GetMaxBackoff returns the maximum amount of time to wait between retries.
-func (this *FileInfoQuery) GetMaxBackoff() time.Duration {
-	return this.GetMaxBackoff()
+func (q *FileInfoQuery) SetMaxBackoff(max time.Duration) *FileInfoQuery {
+	q.query.SetMaxBackoff(max)
+	return q
 }
 
 // SetMinBackoff sets the minimum amount of time to wait between retries.
-func (this *FileInfoQuery) SetMinBackoff(min time.Duration) *FileInfoQuery {
-	this.SetMinBackoff(min)
-	return this
-}
-
-// GetMinBackoff returns the minimum amount of time to wait between retries.
-func (this *FileInfoQuery) GetMinBackoff() time.Duration {
-	return this.query.GetMinBackoff()
-}
-
-func (this *FileInfoQuery) _GetLogID() string {
-	timestamp := this.timestamp.UnixNano()
-	if this.paymentTransactionIDs._Length() > 0 && this.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart != nil {
-		timestamp = this.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart.UnixNano()
-	}
-	return fmt.Sprintf("FileInfoQuery:%d", timestamp)
+func (q *FileInfoQuery) SetMinBackoff(min time.Duration) *FileInfoQuery {
+	q.SetMinBackoff(min)
+	return q
 }
 
 // SetPaymentTransactionID assigns the payment transaction id.
-func (this *FileInfoQuery) SetPaymentTransactionID(transactionID TransactionID) *FileInfoQuery {
-	this.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
-	return this
+func (q *FileInfoQuery) SetPaymentTransactionID(transactionID TransactionID) *FileInfoQuery {
+	q.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
+	return q
 }
 
-func (this *FileInfoQuery) SetLogLevel(level LogLevel) *FileInfoQuery {
-	this.query.SetLogLevel(level)
-	return this
+func (q *FileInfoQuery) SetLogLevel(level LogLevel) *FileInfoQuery {
+	q.query.SetLogLevel(level)
+	return q
 }
 
 // ---------- Parent functions specific implementation ----------
 
-func (this *FileInfoQuery) getMethod(channel *_Channel) _Method {
+func (q *FileInfoQuery) getMethod(channel *_Channel) _Method {
 	return _Method{
 		query: channel._GetFile().GetFileInfo,
 	}
 }
 
-func (this *FileInfoQuery) mapStatusError(_ interface{}, response interface{}) error {
+func (q *FileInfoQuery) mapStatusError(_ interface{}, response interface{}) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.(*services.Response).GetFileGetInfo().Header.NodeTransactionPrecheckCode),
 	}
 }
 
-func (this *FileInfoQuery) getName() string {
+func (q *FileInfoQuery) getName() string {
 	return "FileInfoQuery"
 }
 
-func (this *FileInfoQuery) build() *services.Query_FileGetInfo {
+func (q *FileInfoQuery) build() *services.Query_FileGetInfo {
 	body := &services.FileGetInfoQuery{
 		Header: &services.QueryHeader{},
 	}
 
-	if this.fileID != nil {
-		body.FileID = this.fileID._ToProtobuf()
+	if q.fileID != nil {
+		body.FileID = q.fileID._ToProtobuf()
 	}
 
 	return &services.Query_FileGetInfo{
@@ -305,13 +286,13 @@ func (this *FileInfoQuery) build() *services.Query_FileGetInfo {
 	}
 }
 
-func (this *FileInfoQuery) validateNetworkOnIDs(client *Client) error {
+func (q *FileInfoQuery) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
 
-	if this.fileID != nil {
-		if err := this.fileID.ValidateChecksum(client); err != nil {
+	if q.fileID != nil {
+		if err := q.fileID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}
@@ -319,6 +300,6 @@ func (this *FileInfoQuery) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (this *FileInfoQuery) getQueryStatus(response interface{}) Status {
+func (q *FileInfoQuery) getQueryStatus(response interface{}) Status {
 	return Status(response.(*services.Response).GetFileGetInfo().Header.NodeTransactionPrecheckCode)
 }
