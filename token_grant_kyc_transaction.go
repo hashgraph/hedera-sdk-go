@@ -277,3 +277,6 @@ func (tx *TokenGrantKycTransaction) getMethod(channel *_Channel) _Method {
 		transaction: channel._GetToken().GrantKycToTokenAccount,
 	}
 }
+func (tx *TokenGrantKycTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	return tx.buildScheduled()
+}

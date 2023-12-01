@@ -231,3 +231,6 @@ func (tx *TopicDeleteTransaction) getMethod(channel *_Channel) _Method {
 		transaction: channel._GetTopic().DeleteTopic,
 	}
 }
+func (tx *TopicDeleteTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	return tx.buildScheduled()
+}

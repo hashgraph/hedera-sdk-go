@@ -406,3 +406,7 @@ func (tx *TopicMessageSubmitTransaction) ExecuteAll(
 
 	return list, nil
 }
+
+func (tx *TopicMessageSubmitTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	return tx.buildScheduled()
+}

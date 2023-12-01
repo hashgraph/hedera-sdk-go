@@ -53,8 +53,8 @@ func NewScheduleSignTransaction() *ScheduleSignTransaction {
 	tx := ScheduleSignTransaction{
 		transaction: _NewTransaction(),
 	}
-
 	tx._SetDefaultMaxTransactionFee(NewHbar(5))
+	tx.e = &tx
 
 	return &tx
 }
@@ -238,4 +238,8 @@ func (tx *ScheduleSignTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetSchedule().SignSchedule,
 	}
+}
+
+func (tx *ScheduleSignTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	return tx.buildScheduled()
 }

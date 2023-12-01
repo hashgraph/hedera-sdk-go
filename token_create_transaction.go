@@ -695,3 +695,6 @@ func (tx *TokenCreateTransaction) getMethod(channel *_Channel) _Method {
 		transaction: channel._GetToken().CreateToken,
 	}
 }
+func (tx *TokenCreateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	return tx.buildScheduled()
+}

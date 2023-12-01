@@ -242,3 +242,6 @@ func (tx *TokenUnpauseTransaction) getMethod(channel *_Channel) _Method {
 		transaction: channel._GetToken().DeleteToken,
 	}
 }
+func (tx *TokenUnpauseTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	return tx.buildScheduled()
+}

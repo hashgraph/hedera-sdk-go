@@ -7,7 +7,7 @@ package hedera
  * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
+ * you may not use tx file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
@@ -21,7 +21,6 @@ package hedera
  */
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -47,227 +46,188 @@ func _AccountDeleteTransactionFromProtobuf(transaction transaction, pb *services
 	return resultTx
 }
 
-// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (transaction *AccountDeleteTransaction) SetGrpcDeadline(deadline *time.Duration) *AccountDeleteTransaction {
-	transaction.transaction.SetGrpcDeadline(deadline)
-	return transaction
-}
-
 // NewAccountDeleteTransaction creates AccountDeleteTransaction which marks an account as deleted, moving all its current hbars to another account. It will remain in
 // the ledger, marked as deleted, until it expires. Transfers into it a deleted account fail. But a
 // deleted account can still have its expiration extended in the normal way.
 func NewAccountDeleteTransaction() *AccountDeleteTransaction {
-	this := AccountDeleteTransaction{
+	tx := AccountDeleteTransaction{
 		transaction: _NewTransaction(),
 	}
 
-	this.e = &this
-	this._SetDefaultMaxTransactionFee(NewHbar(2))
+	tx.e = &tx
+	tx._SetDefaultMaxTransactionFee(NewHbar(2))
 
-	return &this
+	return &tx
 }
 
-// SetNodeAccountID sets the _Node AccountID for this AccountDeleteTransaction.
-func (this *AccountDeleteTransaction) SetAccountID(accountID AccountID) *AccountDeleteTransaction {
-	this._RequireNotFrozen()
-	this.deleteAccountID = &accountID
-	return this
+// SetNodeAccountID sets the _Node AccountID for tx AccountDeleteTransaction.
+func (tx *AccountDeleteTransaction) SetAccountID(accountID AccountID) *AccountDeleteTransaction {
+	tx._RequireNotFrozen()
+	tx.deleteAccountID = &accountID
+	return tx
 }
 
 // GetAccountID returns the AccountID which will be deleted.
-func (this *AccountDeleteTransaction) GetAccountID() AccountID {
-	if this.deleteAccountID == nil {
+func (tx *AccountDeleteTransaction) GetAccountID() AccountID {
+	if tx.deleteAccountID == nil {
 		return AccountID{}
 	}
 
-	return *this.deleteAccountID
+	return *tx.deleteAccountID
 }
 
 // SetTransferAccountID sets the AccountID which will receive all remaining hbars.
-func (this *AccountDeleteTransaction) SetTransferAccountID(transferAccountID AccountID) *AccountDeleteTransaction {
-	this._RequireNotFrozen()
-	this.transferAccountID = &transferAccountID
-	return this
+func (tx *AccountDeleteTransaction) SetTransferAccountID(transferAccountID AccountID) *AccountDeleteTransaction {
+	tx._RequireNotFrozen()
+	tx.transferAccountID = &transferAccountID
+	return tx
 }
 
 // GetTransferAccountID returns the AccountID which will receive all remaining hbars.
-func (this *AccountDeleteTransaction) GetTransferAccountID() AccountID {
-	if this.transferAccountID == nil {
+func (tx *AccountDeleteTransaction) GetTransferAccountID() AccountID {
+	if tx.transferAccountID == nil {
 		return AccountID{}
 	}
 
-	return *this.transferAccountID
+	return *tx.transferAccountID
 }
 
-func (this *AccountDeleteTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	this._RequireNotFrozen()
-
-	scheduled, err := this.buildProtoBody()
-	if err != nil {
-		return nil, err
-	}
-
-	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
-}
+// ---- Required Interfaces ---- //
 
 // Sign uses the provided privateKey to sign the transaction.
-func (this *AccountDeleteTransaction) Sign(
+func (tx *AccountDeleteTransaction) Sign(
 	privateKey PrivateKey,
 ) *AccountDeleteTransaction {
-	this.transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
-	return this
+	tx.transaction.Sign(privateKey)
+	return tx
 }
 
 // SignWithOperator signs the transaction with client's operator privateKey.
-func (this *AccountDeleteTransaction) SignWithOperator(
+func (tx *AccountDeleteTransaction) SignWithOperator(
 	client *Client,
 ) (*AccountDeleteTransaction, error) {
 	// If the transaction is not signed by the _Operator, we need
 	// to sign the transaction with the _Operator
-	_, err := this.transaction.SignWithOperator(client)
-	return this, err
+	_, err := tx.transaction.SignWithOperator(client)
+	return tx, err
 }
 
 // SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
 // with the publicKey as the map key.
-func (this *AccountDeleteTransaction) SignWith(
+func (tx *AccountDeleteTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *AccountDeleteTransaction {
-	this.transaction.SignWith(publicKey, signer)
-	return this
-}
-
-func (this *AccountDeleteTransaction) Freeze() (*AccountDeleteTransaction, error) {
-	_, err := this.transaction.Freeze()
-	return this, err
-}
-
-func (this *AccountDeleteTransaction) FreezeWith(client *Client) (*AccountDeleteTransaction, error) {
-	_, err := this.transaction.FreezeWith(client)
-	return this, err
-}
-
-// GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
-func (this *AccountDeleteTransaction) GetMaxTransactionFee() Hbar {
-	return this.transaction.GetMaxTransactionFee()
-}
-
-// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
-func (this *AccountDeleteTransaction) SetMaxTransactionFee(fee Hbar) *AccountDeleteTransaction {
-	this._RequireNotFrozen()
-	this.transaction.SetMaxTransactionFee(fee)
-	return this
-}
-
-// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
-func (this *AccountDeleteTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *AccountDeleteTransaction {
-	this._RequireNotFrozen()
-	this.transaction.SetRegenerateTransactionID(regenerateTransactionID)
-	return this
-}
-
-// GetRegenerateTransactionID returns true if transaction ID regeneration is enabled.
-func (this *AccountDeleteTransaction) GetRegenerateTransactionID() bool {
-	return this.transaction.GetRegenerateTransactionID()
-}
-
-// GetTransactionMemo returns the memo for this AccountDeleteTransaction.
-func (this *AccountDeleteTransaction) GetTransactionMemo() string {
-	return this.transaction.GetTransactionMemo()
-}
-
-// SetTransactionMemo sets the memo for this AccountDeleteTransaction.
-func (this *AccountDeleteTransaction) SetTransactionMemo(memo string) *AccountDeleteTransaction {
-	this._RequireNotFrozen()
-	this.transaction.SetTransactionMemo(memo)
-	return this
-}
-
-// GetTransactionValidDuration returns the duration that this transaction is valid for.
-func (this *AccountDeleteTransaction) GetTransactionValidDuration() time.Duration {
-	return this.transaction.GetTransactionValidDuration()
-}
-
-// SetTransactionValidDuration sets the valid duration for this AccountDeleteTransaction.
-func (this *AccountDeleteTransaction) SetTransactionValidDuration(duration time.Duration) *AccountDeleteTransaction {
-	this._RequireNotFrozen()
-	this.transaction.SetTransactionValidDuration(duration)
-	return this
-}
-
-// GetTransactionID gets the TransactionID for this	AccountDeleteTransaction.
-func (this *AccountDeleteTransaction) GetTransactionID() TransactionID {
-	return this.transaction.GetTransactionID()
-}
-
-// SetTransactionID sets the TransactionID for this AccountDeleteTransaction.
-func (this *AccountDeleteTransaction) SetTransactionID(transactionID TransactionID) *AccountDeleteTransaction {
-	this._RequireNotFrozen()
-
-	this.transaction.SetTransactionID(transactionID)
-	return this
-}
-
-// SetNodeAccountIDs sets the _Node AccountID for this AccountDeleteTransaction.
-func (this *AccountDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *AccountDeleteTransaction {
-	this._RequireNotFrozen()
-	this.transaction.SetNodeAccountIDs(nodeID)
-	return this
-}
-
-// SetMaxRetry sets the max number of errors before execution will fail.
-func (this *AccountDeleteTransaction) SetMaxRetry(count int) *AccountDeleteTransaction {
-	this.transaction.SetMaxRetry(count)
-	return this
+	tx.transaction.SignWith(publicKey, signer)
+	return tx
 }
 
 // AddSignature adds a signature to the transaction.
-func (this *AccountDeleteTransaction) AddSignature(publicKey PublicKey, signature []byte) *AccountDeleteTransaction {
-	this.transaction.AddSignature(publicKey, signature)
-	return this
+func (tx *AccountDeleteTransaction) AddSignature(publicKey PublicKey, signature []byte) *AccountDeleteTransaction {
+	tx.transaction.AddSignature(publicKey, signature)
+	return tx
 }
 
-// SetMaxBackoff The maximum amount of time to wait between retries. Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (this *AccountDeleteTransaction) SetMaxBackoff(max time.Duration) *AccountDeleteTransaction {
-	this.transaction.SetMaxBackoff(max)
-	return this
+// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
+func (tx *AccountDeleteTransaction) SetGrpcDeadline(deadline *time.Duration) *AccountDeleteTransaction {
+	tx.transaction.SetGrpcDeadline(deadline)
+	return tx
+}
+
+func (tx *AccountDeleteTransaction) Freeze() (*AccountDeleteTransaction, error) {
+	_, err := tx.transaction.Freeze()
+	return tx, err
+}
+
+func (tx *AccountDeleteTransaction) FreezeWith(client *Client) (*AccountDeleteTransaction, error) {
+	_, err := tx.transaction.FreezeWith(client)
+	return tx, err
+}
+
+// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
+func (tx *AccountDeleteTransaction) SetMaxTransactionFee(fee Hbar) *AccountDeleteTransaction {
+	tx._RequireNotFrozen()
+	tx.transaction.SetMaxTransactionFee(fee)
+	return tx
+}
+
+// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
+func (tx *AccountDeleteTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *AccountDeleteTransaction {
+	tx._RequireNotFrozen()
+	tx.transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	return tx
+}
+
+// SetTransactionMemo sets the memo for tx AccountDeleteTransaction.
+func (tx *AccountDeleteTransaction) SetTransactionMemo(memo string) *AccountDeleteTransaction {
+	tx._RequireNotFrozen()
+	tx.transaction.SetTransactionMemo(memo)
+	return tx
+}
+
+// SetTransactionValidDuration sets the valid duration for tx AccountDeleteTransaction.
+func (tx *AccountDeleteTransaction) SetTransactionValidDuration(duration time.Duration) *AccountDeleteTransaction {
+	tx._RequireNotFrozen()
+	tx.transaction.SetTransactionValidDuration(duration)
+	return tx
+}
+
+// SetTransactionID sets the TransactionID for tx AccountDeleteTransaction.
+func (tx *AccountDeleteTransaction) SetTransactionID(transactionID TransactionID) *AccountDeleteTransaction {
+	tx._RequireNotFrozen()
+
+	tx.transaction.SetTransactionID(transactionID)
+	return tx
+}
+
+// SetNodeAccountIDs sets the _Node AccountID for tx AccountDeleteTransaction.
+func (tx *AccountDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *AccountDeleteTransaction {
+	tx._RequireNotFrozen()
+	tx.transaction.SetNodeAccountIDs(nodeID)
+	return tx
+}
+
+// SetMaxRetry sets the max number of errors before execution will fail.
+func (tx *AccountDeleteTransaction) SetMaxRetry(count int) *AccountDeleteTransaction {
+	tx.transaction.SetMaxRetry(count)
+	return tx
+}
+
+// SetMaxBackoff The maximum amount of time to wait between retries. Every retry attempt will increase the wait time exponentially until it reaches tx time.
+func (tx *AccountDeleteTransaction) SetMaxBackoff(max time.Duration) *AccountDeleteTransaction {
+	tx.transaction.SetMaxBackoff(max)
+	return tx
 }
 
 // GetMaxBackoff returns the maximum amount of time to wait between retries.
-func (this *AccountDeleteTransaction) SetMinBackoff(min time.Duration) *AccountDeleteTransaction {
-	this.transaction.SetMinBackoff(min)
-	return this
+func (tx *AccountDeleteTransaction) SetMinBackoff(min time.Duration) *AccountDeleteTransaction {
+	tx.transaction.SetMinBackoff(min)
+	return tx
 }
 
-func (this *AccountDeleteTransaction) _GetLogID() string {
-	timestamp := this.transactionIDs._GetCurrent().(TransactionID).ValidStart
-	return fmt.Sprintf("AccountDeleteTransaction:%d", timestamp.UnixNano())
-}
-
-func (this *AccountDeleteTransaction) SetLogLevel(level LogLevel) *AccountDeleteTransaction {
-	this.transaction.SetLogLevel(level)
-	return this
+func (tx *AccountDeleteTransaction) SetLogLevel(level LogLevel) *AccountDeleteTransaction {
+	tx.transaction.SetLogLevel(level)
+	return tx
 }
 
 // ----------- overriden functions ----------------
 
-func (this *AccountDeleteTransaction) getName() string {
+func (tx *AccountDeleteTransaction) getName() string {
 	return "AccountDeleteTransaction"
 }
-func (this *AccountDeleteTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx *AccountDeleteTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
 
-	if this.deleteAccountID != nil {
-		if err := this.deleteAccountID.ValidateChecksum(client); err != nil {
+	if tx.deleteAccountID != nil {
+		if err := tx.deleteAccountID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}
 
-	if this.transferAccountID != nil {
-		if err := this.transferAccountID.ValidateChecksum(client); err != nil {
+	if tx.transferAccountID != nil {
+		if err := tx.transferAccountID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}
@@ -275,50 +235,48 @@ func (this *AccountDeleteTransaction) validateNetworkOnIDs(client *Client) error
 	return nil
 }
 
-func (this *AccountDeleteTransaction) build() *services.TransactionBody {
-	body := &services.CryptoDeleteTransactionBody{}
-
-	if this.transferAccountID != nil {
-		body.TransferAccountID = this.transferAccountID._ToProtobuf()
-	}
-
-	if this.deleteAccountID != nil {
-		body.DeleteAccountID = this.deleteAccountID._ToProtobuf()
-	}
-
+func (tx *AccountDeleteTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
-		TransactionFee:           this.transactionFee,
-		Memo:                     this.transaction.memo,
-		TransactionValidDuration: _DurationToProtobuf(this.GetTransactionValidDuration()),
-		TransactionID:            this.transactionID._ToProtobuf(),
+		TransactionFee:           tx.transactionFee,
+		Memo:                     tx.transaction.memo,
+		TransactionValidDuration: _DurationToProtobuf(tx.GetTransactionValidDuration()),
+		TransactionID:            tx.transactionID._ToProtobuf(),
 		Data: &services.TransactionBody_CryptoDelete{
-			CryptoDelete: body,
+			CryptoDelete: tx.buildProtoBody(),
 		},
 	}
 }
 
-func (this *AccountDeleteTransaction) buildProtoBody() (*services.SchedulableTransactionBody, error) {
-	body := &services.CryptoDeleteTransactionBody{}
-
-	if this.transferAccountID != nil {
-		body.TransferAccountID = this.transferAccountID._ToProtobuf()
-	}
-
-	if this.deleteAccountID != nil {
-		body.DeleteAccountID = this.deleteAccountID._ToProtobuf()
-	}
-
+func (tx *AccountDeleteTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
-		TransactionFee: this.transactionFee,
-		Memo:           this.transaction.memo,
+		TransactionFee: tx.transactionFee,
+		Memo:           tx.transaction.memo,
 		Data: &services.SchedulableTransactionBody_CryptoDelete{
-			CryptoDelete: body,
+			CryptoDelete: tx.buildProtoBody(),
 		},
 	}, nil
 }
 
-func (this *AccountDeleteTransaction) getMethod(channel *_Channel) _Method {
+func (tx *AccountDeleteTransaction) buildProtoBody() *services.CryptoDeleteTransactionBody {
+	body := &services.CryptoDeleteTransactionBody{}
+
+	if tx.transferAccountID != nil {
+		body.TransferAccountID = tx.transferAccountID._ToProtobuf()
+	}
+
+	if tx.deleteAccountID != nil {
+		body.DeleteAccountID = tx.deleteAccountID._ToProtobuf()
+	}
+
+	return body
+}
+
+func (tx *AccountDeleteTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetCrypto().ApproveAllowances,
 	}
+}
+
+func (tx *AccountDeleteTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	return tx.buildScheduled()
 }

@@ -47,6 +47,7 @@ func NewSystemDeleteTransaction() *SystemDeleteTransaction {
 		transaction: _NewTransaction(),
 	}
 	tx._SetDefaultMaxTransactionFee(NewHbar(2))
+	tx.e = &tx
 
 	return &tx
 }
@@ -302,4 +303,8 @@ func (tx *SystemDeleteTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetContract().SystemDelete,
 	}
+}
+
+func (tx *SystemDeleteTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	return tx.buildScheduled()
 }

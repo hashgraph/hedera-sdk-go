@@ -329,3 +329,6 @@ func (tx *TokenWipeTransaction) getMethod(channel *_Channel) _Method {
 		transaction: channel._GetToken().WipeTokenAccount,
 	}
 }
+func (tx *TokenWipeTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	return tx.buildScheduled()
+}

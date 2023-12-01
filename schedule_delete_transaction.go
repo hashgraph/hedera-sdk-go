@@ -42,6 +42,7 @@ func NewScheduleDeleteTransaction() *ScheduleDeleteTransaction {
 		transaction: _NewTransaction(),
 	}
 	tx._SetDefaultMaxTransactionFee(NewHbar(5))
+	tx.e = &tx
 
 	return &tx
 }
@@ -230,4 +231,7 @@ func (tx *ScheduleDeleteTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetSchedule().DeleteSchedule,
 	}
+}
+func (tx *ScheduleDeleteTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	return tx.buildScheduled()
 }

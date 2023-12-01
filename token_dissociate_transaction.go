@@ -310,3 +310,7 @@ func (tx *TokenDissociateTransaction) getMethod(channel *_Channel) _Method {
 		transaction: channel._GetToken().DissociateTokens,
 	}
 }
+
+func (tx *TokenDissociateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	return tx.buildScheduled()
+}

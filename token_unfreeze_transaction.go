@@ -279,3 +279,6 @@ func (tx *TokenUnfreezeTransaction) getMethod(channel *_Channel) _Method {
 		transaction: channel._GetToken().UnfreezeTokenAccount,
 	}
 }
+func (tx *TokenUnfreezeTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	return tx.buildScheduled()
+}

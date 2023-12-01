@@ -53,6 +53,7 @@ func NewScheduleCreateTransaction() *ScheduleCreateTransaction {
 	}
 
 	tx._SetDefaultMaxTransactionFee(NewHbar(5))
+	tx.e = &tx
 
 	return &tx
 }
@@ -353,4 +354,8 @@ func (tx *ScheduleCreateTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetSchedule().CreateSchedule,
 	}
+}
+
+func (tx *ScheduleCreateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	return tx.buildScheduled()
 }

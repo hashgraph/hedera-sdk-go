@@ -22,6 +22,7 @@ package hedera
 
 import (
 	"errors"
+
 	"github.com/hashgraph/hedera-protobufs-go/services"
 
 	"time"
@@ -42,6 +43,7 @@ func NewLiveHashDeleteTransaction() *LiveHashDeleteTransaction {
 		transaction: _NewTransaction(),
 	}
 	tx._SetDefaultMaxTransactionFee(NewHbar(2))
+	tx.e = &tx
 
 	return &tx
 }
@@ -243,4 +245,7 @@ func (tx *LiveHashDeleteTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetCrypto().DeleteLiveHash,
 	}
+}
+func (tx *LiveHashDeleteTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	return tx.buildScheduled()
 }

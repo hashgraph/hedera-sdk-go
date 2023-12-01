@@ -277,3 +277,6 @@ func (tx *TokenFeeScheduleUpdateTransaction) getMethod(channel *_Channel) _Metho
 		transaction: channel._GetToken().UpdateTokenFeeSchedule,
 	}
 }
+func (tx *TokenFeeScheduleUpdateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	return tx.buildScheduled()
+}

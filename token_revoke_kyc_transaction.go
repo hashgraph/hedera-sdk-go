@@ -277,3 +277,7 @@ func (tx *TokenRevokeKycTransaction) getMethod(channel *_Channel) _Method {
 		transaction: channel._GetToken().RevokeKycFromTokenAccount,
 	}
 }
+
+func (tx *TokenRevokeKycTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	return tx.buildScheduled()
+}

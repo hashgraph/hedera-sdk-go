@@ -7,7 +7,7 @@ package hedera
  * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
+ * you may not use tx file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
@@ -21,8 +21,6 @@ package hedera
  */
 
 import (
-	"fmt"
-
 	"github.com/hashgraph/hedera-protobufs-go/services"
 	"github.com/pkg/errors"
 
@@ -34,7 +32,7 @@ import (
 // provide a revocation service for their implied credentials; for example, when an authority grants
 // a credential to the account, the account owner will cosign with the authority (or authorities) to
 // attach a hash of the credential to the account---hence proving the grant. If the credential is
-// revoked, then any of the authorities may delete it (or the account owner). In this way, the
+// revoked, then any of the authorities may delete it (or the account owner). In tx way, the
 // livehash mechanism acts as a revocation service.  An account cannot have two identical livehashes
 // associated. To modify the list of keys in a livehash, the livehash should first be deleted, then
 // recreated with a new list of keys.
@@ -51,25 +49,25 @@ type LiveHashAddTransaction struct {
 // provide a revocation service for their implied credentials; for example, when an authority grants
 // a credential to the account, the account owner will cosign with the authority (or authorities) to
 // attach a hash of the credential to the account---hence proving the grant. If the credential is
-// revoked, then any of the authorities may delete it (or the account owner). In this way, the
+// revoked, then any of the authorities may delete it (or the account owner). In tx way, the
 // livehash mechanism acts as a revocation service.  An account cannot have two identical livehashes
 // associated. To modify the list of keys in a livehash, the livehash should first be deleted, then
 // recreated with a new list of keys.
 func NewLiveHashAddTransaction() *LiveHashAddTransaction {
-	this := LiveHashAddTransaction{
+	tx := LiveHashAddTransaction{
 		transaction: _NewTransaction(),
 	}
-	this._SetDefaultMaxTransactionFee(NewHbar(2))
-	this.e = &this
-	return &this
+	tx._SetDefaultMaxTransactionFee(NewHbar(2))
+	tx.e = &tx
+	return &tx
 }
 
-func _LiveHashAddTransactionFromProtobuf(this transaction, pb *services.TransactionBody) *LiveHashAddTransaction {
+func _LiveHashAddTransactionFromProtobuf(tx transaction, pb *services.TransactionBody) *LiveHashAddTransaction {
 	keys, _ := _KeyListFromProtobuf(pb.GetCryptoAddLiveHash().LiveHash.GetKeys())
 	duration := _DurationFromProtobuf(pb.GetCryptoAddLiveHash().LiveHash.Duration)
 
 	resultTx := &LiveHashAddTransaction{
-		transaction: this,
+		transaction: tx,
 		accountID:   _AccountIDFromProtobuf(pb.GetCryptoAddLiveHash().GetLiveHash().GetAccountId()),
 		hash:        pb.GetCryptoAddLiveHash().LiveHash.Hash,
 		keys:        &keys,
@@ -79,231 +77,211 @@ func _LiveHashAddTransactionFromProtobuf(this transaction, pb *services.Transact
 	return resultTx
 }
 
-// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (this *LiveHashAddTransaction) SetGrpcDeadline(deadline *time.Duration) *LiveHashAddTransaction {
-	this.transaction.SetGrpcDeadline(deadline)
-	return this
+// When execution is attempted, a single attempt will timeout when tx deadline is reached. (The SDK may subsequently retry the execution.)
+func (tx *LiveHashAddTransaction) SetGrpcDeadline(deadline *time.Duration) *LiveHashAddTransaction {
+	tx.transaction.SetGrpcDeadline(deadline)
+	return tx
 }
 
 // SetHash Sets the SHA-384 hash of a credential or certificate
-func (this *LiveHashAddTransaction) SetHash(hash []byte) *LiveHashAddTransaction {
-	this._RequireNotFrozen()
-	this.hash = hash
-	return this
+func (tx *LiveHashAddTransaction) SetHash(hash []byte) *LiveHashAddTransaction {
+	tx._RequireNotFrozen()
+	tx.hash = hash
+	return tx
 }
 
-func (this *LiveHashAddTransaction) GetHash() []byte {
-	return this.hash
+func (tx *LiveHashAddTransaction) GetHash() []byte {
+	return tx.hash
 }
 
 // SetKeys Sets a list of keys (primitive or threshold), all of which must sign to attach the livehash to an account.
 // Any one of which can later delete it.
-func (this *LiveHashAddTransaction) SetKeys(keys ...Key) *LiveHashAddTransaction {
-	this._RequireNotFrozen()
-	if this.keys == nil {
-		this.keys = &KeyList{keys: []Key{}}
+func (tx *LiveHashAddTransaction) SetKeys(keys ...Key) *LiveHashAddTransaction {
+	tx._RequireNotFrozen()
+	if tx.keys == nil {
+		tx.keys = &KeyList{keys: []Key{}}
 	}
 	keyList := NewKeyList()
 	keyList.AddAll(keys)
 
-	this.keys = keyList
+	tx.keys = keyList
 
-	return this
+	return tx
 }
 
-func (this *LiveHashAddTransaction) GetKeys() KeyList {
-	if this.keys != nil {
-		return *this.keys
+func (tx *LiveHashAddTransaction) GetKeys() KeyList {
+	if tx.keys != nil {
+		return *tx.keys
 	}
 
 	return KeyList{}
 }
 
 // SetDuration Set the duration for which the livehash will remain valid
-func (this *LiveHashAddTransaction) SetDuration(duration time.Duration) *LiveHashAddTransaction {
-	this._RequireNotFrozen()
-	this.duration = &duration
-	return this
+func (tx *LiveHashAddTransaction) SetDuration(duration time.Duration) *LiveHashAddTransaction {
+	tx._RequireNotFrozen()
+	tx.duration = &duration
+	return tx
 }
 
 // GetDuration returns the duration for which the livehash will remain valid
-func (this *LiveHashAddTransaction) GetDuration() time.Duration {
-	if this.duration != nil {
-		return *this.duration
+func (tx *LiveHashAddTransaction) GetDuration() time.Duration {
+	if tx.duration != nil {
+		return *tx.duration
 	}
 
 	return time.Duration(0)
 }
 
 // SetAccountID Sets the account to which the livehash is attached
-func (this *LiveHashAddTransaction) SetAccountID(accountID AccountID) *LiveHashAddTransaction {
-	this._RequireNotFrozen()
-	this.accountID = &accountID
-	return this
+func (tx *LiveHashAddTransaction) SetAccountID(accountID AccountID) *LiveHashAddTransaction {
+	tx._RequireNotFrozen()
+	tx.accountID = &accountID
+	return tx
 }
 
 // GetAccountID returns the account to which the livehash is attached
-func (this *LiveHashAddTransaction) GetAccountID() AccountID {
-	if this.accountID == nil {
+func (tx *LiveHashAddTransaction) GetAccountID() AccountID {
+	if tx.accountID == nil {
 		return AccountID{}
 	}
 
-	return *this.accountID
+	return *tx.accountID
 }
 
+// ---- Required Interfaces ---- //
+
 // Sign uses the provided privateKey to sign the transaction.
-func (this *LiveHashAddTransaction) Sign(
+func (tx *LiveHashAddTransaction) Sign(
 	privateKey PrivateKey,
 ) *LiveHashAddTransaction {
-	this.transaction.Sign(privateKey)
-	return this
+	tx.transaction.Sign(privateKey)
+	return tx
 }
 
 // SignWithOperator signs the transaction with client's operator privateKey.
-func (this *LiveHashAddTransaction) SignWithOperator(
+func (tx *LiveHashAddTransaction) SignWithOperator(
 	client *Client,
 ) (*LiveHashAddTransaction, error) {
 	// If the transaction is not signed by the _Operator, we need
 	// to sign the transaction with the _Operator
-	_, err := this.transaction.SignWithOperator(client)
-	return this, err
+	_, err := tx.transaction.SignWithOperator(client)
+	return tx, err
 }
 
 // SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
 // with the publicKey as the map key.
-func (this *LiveHashAddTransaction) SignWith(
+func (tx *LiveHashAddTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *LiveHashAddTransaction {
-	this.transaction.SignWith(publicKey, signer)
-	return this
+	tx.transaction.SignWith(publicKey, signer)
+	return tx
+}
+// AddSignature adds a signature to the transaction.
+func (tx *LiveHashAddTransaction) AddSignature(publicKey PublicKey, signature []byte) *LiveHashAddTransaction {
+	tx.transaction.AddSignature(publicKey, signature)
+	return tx
 }
 
-func (this *LiveHashAddTransaction) Freeze() (*LiveHashAddTransaction, error) {
-	_, err := this.transaction.Freeze()
-	return this, err
+func (tx *LiveHashAddTransaction) Freeze() (*LiveHashAddTransaction, error) {
+	_, err := tx.transaction.Freeze()
+	return tx, err
 }
 
-func (this *LiveHashAddTransaction) FreezeWith(client *Client) (*LiveHashAddTransaction, error) {
-	_, err := this.transaction.FreezeWith(client)
-	return this, err
+func (tx *LiveHashAddTransaction) FreezeWith(client *Client) (*LiveHashAddTransaction, error) {
+	_, err := tx.transaction.FreezeWith(client)
+	return tx, err
 }
 
 // GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
-func (this *LiveHashAddTransaction) GetMaxTransactionFee() Hbar {
-	return this.transaction.GetMaxTransactionFee()
+func (tx *LiveHashAddTransaction) GetMaxTransactionFee() Hbar {
+	return tx.transaction.GetMaxTransactionFee()
 }
 
 // SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
-func (this *LiveHashAddTransaction) SetMaxTransactionFee(fee Hbar) *LiveHashAddTransaction {
-	this._RequireNotFrozen()
-	this.transaction.SetMaxTransactionFee(fee)
-	return this
+func (tx *LiveHashAddTransaction) SetMaxTransactionFee(fee Hbar) *LiveHashAddTransaction {
+	tx._RequireNotFrozen()
+	tx.transaction.SetMaxTransactionFee(fee)
+	return tx
 }
 
 // SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
-func (this *LiveHashAddTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *LiveHashAddTransaction {
-	this._RequireNotFrozen()
-	this.transaction.SetRegenerateTransactionID(regenerateTransactionID)
-	return this
+func (tx *LiveHashAddTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *LiveHashAddTransaction {
+	tx._RequireNotFrozen()
+	tx.transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	return tx
 }
 
-// GetRegenerateTransactionID returns true if transaction ID regeneration is enabled.
-func (this *LiveHashAddTransaction) GetRegenerateTransactionID() bool {
-	return this.transaction.GetRegenerateTransactionID()
+// SetTransactionMemo sets the memo for tx LiveHashAddTransaction.
+func (tx *LiveHashAddTransaction) SetTransactionMemo(memo string) *LiveHashAddTransaction {
+	tx._RequireNotFrozen()
+	tx.transaction.SetTransactionMemo(memo)
+	return tx
 }
 
-func (this *LiveHashAddTransaction) GetTransactionMemo() string {
-	return this.transaction.GetTransactionMemo()
+// SetTransactionValidDuration sets the valid duration for tx LiveHashAddTransaction.
+func (tx *LiveHashAddTransaction) SetTransactionValidDuration(duration time.Duration) *LiveHashAddTransaction {
+	tx.transaction.SetTransactionValidDuration(duration)
+	return tx
 }
 
-// SetTransactionMemo sets the memo for this LiveHashAddTransaction.
-func (this *LiveHashAddTransaction) SetTransactionMemo(memo string) *LiveHashAddTransaction {
-	this._RequireNotFrozen()
-	this.transaction.SetTransactionMemo(memo)
-	return this
+// GetTransactionID gets the TransactionID for tx	 LiveHashAddTransaction.
+func (tx *LiveHashAddTransaction) GetTransactionID() TransactionID {
+	return tx.transaction.GetTransactionID()
 }
 
-// GetTransactionValidDuration sets the duration that this transaction is valid for.
-// This is defaulted by the SDK to 120 seconds (or two minutes).
-func (this *LiveHashAddTransaction) GetTransactionValidDuration() time.Duration {
-	return this.transaction.GetTransactionValidDuration()
+// SetTransactionID sets the TransactionID for tx LiveHashAddTransaction.
+func (tx *LiveHashAddTransaction) SetTransactionID(transactionID TransactionID) *LiveHashAddTransaction {
+	tx._RequireNotFrozen()
+
+	tx.transaction.SetTransactionID(transactionID)
+	return tx
 }
 
-// SetTransactionValidDuration sets the valid duration for this LiveHashAddTransaction.
-func (this *LiveHashAddTransaction) SetTransactionValidDuration(duration time.Duration) *LiveHashAddTransaction {
-	this._RequireNotFrozen()
-	this.transaction.SetTransactionValidDuration(duration)
-	return this
-}
-
-// GetTransactionID gets the TransactionID for this	 LiveHashAddTransaction.
-func (this *LiveHashAddTransaction) GetTransactionID() TransactionID {
-	return this.transaction.GetTransactionID()
-}
-
-// SetTransactionID sets the TransactionID for this LiveHashAddTransaction.
-func (this *LiveHashAddTransaction) SetTransactionID(transactionID TransactionID) *LiveHashAddTransaction {
-	this._RequireNotFrozen()
-
-	this.transaction.SetTransactionID(transactionID)
-	return this
-}
-
-// SetNodeAccountID sets the _Node AccountID for this LiveHashAddTransaction.
-func (this *LiveHashAddTransaction) SetNodeAccountIDs(nodeID []AccountID) *LiveHashAddTransaction {
-	this._RequireNotFrozen()
-	this.transaction.SetNodeAccountIDs(nodeID)
-	return this
+// SetNodeAccountID sets the _Node AccountID for tx LiveHashAddTransaction.
+func (tx *LiveHashAddTransaction) SetNodeAccountIDs(nodeID []AccountID) *LiveHashAddTransaction {
+	tx._RequireNotFrozen()
+	tx.transaction.SetNodeAccountIDs(nodeID)
+	return tx
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
-func (this *LiveHashAddTransaction) SetMaxRetry(count int) *LiveHashAddTransaction {
-	this.transaction.SetMaxRetry(count)
-	return this
-}
-
-// AddSignature adds a signature to the transaction.
-func (this *LiveHashAddTransaction) AddSignature(publicKey PublicKey, signature []byte) *LiveHashAddTransaction {
-	this.transaction.AddSignature(publicKey, signature)
-	return this
+func (tx *LiveHashAddTransaction) SetMaxRetry(count int) *LiveHashAddTransaction {
+	tx.transaction.SetMaxRetry(count)
+	return tx
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (this *LiveHashAddTransaction) SetMaxBackoff(max time.Duration) *LiveHashAddTransaction {
-	this.transaction.SetMaxBackoff(max)
-	return this
+// Every retry attempt will increase the wait time exponentially until it reaches tx time.
+func (tx *LiveHashAddTransaction) SetMaxBackoff(max time.Duration) *LiveHashAddTransaction {
+	tx.transaction.SetMaxBackoff(max)
+	return tx
 }
 
 // SetMinBackoff sets the minimum amount of time to wait between retries.
-func (this *LiveHashAddTransaction) SetMinBackoff(min time.Duration) *LiveHashAddTransaction {
-	this.transaction.SetMinBackoff(min)
-	return this
+func (tx *LiveHashAddTransaction) SetMinBackoff(min time.Duration) *LiveHashAddTransaction {
+	tx.transaction.SetMinBackoff(min)
+	return tx
 }
 
-func (this *LiveHashAddTransaction) _GetLogID() string {
-	timestamp := this.transactionIDs._GetCurrent().(TransactionID).ValidStart
-	return fmt.Sprintf("LiveHashAddTransaction:%d", timestamp.UnixNano())
-}
-
-func (this *LiveHashAddTransaction) SetLogLevel(level LogLevel) *LiveHashAddTransaction {
-	this.transaction.SetLogLevel(level)
-	return this
+func (tx *LiveHashAddTransaction) SetLogLevel(level LogLevel) *LiveHashAddTransaction {
+	tx.transaction.SetLogLevel(level)
+	return tx
 }
 
 // ----------- overriden functions ----------------
 
-func (this *LiveHashAddTransaction) getName() string {
+func (tx *LiveHashAddTransaction) getName() string {
 	return "LiveHashAddTransaction"
 }
-func (this *LiveHashAddTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx *LiveHashAddTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
 
-	if this.accountID != nil {
-		if err := this.accountID.ValidateChecksum(client); err != nil {
+	if tx.accountID != nil {
+		if err := tx.accountID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}
@@ -311,48 +289,51 @@ func (this *LiveHashAddTransaction) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (this *LiveHashAddTransaction) build() *services.TransactionBody {
+func (tx *LiveHashAddTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
-		TransactionFee:           this.transactionFee,
-		Memo:                     this.transaction.memo,
-		TransactionValidDuration: _DurationToProtobuf(this.GetTransactionValidDuration()),
-		TransactionID:            this.transactionID._ToProtobuf(),
+		TransactionFee:           tx.transactionFee,
+		Memo:                     tx.transaction.memo,
+		TransactionValidDuration: _DurationToProtobuf(tx.GetTransactionValidDuration()),
+		TransactionID:            tx.transactionID._ToProtobuf(),
 		Data: &services.TransactionBody_CryptoAddLiveHash{
-			CryptoAddLiveHash: this.buildProtoBody(),
+			CryptoAddLiveHash: tx.buildProtoBody(),
 		},
 	}
 }
 
-func (this *LiveHashAddTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx *LiveHashAddTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return nil, errors.New("cannot schedule `LiveHashAddTransaction`")
 }
 
-func (this *LiveHashAddTransaction) buildProtoBody() *services.CryptoAddLiveHashTransactionBody {
+func (tx *LiveHashAddTransaction) buildProtoBody() *services.CryptoAddLiveHashTransactionBody {
 	body := &services.CryptoAddLiveHashTransactionBody{
 		LiveHash: &services.LiveHash{},
 	}
 
-	if this.accountID != nil {
-		body.LiveHash.AccountId = this.accountID._ToProtobuf()
+	if tx.accountID != nil {
+		body.LiveHash.AccountId = tx.accountID._ToProtobuf()
 	}
 
-	if this.duration != nil {
-		body.LiveHash.Duration = _DurationToProtobuf(*this.duration)
+	if tx.duration != nil {
+		body.LiveHash.Duration = _DurationToProtobuf(*tx.duration)
 	}
 
-	if this.keys != nil {
-		body.LiveHash.Keys = this.keys._ToProtoKeyList()
+	if tx.keys != nil {
+		body.LiveHash.Keys = tx.keys._ToProtoKeyList()
 	}
 
-	if this.hash != nil {
-		body.LiveHash.Hash = this.hash
+	if tx.hash != nil {
+		body.LiveHash.Hash = tx.hash
 	}
 
 	return body
 }
 
-func (this *LiveHashAddTransaction) getMethod(channel *_Channel) _Method {
+func (tx *LiveHashAddTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetCrypto().AddLiveHash,
 	}
+}
+func (tx *LiveHashAddTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	return tx.buildScheduled()
 }

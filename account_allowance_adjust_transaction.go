@@ -21,7 +21,6 @@ package hedera
  */
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -196,18 +195,6 @@ func (tx *AccountAllowanceAdjustTransaction) GetTokenNftAllowances() []*TokenNft
 }
 
 // Deprecated
-func (tx *AccountAllowanceAdjustTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	tx._RequireNotFrozen()
-
-	scheduled, err := tx.buildScheduled()
-	if err != nil {
-		return nil, err
-	}
-
-	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
-}
-
-// Deprecated
 func (tx *AccountAllowanceAdjustTransaction) Sign(
 	privateKey PrivateKey,
 ) *AccountAllowanceAdjustTransaction {
@@ -246,10 +233,6 @@ func (this *AccountAllowanceAdjustTransaction) FreezeWith(client *Client) (*Acco
 	return this, err
 }
 
-func (tx *AccountAllowanceAdjustTransaction) GetMaxTransactionFee() Hbar {
-	return tx.transaction.GetMaxTransactionFee()
-}
-
 // SetMaxTransactionFee sets the max transaction fee for tx AccountAllowanceAdjustTransaction.
 func (tx *AccountAllowanceAdjustTransaction) SetMaxTransactionFee(fee Hbar) *AccountAllowanceAdjustTransaction {
 	tx._RequireNotFrozen()
@@ -262,15 +245,6 @@ func (tx *AccountAllowanceAdjustTransaction) SetRegenerateTransactionID(regenera
 	tx._RequireNotFrozen()
 	tx.transaction.SetRegenerateTransactionID(regenerateTransactionID)
 	return tx
-}
-
-// GetRegenerateTransactionID returns true if transaction ID regeneration is enabled.
-func (tx *AccountAllowanceAdjustTransaction) GetRegenerateTransactionID() bool {
-	return tx.transaction.GetRegenerateTransactionID()
-}
-
-func (tx *AccountAllowanceAdjustTransaction) GetTransactionMemo() string {
-	return tx.transaction.GetTransactionMemo()
 }
 
 // SetTransactionMemo sets the memo for tx AccountAllowanceAdjustTransaction.
@@ -327,11 +301,6 @@ func (tx *AccountAllowanceAdjustTransaction) SetMaxBackoff(max time.Duration) *A
 func (tx *AccountAllowanceAdjustTransaction) SetMinBackoff(min time.Duration) *AccountAllowanceAdjustTransaction {
 	tx.transaction.SetMinBackoff(min)
 	return tx
-}
-
-func (tx *AccountAllowanceAdjustTransaction) _GetLogID() string {
-	timestamp := tx.transactionIDs._GetCurrent().(TransactionID).ValidStart
-	return fmt.Sprintf("AccountAllowanceAdjustTransaction:%d", timestamp.UnixNano())
 }
 
 // ----------- overriden functions ----------------
@@ -405,6 +374,12 @@ func (tx *AccountAllowanceAdjustTransaction) validateNetworkOnIDs(client *Client
 func (tx *AccountAllowanceAdjustTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{}
 }
+
 func (tx *AccountAllowanceAdjustTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{}, nil
 }
+
+func (this *AccountAllowanceAdjustTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	return this.buildScheduled()
+}
+

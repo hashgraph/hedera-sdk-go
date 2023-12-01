@@ -22,7 +22,6 @@ package hedera
 
 import (
 	"encoding/hex"
-	"fmt"
 	"strings"
 	"time"
 
@@ -95,13 +94,6 @@ func _AccountCreateTransactionFromProtobuf(tx transaction, pb *services.Transact
 
 	return &body
 }
-
-// When execution is attempted, a single attempt will timeout when tx deadline is reached. (The SDK may subsequently retry the execution.)
-func (tx *AccountCreateTransaction) SetGrpcDeadline(deadline *time.Duration) *AccountCreateTransaction {
-	tx.transaction.SetGrpcDeadline(deadline)
-	return tx
-}
-
 // SetKey sets the key that must sign each transfer out of the account. If RecieverSignatureRequired is true, then it
 // must also sign any transfer into the account.
 func (tx *AccountCreateTransaction) SetKey(key Key) *AccountCreateTransaction {
@@ -267,17 +259,7 @@ func (tx *AccountCreateTransaction) GetReceiverSignatureRequired() bool {
 	return tx.receiverSignatureRequired
 }
 
-// Schedule a Create Account transaction
-func (tx *AccountCreateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	tx._RequireNotFrozen()
-
-	scheduled, err := tx.buildScheduled()
-	if err != nil {
-		return nil, err
-	}
-
-	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
-}
+// ---- Required Interfaces ---- //
 
 // Sign uses the provided privateKey to sign the transaction.
 func (tx *AccountCreateTransaction) Sign(
@@ -305,6 +287,17 @@ func (tx *AccountCreateTransaction) SignWith(
 	return tx
 }
 
+// AddSignature adds a signature to the transaction.
+func (tx *AccountCreateTransaction) AddSignature(publicKey PublicKey, signature []byte) *AccountCreateTransaction {
+	tx.transaction.AddSignature(publicKey, signature)
+	return tx
+}
+
+// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
+func (tx *AccountCreateTransaction) SetGrpcDeadline(deadline *time.Duration) *AccountCreateTransaction {
+	tx.transaction.SetGrpcDeadline(deadline)
+	return tx
+}
 
 func (tx *AccountCreateTransaction) Freeze() (*AccountCreateTransaction, error) {
     _,err := tx.transaction.Freeze()
@@ -335,16 +328,6 @@ func (tx *AccountCreateTransaction) SetRegenerateTransactionID(regenerateTransac
 	return tx
 }
 
-// GetRegenerateTransactionID returns true if transaction ID regeneration is enabled.
-func (tx *AccountCreateTransaction) GetRegenerateTransactionID() bool {
-	return tx.transaction.GetRegenerateTransactionID()
-}
-
-// GetTransactionMemo returns the memo for tx AccountCreateTransaction.
-func (tx *AccountCreateTransaction) GetTransactionMemo() string {
-	return tx.transaction.GetTransactionMemo()
-}
-
 // SetTransactionMemo sets the memo for tx AccountCreateTransaction.
 func (tx *AccountCreateTransaction) SetTransactionMemo(memo string) *AccountCreateTransaction {
 	tx._RequireNotFrozen()
@@ -352,21 +335,11 @@ func (tx *AccountCreateTransaction) SetTransactionMemo(memo string) *AccountCrea
 	return tx
 }
 
-// GetTransactionValidDuration returns the duration that tx transaction is valid for.
-func (tx *AccountCreateTransaction) GetTransactionValidDuration() time.Duration {
-	return tx.transaction.GetTransactionValidDuration()
-}
-
 // SetTransactionValidDuration sets the valid duration for tx AccountCreateTransaction.
 func (tx *AccountCreateTransaction) SetTransactionValidDuration(duration time.Duration) *AccountCreateTransaction {
 	tx._RequireNotFrozen()
 	tx.transaction.SetTransactionValidDuration(duration)
 	return tx
-}
-
-// GetTransactionID returns the TransactionID for tx AccountCreateTransaction.
-func (tx *AccountCreateTransaction) GetTransactionID() TransactionID {
-	return tx.transaction.GetTransactionID()
 }
 
 // SetTransactionID sets the TransactionID for tx AccountCreateTransaction.
@@ -389,12 +362,6 @@ func (tx *AccountCreateTransaction) SetMaxRetry(count int) *AccountCreateTransac
 	return tx
 }
 
-// AddSignature adds a signature to the transaction.
-func (tx *AccountCreateTransaction) AddSignature(publicKey PublicKey, signature []byte) *AccountCreateTransaction {
-	tx.transaction.AddSignature(publicKey, signature)
-	return tx
-}
-
 // SetMaxBackoff The maximum amount of time to wait between retries.
 // Every retry attempt will increase the wait time exponentially until it reaches tx time.
 func (tx *AccountCreateTransaction) SetMaxBackoff(max time.Duration) *AccountCreateTransaction {
@@ -406,11 +373,6 @@ func (tx *AccountCreateTransaction) SetMaxBackoff(max time.Duration) *AccountCre
 func (tx *AccountCreateTransaction) SetMinBackoff(min time.Duration) *AccountCreateTransaction {
 	tx.transaction.SetMinBackoff(min)
 	return tx
-}
-
-func (tx *AccountCreateTransaction) _GetLogID() string {
-	timestamp := tx.transactionIDs._GetCurrent().(TransactionID).ValidStart
-	return fmt.Sprintf("AccountCreateTransaction:%d", timestamp.UnixNano())
 }
 
 func (tx *AccountCreateTransaction) SetLogLevel(level LogLevel) *AccountCreateTransaction {
