@@ -4836,8 +4836,8 @@ func (tx *transaction) mapResponse(request interface{}, _ interface{}, nodeID Ac
 }
 
 // Building empty object as "default" implementation. All inhertents must implement their own implementation.
-func (tx *transaction) getMethod(*_Channel) _Method {
-	return _Method{}
+func (tx *transaction) getMethod(ch *_Channel) _Method {
+	return tx.e.getMethod(ch)
 }
 
 // Building empty object as "default" implementation. All inhertents must implement their own implementation.
@@ -4848,4 +4848,8 @@ func (tx *transaction) getName() string {
 // Building empty object as "default" implementation. All inhertents must implement their own implementation.
 func (tx *transaction) validateNetworkOnIDs(client *Client) error {
 	return errors.New("Function not implemented")
+}
+
+func (tx *transaction) getRequest() interface{} {
+	return tx
 }

@@ -68,6 +68,7 @@ type Executable interface {
 	validateNetworkOnIDs(client *Client) error
 	build() *services.TransactionBody
 	buildScheduled() (*services.SchedulableTransactionBody, error)
+	getRequest() interface{}
 }
 
 type executable struct {
@@ -209,6 +210,40 @@ func getTransactionIDAndMessage(request interface{}) (string, string) {
 }
 
 func _Execute(client *Client, e Executable) (interface{}, error) {
+	if tx, ok := e.getRequest().(*transaction); ok {
+		return execute(client, tx)
+	} else if q, ok := e.getRequest().(*transaction); ok {
+		return execute(client, q)
+	}
+	panic("Invalid request type")
+}
+
+func _DelayForAttempt(logID string, backoff time.Duration, attempt int64, logger Logger) {
+	logger.Trace("retrying request attempt", "requestId", logID, "delay", backoff, "attempt", attempt+1)
+
+	time.Sleep(backoff)
+}
+
+func _ExecutableDefaultRetryHandler(logID string, err error, logger Logger) bool {
+	code := status.Code(err)
+	logger.Trace("received gRPC error with status code", "requestId", logID, "status", code.String())
+	switch code {
+	case codes.ResourceExhausted, codes.Unavailable:
+		return true
+	case codes.Internal:
+		grpcErr, ok := status.FromError(err)
+
+		if !ok {
+			return false
+		}
+
+		return rstStream.Match([]byte(grpcErr.Message()))
+	default:
+		return false
+	}
+}
+
+func execute(client *Client, e Executable) (interface{}, error) {
 	var maxAttempts int
 	backOff := backoff.NewExponentialBackOff()
 	backOff.InitialInterval = e.GetMinBackoff()
@@ -398,29 +433,4 @@ func _Execute(client *Client, e Executable) (interface{}, error) {
 	}
 
 	return &services.Response{}, errPersistent
-}
-
-func _DelayForAttempt(logID string, backoff time.Duration, attempt int64, logger Logger) {
-	logger.Trace("retrying request attempt", "requestId", logID, "delay", backoff, "attempt", attempt+1)
-
-	time.Sleep(backoff)
-}
-
-func _ExecutableDefaultRetryHandler(logID string, err error, logger Logger) bool {
-	code := status.Code(err)
-	logger.Trace("received gRPC error with status code", "requestId", logID, "status", code.String())
-	switch code {
-	case codes.ResourceExhausted, codes.Unavailable:
-		return true
-	case codes.Internal:
-		grpcErr, ok := status.FromError(err)
-
-		if !ok {
-			return false
-		}
-
-		return rstStream.Match([]byte(grpcErr.Message()))
-	default:
-		return false
-	}
 }

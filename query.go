@@ -276,3 +276,6 @@ func (q *query) validateNetworkOnIDs(client *Client) error {
 func (q *query) getQueryStatus(response interface{}) Status {
 	return Status(1)
 }
+func (q *query) getRequest() interface{} {
+	return q
+}
