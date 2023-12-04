@@ -50,13 +50,12 @@ const (
 )
 
 type Executable interface {
-	GetMaxBackoff() time.Duration 
+	GetMaxBackoff() time.Duration
 	GetMinBackoff() time.Duration
 	GetGrpcDeadline() *time.Duration
 	GetMaxRetry() int
 	GetNodeAccountIDs() []AccountID
 	GetLogLevel() *LogLevel
-
 
 	shouldRetry(interface{}, interface{}) _ExecutionState
 	makeRequest(interface{}) interface{}
@@ -93,92 +92,90 @@ type _Method struct {
 	) (*services.TransactionResponse, error)
 }
 
-
-func (this *executable) GetMaxBackoff() time.Duration {
-	if this.maxBackoff != nil {
-		return *this.maxBackoff
+func (e *executable) GetMaxBackoff() time.Duration {
+	if e.maxBackoff != nil {
+		return *e.maxBackoff
 	}
 
 	return 8 * time.Second
 }
 
-func (this *executable) GetMinBackoff() time.Duration {
-	if this.minBackoff != nil {
-		return *this.minBackoff
+func (e *executable) GetMinBackoff() time.Duration {
+	if e.minBackoff != nil {
+		return *e.minBackoff
 	}
 
 	return 250 * time.Millisecond
 }
 
-func (this *executable) SetMaxBackoff(max time.Duration) *executable {
+func (e *executable) SetMaxBackoff(max time.Duration) *executable {
 	if max.Nanoseconds() < 0 {
 		panic("maxBackoff must be a positive duration")
-	} else if max.Nanoseconds() < this.minBackoff.Nanoseconds() {
+	} else if max.Nanoseconds() < e.minBackoff.Nanoseconds() {
 		panic("maxBackoff must be greater than or equal to minBackoff")
 	}
-	this.maxBackoff = &max
-	return this
+	e.maxBackoff = &max
+	return e
 }
 
-func (this *executable) SetMinBackoff(max time.Duration) *executable{
-	if max.Nanoseconds() < 0 {
-		panic("maxBackoff must be a positive duration")
-	} else if max.Nanoseconds() < this.minBackoff.Nanoseconds() {
-		panic("maxBackoff must be greater than or equal to minBackoff")
+func (e *executable) SetMinBackoff(min time.Duration) *executable {
+	if min.Nanoseconds() < 0 {
+		panic("minBackoff must be a positive duration")
+	} else if e.maxBackoff.Nanoseconds() < min.Nanoseconds() {
+		panic("minBackoff must be less than or equal to maxBackoff")
 	}
-	this.maxBackoff = &max
-	return this
+	e.minBackoff = &min
+	return e
 }
 
 // GetGrpcDeadline returns the grpc deadline
-func (this *executable) GetGrpcDeadline() *time.Duration {
-	return this.grpcDeadline
+func (e *executable) GetGrpcDeadline() *time.Duration {
+	return e.grpcDeadline
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (this *executable) SetGrpcDeadline(deadline *time.Duration) *executable {
-	this.grpcDeadline = deadline
-	return this
+func (e *executable) SetGrpcDeadline(deadline *time.Duration) *executable {
+	e.grpcDeadline = deadline
+	return e
 }
 
 // GetMaxRetry returns the max number of errors before execution will fail.
-func (this *executable) GetMaxRetry() int{
-	return this.maxRetry
+func (e *executable) GetMaxRetry() int {
+	return e.maxRetry
 }
 
-func (this *executable) SetMaxRetry(max int) *executable {
-	this.maxRetry = max
-	return this
+func (e *executable) SetMaxRetry(max int) *executable {
+	e.maxRetry = max
+	return e
 }
 
 // GetNodeAccountID returns the node AccountID for this transaction.
-func (this *executable) GetNodeAccountIDs() []AccountID{
+func (e *executable) GetNodeAccountIDs() []AccountID {
 	nodeAccountIDs := []AccountID{}
 
-	for _, value := range this.nodeAccountIDs.slice {
+	for _, value := range e.nodeAccountIDs.slice {
 		nodeAccountIDs = append(nodeAccountIDs, value.(AccountID))
 	}
 
 	return nodeAccountIDs
 }
 
-func (this *executable) SetNodeAccountIDs(nodeAccountIDs []AccountID) *executable{
+func (e *executable) SetNodeAccountIDs(nodeAccountIDs []AccountID) *executable {
 	for _, nodeAccountID := range nodeAccountIDs {
-		this.nodeAccountIDs._Push(nodeAccountID)
+		e.nodeAccountIDs._Push(nodeAccountID)
 	}
-	this.nodeAccountIDs._SetLocked(true)
-	return this
+	e.nodeAccountIDs._SetLocked(true)
+	return e
 }
 
-func (this *executable) GetLogLevel() *LogLevel {
-	return this.logLevel
+func (e *executable) GetLogLevel() *LogLevel {
+	return e.logLevel
 }
 
-func (this *executable) SetLogLevel(level LogLevel) *executable{
-	this.logLevel = &level
-	return this
+func (e *executable) SetLogLevel(level LogLevel) *executable {
+	e.logLevel = &level
+	return e
 }
-
 
 func getLogger(request interface{}, clientLogger Logger) Logger {
 	switch req := request.(type) {
@@ -209,7 +206,7 @@ func getTransactionIDAndMessage(request interface{}) (string, string) {
 	}
 }
 
-func _Execute(client *Client, e Executable) (interface{}, error){
+func _Execute(client *Client, e Executable) (interface{}, error) {
 	var maxAttempts int
 	backOff := backoff.NewExponentialBackOff()
 	backOff.InitialInterval = e.GetMinBackoff()
@@ -237,9 +234,9 @@ func _Execute(client *Client, e Executable) (interface{}, error){
 
 		if transaction, ok := e.(*transaction); ok {
 			if attempt > 0 && transaction.nodeAccountIDs._Length() > 1 {
-				e.advanceRequest(e);
+				e.advanceRequest(e)
 			}
-            protoRequest = e.makeRequest(e)
+			protoRequest = e.makeRequest(e)
 			nodeAccountID := e.getNodeAccountID(e)
 			if node, ok = client.network._GetNodeForAccountID(nodeAccountID); !ok {
 				return TransactionResponse{}, ErrInvalidNodeAccountIDSet{nodeAccountID}
@@ -354,7 +351,7 @@ func _Execute(client *Client, e Executable) (interface{}, error){
 			"nodeAddress", node.address._String(),
 			"nodeIsHealthy", strconv.FormatBool(node._IsHealthy()),
 			"network", client.GetLedgerID().String(),
-			"status",e.mapStatusError(e, resp).Error(),
+			"status", e.mapStatusError(e, resp).Error(),
 			"txID", txID,
 		)
 
@@ -400,7 +397,6 @@ func _Execute(client *Client, e Executable) (interface{}, error){
 
 	return &services.Response{}, errPersistent
 }
-
 
 func _DelayForAttempt(logID string, backoff time.Duration, attempt int64, logger Logger) {
 	logger.Trace("retrying request attempt", "requestId", logID, "delay", backoff, "attempt", attempt+1)
