@@ -41,12 +41,12 @@ type AccountBalanceQuery struct {
 // instead of manually creating an instance of the struct.
 func NewAccountBalanceQuery() *AccountBalanceQuery {
 	header := services.QueryHeader{}
-	newQuery := AccountBalanceQuery{
+	result := AccountBalanceQuery{
 		query: _NewQuery(false, &header),
 	}
-	newQuery.e = &newQuery
+	//	result.e = &result
 
-	return &newQuery
+	return &result
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)

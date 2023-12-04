@@ -45,7 +45,7 @@ func NewTokenNftInfoQuery() *TokenNftInfoQuery {
 		nftID: nil,
 	}
 
-	result.e = &result
+	//	result.e = &result
 	return &result
 }
 
@@ -338,7 +338,7 @@ func (this *TokenNftInfoQuery) getName() string {
 	return "TokenNftInfoQuery"
 }
 
-func (this *TokenNftInfoQuery) build()*services.Query_TokenGetNftInfo {
+func (this *TokenNftInfoQuery) build() *services.Query_TokenGetNftInfo {
 	body := &services.TokenGetNftInfoQuery{
 		Header: &services.QueryHeader{},
 	}

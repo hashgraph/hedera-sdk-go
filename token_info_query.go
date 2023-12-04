@@ -40,7 +40,7 @@ func NewTokenInfoQuery() *TokenInfoQuery {
 		query: _NewQuery(true, &header),
 	}
 
-	result.e = &result
+	//	result.e = &result
 	return &result
 }
 
@@ -257,6 +257,7 @@ func (this *TokenInfoQuery) SetLogLevel(level LogLevel) *TokenInfoQuery {
 	this.query.SetLogLevel(level)
 	return this
 }
+
 // ---------- Parent functions specific implementation ----------
 
 func (this *TokenInfoQuery) getMethod(channel *_Channel) _Method {
@@ -275,7 +276,7 @@ func (this *TokenInfoQuery) getName() string {
 	return "TokenInfoQuery"
 }
 
-func (this *TokenInfoQuery) build()*services.Query_TokenGetInfo {
+func (this *TokenInfoQuery) build() *services.Query_TokenGetInfo {
 	body := &services.TokenGetInfoQuery{
 		Header: &services.QueryHeader{},
 	}

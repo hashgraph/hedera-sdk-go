@@ -48,8 +48,6 @@ type Query interface {
 	Executable
 
 	Execute(client *Client) (TransactionResponse, error)
-
-	build() *services.TransactionBody
 	getQueryStatus(response interface{}) Status
 }
 
@@ -265,6 +263,10 @@ func (q *query) getName() string {
 // NOTE: Should be implemented in every inheritor.
 func (q *query) build() *services.TransactionBody {
 	return nil
+}
+
+func (tx *query) buildScheduled() (*services.SchedulableTransactionBody, error) {
+	return nil, errors.New("Not implemented")
 }
 
 // NOTE: Should be implemented in every inheritor.

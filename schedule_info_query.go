@@ -40,7 +40,7 @@ func NewScheduleInfoQuery() *ScheduleInfoQuery {
 		query: _NewQuery(true, &header),
 	}
 
-	result.e = &result
+	//	result.e = &result
 	return &result
 }
 
@@ -95,7 +95,6 @@ func (this *ScheduleInfoQuery) GetCost(client *Client) (Hbar, error) {
 
 	this.pbHeader.ResponseType = services.ResponseType_COST_ANSWER
 	this.paymentTransactionIDs._Advance()
-
 
 	resp, err := _Execute(
 		client,

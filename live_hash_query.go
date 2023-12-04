@@ -40,7 +40,7 @@ func NewLiveHashQuery() *LiveHashQuery {
 	result := LiveHashQuery{
 		query: _NewQuery(true, &header),
 	}
-	result.e = &result
+	//	result.e = &result
 	return &result
 }
 
@@ -119,6 +119,7 @@ func (this *LiveHashQuery) GetCost(client *Client) (Hbar, error) {
 	cost := int64(resp.(*services.Response).GetCryptoGetLiveHash().Header.Cost)
 	return HbarFromTinybar(cost), nil
 }
+
 // Execute executes the Query with the provided client
 func (this *LiveHashQuery) Execute(client *Client) (LiveHash, error) {
 	if client == nil || client.operator == nil {

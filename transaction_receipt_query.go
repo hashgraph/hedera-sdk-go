@@ -52,7 +52,7 @@ func NewTransactionReceiptQuery() *TransactionReceiptQuery {
 	result := TransactionReceiptQuery{
 		query: _NewQuery(false, &header),
 	}
-	result.e = &result
+	//	result.e = &result
 	return &result
 }
 
@@ -98,6 +98,7 @@ func (this *TransactionReceiptQuery) GetIncludeDuplicates() bool {
 
 	return false
 }
+
 // GetCost returns the fee that would be charged to get the requested information (if a cost was requested).
 func (this *TransactionReceiptQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil {
@@ -188,7 +189,6 @@ func (this *TransactionReceiptQuery) Execute(client *Client) (TransactionReceipt
 	return _TransactionReceiptFromProtobuf(resp.(*services.Response).GetTransactionGetReceipt(), this.transactionID), nil
 }
 
-
 // SetTransactionID sets the TransactionID for which the receipt is being requested.
 func (this *TransactionReceiptQuery) SetTransactionID(transactionID TransactionID) *TransactionReceiptQuery {
 	this.transactionID = &transactionID
@@ -266,6 +266,7 @@ func (this *TransactionReceiptQuery) SetLogLevel(level LogLevel) *TransactionRec
 	this.query.SetLogLevel(level)
 	return this
 }
+
 // ---------- Parent functions specific implementation ----------
 
 func (this *TransactionReceiptQuery) getMethod(channel *_Channel) _Method {
@@ -293,7 +294,7 @@ func (this *TransactionReceiptQuery) getName() string {
 	return "TransactionReceiptQuery"
 }
 
-func (this *TransactionReceiptQuery) build()  *services.Query_TransactionGetReceipt {
+func (this *TransactionReceiptQuery) build() *services.Query_TransactionGetReceipt {
 	body := &services.TransactionGetReceiptQuery{
 		Header: &services.QueryHeader{},
 	}
@@ -329,7 +330,6 @@ func (this *TransactionReceiptQuery) validateNetworkOnIDs(client *Client) error 
 
 func (this *TransactionReceiptQuery) shouldRetry(_ interface{}, response interface{}) _ExecutionState {
 	status := Status(response.(*services.Response).GetTransactionGetReceipt().GetHeader().GetNodeTransactionPrecheckCode())
-
 
 	switch status {
 	case StatusPlatformTransactionNotCreated, StatusBusy, StatusUnknown, StatusReceiptNotFound, StatusRecordNotFound:

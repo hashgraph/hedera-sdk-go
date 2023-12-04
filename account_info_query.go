@@ -43,7 +43,7 @@ func NewAccountInfoQuery() *AccountInfoQuery {
 		query: _NewQuery(true, &header),
 	}
 
-	result.e = &result
+	//result.e = &result
 	return &result
 }
 

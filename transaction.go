@@ -52,9 +52,6 @@ type Transaction interface {
 	Freeze() (Transaction, error)
 	FreezeWith(client *Client) (Transaction, error)
 	Schedule() (*ScheduleCreateTransaction, error)
-
-	build() *services.TransactionBody
-	buildScheduled() (*services.SchedulableTransactionBody, error)
 }
 
 // transaction is base struct for all transactions that may be built and submitted to Hedera.
@@ -93,7 +90,7 @@ func _NewTransaction() transaction {
 			nodeAccountIDs: _NewLockableSlice(),
 			minBackoff:     &minBackoff,
 			maxBackoff:     &maxBackoff,
-			maxRetry:                 10,
+			maxRetry:       10,
 		},
 	}
 }
@@ -132,7 +129,7 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 			nodeAccountIDs: _NewLockableSlice(),
 			minBackoff:     &minBackoff,
 			maxBackoff:     &maxBackoff,
-			maxRetry:                10,
+			maxRetry:       10,
 		},
 	}
 
@@ -936,7 +933,7 @@ func (tx *transaction) FreezeWith(client *Client) (Transaction, error) {
 	if err != nil {
 		return &transaction{}, err
 	}
-	body := tx.build()
+	body := tx.e.build()
 
 	return tx, _TransactionFreezeWith(tx, client, body)
 }
@@ -944,7 +941,7 @@ func (tx *transaction) FreezeWith(client *Client) (Transaction, error) {
 func (tx *transaction) Schedule() (*ScheduleCreateTransaction, error) {
 	tx._RequireNotFrozen()
 
-	scheduled, err := tx.buildScheduled()
+	scheduled, err := tx.e.buildScheduled()
 	if err != nil {
 		return nil, err
 	}

@@ -66,6 +66,8 @@ type Executable interface {
 	mapResponse(interface{}, interface{}, AccountID, interface{}) (interface{}, error)
 	getName() string
 	validateNetworkOnIDs(client *Client) error
+	build() *services.TransactionBody
+	buildScheduled() (*services.SchedulableTransactionBody, error)
 }
 
 type executable struct {

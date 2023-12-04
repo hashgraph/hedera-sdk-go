@@ -39,7 +39,7 @@ func NewContractBytecodeQuery() *ContractBytecodeQuery {
 	result := ContractBytecodeQuery{
 		query: _NewQuery(true, &header),
 	}
-	result.e = &result
+	//	result.e = &result
 	return &result
 }
 

@@ -43,7 +43,7 @@ func NewContractInfoQuery() *ContractInfoQuery {
 		query: query,
 	}
 
-	result.e = &result
+	//	result.e = &result
 	return &result
 }
 

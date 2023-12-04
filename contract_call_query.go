@@ -53,7 +53,7 @@ func NewContractCallQuery() *ContractCallQuery {
 		query: query,
 	}
 
-	result.e = &result
+	//	result.e = &result
 	return &result
 }
 

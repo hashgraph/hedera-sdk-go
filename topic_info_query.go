@@ -41,8 +41,8 @@ func NewTopicInfoQuery() *TopicInfoQuery {
 	result := TopicInfoQuery{
 		query: _NewQuery(true, &header),
 	}
-	
-	result.e = &result
+
+	//	result.e = &result
 	return &result
 }
 
@@ -306,4 +306,3 @@ func (this *TopicInfoQuery) validateNetworkOnIDs(client *Client) error {
 func (this *TopicInfoQuery) getQueryStatus(response interface{}) Status {
 	return Status(response.(*services.Response).GetConsensusGetTopicInfo().Header.NodeTransactionPrecheckCode)
 }
-
