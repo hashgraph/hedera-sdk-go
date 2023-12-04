@@ -57,18 +57,18 @@ type Executable interface {
 	GetNodeAccountIDs() []AccountID
 	GetLogLevel() *LogLevel
 
-	shouldRetry(interface{}, interface{}) _ExecutionState
-	makeRequest(interface{}) interface{}
-	advanceRequest(interface{})
-	getNodeAccountID(interface{}) AccountID
+	shouldRetry(interface{}) _ExecutionState
+	makeRequest() interface{}
+	advanceRequest()
+	getNodeAccountID() AccountID
 	getMethod(*_Channel) _Method
-	mapStatusError(interface{}, interface{}) error
-	mapResponse(interface{}, interface{}, AccountID, interface{}) (interface{}, error)
+	mapStatusError(interface{}) error
+	mapResponse(interface{}, AccountID, interface{}) (interface{}, error)
 	getName() string
 	validateNetworkOnIDs(client *Client) error
 	build() *services.TransactionBody
 	buildScheduled() (*services.SchedulableTransactionBody, error)
-	getRequest() interface{}
+	isTransaction() bool
 }
 
 type executable struct {
@@ -210,40 +210,6 @@ func getTransactionIDAndMessage(request interface{}) (string, string) {
 }
 
 func _Execute(client *Client, e Executable) (interface{}, error) {
-	if tx, ok := e.getRequest().(*transaction); ok {
-		return execute(client, tx)
-	} else if q, ok := e.getRequest().(*transaction); ok {
-		return execute(client, q)
-	}
-	panic("Invalid request type")
-}
-
-func _DelayForAttempt(logID string, backoff time.Duration, attempt int64, logger Logger) {
-	logger.Trace("retrying request attempt", "requestId", logID, "delay", backoff, "attempt", attempt+1)
-
-	time.Sleep(backoff)
-}
-
-func _ExecutableDefaultRetryHandler(logID string, err error, logger Logger) bool {
-	code := status.Code(err)
-	logger.Trace("received gRPC error with status code", "requestId", logID, "status", code.String())
-	switch code {
-	case codes.ResourceExhausted, codes.Unavailable:
-		return true
-	case codes.Internal:
-		grpcErr, ok := status.FromError(err)
-
-		if !ok {
-			return false
-		}
-
-		return rstStream.Match([]byte(grpcErr.Message()))
-	default:
-		return false
-	}
-}
-
-func execute(client *Client, e Executable) (interface{}, error) {
 	var maxAttempts int
 	backOff := backoff.NewExponentialBackOff()
 	backOff.InitialInterval = e.GetMinBackoff()
@@ -263,53 +229,55 @@ func execute(client *Client, e Executable) (interface{}, error) {
 	var marshaledRequest []byte
 
 	txLogger := getLogger(e, client.logger)
-	txID, msg := getTransactionIDAndMessage(e)
+	//txID, msg := getTransactionIDAndMessage()
+	txID, msg := "TODO", "TODO"
 
 	for attempt = int64(0); attempt < int64(maxAttempts); attempt, currentBackoff = attempt+1, currentBackoff*2 {
 		var protoRequest interface{}
 		var node *_Node
+		var ok bool
 
-		if transaction, ok := e.(*transaction); ok {
-			if attempt > 0 && transaction.nodeAccountIDs._Length() > 1 {
-				e.advanceRequest(e)
+		if e.isTransaction() {
+			if attempt > 0 && len(e.GetNodeAccountIDs()) > 1 {
+				e.advanceRequest()
 			}
-			protoRequest = e.makeRequest(e)
-			nodeAccountID := e.getNodeAccountID(e)
+			protoRequest = e.makeRequest()
+			nodeAccountID := e.getNodeAccountID()
 			if node, ok = client.network._GetNodeForAccountID(nodeAccountID); !ok {
 				return TransactionResponse{}, ErrInvalidNodeAccountIDSet{nodeAccountID}
 			}
 
 			marshaledRequest, _ = protobuf.Marshal(protoRequest.(*services.Transaction))
-		} else if query, ok := e.(*query); ok {
-			if query.nodeAccountIDs.locked && query.nodeAccountIDs._Length() > 0 {
-				protoRequest = e.makeRequest(e)
-				nodeAccountID := e.getNodeAccountID(e)
-				if node, ok = client.network._GetNodeForAccountID(nodeAccountID); !ok {
-					return &services.Response{}, ErrInvalidNodeAccountIDSet{nodeAccountID}
-				}
-			} else {
-				node = client.network._GetNode()
-				if len(query.paymentTransactions) > 0 {
-					var paymentTransaction services.TransactionBody
-					_ = protobuf.Unmarshal(query.paymentTransactions[0].BodyBytes, &paymentTransaction) // nolint
-					paymentTransaction.NodeAccountID = node.accountID._ToProtobuf()
-
-					transferTx := paymentTransaction.Data.(*services.TransactionBody_CryptoTransfer)
-					transferTx.CryptoTransfer.Transfers.AccountAmounts[0].AccountID = node.accountID._ToProtobuf()
-					query.paymentTransactions[0].BodyBytes, _ = protobuf.Marshal(&paymentTransaction) // nolint
-
-					signature := client.operator.signer(query.paymentTransactions[0].BodyBytes) // nolint
-					sigPairs := make([]*services.SignaturePair, 0)
-					sigPairs = append(sigPairs, client.operator.publicKey._ToSignaturePairProtobuf(signature))
-
-					query.paymentTransactions[0].SigMap = &services.SignatureMap{ // nolint
-						SigPair: sigPairs,
-					}
-				}
-				query.nodeAccountIDs._Set(0, node.accountID)
-				protoRequest = e.makeRequest(e)
-			}
-			marshaledRequest, _ = protobuf.Marshal(protoRequest.(*services.Query))
+			//} else {
+			//	if query.nodeAccountIDs.locked && query.nodeAccountIDs._Length() > 0 {
+			//		protoRequest = e.makeRequest()
+			//		nodeAccountID := e.getNodeAccountID()
+			//		if node, ok = client.network._GetNodeForAccountID(nodeAccountID); !ok {
+			//			return &services.Response{}, ErrInvalidNodeAccountIDSet{nodeAccountID}
+			//		}
+			//	} else {
+			//		node = client.network._GetNode()
+			//		if len(query.paymentTransactions) > 0 {
+			//			var paymentTransaction services.TransactionBody
+			//			_ = protobuf.Unmarshal(query.paymentTransactions[0].BodyBytes, &paymentTransaction) // nolint
+			//			paymentTransaction.NodeAccountID = node.accountID._ToProtobuf()
+			//
+			//			transferTx := paymentTransaction.Data.(*services.TransactionBody_CryptoTransfer)
+			//			transferTx.CryptoTransfer.Transfers.AccountAmounts[0].AccountID = node.accountID._ToProtobuf()
+			//			query.paymentTransactions[0].BodyBytes, _ = protobuf.Marshal(&paymentTransaction) // nolint
+			//
+			//			signature := client.operator.signer(query.paymentTransactions[0].BodyBytes) // nolint
+			//			sigPairs := make([]*services.SignaturePair, 0)
+			//			sigPairs = append(sigPairs, client.operator.publicKey._ToSignaturePairProtobuf(signature))
+			//
+			//			query.paymentTransactions[0].SigMap = &services.SignatureMap{ // nolint
+			//				SigPair: sigPairs,
+			//			}
+			//		}
+			//		query.nodeAccountIDs._Set(0, node.accountID)
+			//		protoRequest = e.makeRequest()
+			//	}
+			//	marshaledRequest, _ = protobuf.Marshal(protoRequest.(*services.Query))
 		}
 
 		node._InUse()
@@ -323,14 +291,13 @@ func execute(client *Client, e Executable) (interface{}, error) {
 		}
 
 		txLogger.Trace("updating node account ID index", "requestId", e.getName())
-
 		channel, err := node._GetChannel(txLogger)
 		if err != nil {
 			client.network._IncreaseBackoff(node)
 			continue
 		}
 
-		e.advanceRequest(e)
+		e.advanceRequest()
 
 		method := e.getMethod(channel)
 
@@ -372,7 +339,7 @@ func execute(client *Client, e Executable) (interface{}, error) {
 				errPersistent = errors.New("error")
 			}
 
-			if _, ok := e.(*transaction); ok {
+			if e.isTransaction() {
 				return TransactionResponse{}, errors.Wrapf(errPersistent, "retry %d/%d", attempt, maxAttempts)
 			}
 
@@ -388,39 +355,39 @@ func execute(client *Client, e Executable) (interface{}, error) {
 			"nodeAddress", node.address._String(),
 			"nodeIsHealthy", strconv.FormatBool(node._IsHealthy()),
 			"network", client.GetLedgerID().String(),
-			"status", e.mapStatusError(e, resp).Error(),
+			"status", e.mapStatusError(resp).Error(),
 			"txID", txID,
 		)
 
-		switch e.shouldRetry(e, resp) {
+		switch e.shouldRetry(resp) {
 		case executionStateRetry:
-			errPersistent = e.mapStatusError(e, resp)
+			errPersistent = e.mapStatusError(resp)
 			_DelayForAttempt(e.getName(), backOff.NextBackOff(), attempt, txLogger)
 			continue
 		case executionStateExpired:
-			if transaction, ok := e.(*transaction); ok {
-				if !client.GetOperatorAccountID()._IsZero() && transaction.regenerateTransactionID && !transaction.transactionIDs.locked {
-					txLogger.Trace("received `TRANSACTION_EXPIRED` with transaction ID regeneration enabled; regenerating", "requestId", e.getName())
-					transaction.transactionIDs._Set(transaction.transactionIDs.index, TransactionIDGenerate(client.GetOperatorAccountID()))
-					if err != nil {
-						panic(err)
-					}
-					continue
-				} else {
-					return TransactionResponse{}, e.mapStatusError(e, resp)
-				}
-			} else {
-				return &services.Response{}, e.mapStatusError(e, resp)
-			}
+			//if e.isTransaction() {
+			//	if !client.GetOperatorAccountID()._IsZero() && transaction.regenerateTransactionID && !transaction.transactionIDs.locked {
+			//		txLogger.Trace("received `TRANSACTION_EXPIRED` with transaction ID regeneration enabled; regenerating", "requestId", e.getName())
+			//		transaction.transactionIDs._Set(transaction.transactionIDs.index, TransactionIDGenerate(client.GetOperatorAccountID()))
+			//		if err != nil {
+			//			panic(err)
+			//		}
+			//		continue
+			//	} else {
+			//		return TransactionResponse{}, e.mapStatusError(resp)
+			//	}
+			//} else {
+			//	return &services.Response{}, e.mapStatusError(resp)
+			//}
 		case executionStateError:
-			if _, ok := e.(*transaction); ok {
-				return TransactionResponse{}, e.mapStatusError(e, resp)
+			if e.isTransaction() {
+				return TransactionResponse{}, e.mapStatusError(resp)
 			}
 
-			return &services.Response{}, e.mapStatusError(e, resp)
+			return &services.Response{}, e.mapStatusError(resp)
 		case executionStateFinished:
 			txLogger.Trace("finished", "Response Proto", hex.EncodeToString(marshaledResponse))
-			return e.mapResponse(e, resp, node.accountID, protoRequest)
+			return e.mapResponse(resp, node.accountID, protoRequest)
 		}
 	}
 
@@ -428,9 +395,34 @@ func execute(client *Client, e Executable) (interface{}, error) {
 		errPersistent = errors.New("error")
 	}
 
-	if _, ok := e.(*transaction); ok {
+	if e.isTransaction() {
 		return TransactionResponse{}, errors.Wrapf(errPersistent, "retry %d/%d", attempt, maxAttempts)
 	}
 
 	return &services.Response{}, errPersistent
+}
+
+func _DelayForAttempt(logID string, backoff time.Duration, attempt int64, logger Logger) {
+	logger.Trace("retrying request attempt", "requestId", logID, "delay", backoff, "attempt", attempt+1)
+
+	time.Sleep(backoff)
+}
+
+func _ExecutableDefaultRetryHandler(logID string, err error, logger Logger) bool {
+	code := status.Code(err)
+	logger.Trace("received gRPC error with status code", "requestId", logID, "status", code.String())
+	switch code {
+	case codes.ResourceExhausted, codes.Unavailable:
+		return true
+	case codes.Internal:
+		grpcErr, ok := status.FromError(err)
+
+		if !ok {
+			return false
+		}
+
+		return rstStream.Match([]byte(grpcErr.Message()))
+	default:
+		return false
+	}
 }

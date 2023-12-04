@@ -117,7 +117,7 @@ func (q *query) SetMaxRetry(count int) *query {
 	return q
 }
 
-func (q *query) shouldRetry(_ interface{}, response interface{}) _ExecutionState {
+func (q *query) shouldRetry(response interface{}) _ExecutionState {
 	status := q.getQueryStatus(response)
 	switch status {
 	case StatusPlatformTransactionNotCreated, StatusPlatformNotActive, StatusBusy:
@@ -216,24 +216,22 @@ func (q *query) SetLogLevel(level LogLevel) *query {
 	return q
 }
 
-func (q *query) advanceRequest(request interface{}) {
-	query := request.(*query)
-	query.nodeAccountIDs._Advance()
+func (q *query) advanceRequest() {
+	q.nodeAccountIDs._Advance()
 }
-func (q *query) getNodeAccountID(request interface{}) AccountID {
-	return request.(*query).nodeAccountIDs._GetCurrent().(AccountID)
+func (q *query) getNodeAccountID() AccountID {
+	return q.nodeAccountIDs._GetCurrent().(AccountID)
 }
 
-func (q *query) makeRequest(request interface{}) interface{} {
-	query := request.(*query)
-	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
-		query.pbHeader.Payment = query.paymentTransactions[query.paymentTransactionIDs.index]
+func (q *query) makeRequest() interface{} {
+	if q.isPaymentRequired && len(q.paymentTransactions) > 0 {
+		q.pbHeader.Payment = q.paymentTransactions[q.paymentTransactionIDs.index]
 	}
 
-	return query.pb
+	return q.pb
 }
 
-func (q *query) mapResponse(request interface{}, response interface{}, _ AccountID, protoRequest interface{}) (interface{}, error) {
+func (q *query) mapResponse(response interface{}, _ AccountID, protoRequest interface{}) (interface{}, error) {
 	return response.(*services.Response), nil
 }
 
@@ -253,7 +251,7 @@ func (q *query) getMethod(*_Channel) _Method {
 //	return ErrHederaPreCheckStatus{
 //		Status: Status(response.(*services.Response).GetCryptoGetInfo().Header.NodeTransactionPrecheckCode),
 //	}
-func (q *query) mapStatusError(interface{}, interface{}) error {
+func (q *query) mapStatusError(interface{}) error {
 	return errors.New("Not implemented")
 }
 func (q *query) getName() string {
@@ -276,6 +274,6 @@ func (q *query) validateNetworkOnIDs(client *Client) error {
 func (q *query) getQueryStatus(response interface{}) Status {
 	return Status(1)
 }
-func (q *query) getRequest() interface{} {
-	return q
+func (q *query) isTransaction() bool {
+	return false
 }

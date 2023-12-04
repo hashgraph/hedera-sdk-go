@@ -4779,7 +4779,7 @@ func TransactionExecute(transaction interface{}, client *Client) (TransactionRes
 
 // ------------ Executable Functions ------------
 
-func (tx *transaction) shouldRetry(_ interface{}, response interface{}) _ExecutionState {
+func (tx *transaction) shouldRetry(response interface{}) _ExecutionState {
 	status := Status(response.(*services.TransactionResponse).NodeTransactionPrecheckCode)
 	switch status {
 	case StatusPlatformTransactionNotCreated, StatusPlatformNotActive, StatusBusy:
@@ -4793,35 +4793,33 @@ func (tx *transaction) shouldRetry(_ interface{}, response interface{}) _Executi
 	return executionStateError
 }
 
-func (tx *transaction) makeRequest(request interface{}) interface{} {
-	transaction := request.(*transaction)
-	index := transaction.nodeAccountIDs._Length()*transaction.transactionIDs.index + transaction.nodeAccountIDs.index
-	built, _ := transaction._BuildTransaction(index)
+func (tx *transaction) makeRequest() interface{} {
+	index := tx.nodeAccountIDs._Length()*tx.transactionIDs.index + tx.nodeAccountIDs.index
+	built, _ := tx._BuildTransaction(index)
 
 	return built
 }
 
-func (tx *transaction) advanceRequest(request interface{}) {
-	request.(*transaction).nodeAccountIDs._Advance()
-	request.(*transaction).signedTransactions._Advance()
+func (tx *transaction) advanceRequest() {
+	tx.nodeAccountIDs._Advance()
+	tx.signedTransactions._Advance()
 }
 
-func (tx *transaction) getNodeAccountID(request interface{}) AccountID {
-	return request.(*transaction).nodeAccountIDs._GetCurrent().(AccountID)
+func (tx *transaction) getNodeAccountID() AccountID {
+	return tx.nodeAccountIDs._GetCurrent().(AccountID)
 }
 
 func (tx *transaction) mapStatusError(
-	request interface{},
 	response interface{},
 ) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.(*services.TransactionResponse).NodeTransactionPrecheckCode),
 		//NodeID: request.transaction.nodeAccountIDs,
-		TxID: request.(*transaction).GetTransactionID(),
+		TxID: tx.GetTransactionID(),
 	}
 }
 
-func (tx *transaction) mapResponse(request interface{}, _ interface{}, nodeID AccountID, protoRequest interface{}) (interface{}, error) {
+func (tx *transaction) mapResponse(_ interface{}, nodeID AccountID, protoRequest interface{}) (interface{}, error) {
 	hash := sha512.New384()
 	_, err := hash.Write(protoRequest.(*services.Transaction).SignedTransactionBytes)
 	if err != nil {
@@ -4830,7 +4828,7 @@ func (tx *transaction) mapResponse(request interface{}, _ interface{}, nodeID Ac
 
 	return TransactionResponse{
 		NodeID:        nodeID,
-		TransactionID: request.(*transaction).transactionIDs._GetNext().(TransactionID),
+		TransactionID: tx.transactionIDs._GetNext().(TransactionID),
 		Hash:          hash.Sum(nil),
 	}, nil
 }
@@ -4850,6 +4848,6 @@ func (tx *transaction) validateNetworkOnIDs(client *Client) error {
 	return errors.New("Function not implemented")
 }
 
-func (tx *transaction) getRequest() interface{} {
-	return tx
+func (tx *transaction) isTransaction() bool {
+	return true
 }
