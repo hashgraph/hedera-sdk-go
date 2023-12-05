@@ -197,13 +197,21 @@ func (tx *FileCreateTransaction) SetGrpcDeadline(deadline *time.Duration) *FileC
 }
 
 func (tx *FileCreateTransaction) Freeze() (*FileCreateTransaction, error) {
-	_, err := tx.transaction.Freeze()
+	_, err := tx.FreezeWith(nil)
 	return tx, err
 }
 
 func (tx *FileCreateTransaction) FreezeWith(client *Client) (*FileCreateTransaction, error) {
-	_, err := tx.transaction.FreezeWith(client)
-	return tx, err
+	if tx.IsFrozen() {
+		return tx, nil
+	}
+	tx._InitFee(client)
+	if err := tx._InitTransactionID(client); err != nil {
+		return tx, err
+	}
+	body := tx.build()
+
+	return tx, _TransactionFreezeWith(&tx.transaction, client, body)
 }
 
 // SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
@@ -306,6 +314,10 @@ func (tx *FileCreateTransaction) build() *services.TransactionBody {
 	}
 }
 
+func (tx *FileCreateTransaction) validateNetworkOnIDs(client *Client) error {
+	return nil
+}
+
 func (tx *FileCreateTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	body := &services.FileCreateTransactionBody{
 		Memo: tx.memo,
@@ -359,4 +371,3 @@ func (tx *FileCreateTransaction) getMethod(channel *_Channel) _Method {
 func (tx *FileCreateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
-
