@@ -397,14 +397,14 @@ func TestUnitQueryRegression(t *testing.T) {
 		SetMaxQueryPayment(NewHbar(1)).
 		SetQueryPayment(HbarFromTinybar(25))
 
-	body := query.build()
-	err = query._QueryGeneratePayments(client, HbarFromTinybar(20))
+	body := query.buildQuery()
+	err = query.generatePayments(client, HbarFromTinybar(20))
 	require.NoError(t, err)
 
 	var paymentTx services.TransactionBody
 	_ = protobuf.Unmarshal(query.query.paymentTransactions[0].BodyBytes, &paymentTx)
 
-	require.Equal(t, body.CryptoGetInfo.AccountID.String(), accountID._ToProtobuf().String())
+	require.Equal(t, body.GetCryptoGetInfo().AccountID.String(), accountID._ToProtobuf().String())
 	require.Equal(t, paymentTx.NodeAccountID.String(), node[0]._ToProtobuf().String())
 	require.Equal(t, paymentTx.TransactionFee, uint64(NewHbar(1).tinybar))
 	require.Equal(t, paymentTx.TransactionValidDuration, &services.Duration{Seconds: 120})

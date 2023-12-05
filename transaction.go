@@ -45,13 +45,9 @@ type Transaction interface {
 	Executable
 
 	Execute(client *Client) (TransactionResponse, error)
-	Sign(privateKey PrivateKey) Transaction
-	SignWithOperator(client *Client) (Transaction, error)
-	SignWith(publicKey PublicKey, signer TransactionSigner) Transaction
-	AddSignature(publicKey PublicKey, signature []byte) Transaction
-	Freeze() (Transaction, error)
-	FreezeWith(client *Client) (Transaction, error)
-	Schedule() (*ScheduleCreateTransaction, error)
+
+	build() *services.TransactionBody
+	buildScheduled() (*services.SchedulableTransactionBody, error)
 }
 
 // transaction is base struct for all transactions that may be built and submitted to Hedera.
@@ -933,7 +929,7 @@ func (tx *transaction) FreezeWith(client *Client) (Transaction, error) {
 	if err != nil {
 		return &transaction{}, err
 	}
-	body := tx.e.build()
+	body := tx.e.(Transaction).build()
 
 	return tx, _TransactionFreezeWith(tx, client, body)
 }
@@ -941,7 +937,7 @@ func (tx *transaction) FreezeWith(client *Client) (Transaction, error) {
 func (tx *transaction) Schedule() (*ScheduleCreateTransaction, error) {
 	tx._RequireNotFrozen()
 
-	scheduled, err := tx.e.buildScheduled()
+	scheduled, err := tx.e.(Transaction).buildScheduled()
 	if err != nil {
 		return nil, err
 	}

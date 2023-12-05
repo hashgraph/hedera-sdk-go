@@ -43,11 +43,22 @@ func NewAccountInfoQuery() *AccountInfoQuery {
 		query: _NewQuery(true, &header),
 	}
 
-	//result.e = &result
+	result.e = &result
 	return &result
 }
 
-// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
+// Execute executes the Query with the provided client
+func (q *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
+	resp, err := q.execute(client)
+
+	if err != nil {
+		return AccountInfo{}, err
+	}
+
+	return _AccountInfoFromProtobuf(resp.GetCryptoGetInfo().AccountInfo)
+}
+
+// SetGrpcDeadline When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (q *AccountInfoQuery) SetGrpcDeadline(deadline *time.Duration) *AccountInfoQuery {
 	q.query.SetGrpcDeadline(deadline)
 	return q
@@ -66,58 +77,6 @@ func (q *AccountInfoQuery) GetAccountID() AccountID {
 	}
 
 	return *q.accountID
-}
-
-// GetCost returns the fee that would be charged to get the requested information (if a cost was requested).
-func (q *AccountInfoQuery) GetCost(client *Client) (Hbar, error) {
-	if client == nil || client.operator == nil {
-		return Hbar{}, errNoClientProvided
-	}
-
-	var err error
-
-	err = q.validateNetworkOnIDs(client)
-	if err != nil {
-		return Hbar{}, err
-	}
-
-	if q.nodeAccountIDs.locked {
-		for range q.nodeAccountIDs.slice {
-			paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
-			if err != nil {
-				return Hbar{}, err
-			}
-			q.paymentTransactions = append(q.paymentTransactions, paymentTransaction)
-		}
-	} else {
-		paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
-		if err != nil {
-			return Hbar{}, err
-		}
-		q.paymentTransactions = append(q.paymentTransactions, paymentTransaction)
-	}
-
-	pb := q.build()
-	pb.CryptoGetInfo.Header = q.pbHeader
-
-	q.pb = &services.Query{
-		Query: pb,
-	}
-
-	q.pbHeader.ResponseType = services.ResponseType_COST_ANSWER
-	q.paymentTransactionIDs._Advance()
-	resp, err := _Execute(
-		client,
-		q.e,
-	)
-
-	if err != nil {
-		return Hbar{}, err
-	}
-
-	cost := int64(resp.(*services.Response).GetCryptoGetInfo().Header.Cost)
-
-	return HbarFromTinybar(cost), nil
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for this AccountInfoQuery.
@@ -144,85 +103,6 @@ func (q *AccountInfoQuery) SetMaxRetry(count int) *AccountInfoQuery {
 	return q
 }
 
-// Execute executes the Query with the provided client
-func (q *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
-	if client == nil || client.operator == nil {
-		return AccountInfo{}, errNoClientProvided
-	}
-
-	var err error
-
-	err = q.validateNetworkOnIDs(client)
-	if err != nil {
-		return AccountInfo{}, err
-	}
-
-	if !q.paymentTransactionIDs.locked {
-		q.paymentTransactionIDs._Clear()._Push(TransactionIDGenerate(client.operator.accountID))
-	}
-
-	var cost Hbar
-	if q.queryPayment.tinybar != 0 {
-		cost = q.queryPayment
-	} else {
-		if q.maxQueryPayment.tinybar == 0 {
-			cost = client.GetDefaultMaxQueryPayment()
-		} else {
-			cost = q.maxQueryPayment
-		}
-
-		actualCost, err := q.GetCost(client)
-		if err != nil {
-			return AccountInfo{}, err
-		}
-
-		if cost.tinybar < actualCost.tinybar {
-			return AccountInfo{}, ErrMaxQueryPaymentExceeded{
-				QueryCost:       actualCost,
-				MaxQueryPayment: cost,
-				query:           "AccountInfoQuery",
-			}
-		}
-
-		cost = actualCost
-	}
-
-	q.paymentTransactions = make([]*services.Transaction, 0)
-	if q.nodeAccountIDs.locked {
-		err = q._QueryGeneratePayments(client, cost)
-		if err != nil {
-			return AccountInfo{}, err
-		}
-	} else {
-		paymentTransaction, err := _QueryMakePaymentTransaction(q.paymentTransactionIDs._GetCurrent().(TransactionID), AccountID{}, client.operator, cost)
-		if err != nil {
-			return AccountInfo{}, err
-		}
-		q.paymentTransactions = append(q.paymentTransactions, paymentTransaction)
-	}
-
-	pb := q.build()
-	pb.CryptoGetInfo.Header = q.pbHeader
-	q.pb = &services.Query{
-		Query: pb,
-	}
-
-	if q.isPaymentRequired && len(q.paymentTransactions) > 0 {
-		q.paymentTransactionIDs._Advance()
-	}
-	q.pbHeader.ResponseType = services.ResponseType_ANSWER_ONLY
-	resp, err := _Execute(
-		client,
-		q.e,
-	)
-
-	if err != nil {
-		return AccountInfo{}, err
-	}
-
-	return _AccountInfoFromProtobuf(resp.(*services.Response).GetCryptoGetInfo().AccountInfo)
-}
-
 // SetMaxBackoff The maximum amount of time to wait between retries. Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (q *AccountInfoQuery) SetMaxBackoff(max time.Duration) *AccountInfoQuery {
 	q.query.SetMaxBackoff(max)
@@ -237,7 +117,7 @@ func (q *AccountInfoQuery) SetMinBackoff(min time.Duration) *AccountInfoQuery {
 
 // SetPaymentTransactionID assigns the payment transaction id.
 func (q *AccountInfoQuery) SetPaymentTransactionID(transactionID TransactionID) *AccountInfoQuery {
-	q.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
+	q.query.SetPaymentTransactionID(transactionID)
 	return q
 }
 
@@ -254,28 +134,24 @@ func (q *AccountInfoQuery) getMethod(channel *_Channel) _Method {
 	}
 }
 
-func (q *AccountInfoQuery) mapStatusError(_ interface{}, response interface{}) error {
-	return ErrHederaPreCheckStatus{
-		Status: Status(response.(*services.Response).GetCryptoGetInfo().Header.NodeTransactionPrecheckCode),
-	}
-}
-
 func (q *AccountInfoQuery) getName() string {
 	return "AccountInfoQuery"
 }
 
-func (q *AccountInfoQuery) build() *services.Query_CryptoGetInfo {
-	pb := services.Query_CryptoGetInfo{
+func (q *AccountInfoQuery) buildQuery() *services.Query {
+	pbQuery := services.Query_CryptoGetInfo{
 		CryptoGetInfo: &services.CryptoGetInfoQuery{
-			Header: &services.QueryHeader{},
+			Header: q.pbHeader,
 		},
 	}
 
 	if q.accountID != nil {
-		pb.CryptoGetInfo.AccountID = q.accountID._ToProtobuf()
+		pbQuery.CryptoGetInfo.AccountID = q.accountID._ToProtobuf()
 	}
 
-	return &pb
+	return &services.Query{
+		Query: &pbQuery,
+	}
 }
 
 func (q *AccountInfoQuery) validateNetworkOnIDs(client *Client) error {
@@ -292,6 +168,6 @@ func (q *AccountInfoQuery) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (q *AccountInfoQuery) getQueryStatus(response interface{}) Status {
-	return Status(response.(*services.Response).GetCryptoGetInfo().Header.NodeTransactionPrecheckCode)
+func (q *AccountInfoQuery) getQueryResponse(response *services.Response) queryResponse {
+	return response.GetCryptoGetInfo()
 }

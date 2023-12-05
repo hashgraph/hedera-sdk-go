@@ -44,7 +44,7 @@ func NewAccountStakersQuery() *AccountStakersQuery {
 		query: _NewQuery(true, &header),
 	}
 
-	//	result.e = &result
+	result.e = &result
 	return &result
 }
 
@@ -69,130 +69,17 @@ func (q *AccountStakersQuery) GetAccountID() AccountID {
 	return *q.accountID
 }
 
-// GetCost returns the fee that would be charged to get the requested information (if a cost was requested).
-func (q *AccountStakersQuery) GetCost(client *Client) (Hbar, error) {
-	if client == nil || client.operator == nil {
-		return Hbar{}, errNoClientProvided
-	}
-
-	err := q.validateNetworkOnIDs(client)
-	if err != nil {
-		return Hbar{}, err
-	}
-	if q.query.nodeAccountIDs.locked {
-		for range q.nodeAccountIDs.slice {
-			paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
-			if err != nil {
-				return Hbar{}, err
-			}
-			q.paymentTransactions = append(q.paymentTransactions, paymentTransaction)
-		}
-	}
-
-	pb := q.build()
-	pb.CryptoGetProxyStakers.Header = q.pbHeader
-
-	q.pb = &services.Query{
-		Query: pb,
-	}
-
-	q.pbHeader.ResponseType = services.ResponseType_COST_ANSWER
-	q.paymentTransactionIDs._Advance()
-
-	resp, err := _Execute(
-		client,
-		q.e,
-	)
-
-	if err != nil {
-		return Hbar{}, err
-	}
-
-	cost := int64(resp.(*services.Response).GetCryptoGetProxyStakers().Header.Cost)
-	return HbarFromTinybar(cost), nil
-}
-
 func (q *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) {
-	if client == nil || client.operator == nil {
-		return []Transfer{}, errNoClientProvided
-	}
-
-	var err error
-
-	err = q.validateNetworkOnIDs(client)
-	if err != nil {
-		return []Transfer{}, err
-	}
-
-	if !q.paymentTransactionIDs.locked {
-		q.paymentTransactionIDs._Clear()._Push(TransactionIDGenerate(client.operator.accountID))
-	}
-
-	var cost Hbar
-	if q.queryPayment.tinybar != 0 {
-		cost = q.queryPayment
-	} else {
-		if q.maxQueryPayment.tinybar == 0 {
-			cost = client.GetDefaultMaxQueryPayment()
-		} else {
-			cost = q.maxQueryPayment
-		}
-
-		actualCost, err := q.GetCost(client)
-		if err != nil {
-			return []Transfer{}, err
-		}
-
-		if cost.tinybar < actualCost.tinybar {
-			return []Transfer{}, ErrMaxQueryPaymentExceeded{
-				QueryCost:       actualCost,
-				MaxQueryPayment: cost,
-				query:           "AccountStakersQuery",
-			}
-		}
-
-		cost = actualCost
-	}
-
-	q.paymentTransactions = make([]*services.Transaction, 0)
-
-	if q.nodeAccountIDs.locked {
-		err = q._QueryGeneratePayments(client, cost)
-		if err != nil {
-			return []Transfer{}, err
-		}
-	} else {
-		paymentTransaction, err := _QueryMakePaymentTransaction(q.paymentTransactionIDs._GetCurrent().(TransactionID), AccountID{}, client.operator, cost)
-		if err != nil {
-			return []Transfer{}, err
-		}
-		q.paymentTransactions = append(q.paymentTransactions, paymentTransaction)
-	}
-
-	pb := q.build()
-	pb.CryptoGetProxyStakers.Header = q.pbHeader
-	q.pb = &services.Query{
-		Query: pb,
-	}
-
-	if q.isPaymentRequired && len(q.paymentTransactions) > 0 {
-		q.paymentTransactionIDs._Advance()
-	}
-	q.pbHeader.ResponseType = services.ResponseType_ANSWER_ONLY
-
-	resp, err := _Execute(
-		client,
-		q.e,
-	)
+	resp, err := q.query.execute(client)
 
 	if err != nil {
 		return []Transfer{}, err
 	}
 
-	var stakers = make([]Transfer, len(resp.(*services.Response).GetCryptoGetProxyStakers().Stakers.ProxyStaker))
+	var stakers = make([]Transfer, len(resp.GetCryptoGetProxyStakers().Stakers.ProxyStaker))
 
 	// TODO: This is wrong, q _Method shold return `[]ProxyStaker` not `[]Transfer`
-	for i, element := range resp.(*services.Response).GetCryptoGetProxyStakers().Stakers.ProxyStaker {
+	for i, element := range resp.GetCryptoGetProxyStakers().Stakers.ProxyStaker {
 		id := _AccountIDFromProtobuf(element.AccountID)
 		accountID := AccountID{}
 
@@ -248,7 +135,7 @@ func (q *AccountStakersQuery) SetMinBackoff(min time.Duration) *AccountStakersQu
 
 // SetPaymentTransactionID assigns the payment transaction id.
 func (q *AccountStakersQuery) SetPaymentTransactionID(transactionID TransactionID) *AccountStakersQuery {
-	q.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
+	q.query.SetPaymentTransactionID(transactionID)
 	return q
 }
 
@@ -265,20 +152,14 @@ func (q *AccountStakersQuery) getMethod(channel *_Channel) _Method {
 	}
 }
 
-func (q *AccountStakersQuery) mapStatusError(_ interface{}, response interface{}) error {
-	return ErrHederaPreCheckStatus{
-		Status: Status(response.(*services.Response).GetCryptoGetProxyStakers().Header.NodeTransactionPrecheckCode),
-	}
-}
-
 func (q *AccountStakersQuery) getName() string {
 	return "AccountStakersQuery"
 }
 
-func (q *AccountStakersQuery) build() *services.Query_CryptoGetProxyStakers {
+func (q *AccountStakersQuery) buildQuery() *services.Query {
 	pb := services.Query_CryptoGetProxyStakers{
 		CryptoGetProxyStakers: &services.CryptoGetStakersQuery{
-			Header: &services.QueryHeader{},
+			Header: q.pbHeader,
 		},
 	}
 
@@ -286,7 +167,9 @@ func (q *AccountStakersQuery) build() *services.Query_CryptoGetProxyStakers {
 		pb.CryptoGetProxyStakers.AccountID = q.accountID._ToProtobuf()
 	}
 
-	return &pb
+	return &services.Query{
+		Query: &pb,
+	}
 }
 
 func (q *AccountStakersQuery) validateNetworkOnIDs(client *Client) error {
@@ -303,6 +186,6 @@ func (q *AccountStakersQuery) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (q *AccountStakersQuery) getQueryStatus(response interface{}) Status {
-	return Status(response.(*services.Response).GetCryptoGetProxyStakers().Header.NodeTransactionPrecheckCode)
+func (q *AccountStakersQuery) getQueryResponse(response *services.Response) queryResponse {
+	return response.GetCryptoGetProxyStakers()
 }

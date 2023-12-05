@@ -53,7 +53,7 @@ func NewContractCallQuery() *ContractCallQuery {
 		query: query,
 	}
 
-	//	result.e = &result
+	result.e = &result
 	return &result
 }
 
@@ -134,129 +134,15 @@ func (q *ContractCallQuery) GetFunctionParameters() []byte {
 	return q.functionParameters
 }
 
-// GetCost returns the fee that would be charged to get the requested information (if a cost was requested).
-func (q *ContractCallQuery) GetCost(client *Client) (Hbar, error) {
-	if client == nil || client.operator == nil {
-		return Hbar{}, errNoClientProvided
-	}
-
-	var err error
-
-	err = q.validateNetworkOnIDs(client)
-	if err != nil {
-		return Hbar{}, err
-	}
-
-	for range q.nodeAccountIDs.slice {
-		paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
-		if err != nil {
-			return Hbar{}, err
-		}
-		q.paymentTransactions = append(q.paymentTransactions, paymentTransaction)
-	}
-
-	pb := q.build()
-	pb.ContractCallLocal.Header = q.pbHeader
-
-	q.pb = &services.Query{
-		Query: pb,
-	}
-
-	q.pbHeader.ResponseType = services.ResponseType_COST_ANSWER
-	q.paymentTransactionIDs._Advance()
-
-	resp, err := _Execute(
-		client,
-		q.e,
-	)
-
-	if err != nil {
-		return Hbar{}, err
-	}
-
-	cost := int64(resp.(*services.Response).GetContractCallLocal().Header.Cost)
-	return HbarFromTinybar(cost), nil
-}
-
 // Execute executes the Query with the provided client
 func (q *ContractCallQuery) Execute(client *Client) (ContractFunctionResult, error) {
-	if client == nil || client.operator == nil {
-		return ContractFunctionResult{}, errNoClientProvided
-	}
-
-	var err error
-
-	err = q.validateNetworkOnIDs(client)
-	if err != nil {
-		return ContractFunctionResult{}, err
-	}
-
-	if !q.paymentTransactionIDs.locked {
-		q.paymentTransactionIDs._Clear()._Push(TransactionIDGenerate(client.operator.accountID))
-	}
-
-	var cost Hbar
-	if q.queryPayment.tinybar != 0 {
-		cost = q.queryPayment
-	} else {
-		if q.maxQueryPayment.tinybar == 0 {
-			cost = client.GetDefaultMaxQueryPayment()
-		} else {
-			cost = q.maxQueryPayment
-		}
-
-		actualCost, err := q.GetCost(client)
-		if err != nil {
-			return ContractFunctionResult{}, err
-		}
-
-		if cost.tinybar < actualCost.tinybar {
-			return ContractFunctionResult{}, ErrMaxQueryPaymentExceeded{
-				QueryCost:       actualCost,
-				MaxQueryPayment: cost,
-				query:           "ContractFunctionResultQuery",
-			}
-		}
-
-		cost = actualCost
-	}
-
-	q.paymentTransactions = make([]*services.Transaction, 0)
-
-	if q.nodeAccountIDs.locked {
-		err = q._QueryGeneratePayments(client, cost)
-		if err != nil {
-			return ContractFunctionResult{}, err
-		}
-	} else {
-		paymentTransaction, err := _QueryMakePaymentTransaction(q.paymentTransactionIDs._GetCurrent().(TransactionID), AccountID{}, client.operator, cost)
-		if err != nil {
-			return ContractFunctionResult{}, err
-		}
-		q.paymentTransactions = append(q.paymentTransactions, paymentTransaction)
-	}
-
-	pb := q.build()
-	pb.ContractCallLocal.Header = q.pbHeader
-	q.pb = &services.Query{
-		Query: pb,
-	}
-
-	if q.isPaymentRequired && len(q.paymentTransactions) > 0 {
-		q.paymentTransactionIDs._Advance()
-	}
-	q.pbHeader.ResponseType = services.ResponseType_ANSWER_ONLY
-
-	resp, err := _Execute(
-		client,
-		q.e,
-	)
+	resp, err := q.query.execute(client)
 
 	if err != nil {
 		return ContractFunctionResult{}, err
 	}
 
-	return _ContractFunctionResultFromProtobuf(resp.(*services.Response).GetContractCallLocal().FunctionResult), nil
+	return _ContractFunctionResultFromProtobuf(resp.GetContractCallLocal().FunctionResult), nil
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.
@@ -315,20 +201,14 @@ func (q *ContractCallQuery) getMethod(channel *_Channel) _Method {
 	}
 }
 
-func (q *ContractCallQuery) mapStatusError(_ interface{}, response interface{}) error {
-	return ErrHederaPreCheckStatus{
-		Status: Status(response.(*services.Response).GetContractCallLocal().Header.NodeTransactionPrecheckCode),
-	}
-}
-
 func (q *ContractCallQuery) getName() string {
 	return "ContractCallQuery"
 }
 
-func (q *ContractCallQuery) build() *services.Query_ContractCallLocal {
+func (q *ContractCallQuery) buildQuery() *services.Query {
 	pb := services.Query_ContractCallLocal{
 		ContractCallLocal: &services.ContractCallLocalQuery{
-			Header: &services.QueryHeader{},
+			Header: q.pbHeader,
 			Gas:    int64(q.gas),
 		},
 	}
@@ -345,7 +225,9 @@ func (q *ContractCallQuery) build() *services.Query_ContractCallLocal {
 		pb.ContractCallLocal.FunctionParameters = q.functionParameters
 	}
 
-	return &pb
+	return &services.Query{
+		Query: &pb,
+	}
 }
 
 func (q *ContractCallQuery) validateNetworkOnIDs(client *Client) error {
@@ -368,6 +250,6 @@ func (q *ContractCallQuery) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (q *ContractCallQuery) getQueryStatus(response interface{}) Status {
-	return Status(response.(*services.Response).GetContractCallLocal().Header.NodeTransactionPrecheckCode)
+func (q *ContractCallQuery) getQueryResponse(response *services.Response) queryResponse {
+	return response.GetContractCallLocal()
 }

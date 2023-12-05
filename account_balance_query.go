@@ -44,7 +44,7 @@ func NewAccountBalanceQuery() *AccountBalanceQuery {
 	result := AccountBalanceQuery{
 		query: _NewQuery(false, &header),
 	}
-	//	result.e = &result
+	result.e = &result
 
 	return &result
 }
@@ -91,80 +91,15 @@ func (q *AccountBalanceQuery) GetContractID() ContractID {
 	return *q.contractID
 }
 
-// GetCost returns the fee that would be charged to get the requested information (if a cost was requested).
-func (q *AccountBalanceQuery) GetCost(client *Client) (Hbar, error) {
-	if client == nil || client.operator == nil {
-		return Hbar{}, errNoClientProvided
-	}
-
-	var err error
-
-	err = q.validateNetworkOnIDs(client)
-	if err != nil {
-		return Hbar{}, err
-	}
-
-	q.timestamp = time.Now()
-	q.paymentTransactions = make([]*services.Transaction, 0)
-
-	pb := q.build()
-	pb.CryptogetAccountBalance.Header = q.pbHeader
-	q.pb = &services.Query{
-		Query: pb,
-	}
-
-	q.pbHeader.ResponseType = services.ResponseType_COST_ANSWER
-	q.paymentTransactionIDs._Advance()
-	resp, err := _Execute(
-		client,
-		q.e,
-	)
-
-	if err != nil {
-		return Hbar{}, err
-	}
-
-	cost := int64(resp.(*services.Response).GetCryptogetAccountBalance().Header.Cost)
-	return HbarFromTinybar(cost), nil
-}
-
 // Execute executes the Query with the provided client
 func (q *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error) {
-	if client == nil {
-		return AccountBalance{}, errNoClientProvided
-	}
-
-	var err error
-
-	err = q.validateNetworkOnIDs(client)
-	if err != nil {
-		return AccountBalance{}, err
-	}
-
-	q.timestamp = time.Now()
-
-	q.paymentTransactions = make([]*services.Transaction, 0)
-
-	pb := q.build()
-	pb.CryptogetAccountBalance.Header = q.pbHeader
-	q.pb = &services.Query{
-		Query: pb,
-	}
-
-	if q.isPaymentRequired && len(q.paymentTransactions) > 0 {
-		q.paymentTransactionIDs._Advance()
-	}
-	q.pbHeader.ResponseType = services.ResponseType_ANSWER_ONLY
-	resp, err := _Execute(
-		client,
-		q.e,
-	)
+	resp, err := q.query.execute(client)
 
 	if err != nil {
 		return AccountBalance{}, err
 	}
 
-	return _AccountBalanceFromProtobuf(resp.(*services.Response).GetCryptogetAccountBalance()), nil
+	return _AccountBalanceFromProtobuf(resp.GetCryptogetAccountBalance()), nil
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.
@@ -205,7 +140,7 @@ func (q *AccountBalanceQuery) SetMinBackoff(min time.Duration) *AccountBalanceQu
 
 // SetPaymentTransactionID assigns the payment transaction id.
 func (q *AccountBalanceQuery) SetPaymentTransactionID(transactionID TransactionID) *AccountBalanceQuery {
-	q.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
+	q.query.SetPaymentTransactionID(transactionID)
 	return q
 }
 
@@ -222,18 +157,12 @@ func (q *AccountBalanceQuery) getMethod(channel *_Channel) _Method {
 	}
 }
 
-func (q *AccountBalanceQuery) mapStatusError(_ interface{}, response interface{}) error {
-	return ErrHederaPreCheckStatus{
-		Status: Status(response.(*services.Response).GetCryptogetAccountBalance().Header.NodeTransactionPrecheckCode),
-	}
-}
-
 func (q *AccountBalanceQuery) getName() string {
 	return "AccountBalanceQuery"
 }
 
-func (q *AccountBalanceQuery) build() *services.Query_CryptogetAccountBalance {
-	pb := services.CryptoGetAccountBalanceQuery{Header: &services.QueryHeader{}}
+func (q *AccountBalanceQuery) buildQuery() *services.Query {
+	pb := services.CryptoGetAccountBalanceQuery{Header: q.pbHeader}
 
 	if q.accountID != nil {
 		pb.BalanceSource = &services.CryptoGetAccountBalanceQuery_AccountID{
@@ -247,8 +176,10 @@ func (q *AccountBalanceQuery) build() *services.Query_CryptogetAccountBalance {
 		}
 	}
 
-	return &services.Query_CryptogetAccountBalance{
-		CryptogetAccountBalance: &pb,
+	return &services.Query{
+		Query: &services.Query_CryptogetAccountBalance{
+			CryptogetAccountBalance: &pb,
+		},
 	}
 }
 
@@ -272,6 +203,6 @@ func (q *AccountBalanceQuery) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (q *AccountBalanceQuery) getQueryStatus(response interface{}) Status {
-	return Status(response.(*services.Response).GetCryptogetAccountBalance().Header.NodeTransactionPrecheckCode)
+func (q *AccountBalanceQuery) getQueryResponse(response *services.Response) queryResponse {
+	return response.GetCryptogetAccountBalance()
 }

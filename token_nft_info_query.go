@@ -21,7 +21,6 @@ package hedera
  */
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -45,320 +44,183 @@ func NewTokenNftInfoQuery() *TokenNftInfoQuery {
 		nftID: nil,
 	}
 
-	//	result.e = &result
+	result.e = &result
 	return &result
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (this *TokenNftInfoQuery) SetGrpcDeadline(deadline *time.Duration) *TokenNftInfoQuery {
-	this.query.SetGrpcDeadline(deadline)
-	return this
+func (q *TokenNftInfoQuery) SetGrpcDeadline(deadline *time.Duration) *TokenNftInfoQuery {
+	q.query.SetGrpcDeadline(deadline)
+	return q
 }
 
 // SetNftID Sets the ID of the NFT
-func (this *TokenNftInfoQuery) SetNftID(nftID NftID) *TokenNftInfoQuery {
-	this.nftID = &nftID
-	return this
+func (q *TokenNftInfoQuery) SetNftID(nftID NftID) *TokenNftInfoQuery {
+	q.nftID = &nftID
+	return q
 }
 
 // GetNftID returns the ID of the NFT
-func (this *TokenNftInfoQuery) GetNftID() NftID {
-	if this.nftID == nil {
+func (q *TokenNftInfoQuery) GetNftID() NftID {
+	if q.nftID == nil {
 		return NftID{}
 	}
 
-	return *this.nftID
+	return *q.nftID
 }
 
 // Deprecated
-func (this *TokenNftInfoQuery) SetTokenID(id TokenID) *TokenNftInfoQuery {
-	return this
+func (q *TokenNftInfoQuery) SetTokenID(id TokenID) *TokenNftInfoQuery {
+	return q
 }
 
 // Deprecated
-func (this *TokenNftInfoQuery) GetTokenID() TokenID {
+func (q *TokenNftInfoQuery) GetTokenID() TokenID {
 	return TokenID{}
 }
 
 // Deprecated
-func (this *TokenNftInfoQuery) SetAccountID(id AccountID) *TokenNftInfoQuery {
-	return this
+func (q *TokenNftInfoQuery) SetAccountID(id AccountID) *TokenNftInfoQuery {
+	return q
 }
 
 // Deprecated
-func (this *TokenNftInfoQuery) GetAccountID() AccountID {
+func (q *TokenNftInfoQuery) GetAccountID() AccountID {
 	return AccountID{}
 }
 
 // Deprecated
-func (this *TokenNftInfoQuery) SetStart(start int64) *TokenNftInfoQuery {
-	return this
+func (q *TokenNftInfoQuery) SetStart(start int64) *TokenNftInfoQuery {
+	return q
 }
 
 // Deprecated
-func (this *TokenNftInfoQuery) GetStart() int64 {
+func (q *TokenNftInfoQuery) GetStart() int64 {
 	return 0
 }
 
 // Deprecated
-func (this *TokenNftInfoQuery) SetEnd(end int64) *TokenNftInfoQuery {
-	return this
+func (q *TokenNftInfoQuery) SetEnd(end int64) *TokenNftInfoQuery {
+	return q
 }
 
 // Deprecated
-func (this *TokenNftInfoQuery) GetEnd() int64 {
+func (q *TokenNftInfoQuery) GetEnd() int64 {
 	return 0
 }
 
 // Deprecated
-func (this *TokenNftInfoQuery) ByNftID(id NftID) *TokenNftInfoQuery {
-	this.nftID = &id
-	return this
+func (q *TokenNftInfoQuery) ByNftID(id NftID) *TokenNftInfoQuery {
+	q.nftID = &id
+	return q
 }
 
 // Deprecated
-func (this *TokenNftInfoQuery) ByTokenID(id TokenID) *TokenNftInfoQuery {
-	return this
+func (q *TokenNftInfoQuery) ByTokenID(id TokenID) *TokenNftInfoQuery {
+	return q
 }
 
 // Deprecated
-func (this *TokenNftInfoQuery) ByAccountID(id AccountID) *TokenNftInfoQuery {
-	return this
-}
-
-// GetCost returns the fee that would be charged to get the requested information (if a cost was requested).
-func (this *TokenNftInfoQuery) GetCost(client *Client) (Hbar, error) {
-	if client == nil || client.operator == nil {
-		return Hbar{}, errNoClientProvided
-	}
-
-	var err error
-
-	err = this.validateNetworkOnIDs(client)
-	if err != nil {
-		return Hbar{}, err
-	}
-
-	for range this.nodeAccountIDs.slice {
-		paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
-		if err != nil {
-			return Hbar{}, err
-		}
-		this.paymentTransactions = append(this.paymentTransactions, paymentTransaction)
-	}
-
-	pb := this.build()
-	pb.TokenGetNftInfo.Header = this.pbHeader
-
-	this.pb = &services.Query{
-		Query: pb,
-	}
-
-	this.pbHeader.ResponseType = services.ResponseType_COST_ANSWER
-	this.paymentTransactionIDs._Advance()
-
-	var resp interface{}
-	resp, err = _Execute(
-		client,
-		this.e,
-	)
-	if err != nil {
-		return Hbar{}, err
-	}
-
-	cost := int64(resp.(*services.Response).GetTokenGetNftInfo().Header.Cost)
-	return HbarFromTinybar(cost), nil
+func (q *TokenNftInfoQuery) ByAccountID(id AccountID) *TokenNftInfoQuery {
+	return q
 }
 
 // Execute executes the Query with the provided client
-func (this *TokenNftInfoQuery) Execute(client *Client) ([]TokenNftInfo, error) {
-	if client == nil || client.operator == nil {
-		return []TokenNftInfo{}, errNoClientProvided
-	}
+func (q *TokenNftInfoQuery) Execute(client *Client) ([]TokenNftInfo, error) {
+	resp, err := q.query.execute(client)
 
-	var err error
-
-	err = this.validateNetworkOnIDs(client)
 	if err != nil {
 		return []TokenNftInfo{}, err
 	}
 
-	if !this.paymentTransactionIDs.locked {
-		this.paymentTransactionIDs._Clear()._Push(TransactionIDGenerate(client.operator.accountID))
-	}
-
-	var cost Hbar
-	if this.queryPayment.tinybar != 0 {
-		cost = this.queryPayment
-	} else {
-		if this.maxQueryPayment.tinybar == 0 {
-			cost = client.GetDefaultMaxQueryPayment()
-		} else {
-			cost = this.maxQueryPayment
-		}
-
-		actualCost, err := this.GetCost(client)
-		if err != nil {
-			return []TokenNftInfo{}, err
-		}
-
-		if cost.tinybar < actualCost.tinybar {
-			return []TokenNftInfo{}, ErrMaxQueryPaymentExceeded{
-				QueryCost:       actualCost,
-				MaxQueryPayment: cost,
-				query:           "TokenNftInfo",
-			}
-		}
-
-		cost = actualCost
-	}
-
-	this.paymentTransactions = make([]*services.Transaction, 0)
-
-	if this.nodeAccountIDs.locked {
-		err = this._QueryGeneratePayments(client, cost)
-		if err != nil {
-			return []TokenNftInfo{}, err
-		}
-	} else {
-		paymentTransaction, err := _QueryMakePaymentTransaction(this.paymentTransactionIDs._GetCurrent().(TransactionID), AccountID{}, client.operator, cost)
-		if err != nil {
-			return []TokenNftInfo{}, err
-		}
-		this.paymentTransactions = append(this.paymentTransactions, paymentTransaction)
-	}
-
-	pb := this.build()
-	pb.TokenGetNftInfo.Header = this.pbHeader
-	this.pb = &services.Query{
-		Query: pb,
-	}
-
-	if this.isPaymentRequired && len(this.paymentTransactions) > 0 {
-		this.paymentTransactionIDs._Advance()
-	}
-	this.pbHeader.ResponseType = services.ResponseType_ANSWER_ONLY
-
-	var resp interface{}
 	tokenInfos := make([]TokenNftInfo, 0)
-	resp, err = _Execute(
-		client,
-		this.e,
-	)
-
-	if err != nil {
-		return []TokenNftInfo{}, err
-	}
-
-	tokenInfos = append(tokenInfos, _TokenNftInfoFromProtobuf(resp.(*services.Response).GetTokenGetNftInfo().GetNft()))
+	tokenInfos = append(tokenInfos, _TokenNftInfoFromProtobuf(resp.GetTokenGetNftInfo().GetNft()))
 	return tokenInfos, nil
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.
-func (this *TokenNftInfoQuery) SetMaxQueryPayment(maxPayment Hbar) *TokenNftInfoQuery {
-	this.query.SetMaxQueryPayment(maxPayment)
-	return this
+func (q *TokenNftInfoQuery) SetMaxQueryPayment(maxPayment Hbar) *TokenNftInfoQuery {
+	q.query.SetMaxQueryPayment(maxPayment)
+	return q
 }
 
 // SetQueryPayment sets the payment amount for this Query.
-func (this *TokenNftInfoQuery) SetQueryPayment(paymentAmount Hbar) *TokenNftInfoQuery {
-	this.query.SetQueryPayment(paymentAmount)
-	return this
+func (q *TokenNftInfoQuery) SetQueryPayment(paymentAmount Hbar) *TokenNftInfoQuery {
+	q.query.SetQueryPayment(paymentAmount)
+	return q
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for this TokenNftInfoQuery.
-func (this *TokenNftInfoQuery) SetNodeAccountIDs(accountID []AccountID) *TokenNftInfoQuery {
-	this.query.SetNodeAccountIDs(accountID)
-	return this
+func (q *TokenNftInfoQuery) SetNodeAccountIDs(accountID []AccountID) *TokenNftInfoQuery {
+	q.query.SetNodeAccountIDs(accountID)
+	return q
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
-func (this *TokenNftInfoQuery) SetMaxRetry(count int) *TokenNftInfoQuery {
-	this.query.SetMaxRetry(count)
-	return this
+func (q *TokenNftInfoQuery) SetMaxRetry(count int) *TokenNftInfoQuery {
+	q.query.SetMaxRetry(count)
+	return q
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
 // Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (this *TokenNftInfoQuery) SetMaxBackoff(max time.Duration) *TokenNftInfoQuery {
-	this.query.SetMaxBackoff(max)
-	return this
-}
-
-// GetMaxBackoff returns the maximum amount of time to wait between retries.
-func (this *TokenNftInfoQuery) GetMaxBackoff() time.Duration {
-	return this.query.GetMaxBackoff()
+func (q *TokenNftInfoQuery) SetMaxBackoff(max time.Duration) *TokenNftInfoQuery {
+	q.query.SetMaxBackoff(max)
+	return q
 }
 
 // SetMinBackoff sets the minimum amount of time to wait between retries.
-func (this *TokenNftInfoQuery) SetMinBackoff(min time.Duration) *TokenNftInfoQuery {
-	this.query.SetMinBackoff(min)
-	return this
-}
-
-// GetMinBackoff returns the minimum amount of time to wait between retries.
-func (this *TokenNftInfoQuery) GetMinBackoff() time.Duration {
-	return this.query.GetMinBackoff()
-}
-
-func (this *TokenNftInfoQuery) _GetLogID() string {
-	timestamp := this.timestamp.UnixNano()
-	if this.paymentTransactionIDs._Length() > 0 && this.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart != nil {
-		timestamp = this.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart.UnixNano()
-	}
-	return fmt.Sprintf("TokenNftInfoQuery:%d", timestamp)
+func (q *TokenNftInfoQuery) SetMinBackoff(min time.Duration) *TokenNftInfoQuery {
+	q.query.SetMinBackoff(min)
+	return q
 }
 
 // SetPaymentTransactionID assigns the payment transaction id.
-func (this *TokenNftInfoQuery) SetPaymentTransactionID(transactionID TransactionID) *TokenNftInfoQuery {
-	this.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
-	return this
+func (q *TokenNftInfoQuery) SetPaymentTransactionID(transactionID TransactionID) *TokenNftInfoQuery {
+	q.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
+	return q
 }
 
-func (this *TokenNftInfoQuery) SetLogLevel(level LogLevel) *TokenNftInfoQuery {
-	this.query.SetLogLevel(level)
-	return this
+func (q *TokenNftInfoQuery) SetLogLevel(level LogLevel) *TokenNftInfoQuery {
+	q.query.SetLogLevel(level)
+	return q
 }
 
 // ---------- Parent functions specific implementation ----------
 
-func (this *TokenNftInfoQuery) getMethod(channel *_Channel) _Method {
+func (q *TokenNftInfoQuery) getMethod(channel *_Channel) _Method {
 	return _Method{
 		query: channel._GetToken().GetTokenNftInfo,
 	}
 }
 
-func (this *TokenNftInfoQuery) mapStatusError(_ interface{}, response interface{}) error {
-	return ErrHederaPreCheckStatus{
-		Status: Status(response.(*services.Response).GetTokenGetNftInfo().Header.NodeTransactionPrecheckCode),
-	}
-}
-
-func (this *TokenNftInfoQuery) getName() string {
+func (q *TokenNftInfoQuery) getName() string {
 	return "TokenNftInfoQuery"
 }
 
-func (this *TokenNftInfoQuery) build() *services.Query_TokenGetNftInfo {
+func (q *TokenNftInfoQuery) buildQuery() *services.Query {
 	body := &services.TokenGetNftInfoQuery{
-		Header: &services.QueryHeader{},
+		Header: q.pbHeader,
 	}
 
-	if this.nftID != nil {
-		body.NftID = this.nftID._ToProtobuf()
+	if q.nftID != nil {
+		body.NftID = q.nftID._ToProtobuf()
 	}
 
-	return &services.Query_TokenGetNftInfo{
-		TokenGetNftInfo: body,
+	return &services.Query{
+		Query: &services.Query_TokenGetNftInfo{
+			TokenGetNftInfo: body,
+		},
 	}
 }
 
-func (this *TokenNftInfoQuery) validateNetworkOnIDs(client *Client) error {
+func (q *TokenNftInfoQuery) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
 
-	if this.nftID != nil {
-		if err := this.nftID.Validate(client); err != nil {
+	if q.nftID != nil {
+		if err := q.nftID.Validate(client); err != nil {
 			return err
 		}
 	}
@@ -366,6 +228,6 @@ func (this *TokenNftInfoQuery) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (this *TokenNftInfoQuery) getQueryStatus(response interface{}) Status {
-	return Status(response.(*services.Response).GetTokenGetNftInfo().Header.NodeTransactionPrecheckCode)
+func (q *TokenNftInfoQuery) getQueryResponse(response *services.Response) queryResponse {
+	return response.GetTokenGetNftInfo()
 }

@@ -173,7 +173,6 @@ func TestUnitAccountBalanceQueryMock(t *testing.T) {
 		SetAccountID(AccountID{Account: 1800}).
 		SetContractID(ContractID{Contract: 3})
 
-	query.GetCost(client)
 	_, err := query.Execute(client)
 	require.NoError(t, err)
 }

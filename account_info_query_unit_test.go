@@ -130,8 +130,8 @@ func Test_AccountInfoQueryMapStatusError(t *testing.T) {
 		},
 	}
 
-	query := AccountInfoQuery{}
-	actualError := query.mapStatusError(nil, &response)
+	query := NewAccountInfoQuery()
+	actualError := query.mapStatusError(&response)
 
 	expectedError := ErrHederaPreCheckStatus{
 		Status: StatusInvalidAccountID,

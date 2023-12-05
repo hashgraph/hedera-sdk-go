@@ -21,7 +21,6 @@ package hedera
  */
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -40,165 +39,51 @@ func NewLiveHashQuery() *LiveHashQuery {
 	result := LiveHashQuery{
 		query: _NewQuery(true, &header),
 	}
-	//	result.e = &result
+	result.e = &result
 	return &result
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (this *LiveHashQuery) SetGrpcDeadline(deadline *time.Duration) *LiveHashQuery {
-	this.query.SetGrpcDeadline(deadline)
-	return this
+func (q *LiveHashQuery) SetGrpcDeadline(deadline *time.Duration) *LiveHashQuery {
+	q.query.SetGrpcDeadline(deadline)
+	return q
 }
 
 // SetAccountID Sets the AccountID to which the livehash is associated
-func (this *LiveHashQuery) SetAccountID(accountID AccountID) *LiveHashQuery {
-	this.accountID = &accountID
-	return this
+func (q *LiveHashQuery) SetAccountID(accountID AccountID) *LiveHashQuery {
+	q.accountID = &accountID
+	return q
 }
 
 // GetAccountID returns the AccountID to which the livehash is associated
-func (this *LiveHashQuery) GetAccountID() AccountID {
-	if this.accountID == nil {
+func (q *LiveHashQuery) GetAccountID() AccountID {
+	if q.accountID == nil {
 		return AccountID{}
 	}
 
-	return *this.accountID
+	return *q.accountID
 }
 
 // SetHash Sets the SHA-384 data in the livehash
-func (this *LiveHashQuery) SetHash(hash []byte) *LiveHashQuery {
-	this.hash = hash
-	return this
+func (q *LiveHashQuery) SetHash(hash []byte) *LiveHashQuery {
+	q.hash = hash
+	return q
 }
 
 // GetHash returns the SHA-384 data in the livehash
-func (this *LiveHashQuery) GetGetHash() []byte {
-	return this.hash
-}
-
-// GetCost returns the fee that would be charged to get the requested information (if a cost was requested).
-func (this *LiveHashQuery) GetCost(client *Client) (Hbar, error) {
-	if client == nil || client.operator == nil {
-		return Hbar{}, errNoClientProvided
-	}
-
-	var err error
-
-	err = this.validateNetworkOnIDs(client)
-	if err != nil {
-		return Hbar{}, err
-	}
-
-	for range this.nodeAccountIDs.slice {
-		paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
-		if err != nil {
-			return Hbar{}, err
-		}
-		this.paymentTransactions = append(this.paymentTransactions, paymentTransaction)
-	}
-
-	pb := this.build()
-	pb.CryptoGetLiveHash.Header = this.pbHeader
-
-	this.pb = &services.Query{
-		Query: pb,
-	}
-
-	this.pbHeader.ResponseType = services.ResponseType_COST_ANSWER
-	this.paymentTransactionIDs._Advance()
-
-	resp, err := _Execute(
-		client,
-		this.e,
-	)
-
-	if err != nil {
-		return Hbar{}, err
-	}
-
-	cost := int64(resp.(*services.Response).GetCryptoGetLiveHash().Header.Cost)
-	return HbarFromTinybar(cost), nil
+func (q *LiveHashQuery) GetGetHash() []byte {
+	return q.hash
 }
 
 // Execute executes the Query with the provided client
-func (this *LiveHashQuery) Execute(client *Client) (LiveHash, error) {
-	if client == nil || client.operator == nil {
-		return LiveHash{}, errNoClientProvided
-	}
-
-	var err error
-
-	err = this.validateNetworkOnIDs(client)
-	if err != nil {
-		return LiveHash{}, err
-	}
-
-	if !this.paymentTransactionIDs.locked {
-		this.paymentTransactionIDs._Clear()._Push(TransactionIDGenerate(client.operator.accountID))
-	}
-
-	var cost Hbar
-	if this.queryPayment.tinybar != 0 {
-		cost = this.queryPayment
-	} else {
-		if this.maxQueryPayment.tinybar == 0 {
-			cost = client.GetDefaultMaxQueryPayment()
-		} else {
-			cost = this.maxQueryPayment
-		}
-
-		actualCost, err := this.GetCost(client)
-		if err != nil {
-			return LiveHash{}, err
-		}
-
-		if cost.tinybar < actualCost.tinybar {
-			return LiveHash{}, ErrMaxQueryPaymentExceeded{
-				QueryCost:       actualCost,
-				MaxQueryPayment: cost,
-				query:           "LiveHashQuery",
-			}
-		}
-
-		cost = actualCost
-	}
-
-	this.paymentTransactions = make([]*services.Transaction, 0)
-
-	if this.nodeAccountIDs.locked {
-		err = this._QueryGeneratePayments(client, cost)
-		if err != nil {
-			return LiveHash{}, err
-		}
-	} else {
-		paymentTransaction, err := _QueryMakePaymentTransaction(this.paymentTransactionIDs._GetCurrent().(TransactionID), AccountID{}, client.operator, cost)
-		if err != nil {
-			return LiveHash{}, err
-		}
-		this.paymentTransactions = append(this.paymentTransactions, paymentTransaction)
-	}
-
-	pb := this.build()
-	pb.CryptoGetLiveHash.Header = this.pbHeader
-	this.pb = &services.Query{
-		Query: pb,
-	}
-
-	if this.isPaymentRequired && len(this.paymentTransactions) > 0 {
-		this.paymentTransactionIDs._Advance()
-	}
-	this.pbHeader.ResponseType = services.ResponseType_ANSWER_ONLY
-
-	resp, err := _Execute(
-		client,
-		this.e,
-	)
+func (q *LiveHashQuery) Execute(client *Client) (LiveHash, error) {
+	resp, err := q.query.execute(client)
 
 	if err != nil {
 		return LiveHash{}, err
 	}
 
-	liveHash, err := _LiveHashFromProtobuf(resp.(*services.Response).GetCryptoGetLiveHash().LiveHash)
+	liveHash, err := _LiveHashFromProtobuf(resp.GetCryptoGetLiveHash().LiveHash)
 	if err != nil {
 		return LiveHash{}, err
 	}
@@ -207,118 +92,91 @@ func (this *LiveHashQuery) Execute(client *Client) (LiveHash, error) {
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.
-func (this *LiveHashQuery) SetMaxQueryPayment(maxPayment Hbar) *LiveHashQuery {
-	this.query.SetMaxQueryPayment(maxPayment)
-	return this
+func (q *LiveHashQuery) SetMaxQueryPayment(maxPayment Hbar) *LiveHashQuery {
+	q.query.SetMaxQueryPayment(maxPayment)
+	return q
 }
 
 // SetQueryPayment sets the payment amount for this Query.
-func (this *LiveHashQuery) SetQueryPayment(paymentAmount Hbar) *LiveHashQuery {
-	this.query.SetQueryPayment(paymentAmount)
-	return this
+func (q *LiveHashQuery) SetQueryPayment(paymentAmount Hbar) *LiveHashQuery {
+	q.query.SetQueryPayment(paymentAmount)
+	return q
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for this LiveHashQuery.
-func (this *LiveHashQuery) SetNodeAccountIDs(accountID []AccountID) *LiveHashQuery {
-	this.query.SetNodeAccountIDs(accountID)
-	return this
+func (q *LiveHashQuery) SetNodeAccountIDs(accountID []AccountID) *LiveHashQuery {
+	q.query.SetNodeAccountIDs(accountID)
+	return q
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
 // Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (this *LiveHashQuery) SetMaxBackoff(max time.Duration) *LiveHashQuery {
-	this.query.SetMaxBackoff(max)
-	return this
-}
-
-// GetMaxBackoff returns the maximum amount of time to wait between retries.
-func (this *LiveHashQuery) GetMaxBackoff() time.Duration {
-	return this.query.GetMaxBackoff()
+func (q *LiveHashQuery) SetMaxBackoff(max time.Duration) *LiveHashQuery {
+	q.query.SetMaxBackoff(max)
+	return q
 }
 
 // SetMinBackoff sets the minimum amount of time to wait between retries.
-func (this *LiveHashQuery) SetMinBackoff(min time.Duration) *LiveHashQuery {
-	this.query.SetMinBackoff(min)
-	return this
-}
-
-// GetMinBackoff returns the minimum amount of time to wait between retries.
-func (this *LiveHashQuery) GetMinBackoff() time.Duration {
-	return *this.query.GetGrpcDeadline()
-}
-
-func (this *LiveHashQuery) _GetLogID() string {
-	timestamp := this.timestamp.UnixNano()
-	if this.paymentTransactionIDs._Length() > 0 && this.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart != nil {
-		timestamp = this.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart.UnixNano()
-	}
-	return fmt.Sprintf("LiveHashQuery:%d", timestamp)
+func (q *LiveHashQuery) SetMinBackoff(min time.Duration) *LiveHashQuery {
+	q.query.SetMinBackoff(min)
+	return q
 }
 
 // SetPaymentTransactionID assigns the payment transaction id.
-func (this *LiveHashQuery) SetPaymentTransactionID(transactionID TransactionID) *LiveHashQuery {
-	this.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
-	return this
+func (q *LiveHashQuery) SetPaymentTransactionID(transactionID TransactionID) *LiveHashQuery {
+	q.query.SetPaymentTransactionID(transactionID)
+	return q
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
-func (this *LiveHashQuery) SetMaxRetry(count int) *LiveHashQuery {
-	this.query.SetMaxRetry(count)
-	return this
+func (q *LiveHashQuery) SetMaxRetry(count int) *LiveHashQuery {
+	q.query.SetMaxRetry(count)
+	return q
 }
 
-// GetMaxRetry returns the max number of errors before execution will fail.
-func (this *LiveHashQuery) GetMaxRetry() int {
-	return this.query.maxRetry
-}
-
-func (this *LiveHashQuery) SetLogLevel(level LogLevel) *LiveHashQuery {
-	this.query.SetLogLevel(level)
-	return this
+func (q *LiveHashQuery) SetLogLevel(level LogLevel) *LiveHashQuery {
+	q.query.SetLogLevel(level)
+	return q
 }
 
 // ---------- Parent functions specific implementation ----------
 
-func (this *LiveHashQuery) getMethod(channel *_Channel) _Method {
+func (q *LiveHashQuery) getMethod(channel *_Channel) _Method {
 	return _Method{
 		query: channel._GetCrypto().GetLiveHash,
 	}
 }
 
-func (this *LiveHashQuery) mapStatusError(_ interface{}, response interface{}) error {
-	return ErrHederaPreCheckStatus{
-		Status: Status(response.(*services.Response).GetCryptoGetLiveHash().Header.NodeTransactionPrecheckCode),
-	}
-}
-
-func (this *LiveHashQuery) getName() string {
+func (q *LiveHashQuery) getName() string {
 	return "LiveHashQuery"
 }
 
-func (this *LiveHashQuery) build() *services.Query_CryptoGetLiveHash {
+func (q *LiveHashQuery) buildQuery() *services.Query {
 	body := &services.CryptoGetLiveHashQuery{
-		Header: &services.QueryHeader{},
+		Header: q.pbHeader,
 	}
-	if this.accountID != nil {
-		body.AccountID = this.accountID._ToProtobuf()
-	}
-
-	if len(this.hash) > 0 {
-		body.Hash = this.hash
+	if q.accountID != nil {
+		body.AccountID = q.accountID._ToProtobuf()
 	}
 
-	return &services.Query_CryptoGetLiveHash{
-		CryptoGetLiveHash: body,
+	if len(q.hash) > 0 {
+		body.Hash = q.hash
+	}
+
+	return &services.Query{
+		Query: &services.Query_CryptoGetLiveHash{
+			CryptoGetLiveHash: body,
+		},
 	}
 }
 
-func (this *LiveHashQuery) validateNetworkOnIDs(client *Client) error {
+func (q *LiveHashQuery) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
 
-	if this.accountID != nil {
-		if err := this.accountID.ValidateChecksum(client); err != nil {
+	if q.accountID != nil {
+		if err := q.accountID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}
@@ -326,6 +184,6 @@ func (this *LiveHashQuery) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (this *LiveHashQuery) getQueryStatus(response interface{}) Status {
-	return Status(response.(*services.Response).GetCryptoGetLiveHash().Header.NodeTransactionPrecheckCode)
+func (q *LiveHashQuery) getQueryResponse(response *services.Response) queryResponse {
+	return response.GetCryptoGetLiveHash()
 }

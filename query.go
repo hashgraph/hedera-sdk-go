@@ -7,7 +7,7 @@ package hedera
  * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
+ * you may not use q file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
@@ -44,11 +44,16 @@ type query struct {
 	timestamp         time.Time
 }
 
+type queryResponse interface {
+	GetHeader() *services.ResponseHeader
+}
+
 type Query interface {
 	Executable
 
-	Execute(client *Client) (TransactionResponse, error)
-	getQueryStatus(response interface{}) Status
+	execute(client *Client) (*services.Response, error)
+	buildQuery() *services.Query
+	getQueryResponse(response *services.Response) queryResponse
 }
 
 // -------- Executable functions ----------
@@ -73,78 +78,71 @@ func _NewQuery(isPaymentRequired bool, header *services.QueryHeader) query {
 	}
 }
 
-// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (q *query) SetGrpcDeadline(deadline *time.Duration) *query {
-	q.grpcDeadline = deadline
-	return q
-}
-
-// SetNodeAccountID sets the node account ID for this Query.
-func (q *query) SetNodeAccountIDs(nodeAccountIDs []AccountID) *query {
-
-	for _, nodeAccountID := range nodeAccountIDs {
-		q.nodeAccountIDs._Push(nodeAccountID)
-	}
-	q.nodeAccountIDs._SetLocked(true)
-	return q
-}
-
-// SetMaxQueryPayment sets the maximum payment allowed for this Query.
+// SetMaxQueryPayment sets the maximum payment allowed for q Query.
 func (q *query) SetMaxQueryPayment(maxPayment Hbar) *query {
 	q.maxQueryPayment = maxPayment
 	return q
 }
 
-// SetQueryPayment sets the payment amount for this Query.
+// SetQueryPayment sets the payment amount for q Query.
 func (q *query) SetQueryPayment(paymentAmount Hbar) *query {
 	q.queryPayment = paymentAmount
 	return q
 }
 
-// GetMaxQueryPayment returns the maximum payment allowed for this Query.
+// GetMaxQueryPayment returns the maximum payment allowed for q Query.
 func (q *query) GetMaxQueryPayment() Hbar {
 	return q.maxQueryPayment
 }
 
-// GetQueryPayment returns the payment amount for this Query.
+// GetQueryPayment returns the payment amount for q Query.
 func (q *query) GetQueryPayment() Hbar {
 	return q.queryPayment
 }
 
-// SetMaxRetry sets the max number of errors before execution will fail.
-func (q *query) SetMaxRetry(count int) *query {
-	q.maxRetry = count
-	return q
-}
-
-func (q *query) shouldRetry(response interface{}) _ExecutionState {
-	status := q.getQueryStatus(response)
-	switch status {
-	case StatusPlatformTransactionNotCreated, StatusPlatformNotActive, StatusBusy:
-		return executionStateRetry
-	case StatusOk:
-		return executionStateFinished
+// GetCost returns the fee that would be charged to get the requested information (if a cost was requested).
+func (q *query) GetCost(client *Client) (Hbar, error) {
+	if client == nil || client.operator == nil {
+		return Hbar{}, errNoClientProvided
 	}
 
-	return executionStateError
-}
+	var err error
 
-func (q *query) _QueryGeneratePayments(client *Client, cost Hbar) error {
-	for _, nodeID := range q.nodeAccountIDs.slice {
-		transaction, err := _QueryMakePaymentTransaction(
-			q.paymentTransactionIDs._GetCurrent().(TransactionID),
-			nodeID.(AccountID),
-			client.operator,
-			cost,
-		)
-		if err != nil {
-			return err
-		}
-
-		q.paymentTransactions = append(q.paymentTransactions, transaction)
+	if !q.paymentTransactionIDs.locked {
+		q.paymentTransactionIDs._Clear()._Push(TransactionIDGenerate(client.operator.accountID))
 	}
 
-	return nil
+	err = q.e.validateNetworkOnIDs(client)
+	if err != nil {
+		return Hbar{}, err
+	}
+
+	if !q.nodeAccountIDs.locked {
+		q.SetNodeAccountIDs([]AccountID{client.network._GetNode().accountID})
+	}
+
+	err = q.generatePayments(client, Hbar{})
+	if err != nil {
+		return Hbar{}, err
+	}
+
+	q.pb = q.e.(Query).buildQuery()
+
+	q.pbHeader.ResponseType = services.ResponseType_COST_ANSWER
+	q.paymentTransactionIDs._Advance()
+	resp, err := _Execute(
+		client,
+		q.e,
+	)
+
+	if err != nil {
+		return Hbar{}, err
+	}
+
+	queryResp := q.e.(Query).getQueryResponse(resp.(*services.Response))
+	cost := int64(queryResp.GetHeader().Cost)
+
+	return HbarFromTinybar(cost), nil
 }
 
 func _QueryMakePaymentTransaction(transactionID TransactionID, nodeAccountID AccountID, operator *_Operator, cost Hbar) (*services.Transaction, error) {
@@ -211,16 +209,110 @@ func (q *query) SetPaymentTransactionID(transactionID TransactionID) *query {
 	return q
 }
 
-func (q *query) SetLogLevel(level LogLevel) *query {
-	q.logLevel = &level
-	return q
+func (q *query) execute(client *Client) (*services.Response, error) {
+	if client == nil || client.operator == nil {
+		return nil, errNoClientProvided
+	}
+
+	var err error
+
+	err = q.e.validateNetworkOnIDs(client)
+	if err != nil {
+		return nil, err
+	}
+
+	if !q.paymentTransactionIDs.locked {
+		q.paymentTransactionIDs._Clear()._Push(TransactionIDGenerate(client.operator.accountID))
+	}
+
+	var cost Hbar
+	if q.queryPayment.tinybar != 0 {
+		cost = q.queryPayment
+	} else {
+		if q.maxQueryPayment.tinybar == 0 {
+			cost = client.GetDefaultMaxQueryPayment()
+		} else {
+			cost = q.maxQueryPayment
+		}
+
+		actualCost, err := q.GetCost(client)
+		if err != nil {
+			return nil, err
+		}
+
+		if cost.tinybar < actualCost.tinybar {
+			return nil, ErrMaxQueryPaymentExceeded{
+				QueryCost:       actualCost,
+				MaxQueryPayment: cost,
+				query:           q.e.getName(),
+			}
+		}
+
+		cost = actualCost
+	}
+
+	q.paymentTransactions = make([]*services.Transaction, 0)
+
+	if !q.nodeAccountIDs.locked {
+		q.SetNodeAccountIDs([]AccountID{client.network._GetNode().accountID})
+	}
+
+	if cost.tinybar > 0 {
+		err = q.generatePayments(client, cost)
+
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	q.pb = q.e.(Query).buildQuery()
+	q.pbHeader.ResponseType = services.ResponseType_ANSWER_ONLY
+
+	if q.isPaymentRequired && len(q.paymentTransactions) > 0 {
+		q.paymentTransactionIDs._Advance()
+	}
+
+	resp, err := _Execute(client, q.e)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.(*services.Response), nil
+}
+
+func (q *query) shouldRetry(response interface{}) _ExecutionState {
+	queryResp := q.e.(Query).getQueryResponse(response.(*services.Response))
+	status := Status(queryResp.GetHeader().NodeTransactionPrecheckCode)
+	switch status {
+	case StatusPlatformTransactionNotCreated, StatusPlatformNotActive, StatusBusy:
+		return executionStateRetry
+	case StatusOk:
+		return executionStateFinished
+	}
+
+	return executionStateError
+}
+
+func (q *query) generatePayments(client *Client, cost Hbar) error {
+	for _, nodeID := range q.nodeAccountIDs.slice {
+		tx, err := _QueryMakePaymentTransaction(
+			q.paymentTransactionIDs._GetCurrent().(TransactionID),
+			nodeID.(AccountID),
+			client.operator,
+			cost,
+		)
+		if err != nil {
+			return err
+		}
+
+		q.paymentTransactions = append(q.paymentTransactions, tx)
+	}
+
+	return nil
 }
 
 func (q *query) advanceRequest() {
 	q.nodeAccountIDs._Advance()
-}
-func (q *query) getNodeAccountID() AccountID {
-	return q.nodeAccountIDs._GetCurrent().(AccountID)
 }
 
 func (q *query) makeRequest() interface{} {
@@ -235,6 +327,17 @@ func (q *query) mapResponse(response interface{}, _ AccountID, protoRequest inte
 	return response.(*services.Response), nil
 }
 
+func (q *query) isTransaction() bool {
+	return false
+}
+
+func (q *query) mapStatusError(response interface{}) error {
+	queryResp := q.e.(Query).getQueryResponse(response.(*services.Response))
+	return ErrHederaPreCheckStatus{
+		Status: Status(queryResp.GetHeader().NodeTransactionPrecheckCode),
+	}
+}
+
 // ----------- Next methods should be overridden in each subclass ---------------
 
 // NOTE: Should be implemented in every inheritor. Example:
@@ -246,34 +349,20 @@ func (q *query) getMethod(*_Channel) _Method {
 	return _Method{}
 }
 
-// NOTE: Should be implemented in every inheritor. Example:
-//
-//	return ErrHederaPreCheckStatus{
-//		Status: Status(response.(*services.Response).GetCryptoGetInfo().Header.NodeTransactionPrecheckCode),
-//	}
-func (q *query) mapStatusError(interface{}) error {
-	return errors.New("Not implemented")
-}
 func (q *query) getName() string {
 	return "Query"
 }
 
 // NOTE: Should be implemented in every inheritor.
-func (q *query) build() *services.TransactionBody {
+func (q *query) buildQuery() *services.Query {
 	return nil
 }
 
-func (tx *query) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (q *query) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return nil, errors.New("Not implemented")
 }
 
 // NOTE: Should be implemented in every inheritor.
 func (q *query) validateNetworkOnIDs(client *Client) error {
 	return errors.New("Not implemented")
-}
-func (q *query) getQueryStatus(response interface{}) Status {
-	return Status(1)
-}
-func (q *query) isTransaction() bool {
-	return false
 }

@@ -66,9 +66,8 @@ type Executable interface {
 	mapResponse(interface{}, AccountID, interface{}) (interface{}, error)
 	getName() string
 	validateNetworkOnIDs(client *Client) error
-	build() *services.TransactionBody
-	buildScheduled() (*services.SchedulableTransactionBody, error)
 	isTransaction() bool
+	getLogger(Logger) Logger
 }
 
 type executable struct {
@@ -180,18 +179,15 @@ func (e *executable) SetLogLevel(level LogLevel) *executable {
 	return e
 }
 
-func getLogger(request interface{}, clientLogger Logger) Logger {
-	switch req := request.(type) {
-	case *transaction:
-		if req.logLevel != nil {
-			return clientLogger.SubLoggerWithLevel(*req.logLevel)
-		}
-	case *query:
-		if req.logLevel != nil {
-			return clientLogger.SubLoggerWithLevel(*req.logLevel)
-		}
+func (e *executable) getLogger(clientLogger Logger) Logger {
+	if e.logLevel != nil {
+		return clientLogger.SubLoggerWithLevel(*e.logLevel)
 	}
 	return clientLogger
+}
+
+func (e *executable) getNodeAccountID() AccountID {
+	return e.nodeAccountIDs._GetCurrent().(AccountID)
 }
 
 func getTransactionIDAndMessage(request interface{}) (string, string) {
@@ -228,7 +224,7 @@ func _Execute(client *Client, e Executable) (interface{}, error) {
 	var errPersistent error
 	var marshaledRequest []byte
 
-	txLogger := getLogger(e, client.logger)
+	txLogger := e.getLogger(client.logger)
 	//txID, msg := getTransactionIDAndMessage()
 	txID, msg := "TODO", "TODO"
 
@@ -241,43 +237,18 @@ func _Execute(client *Client, e Executable) (interface{}, error) {
 			if attempt > 0 && len(e.GetNodeAccountIDs()) > 1 {
 				e.advanceRequest()
 			}
-			protoRequest = e.makeRequest()
-			nodeAccountID := e.getNodeAccountID()
-			if node, ok = client.network._GetNodeForAccountID(nodeAccountID); !ok {
-				return TransactionResponse{}, ErrInvalidNodeAccountIDSet{nodeAccountID}
-			}
+		}
 
+		protoRequest = e.makeRequest()
+		nodeAccountID := e.getNodeAccountID()
+		if node, ok = client.network._GetNodeForAccountID(nodeAccountID); !ok {
+			return TransactionResponse{}, ErrInvalidNodeAccountIDSet{nodeAccountID}
+		}
+
+		if e.isTransaction() {
 			marshaledRequest, _ = protobuf.Marshal(protoRequest.(*services.Transaction))
-			//} else {
-			//	if query.nodeAccountIDs.locked && query.nodeAccountIDs._Length() > 0 {
-			//		protoRequest = e.makeRequest()
-			//		nodeAccountID := e.getNodeAccountID()
-			//		if node, ok = client.network._GetNodeForAccountID(nodeAccountID); !ok {
-			//			return &services.Response{}, ErrInvalidNodeAccountIDSet{nodeAccountID}
-			//		}
-			//	} else {
-			//		node = client.network._GetNode()
-			//		if len(query.paymentTransactions) > 0 {
-			//			var paymentTransaction services.TransactionBody
-			//			_ = protobuf.Unmarshal(query.paymentTransactions[0].BodyBytes, &paymentTransaction) // nolint
-			//			paymentTransaction.NodeAccountID = node.accountID._ToProtobuf()
-			//
-			//			transferTx := paymentTransaction.Data.(*services.TransactionBody_CryptoTransfer)
-			//			transferTx.CryptoTransfer.Transfers.AccountAmounts[0].AccountID = node.accountID._ToProtobuf()
-			//			query.paymentTransactions[0].BodyBytes, _ = protobuf.Marshal(&paymentTransaction) // nolint
-			//
-			//			signature := client.operator.signer(query.paymentTransactions[0].BodyBytes) // nolint
-			//			sigPairs := make([]*services.SignaturePair, 0)
-			//			sigPairs = append(sigPairs, client.operator.publicKey._ToSignaturePairProtobuf(signature))
-			//
-			//			query.paymentTransactions[0].SigMap = &services.SignatureMap{ // nolint
-			//				SigPair: sigPairs,
-			//			}
-			//		}
-			//		query.nodeAccountIDs._Set(0, node.accountID)
-			//		protoRequest = e.makeRequest()
-			//	}
-			//	marshaledRequest, _ = protobuf.Marshal(protoRequest.(*services.Query))
+		} else {
+			marshaledRequest, _ = protobuf.Marshal(protoRequest.(*services.Query))
 		}
 
 		node._InUse()

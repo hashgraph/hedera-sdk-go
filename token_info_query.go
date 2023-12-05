@@ -21,7 +21,6 @@ package hedera
  */
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -40,262 +39,126 @@ func NewTokenInfoQuery() *TokenInfoQuery {
 		query: _NewQuery(true, &header),
 	}
 
-	//	result.e = &result
+	result.e = &result
 	return &result
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (this *TokenInfoQuery) SetGrpcDeadline(deadline *time.Duration) *TokenInfoQuery {
-	this.query.SetGrpcDeadline(deadline)
-	return this
+func (q *TokenInfoQuery) SetGrpcDeadline(deadline *time.Duration) *TokenInfoQuery {
+	q.query.SetGrpcDeadline(deadline)
+	return q
 }
 
 // SetTokenID Sets the topic to retrieve info about (the parameters and running state of).
-func (this *TokenInfoQuery) SetTokenID(tokenID TokenID) *TokenInfoQuery {
-	this.tokenID = &tokenID
-	return this
+func (q *TokenInfoQuery) SetTokenID(tokenID TokenID) *TokenInfoQuery {
+	q.tokenID = &tokenID
+	return q
 }
 
 // GetTokenID returns the TokenID for this TokenInfoQuery
-func (this *TokenInfoQuery) GetTokenID() TokenID {
-	if this.tokenID == nil {
+func (q *TokenInfoQuery) GetTokenID() TokenID {
+	if q.tokenID == nil {
 		return TokenID{}
 	}
 
-	return *this.tokenID
-}
-
-// GetCost returns the fee that would be charged to get the requested information (if a cost was requested).
-func (this *TokenInfoQuery) GetCost(client *Client) (Hbar, error) {
-	if client == nil || client.operator == nil {
-		return Hbar{}, errNoClientProvided
-	}
-
-	var err error
-
-	err = this.validateNetworkOnIDs(client)
-	if err != nil {
-		return Hbar{}, err
-	}
-
-	for range this.nodeAccountIDs.slice {
-		paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
-		if err != nil {
-			return Hbar{}, err
-		}
-		this.paymentTransactions = append(this.paymentTransactions, paymentTransaction)
-	}
-
-	pb := this.build()
-	pb.TokenGetInfo.Header = this.pbHeader
-
-	this.pb = &services.Query{
-		Query: pb,
-	}
-
-	this.pbHeader.ResponseType = services.ResponseType_COST_ANSWER
-	this.paymentTransactionIDs._Advance()
-
-	resp, err := _Execute(
-		client,
-		this.e,
-	)
-
-	if err != nil {
-		return Hbar{}, err
-	}
-
-	cost := int64(resp.(*services.Response).GetTokenGetInfo().Header.Cost)
-	return HbarFromTinybar(cost), nil
+	return *q.tokenID
 }
 
 // Execute executes the TopicInfoQuery using the provided client
-func (this *TokenInfoQuery) Execute(client *Client) (TokenInfo, error) {
-	if client == nil || client.operator == nil {
-		return TokenInfo{}, errNoClientProvided
-	}
-
-	var err error
-
-	err = this.validateNetworkOnIDs(client)
-	if err != nil {
-		return TokenInfo{}, err
-	}
-
-	if !this.paymentTransactionIDs.locked {
-		this.paymentTransactionIDs._Clear()._Push(TransactionIDGenerate(client.operator.accountID))
-	}
-
-	var cost Hbar
-	if this.queryPayment.tinybar != 0 {
-		cost = this.queryPayment
-	} else {
-		if this.maxQueryPayment.tinybar == 0 {
-			cost = client.GetDefaultMaxQueryPayment()
-		} else {
-			cost = this.maxQueryPayment
-		}
-
-		actualCost, err := this.GetCost(client)
-		if err != nil {
-			return TokenInfo{}, err
-		}
-
-		if cost.tinybar < actualCost.tinybar {
-			return TokenInfo{}, ErrMaxQueryPaymentExceeded{
-				QueryCost:       actualCost,
-				MaxQueryPayment: cost,
-				query:           "TokenInfoQuery",
-			}
-		}
-
-		cost = actualCost
-	}
-
-	this.paymentTransactions = make([]*services.Transaction, 0)
-
-	if this.nodeAccountIDs.locked {
-		err = this._QueryGeneratePayments(client, cost)
-		if err != nil {
-			return TokenInfo{}, err
-		}
-	} else {
-		paymentTransaction, err := _QueryMakePaymentTransaction(this.paymentTransactionIDs._GetCurrent().(TransactionID), AccountID{}, client.operator, cost)
-		if err != nil {
-			return TokenInfo{}, err
-		}
-		this.paymentTransactions = append(this.paymentTransactions, paymentTransaction)
-	}
-
-	pb := this.build()
-	pb.TokenGetInfo.Header = this.pbHeader
-	this.pb = &services.Query{
-		Query: pb,
-	}
-
-	if this.isPaymentRequired && len(this.paymentTransactions) > 0 {
-		this.paymentTransactionIDs._Advance()
-	}
-	this.pbHeader.ResponseType = services.ResponseType_ANSWER_ONLY
-
-	resp, err := _Execute(
-		client,
-		this.e,
-	)
+func (q *TokenInfoQuery) Execute(client *Client) (TokenInfo, error) {
+	resp, err := q.query.execute(client)
 
 	if err != nil {
 		return TokenInfo{}, err
 	}
 
-	info := _TokenInfoFromProtobuf(resp.(*services.Response).GetTokenGetInfo().TokenInfo)
+	info := _TokenInfoFromProtobuf(resp.GetTokenGetInfo().TokenInfo)
 
 	return info, nil
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.
-func (this *TokenInfoQuery) SetMaxQueryPayment(maxPayment Hbar) *TokenInfoQuery {
-	this.query.SetMaxQueryPayment(maxPayment)
-	return this
+func (q *TokenInfoQuery) SetMaxQueryPayment(maxPayment Hbar) *TokenInfoQuery {
+	q.query.SetMaxQueryPayment(maxPayment)
+	return q
 }
 
 // SetQueryPayment sets the payment amount for this Query.
-func (this *TokenInfoQuery) SetQueryPayment(paymentAmount Hbar) *TokenInfoQuery {
-	this.query.SetQueryPayment(paymentAmount)
-	return this
+func (q *TokenInfoQuery) SetQueryPayment(paymentAmount Hbar) *TokenInfoQuery {
+	q.query.SetQueryPayment(paymentAmount)
+	return q
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for this TokenInfoQuery.
-func (this *TokenInfoQuery) SetNodeAccountIDs(accountID []AccountID) *TokenInfoQuery {
-	this.query.SetNodeAccountIDs(accountID)
-	return this
+func (q *TokenInfoQuery) SetNodeAccountIDs(accountID []AccountID) *TokenInfoQuery {
+	q.query.SetNodeAccountIDs(accountID)
+	return q
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
-func (this *TokenInfoQuery) SetMaxRetry(count int) *TokenInfoQuery {
-	this.query.SetMaxRetry(count)
-	return this
+func (q *TokenInfoQuery) SetMaxRetry(count int) *TokenInfoQuery {
+	q.query.SetMaxRetry(count)
+	return q
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
 // Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (this *TokenInfoQuery) SetMaxBackoff(max time.Duration) *TokenInfoQuery {
-	this.query.SetMaxBackoff(max)
-	return this
-}
-
-// GetMaxBackoff returns the maximum amount of time to wait between retries.
-func (this *TokenInfoQuery) GetMaxBackoff() time.Duration {
-	return this.query.GetMaxBackoff()
+func (q *TokenInfoQuery) SetMaxBackoff(max time.Duration) *TokenInfoQuery {
+	q.query.SetMaxBackoff(max)
+	return q
 }
 
 // SetMinBackoff sets the minimum amount of time to wait between retries.
-func (this *TokenInfoQuery) SetMinBackoff(min time.Duration) *TokenInfoQuery {
-	this.query.SetMinBackoff(min)
-	return this
-}
-
-// GetMinBackoff returns the minimum amount of time to wait between retries.
-func (this *TokenInfoQuery) GetMinBackoff() time.Duration {
-	return this.query.GetMinBackoff()
-}
-
-func (this *TokenInfoQuery) _GetLogID() string {
-	timestamp := this.timestamp.UnixNano()
-	if this.paymentTransactionIDs._Length() > 0 && this.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart != nil {
-		timestamp = this.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart.UnixNano()
-	}
-	return fmt.Sprintf("TokenInfoQuery:%d", timestamp)
+func (q *TokenInfoQuery) SetMinBackoff(min time.Duration) *TokenInfoQuery {
+	q.query.SetMinBackoff(min)
+	return q
 }
 
 // SetPaymentTransactionID assigns the payment transaction id.
-func (this *TokenInfoQuery) SetPaymentTransactionID(transactionID TransactionID) *TokenInfoQuery {
-	this.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
-	return this
+func (q *TokenInfoQuery) SetPaymentTransactionID(transactionID TransactionID) *TokenInfoQuery {
+	q.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
+	return q
 }
 
-func (this *TokenInfoQuery) SetLogLevel(level LogLevel) *TokenInfoQuery {
-	this.query.SetLogLevel(level)
-	return this
+func (q *TokenInfoQuery) SetLogLevel(level LogLevel) *TokenInfoQuery {
+	q.query.SetLogLevel(level)
+	return q
 }
 
 // ---------- Parent functions specific implementation ----------
 
-func (this *TokenInfoQuery) getMethod(channel *_Channel) _Method {
+func (q *TokenInfoQuery) getMethod(channel *_Channel) _Method {
 	return _Method{
 		query: channel._GetToken().GetTokenInfo,
 	}
 }
 
-func (this *TokenInfoQuery) mapStatusError(_ interface{}, response interface{}) error {
-	return ErrHederaPreCheckStatus{
-		Status: Status(response.(*services.Response).GetTokenGetInfo().Header.NodeTransactionPrecheckCode),
-	}
-}
-
-func (this *TokenInfoQuery) getName() string {
+func (q *TokenInfoQuery) getName() string {
 	return "TokenInfoQuery"
 }
 
-func (this *TokenInfoQuery) build() *services.Query_TokenGetInfo {
+func (q *TokenInfoQuery) buildQuery() *services.Query {
 	body := &services.TokenGetInfoQuery{
-		Header: &services.QueryHeader{},
+		Header: q.pbHeader,
 	}
-	if this.tokenID != nil {
-		body.Token = this.tokenID._ToProtobuf()
+	if q.tokenID != nil {
+		body.Token = q.tokenID._ToProtobuf()
 	}
 
-	return &services.Query_TokenGetInfo{
-		TokenGetInfo: body,
+	return &services.Query{
+		Query: &services.Query_TokenGetInfo{
+			TokenGetInfo: body,
+		},
 	}
 }
 
-func (this *TokenInfoQuery) validateNetworkOnIDs(client *Client) error {
+func (q *TokenInfoQuery) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
 
-	if this.tokenID != nil {
-		if err := this.tokenID.ValidateChecksum(client); err != nil {
+	if q.tokenID != nil {
+		if err := q.tokenID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}
@@ -303,6 +166,6 @@ func (this *TokenInfoQuery) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (this *TokenInfoQuery) getQueryStatus(response interface{}) Status {
-	return Status(response.(*services.Response).GetTokenGetInfo().Header.NodeTransactionPrecheckCode)
+func (q *TokenInfoQuery) getQueryResponse(response *services.Response) queryResponse {
+	return response.GetTokenGetInfo()
 }
