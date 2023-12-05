@@ -1,3 +1,9 @@
+## v2.33.0
+
+### Fixed
+
+* Invalid fallback for mirror node insecure port
+
 ## v2.32.0
 
 ### Added
