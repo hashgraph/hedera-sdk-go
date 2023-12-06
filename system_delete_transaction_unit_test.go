@@ -24,7 +24,6 @@ package hedera
  */
 
 import (
-	"fmt"
 	"testing"
 	"time"
 
@@ -75,7 +74,6 @@ func TestUnitSystemDeleteTrxBuild(t *testing.T) {
 
 	trxBody := deleteTrx.build()
 
-	fmt.Println(trxBody)
 	require.NotNil(t, trxBody)
 	require.Equal(t, "memo", trxBody.Memo)
 	require.Equal(t, uint64(0), trxBody.TransactionFee)
@@ -97,7 +95,6 @@ func TestUnitSystemDeleteTrxExecute(t *testing.T) {
 	deleteTrx.SetFileID(fileId)
 
 	_, err = deleteTrx.FreezeWith(client)
-	fmt.Println(err)
 
 	deleteTrx.Sign(*client.operator.privateKey)
 	response, _ := deleteTrx.Execute(client)
@@ -116,8 +113,8 @@ func TestUnitSystemConstructNewScheduleDeleteTransactionProtobuf(t *testing.T) {
 	require.Equal(t, uint64(0), protoBody.TransactionFee)
 }
 
-func _CreateProtoBufTrxBody() (transaction, *services.TransactionBody) {
-	transaction := transaction{transactionFee: 5, memo: "memo", defaultMaxTransactionFee: 10}
+func _CreateProtoBufTrxBody() (Transaction, *services.TransactionBody) {
+	transaction := Transaction{transactionFee: 5, memo: "memo", defaultMaxTransactionFee: 10}
 	transactionBody := &services.TransactionBody{
 		Data: &services.TransactionBody_SystemDelete{SystemDelete: &services.SystemDeleteTransactionBody{ExpirationTime: &services.TimestampSeconds{Seconds: 100}}}}
 

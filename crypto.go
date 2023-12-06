@@ -831,7 +831,7 @@ func (pk PublicKey) _ToSignaturePairProtobuf(signature []byte) *services.Signatu
 	return &services.SignaturePair{}
 }
 
-func (sk PrivateKey) SignTransaction(trx *transaction) ([]byte, error) {
+func (sk PrivateKey) SignTransaction(trx *Transaction) ([]byte, error) {
 	if sk.ecdsaPrivateKey != nil {
 		b, err := sk.ecdsaPrivateKey._SignTransaction(trx)
 		if err != nil {
@@ -865,7 +865,7 @@ func (pk PublicKey) Verify(message []byte, signature []byte) bool {
 	return false
 }
 
-func (pk PublicKey) VerifyTransaction(transaction transaction) bool {
+func (pk PublicKey) VerifyTransaction(transaction Transaction) bool {
 	if pk.ecdsaPublicKey != nil {
 		return pk.ecdsaPublicKey._VerifyTransaction(transaction)
 	}

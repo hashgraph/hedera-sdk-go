@@ -106,8 +106,8 @@ func TestUnitSystemConstructNewScheduleUndeleteTransactionProtobuf(t *testing.T)
 	require.Equal(t, uint64(0), protoBody.TransactionFee)
 }
 
-func _CreateProtoBufUndeleteTrxBody() (transaction, *services.TransactionBody) {
-	transaction := transaction{transactionFee: 5, memo: "memo", defaultMaxTransactionFee: 10}
+func _CreateProtoBufUndeleteTrxBody() (Transaction, *services.TransactionBody) {
+	transaction := Transaction{transactionFee: 5, memo: "memo", defaultMaxTransactionFee: 10}
 	transactionBody := &services.TransactionBody{
 		Data: &services.TransactionBody_SystemUndelete{SystemUndelete: &services.SystemUndeleteTransactionBody{}}}
 

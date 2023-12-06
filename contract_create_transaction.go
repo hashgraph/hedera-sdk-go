@@ -31,7 +31,7 @@ import (
 // The instance will run the bytecode, either stored in a previously created file or in the transaction body itself for
 // small contracts.
 type ContractCreateTransaction struct {
-	transaction
+	Transaction
 	byteCodeFileID                *FileID
 	proxyAccountID                *AccountID
 	adminKey                      Key
@@ -54,7 +54,7 @@ type ContractCreateTransaction struct {
 // small contracts.
 func NewContractCreateTransaction() *ContractCreateTransaction {
 	tx := ContractCreateTransaction{
-		transaction: _NewTransaction(),
+		Transaction: _NewTransaction(),
 	}
 
 	tx.SetAutoRenewPeriod(131500 * time.Minute)
@@ -64,7 +64,7 @@ func NewContractCreateTransaction() *ContractCreateTransaction {
 	return &tx
 }
 
-func _ContractCreateTransactionFromProtobuf(tx transaction, pb *services.TransactionBody) *ContractCreateTransaction {
+func _ContractCreateTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *ContractCreateTransaction {
 	key, _ := _KeyFromProtobuf(pb.GetContractCreateInstance().GetAdminKey())
 	autoRenew := _DurationFromProtobuf(pb.GetContractCreateInstance().GetAutoRenewPeriod())
 	stakedNodeID := pb.GetContractCreateInstance().GetStakedNodeId()
@@ -80,7 +80,7 @@ func _ContractCreateTransactionFromProtobuf(tx transaction, pb *services.Transac
 	}
 
 	resultTx := &ContractCreateTransaction{
-		transaction:                   tx,
+		Transaction:                   tx,
 		byteCodeFileID:                _FileIDFromProtobuf(pb.GetContractCreateInstance().GetFileID()),
 		adminKey:                      key,
 		gas:                           pb.GetContractCreateInstance().Gas,
@@ -328,7 +328,7 @@ func (tx *ContractCreateTransaction) GetDeclineStakingReward() bool {
 func (tx *ContractCreateTransaction) Sign(
 	privateKey PrivateKey,
 ) *ContractCreateTransaction {
-	tx.transaction.Sign(privateKey)
+	tx.Transaction.Sign(privateKey)
 	return tx
 }
 
@@ -338,8 +338,11 @@ func (tx *ContractCreateTransaction) SignWithOperator(
 ) (*ContractCreateTransaction, error) {
 	// If the transaction is not signed by the _Operator, we need
 	// to sign the transaction with the _Operator
-	_, err := tx.transaction.SignWithOperator(client)
-	return tx, err
+	_, err := tx.Transaction.SignWithOperator(client)
+	if err != nil {
+		return nil, err
+	}
+	return tx, nil
 }
 
 // SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
@@ -348,57 +351,57 @@ func (tx *ContractCreateTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *ContractCreateTransaction {
-	tx.transaction.SignWith(publicKey, signer)
+	tx.Transaction.SignWith(publicKey, signer)
 	return tx
 }
 
 // AddSignature adds a signature to the transaction.
 func (tx *ContractCreateTransaction) AddSignature(publicKey PublicKey, signature []byte) *ContractCreateTransaction {
-	tx.transaction.AddSignature(publicKey, signature)
+	tx.Transaction.AddSignature(publicKey, signature)
 	return tx
 }
 
 // When execution is attempted, a single attempt will timeout when tx deadline is reached. (The SDK may subsequently retry the execution.)
 func (tx *ContractCreateTransaction) SetGrpcDeadline(deadline *time.Duration) *ContractCreateTransaction {
-	tx.transaction.SetGrpcDeadline(deadline)
+	tx.Transaction.SetGrpcDeadline(deadline)
 	return tx
 }
 
 func (tx *ContractCreateTransaction) Freeze() (*ContractCreateTransaction, error) {
-	_, err := tx.transaction.Freeze()
+	_, err := tx.Transaction.Freeze()
 	return tx, err
 }
 
 func (tx *ContractCreateTransaction) FreezeWith(client *Client) (*ContractCreateTransaction, error) {
-	_, err := tx.transaction.FreezeWith(client)
+	_, err := tx.Transaction.FreezeWith(client)
 	return tx, err
 }
 
 // SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
 func (tx *ContractCreateTransaction) SetMaxTransactionFee(fee Hbar) *ContractCreateTransaction {
 	tx._RequireNotFrozen()
-	tx.transaction.SetMaxTransactionFee(fee)
+	tx.Transaction.SetMaxTransactionFee(fee)
 	return tx
 }
 
 // SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
 func (tx *ContractCreateTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *ContractCreateTransaction {
 	tx._RequireNotFrozen()
-	tx.transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	tx.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
 	return tx
 }
 
 // SetTransactionMemo sets the memo for tx ContractCreateTransaction.
 func (tx *ContractCreateTransaction) SetTransactionMemo(memo string) *ContractCreateTransaction {
 	tx._RequireNotFrozen()
-	tx.transaction.SetTransactionMemo(memo)
+	tx.Transaction.SetTransactionMemo(memo)
 	return tx
 }
 
 // SetTransactionValidDuration sets the valid duration for tx ContractCreateTransaction.
 func (tx *ContractCreateTransaction) SetTransactionValidDuration(duration time.Duration) *ContractCreateTransaction {
 	tx._RequireNotFrozen()
-	tx.transaction.SetTransactionValidDuration(duration)
+	tx.Transaction.SetTransactionValidDuration(duration)
 	return tx
 }
 
@@ -406,38 +409,38 @@ func (tx *ContractCreateTransaction) SetTransactionValidDuration(duration time.D
 func (tx *ContractCreateTransaction) SetTransactionID(transactionID TransactionID) *ContractCreateTransaction {
 	tx._RequireNotFrozen()
 
-	tx.transaction.SetTransactionID(transactionID)
+	tx.Transaction.SetTransactionID(transactionID)
 	return tx
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for tx ContractCreateTransaction.
 func (tx *ContractCreateTransaction) SetNodeAccountIDs(nodeID []AccountID) *ContractCreateTransaction {
 	tx._RequireNotFrozen()
-	tx.transaction.SetNodeAccountIDs(nodeID)
+	tx.Transaction.SetNodeAccountIDs(nodeID)
 	return tx
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (tx *ContractCreateTransaction) SetMaxRetry(count int) *ContractCreateTransaction {
-	tx.transaction.SetMaxRetry(count)
+	tx.Transaction.SetMaxRetry(count)
 	return tx
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
 // Every retry attempt will increase the wait time exponentially until it reaches tx time.
 func (tx *ContractCreateTransaction) SetMaxBackoff(max time.Duration) *ContractCreateTransaction {
-	tx.transaction.SetMaxBackoff(max)
+	tx.Transaction.SetMaxBackoff(max)
 	return tx
 }
 
 // SetMinBackoff sets the minimum amount of time to wait between retries.
 func (tx *ContractCreateTransaction) SetMinBackoff(min time.Duration) *ContractCreateTransaction {
-	tx.transaction.SetMinBackoff(min)
+	tx.Transaction.SetMinBackoff(min)
 	return tx
 }
 
 func (tx *ContractCreateTransaction) SetLogLevel(level LogLevel) *ContractCreateTransaction {
-	tx.transaction.SetLogLevel(level)
+	tx.Transaction.SetLogLevel(level)
 	return tx
 }
 
@@ -470,7 +473,7 @@ func (tx *ContractCreateTransaction) validateNetworkOnIDs(client *Client) error 
 func (tx *ContractCreateTransaction) build() *services.TransactionBody {
 	pb := services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
-		Memo:                     tx.transaction.memo,
+		Memo:                     tx.Transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(tx.GetTransactionValidDuration()),
 		TransactionID:            tx.transactionID._ToProtobuf(),
 		Data: &services.TransactionBody_ContractCreateInstance{
@@ -483,7 +486,7 @@ func (tx *ContractCreateTransaction) build() *services.TransactionBody {
 func (tx *ContractCreateTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
-		Memo:           tx.transaction.memo,
+		Memo:           tx.Transaction.memo,
 		Data: &services.SchedulableTransactionBody_ContractCreateInstance{
 			ContractCreateInstance: tx.buildProtoBody(),
 		},

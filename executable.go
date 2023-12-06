@@ -192,7 +192,7 @@ func (e *executable) getNodeAccountID() AccountID {
 
 func getTransactionIDAndMessage(request interface{}) (string, string) {
 	switch req := request.(type) {
-	case *transaction:
+	case *Transaction:
 		return req.GetTransactionID().String(), "transaction status received"
 	case *query:
 		txID := req.GetPaymentTransactionID().String()

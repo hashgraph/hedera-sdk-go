@@ -44,7 +44,7 @@ import (
 // Token A has 2 decimals. In order to wipe 100 tokens from account, one must provide amount of
 // 10000. In order to wipe 100.55 tokens, one must provide amount of 10055.
 type TokenWipeTransaction struct {
-	transaction
+	Transaction
 	tokenID   *TokenID
 	accountID *AccountID
 	amount    uint64
@@ -70,7 +70,7 @@ type TokenWipeTransaction struct {
 // 10000. In order to wipe 100.55 tokens, one must provide amount of 10055.
 func NewTokenWipeTransaction() *TokenWipeTransaction {
 	tx := TokenWipeTransaction{
-		transaction: _NewTransaction(),
+		Transaction: _NewTransaction(),
 	}
 
 	tx.e = &tx
@@ -79,9 +79,9 @@ func NewTokenWipeTransaction() *TokenWipeTransaction {
 	return &tx
 }
 
-func _TokenWipeTransactionFromProtobuf(tx transaction, pb *services.TransactionBody) *TokenWipeTransaction {
+func _TokenWipeTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *TokenWipeTransaction {
 	resultTx := &TokenWipeTransaction{
-		transaction: tx,
+		Transaction: tx,
 		tokenID:     _TokenIDFromProtobuf(pb.GetTokenWipe().GetToken()),
 		accountID:   _AccountIDFromProtobuf(pb.GetTokenWipe().GetAccount()),
 		amount:      pb.GetTokenWipe().Amount,
@@ -155,20 +155,23 @@ func (tx *TokenWipeTransaction) SetSerialNumbers(serial []int64) *TokenWipeTrans
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (tx *TokenWipeTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenWipeTransaction {
-	tx.transaction.SetGrpcDeadline(deadline)
+	tx.Transaction.SetGrpcDeadline(deadline)
 	return tx
 }
 
 // Sign uses the provided privateKey to sign the transaction.
 func (tx *TokenWipeTransaction) Sign(privateKey PrivateKey) *TokenWipeTransaction {
-	tx.transaction.Sign(privateKey)
+	tx.Transaction.Sign(privateKey)
 	return tx
 }
 
 // SignWithOperator signs the transaction with client's operator privateKey.
 func (tx *TokenWipeTransaction) SignWithOperator(client *Client) (*TokenWipeTransaction, error) {
-	_, err := tx.transaction.SignWithOperator(client)
-	return tx, err
+	_, err := tx.Transaction.SignWithOperator(client)
+	if err != nil {
+		return nil, err
+	}
+	return tx, nil
 }
 
 // SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
@@ -177,13 +180,13 @@ func (tx *TokenWipeTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *TokenWipeTransaction {
-	tx.transaction.SignWith(publicKey, signer)
+	tx.Transaction.SignWith(publicKey, signer)
 	return tx
 }
 
 // AddSignature adds a signature to the transaction.
 func (tx *TokenWipeTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenWipeTransaction {
-	tx.transaction.AddSignature(publicKey, signature)
+	tx.Transaction.AddSignature(publicKey, signature)
 	return tx
 }
 
@@ -192,67 +195,67 @@ func (tx *TokenWipeTransaction) Freeze() (*TokenWipeTransaction, error) {
 }
 
 func (tx *TokenWipeTransaction) FreezeWith(client *Client) (*TokenWipeTransaction, error) {
-	_, err := tx.transaction.FreezeWith(client)
+	_, err := tx.Transaction.FreezeWith(client)
 	return tx, err
 }
 
 // SetMaxTransactionFee sets the max transaction fee for this TokenWipeTransaction.
 func (tx *TokenWipeTransaction) SetMaxTransactionFee(fee Hbar) *TokenWipeTransaction {
-	tx.transaction.SetMaxTransactionFee(fee)
+	tx.Transaction.SetMaxTransactionFee(fee)
 	return tx
 }
 
 // SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
 func (tx *TokenWipeTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *TokenWipeTransaction {
-	tx.transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	tx.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
 	return tx
 }
 
 // SetTransactionMemo sets the memo for this TokenWipeTransaction.
 func (tx *TokenWipeTransaction) SetTransactionMemo(memo string) *TokenWipeTransaction {
-	tx.transaction.SetTransactionMemo(memo)
+	tx.Transaction.SetTransactionMemo(memo)
 	return tx
 }
 
 // SetTransactionValidDuration sets the valid duration for this TokenWipeTransaction.
 func (tx *TokenWipeTransaction) SetTransactionValidDuration(duration time.Duration) *TokenWipeTransaction {
-	tx.transaction.SetTransactionValidDuration(duration)
+	tx.Transaction.SetTransactionValidDuration(duration)
 	return tx
 }
 
 // SetTransactionID sets the TransactionID for this TokenWipeTransaction.
 func (tx *TokenWipeTransaction) SetTransactionID(transactionID TransactionID) *TokenWipeTransaction {
-	tx.transaction.SetTransactionID(transactionID)
+	tx.Transaction.SetTransactionID(transactionID)
 	return tx
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for this TokenWipeTransaction.
 func (tx *TokenWipeTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenWipeTransaction {
-	tx.transaction.SetNodeAccountIDs(nodeID)
+	tx.Transaction.SetNodeAccountIDs(nodeID)
 	return tx
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (tx *TokenWipeTransaction) SetMaxRetry(count int) *TokenWipeTransaction {
-	tx.transaction.SetMaxRetry(count)
+	tx.Transaction.SetMaxRetry(count)
 	return tx
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
 // Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (tx *TokenWipeTransaction) SetMaxBackoff(max time.Duration) *TokenWipeTransaction {
-	tx.transaction.SetMaxBackoff(max)
+	tx.Transaction.SetMaxBackoff(max)
 	return tx
 }
 
 // SetMinBackoff sets the minimum amount of time to wait between retries.
 func (tx *TokenWipeTransaction) SetMinBackoff(min time.Duration) *TokenWipeTransaction {
-	tx.transaction.SetMinBackoff(min)
+	tx.Transaction.SetMinBackoff(min)
 	return tx
 }
 
 func (tx *TokenWipeTransaction) SetLogLevel(level LogLevel) *TokenWipeTransaction {
-	tx.transaction.SetLogLevel(level)
+	tx.Transaction.SetLogLevel(level)
 	return tx
 }
 
@@ -285,7 +288,7 @@ func (tx *TokenWipeTransaction) validateNetworkOnIDs(client *Client) error {
 func (tx *TokenWipeTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
-		Memo:                     tx.transaction.memo,
+		Memo:                     tx.Transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(tx.GetTransactionValidDuration()),
 		TransactionID:            tx.transactionID._ToProtobuf(),
 		Data: &services.TransactionBody_TokenWipe{
@@ -297,7 +300,7 @@ func (tx *TokenWipeTransaction) build() *services.TransactionBody {
 func (tx *TokenWipeTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
-		Memo:           tx.transaction.memo,
+		Memo:           tx.Transaction.memo,
 		Data: &services.SchedulableTransactionBody_TokenWipe{
 			TokenWipe: tx.buildProtoBody(),
 		},

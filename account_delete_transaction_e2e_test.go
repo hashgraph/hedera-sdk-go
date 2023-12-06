@@ -66,8 +66,8 @@ func TestIntegrationAccountDeleteTransactionCanExecute(t *testing.T) {
 
 	tx = tx.Sign(newKey)
 
-	assert.True(t, newKey.PublicKey().VerifyTransaction(tx.transaction))
-	assert.False(t, env.Client.GetOperatorPublicKey().VerifyTransaction(tx.transaction))
+	assert.True(t, newKey.PublicKey().VerifyTransaction(tx.Transaction))
+	assert.False(t, env.Client.GetOperatorPublicKey().VerifyTransaction(tx.Transaction))
 
 	resp, err = tx.Execute(env.Client)
 	require.NoError(t, err)

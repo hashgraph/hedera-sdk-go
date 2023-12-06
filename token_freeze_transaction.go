@@ -38,7 +38,7 @@ import (
 // Once executed the Account is marked as Frozen and will not be able to receive or send tokens
 // unless unfrozen. The operation is idempotent.
 type TokenFreezeTransaction struct {
-	transaction
+	Transaction
 	tokenID   *TokenID
 	accountID *AccountID
 }
@@ -56,7 +56,7 @@ type TokenFreezeTransaction struct {
 // unless unfrozen. The operation is idempotent.
 func NewTokenFreezeTransaction() *TokenFreezeTransaction {
 	tx := TokenFreezeTransaction{
-		transaction: _NewTransaction(),
+		Transaction: _NewTransaction(),
 	}
 
 	tx.e = &tx
@@ -65,9 +65,9 @@ func NewTokenFreezeTransaction() *TokenFreezeTransaction {
 	return &tx
 }
 
-func _TokenFreezeTransactionFromProtobuf(tx transaction, pb *services.TransactionBody) *TokenFreezeTransaction {
+func _TokenFreezeTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *TokenFreezeTransaction {
 	resultTx := &TokenFreezeTransaction{
-		transaction: tx,
+		Transaction: tx,
 		tokenID:     _TokenIDFromProtobuf(pb.GetTokenFreeze().GetToken()),
 		accountID:   _AccountIDFromProtobuf(pb.GetTokenFreeze().GetAccount()),
 	}
@@ -112,14 +112,17 @@ func (tx *TokenFreezeTransaction) GetAccountID() AccountID {
 
 // Sign uses the provided privateKey to sign the transaction.
 func (tx *TokenFreezeTransaction) Sign(privateKey PrivateKey) *TokenFreezeTransaction {
-	tx.transaction.Sign(privateKey)
+	tx.Transaction.Sign(privateKey)
 	return tx
 }
 
 // SignWithOperator signs the transaction with client's operator privateKey.
 func (tx *TokenFreezeTransaction) SignWithOperator(client *Client) (*TokenFreezeTransaction, error) {
-	_, err := tx.transaction.SignWithOperator(client)
-	return tx, err
+	_, err := tx.Transaction.SignWithOperator(client)
+	if err != nil {
+		return nil, err
+	}
+	return tx, nil
 }
 
 // SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
@@ -128,19 +131,19 @@ func (tx *TokenFreezeTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *TokenFreezeTransaction {
-	tx.transaction.SignWith(publicKey, signer)
+	tx.Transaction.SignWith(publicKey, signer)
 	return tx
 }
 
 // AddSignature adds a signature to the transaction.
 func (tx *TokenFreezeTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenFreezeTransaction {
-	tx.transaction.AddSignature(publicKey, signature)
+	tx.Transaction.AddSignature(publicKey, signature)
 	return tx
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (tx *TokenFreezeTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenFreezeTransaction {
-	tx.transaction.SetGrpcDeadline(deadline)
+	tx.Transaction.SetGrpcDeadline(deadline)
 	return tx
 }
 
@@ -149,67 +152,67 @@ func (tx *TokenFreezeTransaction) Freeze() (*TokenFreezeTransaction, error) {
 }
 
 func (tx *TokenFreezeTransaction) FreezeWith(client *Client) (*TokenFreezeTransaction, error) {
-	_, err := tx.transaction.FreezeWith(client)
+	_, err := tx.Transaction.FreezeWith(client)
 	return tx, err
 }
 
 // SetMaxTransactionFee sets the max transaction fee for this TokenFreezeTransaction.
 func (tx *TokenFreezeTransaction) SetMaxTransactionFee(fee Hbar) *TokenFreezeTransaction {
-	tx.transaction.SetMaxTransactionFee(fee)
+	tx.Transaction.SetMaxTransactionFee(fee)
 	return tx
 }
 
 // SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
 func (tx *TokenFreezeTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *TokenFreezeTransaction {
-	tx.transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	tx.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
 	return tx
 }
 
 // SetTransactionMemo sets the memo for this TokenFreezeTransaction.
 func (tx *TokenFreezeTransaction) SetTransactionMemo(memo string) *TokenFreezeTransaction {
-	tx.transaction.SetTransactionMemo(memo)
+	tx.Transaction.SetTransactionMemo(memo)
 	return tx
 }
 
 // SetTransactionValidDuration sets the valid duration for this TokenFreezeTransaction.
 func (tx *TokenFreezeTransaction) SetTransactionValidDuration(duration time.Duration) *TokenFreezeTransaction {
-	tx.transaction.SetTransactionValidDuration(duration)
+	tx.Transaction.SetTransactionValidDuration(duration)
 	return tx
 }
 
 // SetTransactionID sets the TransactionID for this TokenFreezeTransaction.
 func (tx *TokenFreezeTransaction) SetTransactionID(transactionID TransactionID) *TokenFreezeTransaction {
-	tx.transaction.SetTransactionID(transactionID)
+	tx.Transaction.SetTransactionID(transactionID)
 	return tx
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for this TokenFreezeTransaction.
 func (tx *TokenFreezeTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenFreezeTransaction {
-	tx.transaction.SetNodeAccountIDs(nodeID)
+	tx.Transaction.SetNodeAccountIDs(nodeID)
 	return tx
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (tx *TokenFreezeTransaction) SetMaxRetry(count int) *TokenFreezeTransaction {
-	tx.transaction.SetMaxRetry(count)
+	tx.Transaction.SetMaxRetry(count)
 	return tx
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
 // Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (tx *TokenFreezeTransaction) SetMaxBackoff(max time.Duration) *TokenFreezeTransaction {
-	tx.transaction.SetMaxBackoff(max)
+	tx.Transaction.SetMaxBackoff(max)
 	return tx
 }
 
 // SetMinBackoff sets the minimum amount of time to wait between retries.
 func (tx *TokenFreezeTransaction) SetMinBackoff(min time.Duration) *TokenFreezeTransaction {
-	tx.transaction.SetMinBackoff(min)
+	tx.Transaction.SetMinBackoff(min)
 	return tx
 }
 
 func (tx *TokenFreezeTransaction) SetLogLevel(level LogLevel) *TokenFreezeTransaction {
-	tx.transaction.SetLogLevel(level)
+	tx.Transaction.SetLogLevel(level)
 	return tx
 }
 
@@ -242,7 +245,7 @@ func (tx *TokenFreezeTransaction) validateNetworkOnIDs(client *Client) error {
 func (tx *TokenFreezeTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
-		Memo:                     tx.transaction.memo,
+		Memo:                     tx.Transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(tx.GetTransactionValidDuration()),
 		TransactionID:            tx.transactionID._ToProtobuf(),
 		Data: &services.TransactionBody_TokenFreeze{
@@ -254,7 +257,7 @@ func (tx *TokenFreezeTransaction) build() *services.TransactionBody {
 func (tx *TokenFreezeTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
-		Memo:           tx.transaction.memo,
+		Memo:           tx.Transaction.memo,
 		Data: &services.SchedulableTransactionBody_TokenFreeze{
 			TokenFreeze: tx.buildProtoBody(),
 		},

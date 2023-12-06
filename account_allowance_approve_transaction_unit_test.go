@@ -204,7 +204,7 @@ func TestUnitAccountAllowanceApproveTransactionFromProtobuf(t *testing.T) {
 		Freeze()
 	require.NoError(t, err)
 
-	txFromProto := _AccountAllowanceApproveTransactionFromProtobuf(tx.transaction, tx.build())
+	txFromProto := _AccountAllowanceApproveTransactionFromProtobuf(tx.Transaction, tx.build())
 	require.Equal(t, tx, txFromProto)
 }
 

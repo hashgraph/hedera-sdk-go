@@ -28,7 +28,7 @@ import (
 )
 
 type ContractCreateFlow struct {
-	transaction
+	Transaction
 	bytecode                      []byte
 	proxyAccountID                *AccountID
 	adminKey                      *Key
@@ -47,7 +47,7 @@ type ContractCreateFlow struct {
 // NewContractCreateFlow creates a new ContractCreateFlow transaction builder object.
 func NewContractCreateFlow() *ContractCreateFlow {
 	this := ContractCreateFlow{
-		transaction: _NewTransaction(),
+		Transaction: _NewTransaction(),
 	}
 
 	this.e = &this

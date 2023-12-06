@@ -174,7 +174,7 @@ func TestUnitTokenCreateTransactionGet(t *testing.T) {
 	require.NoError(t, err)
 	txFromBytes, err := TransactionFromBytes(byt)
 	require.NoError(t, err)
-	sig, err := newKey.SignTransaction(&transaction.transaction)
+	sig, err := newKey.SignTransaction(&transaction.Transaction)
 	require.NoError(t, err)
 	transaction.getName()
 	switch b := txFromBytes.(type) {

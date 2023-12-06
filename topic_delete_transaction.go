@@ -28,7 +28,7 @@ import (
 
 // TopicDeleteTransaction is for deleting a topic on HCS.
 type TopicDeleteTransaction struct {
-	transaction
+	Transaction
 	topicID *TopicID
 }
 
@@ -36,7 +36,7 @@ type TopicDeleteTransaction struct {
 // and execute a Consensus Delete Topic transaction.
 func NewTopicDeleteTransaction() *TopicDeleteTransaction {
 	tx := TopicDeleteTransaction{
-		transaction: _NewTransaction(),
+		Transaction: _NewTransaction(),
 	}
 
 	tx.e = &tx
@@ -45,9 +45,9 @@ func NewTopicDeleteTransaction() *TopicDeleteTransaction {
 	return &tx
 }
 
-func _TopicDeleteTransactionFromProtobuf(tx transaction, pb *services.TransactionBody) *TopicDeleteTransaction {
+func _TopicDeleteTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *TopicDeleteTransaction {
 	resultTx := &TopicDeleteTransaction{
-		transaction: tx,
+		Transaction: tx,
 		topicID:     _TopicIDFromProtobuf(pb.GetConsensusDeleteTopic().GetTopicID()),
 	}
 	resultTx.e = resultTx
@@ -74,14 +74,17 @@ func (tx *TopicDeleteTransaction) GetTopicID() TopicID {
 
 // Sign uses the provided privateKey to sign the transaction.
 func (tx *TopicDeleteTransaction) Sign(privateKey PrivateKey) *TopicDeleteTransaction {
-	tx.transaction.Sign(privateKey)
+	tx.Transaction.Sign(privateKey)
 	return tx
 }
 
 // SignWithOperator signs the transaction with client's operator privateKey.
 func (tx *TopicDeleteTransaction) SignWithOperator(client *Client) (*TopicDeleteTransaction, error) {
-	_, err := tx.transaction.SignWithOperator(client)
-	return tx, err
+	_, err := tx.Transaction.SignWithOperator(client)
+	if err != nil {
+		return nil, err
+	}
+	return tx, nil
 }
 
 // SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
@@ -90,19 +93,19 @@ func (tx *TopicDeleteTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *TopicDeleteTransaction {
-	tx.transaction.SignWith(publicKey, signer)
+	tx.Transaction.SignWith(publicKey, signer)
 	return tx
 }
 
 // AddSignature adds a signature to the transaction.
 func (tx *TopicDeleteTransaction) AddSignature(publicKey PublicKey, signature []byte) *TopicDeleteTransaction {
-	tx.transaction.AddSignature(publicKey, signature)
+	tx.Transaction.AddSignature(publicKey, signature)
 	return tx
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (tx *TopicDeleteTransaction) SetGrpcDeadline(deadline *time.Duration) *TopicDeleteTransaction {
-	tx.transaction.SetGrpcDeadline(deadline)
+	tx.Transaction.SetGrpcDeadline(deadline)
 	return tx
 }
 
@@ -111,67 +114,67 @@ func (tx *TopicDeleteTransaction) Freeze() (*TopicDeleteTransaction, error) {
 }
 
 func (tx *TopicDeleteTransaction) FreezeWith(client *Client) (*TopicDeleteTransaction, error) {
-	_, err := tx.transaction.FreezeWith(client)
+	_, err := tx.Transaction.FreezeWith(client)
 	return tx, err
 }
 
 // SetMaxTransactionFee sets the max transaction fee for this TopicDeleteTransaction.
 func (tx *TopicDeleteTransaction) SetMaxTransactionFee(fee Hbar) *TopicDeleteTransaction {
-	tx.transaction.SetMaxTransactionFee(fee)
+	tx.Transaction.SetMaxTransactionFee(fee)
 	return tx
 }
 
 // SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
 func (tx *TopicDeleteTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *TopicDeleteTransaction {
-	tx.transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	tx.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
 	return tx
 }
 
 // SetTransactionMemo sets the memo for this TopicDeleteTransaction.
 func (tx *TopicDeleteTransaction) SetTransactionMemo(memo string) *TopicDeleteTransaction {
-	tx.transaction.SetTransactionMemo(memo)
+	tx.Transaction.SetTransactionMemo(memo)
 	return tx
 }
 
 // SetTransactionValidDuration sets the valid duration for this TopicDeleteTransaction.
 func (tx *TopicDeleteTransaction) SetTransactionValidDuration(duration time.Duration) *TopicDeleteTransaction {
-	tx.transaction.SetTransactionValidDuration(duration)
+	tx.Transaction.SetTransactionValidDuration(duration)
 	return tx
 }
 
 // SetTransactionID sets the TransactionID for this TopicDeleteTransaction.
 func (tx *TopicDeleteTransaction) SetTransactionID(transactionID TransactionID) *TopicDeleteTransaction {
-	tx.transaction.SetTransactionID(transactionID)
+	tx.Transaction.SetTransactionID(transactionID)
 	return tx
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for this TopicDeleteTransaction.
 func (tx *TopicDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *TopicDeleteTransaction {
-	tx.transaction.SetNodeAccountIDs(nodeID)
+	tx.Transaction.SetNodeAccountIDs(nodeID)
 	return tx
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (tx *TopicDeleteTransaction) SetMaxRetry(count int) *TopicDeleteTransaction {
-	tx.transaction.SetMaxRetry(count)
+	tx.Transaction.SetMaxRetry(count)
 	return tx
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
 // Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (tx *TopicDeleteTransaction) SetMaxBackoff(max time.Duration) *TopicDeleteTransaction {
-	tx.transaction.SetMaxBackoff(max)
+	tx.Transaction.SetMaxBackoff(max)
 	return tx
 }
 
 // SetMinBackoff sets the minimum amount of time to wait between retries.
 func (tx *TopicDeleteTransaction) SetMinBackoff(min time.Duration) *TopicDeleteTransaction {
-	tx.transaction.SetMinBackoff(min)
+	tx.Transaction.SetMinBackoff(min)
 	return tx
 }
 
 func (tx *TopicDeleteTransaction) SetLogLevel(level LogLevel) *TopicDeleteTransaction {
-	tx.transaction.SetLogLevel(level)
+	tx.Transaction.SetLogLevel(level)
 	return tx
 }
 
@@ -198,7 +201,7 @@ func (tx *TopicDeleteTransaction) validateNetworkOnIDs(client *Client) error {
 func (tx *TopicDeleteTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
-		Memo:                     tx.transaction.memo,
+		Memo:                     tx.Transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(tx.GetTransactionValidDuration()),
 		TransactionID:            tx.transactionID._ToProtobuf(),
 		Data: &services.TransactionBody_ConsensusDeleteTopic{
@@ -210,7 +213,7 @@ func (tx *TopicDeleteTransaction) build() *services.TransactionBody {
 func (tx *TopicDeleteTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
-		Memo:           tx.transaction.memo,
+		Memo:           tx.Transaction.memo,
 		Data: &services.SchedulableTransactionBody_ConsensusDeleteTopic{
 			ConsensusDeleteTopic: tx.buildProtoBody(),
 		},

@@ -34,7 +34,7 @@ const chunkSize = 1024
 // TopicMessageSubmitTransaction
 // Sends a message/messages to the Topic ID
 type TopicMessageSubmitTransaction struct {
-	transaction
+	Transaction
 	maxChunks uint64
 	message   []byte
 	topicID   *TopicID
@@ -44,7 +44,7 @@ type TopicMessageSubmitTransaction struct {
 // sends a message/messages to the Topic ID
 func NewTopicMessageSubmitTransaction() *TopicMessageSubmitTransaction {
 	tx := TopicMessageSubmitTransaction{
-		transaction: _NewTransaction(),
+		Transaction: _NewTransaction(),
 		maxChunks:   20,
 		message:     make([]byte, 0),
 	}
@@ -55,9 +55,9 @@ func NewTopicMessageSubmitTransaction() *TopicMessageSubmitTransaction {
 	return &tx
 }
 
-func _TopicMessageSubmitTransactionFromProtobuf(tx transaction, pb *services.TransactionBody) *TopicMessageSubmitTransaction {
+func _TopicMessageSubmitTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *TopicMessageSubmitTransaction {
 	tmsTx := &TopicMessageSubmitTransaction{
-		transaction: tx,
+		Transaction: tx,
 		maxChunks:   20,
 		message:     pb.GetConsensusSubmitMessage().GetMessage(),
 		topicID:     _TopicIDFromProtobuf(pb.GetConsensusSubmitMessage().GetTopicID()),
@@ -109,14 +109,17 @@ func (tx *TopicMessageSubmitTransaction) GetMaxChunks() uint64 {
 
 // Sign uses the provided privateKey to sign the transaction.
 func (tx *TopicMessageSubmitTransaction) Sign(privateKey PrivateKey) *TopicMessageSubmitTransaction {
-	tx.transaction.Sign(privateKey)
+	tx.Transaction.Sign(privateKey)
 	return tx
 }
 
 // SignWithOperator signs the transaction with client's operator privateKey.
 func (tx *TopicMessageSubmitTransaction) SignWithOperator(client *Client) (*TopicMessageSubmitTransaction, error) {
-	_, err := tx.transaction.SignWithOperator(client)
-	return tx, err
+	_, err := tx.Transaction.SignWithOperator(client)
+	if err != nil {
+		return nil, err
+	}
+	return tx, nil
 }
 
 // SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
@@ -125,19 +128,19 @@ func (tx *TopicMessageSubmitTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *TopicMessageSubmitTransaction {
-	tx.transaction.SignWith(publicKey, signer)
+	tx.Transaction.SignWith(publicKey, signer)
 	return tx
 }
 
 // AddSignature adds a signature to the transaction.
 func (tx *TopicMessageSubmitTransaction) AddSignature(publicKey PublicKey, signature []byte) *TopicMessageSubmitTransaction {
-	tx.transaction.AddSignature(publicKey, signature)
+	tx.Transaction.AddSignature(publicKey, signature)
 	return tx
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (tx *TopicMessageSubmitTransaction) SetGrpcDeadline(deadline *time.Duration) *TopicMessageSubmitTransaction {
-	tx.transaction.SetGrpcDeadline(deadline)
+	tx.Transaction.SetGrpcDeadline(deadline)
 	return tx
 }
 
@@ -227,61 +230,61 @@ func (tx *TopicMessageSubmitTransaction) FreezeWith(client *Client) (*TopicMessa
 
 // SetMaxTransactionFee sets the max transaction fee for this TopicMessageSubmitTransaction.
 func (tx *TopicMessageSubmitTransaction) SetMaxTransactionFee(fee Hbar) *TopicMessageSubmitTransaction {
-	tx.transaction.SetMaxTransactionFee(fee)
+	tx.Transaction.SetMaxTransactionFee(fee)
 	return tx
 }
 
 // SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
 func (tx *TopicMessageSubmitTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *TopicMessageSubmitTransaction {
-	tx.transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	tx.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
 	return tx
 }
 
 // SetTransactionMemo sets the memo for this TopicMessageSubmitTransaction.
 func (tx *TopicMessageSubmitTransaction) SetTransactionMemo(memo string) *TopicMessageSubmitTransaction {
-	tx.transaction.SetTransactionMemo(memo)
+	tx.Transaction.SetTransactionMemo(memo)
 	return tx
 }
 
 // SetTransactionValidDuration sets the valid duration for this TopicMessageSubmitTransaction.
 func (tx *TopicMessageSubmitTransaction) SetTransactionValidDuration(duration time.Duration) *TopicMessageSubmitTransaction {
-	tx.transaction.SetTransactionValidDuration(duration)
+	tx.Transaction.SetTransactionValidDuration(duration)
 	return tx
 }
 
 // SetTransactionID sets the TransactionID for this TopicMessageSubmitTransaction.
 func (tx *TopicMessageSubmitTransaction) SetTransactionID(transactionID TransactionID) *TopicMessageSubmitTransaction {
-	tx.transaction.SetTransactionID(transactionID)
+	tx.Transaction.SetTransactionID(transactionID)
 	return tx
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for this TopicMessageSubmitTransaction.
 func (tx *TopicMessageSubmitTransaction) SetNodeAccountIDs(nodeID []AccountID) *TopicMessageSubmitTransaction {
-	tx.transaction.SetNodeAccountIDs(nodeID)
+	tx.Transaction.SetNodeAccountIDs(nodeID)
 	return tx
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (tx *TopicMessageSubmitTransaction) SetMaxRetry(count int) *TopicMessageSubmitTransaction {
-	tx.transaction.SetMaxRetry(count)
+	tx.Transaction.SetMaxRetry(count)
 	return tx
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
 // Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (tx *TopicMessageSubmitTransaction) SetMaxBackoff(max time.Duration) *TopicMessageSubmitTransaction {
-	tx.transaction.SetMaxBackoff(max)
+	tx.Transaction.SetMaxBackoff(max)
 	return tx
 }
 
 // SetMinBackoff sets the minimum amount of time to wait between retries.
 func (tx *TopicMessageSubmitTransaction) SetMinBackoff(min time.Duration) *TopicMessageSubmitTransaction {
-	tx.transaction.SetMinBackoff(min)
+	tx.Transaction.SetMinBackoff(min)
 	return tx
 }
 
 func (tx *TopicMessageSubmitTransaction) SetLogLevel(level LogLevel) *TopicMessageSubmitTransaction {
-	tx.transaction.SetLogLevel(level)
+	tx.Transaction.SetLogLevel(level)
 	return tx
 }
 
@@ -294,7 +297,7 @@ func (tx *TopicMessageSubmitTransaction) Schedule() (*ScheduleCreateTransaction,
 		}
 	}
 
-	return tx.transaction.Schedule()
+	return tx.Transaction.Schedule()
 }
 
 // ----------- overriden functions ----------------
@@ -302,11 +305,24 @@ func (tx *TopicMessageSubmitTransaction) Schedule() (*ScheduleCreateTransaction,
 func (tx *TopicMessageSubmitTransaction) getName() string {
 	return "TopicMessageSubmitTransaction"
 }
+func (tx *TopicMessageSubmitTransaction) validateNetworkOnIDs(client *Client) error {
+	if client == nil || !client.autoValidateChecksums {
+		return nil
+	}
+
+	if tx.topicID != nil {
+		if err := tx.topicID.ValidateChecksum(client); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
 
 func (tx *TopicMessageSubmitTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
-		Memo:                     tx.transaction.memo,
+		Memo:                     tx.Transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(tx.GetTransactionValidDuration()),
 		TransactionID:            tx.transactionID._ToProtobuf(),
 		Data: &services.TransactionBody_ConsensusSubmitMessage{
@@ -318,7 +334,7 @@ func (tx *TopicMessageSubmitTransaction) build() *services.TransactionBody {
 func (tx *TopicMessageSubmitTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
-		Memo:           tx.transaction.memo,
+		Memo:           tx.Transaction.memo,
 		Data: &services.SchedulableTransactionBody_ConsensusSubmitMessage{
 			ConsensusSubmitMessage: tx.buildProtoBody(),
 		},

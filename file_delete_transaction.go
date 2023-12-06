@@ -33,7 +33,7 @@ import (
 // transaction must be signed by 1-of-M KeyList keys. If keys contains additional KeyList or
 // ThresholdKey then 1-of-M secondary KeyList or ThresholdKey signing requirements must be meet.
 type FileDeleteTransaction struct {
-	transaction
+	Transaction
 	fileID *FileID
 }
 
@@ -46,7 +46,7 @@ type FileDeleteTransaction struct {
 // ThresholdKey then 1-of-M secondary KeyList or ThresholdKey signing requirements must be meet.
 func NewFileDeleteTransaction() *FileDeleteTransaction {
 	tx := FileDeleteTransaction{
-		transaction: _NewTransaction(),
+		Transaction: _NewTransaction(),
 	}
 	tx._SetDefaultMaxTransactionFee(NewHbar(5))
 	tx.e = &tx
@@ -54,9 +54,9 @@ func NewFileDeleteTransaction() *FileDeleteTransaction {
 	return &tx
 }
 
-func _FileDeleteTransactionFromProtobuf(tx transaction, pb *services.TransactionBody) *FileDeleteTransaction {
+func _FileDeleteTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *FileDeleteTransaction {
 	resultTx := &FileDeleteTransaction{
-		transaction: tx,
+		Transaction: tx,
 		fileID:      _FileIDFromProtobuf(pb.GetFileDelete().GetFileID()),
 	}
 	resultTx.e = resultTx
@@ -85,7 +85,7 @@ func (tx *FileDeleteTransaction) GetFileID() FileID {
 func (tx *FileDeleteTransaction) Sign(
 	privateKey PrivateKey,
 ) *FileDeleteTransaction {
-	tx.transaction.Sign(privateKey)
+	tx.Transaction.Sign(privateKey)
 	return tx
 }
 
@@ -95,8 +95,11 @@ func (tx *FileDeleteTransaction) SignWithOperator(
 ) (*FileDeleteTransaction, error) {
 	// If the transaction is not signed by the _Operator, we need
 	// to sign the transaction with the _Operator
-	_, err := tx.transaction.SignWithOperator(client)
-	return tx, err
+	_, err := tx.Transaction.SignWithOperator(client)
+	if err != nil {
+		return nil, err
+	}
+	return tx, nil
 }
 
 // SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
@@ -105,61 +108,62 @@ func (tx *FileDeleteTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *FileDeleteTransaction {
-	tx.transaction.SignWith(publicKey, signer)
+	tx.Transaction.SignWith(publicKey, signer)
 	return tx
 }
+
 // AddSignature adds a signature to the transaction.
 func (tx *FileDeleteTransaction) AddSignature(publicKey PublicKey, signature []byte) *FileDeleteTransaction {
-	tx.transaction.AddSignature(publicKey, signature)
+	tx.Transaction.AddSignature(publicKey, signature)
 	return tx
 }
 
 // When execution is attempted, a single attempt will timeout when tx deadline is reached. (The SDK may subsequently retry the execution.)
 func (tx *FileDeleteTransaction) SetGrpcDeadline(deadline *time.Duration) *FileDeleteTransaction {
-	tx.transaction.SetGrpcDeadline(deadline)
+	tx.Transaction.SetGrpcDeadline(deadline)
 	return tx
 }
 
 func (tx *FileDeleteTransaction) Freeze() (*FileDeleteTransaction, error) {
-	_, err := tx.transaction.Freeze()
+	_, err := tx.Transaction.Freeze()
 	return tx, err
 }
 
 func (tx *FileDeleteTransaction) FreezeWith(client *Client) (*FileDeleteTransaction, error) {
-	_, err := tx.transaction.FreezeWith(client)
+	_, err := tx.Transaction.FreezeWith(client)
 	return tx, err
 }
 
 // GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
 func (tx *FileDeleteTransaction) GetMaxTransactionFee() Hbar {
-	return tx.transaction.GetMaxTransactionFee()
+	return tx.Transaction.GetMaxTransactionFee()
 }
 
 // SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
 func (tx *FileDeleteTransaction) SetMaxTransactionFee(fee Hbar) *FileDeleteTransaction {
 	tx._RequireNotFrozen()
-	tx.transaction.SetMaxTransactionFee(fee)
+	tx.Transaction.SetMaxTransactionFee(fee)
 	return tx
 }
 
 // SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
 func (tx *FileDeleteTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *FileDeleteTransaction {
 	tx._RequireNotFrozen()
-	tx.transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	tx.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
 	return tx
 }
 
 // SetTransactionMemo sets the memo for tx FileDeleteTransaction.
 func (tx *FileDeleteTransaction) SetTransactionMemo(memo string) *FileDeleteTransaction {
 	tx._RequireNotFrozen()
-	tx.transaction.SetTransactionMemo(memo)
+	tx.Transaction.SetTransactionMemo(memo)
 	return tx
 }
 
 // SetTransactionValidDuration sets the valid duration for tx FileDeleteTransaction.
 func (tx *FileDeleteTransaction) SetTransactionValidDuration(duration time.Duration) *FileDeleteTransaction {
 	tx._RequireNotFrozen()
-	tx.transaction.SetTransactionValidDuration(duration)
+	tx.Transaction.SetTransactionValidDuration(duration)
 	return tx
 }
 
@@ -167,38 +171,38 @@ func (tx *FileDeleteTransaction) SetTransactionValidDuration(duration time.Durat
 func (tx *FileDeleteTransaction) SetTransactionID(transactionID TransactionID) *FileDeleteTransaction {
 	tx._RequireNotFrozen()
 
-	tx.transaction.SetTransactionID(transactionID)
+	tx.Transaction.SetTransactionID(transactionID)
 	return tx
 }
 
 // SetNodeAccountID sets the _Node AccountID for tx FileDeleteTransaction.
 func (tx *FileDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *FileDeleteTransaction {
 	tx._RequireNotFrozen()
-	tx.transaction.SetNodeAccountIDs(nodeID)
+	tx.Transaction.SetNodeAccountIDs(nodeID)
 	return tx
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (tx *FileDeleteTransaction) SetMaxRetry(count int) *FileDeleteTransaction {
-	tx.transaction.SetMaxRetry(count)
+	tx.Transaction.SetMaxRetry(count)
 	return tx
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
 // Every retry attempt will increase the wait time exponentially until it reaches tx time.
 func (tx *FileDeleteTransaction) SetMaxBackoff(max time.Duration) *FileDeleteTransaction {
-	tx.transaction.SetMaxBackoff(max)
+	tx.Transaction.SetMaxBackoff(max)
 	return tx
 }
 
 // SetMinBackoff sets the minimum amount of time to wait between retries.
 func (tx *FileDeleteTransaction) SetMinBackoff(min time.Duration) *FileDeleteTransaction {
-	tx.transaction.SetMinBackoff(min)
+	tx.Transaction.SetMinBackoff(min)
 	return tx
 }
 
 func (tx *FileDeleteTransaction) SetLogLevel(level LogLevel) *FileDeleteTransaction {
-	tx.transaction.SetLogLevel(level)
+	tx.Transaction.SetLogLevel(level)
 	return tx
 }
 
@@ -224,7 +228,7 @@ func (tx *FileDeleteTransaction) validateNetworkOnIDs(client *Client) error {
 func (tx *FileDeleteTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
-		Memo:                     tx.transaction.memo,
+		Memo:                     tx.Transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(tx.GetTransactionValidDuration()),
 		TransactionID:            tx.transactionID._ToProtobuf(),
 		Data: &services.TransactionBody_FileDelete{
@@ -236,7 +240,7 @@ func (tx *FileDeleteTransaction) build() *services.TransactionBody {
 func (tx *FileDeleteTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
-		Memo:           tx.transaction.memo,
+		Memo:           tx.Transaction.memo,
 		Data: &services.SchedulableTransactionBody_FileDelete{
 			FileDelete: tx.buildProtoBody(),
 		},

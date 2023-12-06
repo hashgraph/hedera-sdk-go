@@ -331,7 +331,7 @@ func TestUnitContractCreateTransactionCoverage(t *testing.T) {
 	require.NoError(t, err)
 	txFromBytes, err := TransactionFromBytes(byt)
 	require.NoError(t, err)
-	sig, err := newKey.SignTransaction(&transaction.transaction)
+	sig, err := newKey.SignTransaction(&transaction.Transaction)
 	require.NoError(t, err)
 
 	_, err = transaction.GetTransactionHash()

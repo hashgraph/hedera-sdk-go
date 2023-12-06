@@ -161,7 +161,7 @@ func (pk _Ed25519PublicKey) _Verify(message []byte, signature []byte) bool {
 	return ed25519.Verify(pk._Bytes(), message, signature)
 }
 
-func (pk _Ed25519PublicKey) _VerifyTransaction(trx transaction) bool {
+func (pk _Ed25519PublicKey) _VerifyTransaction(trx Transaction) bool {
 	if trx.signedTransactions._Length() == 0 {
 		return false
 	}

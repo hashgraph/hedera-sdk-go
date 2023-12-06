@@ -37,7 +37,7 @@ import (
 // associated. To modify the list of keys in a livehash, the livehash should first be deleted, then
 // recreated with a new list of keys.
 type LiveHashAddTransaction struct {
-	transaction
+	Transaction
 	accountID *AccountID
 	hash      []byte
 	keys      *KeyList
@@ -55,19 +55,19 @@ type LiveHashAddTransaction struct {
 // recreated with a new list of keys.
 func NewLiveHashAddTransaction() *LiveHashAddTransaction {
 	tx := LiveHashAddTransaction{
-		transaction: _NewTransaction(),
+		Transaction: _NewTransaction(),
 	}
 	tx._SetDefaultMaxTransactionFee(NewHbar(2))
 	tx.e = &tx
 	return &tx
 }
 
-func _LiveHashAddTransactionFromProtobuf(tx transaction, pb *services.TransactionBody) *LiveHashAddTransaction {
+func _LiveHashAddTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *LiveHashAddTransaction {
 	keys, _ := _KeyListFromProtobuf(pb.GetCryptoAddLiveHash().LiveHash.GetKeys())
 	duration := _DurationFromProtobuf(pb.GetCryptoAddLiveHash().LiveHash.Duration)
 
 	resultTx := &LiveHashAddTransaction{
-		transaction: tx,
+		Transaction: tx,
 		accountID:   _AccountIDFromProtobuf(pb.GetCryptoAddLiveHash().GetLiveHash().GetAccountId()),
 		hash:        pb.GetCryptoAddLiveHash().LiveHash.Hash,
 		keys:        &keys,
@@ -79,7 +79,7 @@ func _LiveHashAddTransactionFromProtobuf(tx transaction, pb *services.Transactio
 
 // When execution is attempted, a single attempt will timeout when tx deadline is reached. (The SDK may subsequently retry the execution.)
 func (tx *LiveHashAddTransaction) SetGrpcDeadline(deadline *time.Duration) *LiveHashAddTransaction {
-	tx.transaction.SetGrpcDeadline(deadline)
+	tx.Transaction.SetGrpcDeadline(deadline)
 	return tx
 }
 
@@ -155,7 +155,7 @@ func (tx *LiveHashAddTransaction) GetAccountID() AccountID {
 func (tx *LiveHashAddTransaction) Sign(
 	privateKey PrivateKey,
 ) *LiveHashAddTransaction {
-	tx.transaction.Sign(privateKey)
+	tx.Transaction.Sign(privateKey)
 	return tx
 }
 
@@ -165,8 +165,11 @@ func (tx *LiveHashAddTransaction) SignWithOperator(
 ) (*LiveHashAddTransaction, error) {
 	// If the transaction is not signed by the _Operator, we need
 	// to sign the transaction with the _Operator
-	_, err := tx.transaction.SignWithOperator(client)
-	return tx, err
+	_, err := tx.Transaction.SignWithOperator(client)
+	if err != nil {
+		return nil, err
+	}
+	return tx, nil
 }
 
 // SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
@@ -175,98 +178,99 @@ func (tx *LiveHashAddTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *LiveHashAddTransaction {
-	tx.transaction.SignWith(publicKey, signer)
+	tx.Transaction.SignWith(publicKey, signer)
 	return tx
 }
+
 // AddSignature adds a signature to the transaction.
 func (tx *LiveHashAddTransaction) AddSignature(publicKey PublicKey, signature []byte) *LiveHashAddTransaction {
-	tx.transaction.AddSignature(publicKey, signature)
+	tx.Transaction.AddSignature(publicKey, signature)
 	return tx
 }
 
 func (tx *LiveHashAddTransaction) Freeze() (*LiveHashAddTransaction, error) {
-	_, err := tx.transaction.Freeze()
+	_, err := tx.Transaction.Freeze()
 	return tx, err
 }
 
 func (tx *LiveHashAddTransaction) FreezeWith(client *Client) (*LiveHashAddTransaction, error) {
-	_, err := tx.transaction.FreezeWith(client)
+	_, err := tx.Transaction.FreezeWith(client)
 	return tx, err
 }
 
 // GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
 func (tx *LiveHashAddTransaction) GetMaxTransactionFee() Hbar {
-	return tx.transaction.GetMaxTransactionFee()
+	return tx.Transaction.GetMaxTransactionFee()
 }
 
 // SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
 func (tx *LiveHashAddTransaction) SetMaxTransactionFee(fee Hbar) *LiveHashAddTransaction {
 	tx._RequireNotFrozen()
-	tx.transaction.SetMaxTransactionFee(fee)
+	tx.Transaction.SetMaxTransactionFee(fee)
 	return tx
 }
 
 // SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
 func (tx *LiveHashAddTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *LiveHashAddTransaction {
 	tx._RequireNotFrozen()
-	tx.transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	tx.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
 	return tx
 }
 
 // SetTransactionMemo sets the memo for tx LiveHashAddTransaction.
 func (tx *LiveHashAddTransaction) SetTransactionMemo(memo string) *LiveHashAddTransaction {
 	tx._RequireNotFrozen()
-	tx.transaction.SetTransactionMemo(memo)
+	tx.Transaction.SetTransactionMemo(memo)
 	return tx
 }
 
 // SetTransactionValidDuration sets the valid duration for tx LiveHashAddTransaction.
 func (tx *LiveHashAddTransaction) SetTransactionValidDuration(duration time.Duration) *LiveHashAddTransaction {
-	tx.transaction.SetTransactionValidDuration(duration)
+	tx.Transaction.SetTransactionValidDuration(duration)
 	return tx
 }
 
 // GetTransactionID gets the TransactionID for tx	 LiveHashAddTransaction.
 func (tx *LiveHashAddTransaction) GetTransactionID() TransactionID {
-	return tx.transaction.GetTransactionID()
+	return tx.Transaction.GetTransactionID()
 }
 
 // SetTransactionID sets the TransactionID for tx LiveHashAddTransaction.
 func (tx *LiveHashAddTransaction) SetTransactionID(transactionID TransactionID) *LiveHashAddTransaction {
 	tx._RequireNotFrozen()
 
-	tx.transaction.SetTransactionID(transactionID)
+	tx.Transaction.SetTransactionID(transactionID)
 	return tx
 }
 
 // SetNodeAccountID sets the _Node AccountID for tx LiveHashAddTransaction.
 func (tx *LiveHashAddTransaction) SetNodeAccountIDs(nodeID []AccountID) *LiveHashAddTransaction {
 	tx._RequireNotFrozen()
-	tx.transaction.SetNodeAccountIDs(nodeID)
+	tx.Transaction.SetNodeAccountIDs(nodeID)
 	return tx
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (tx *LiveHashAddTransaction) SetMaxRetry(count int) *LiveHashAddTransaction {
-	tx.transaction.SetMaxRetry(count)
+	tx.Transaction.SetMaxRetry(count)
 	return tx
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
 // Every retry attempt will increase the wait time exponentially until it reaches tx time.
 func (tx *LiveHashAddTransaction) SetMaxBackoff(max time.Duration) *LiveHashAddTransaction {
-	tx.transaction.SetMaxBackoff(max)
+	tx.Transaction.SetMaxBackoff(max)
 	return tx
 }
 
 // SetMinBackoff sets the minimum amount of time to wait between retries.
 func (tx *LiveHashAddTransaction) SetMinBackoff(min time.Duration) *LiveHashAddTransaction {
-	tx.transaction.SetMinBackoff(min)
+	tx.Transaction.SetMinBackoff(min)
 	return tx
 }
 
 func (tx *LiveHashAddTransaction) SetLogLevel(level LogLevel) *LiveHashAddTransaction {
-	tx.transaction.SetLogLevel(level)
+	tx.Transaction.SetLogLevel(level)
 	return tx
 }
 
@@ -292,7 +296,7 @@ func (tx *LiveHashAddTransaction) validateNetworkOnIDs(client *Client) error {
 func (tx *LiveHashAddTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
-		Memo:                     tx.transaction.memo,
+		Memo:                     tx.Transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(tx.GetTransactionValidDuration()),
 		TransactionID:            tx.transactionID._ToProtobuf(),
 		Data: &services.TransactionBody_CryptoAddLiveHash{

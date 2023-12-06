@@ -38,7 +38,7 @@ func AccountInfoFlowVerifySignature(client *Client, accountID AccountID, message
 }
 
 // AccountInfoFlowVerifyTransaction Verifies transaction using AccountInfoQuery
-func AccountInfoFlowVerifyTransaction(client *Client, accountID AccountID, transact transaction, signature []byte) (bool, error) {
+func AccountInfoFlowVerifyTransaction(client *Client, accountID AccountID, transact Transaction, signature []byte) (bool, error) {
 	info, err := NewAccountInfoQuery().
 		SetAccountID(accountID).
 		Execute(client)

@@ -31,7 +31,7 @@ import (
 // TopicUpdateTransaction
 // Updates all fields on a Topic that are set in the transaction.
 type TopicUpdateTransaction struct {
-	transaction
+	Transaction
 	topicID            *TopicID
 	autoRenewAccountID *AccountID
 	adminKey           Key
@@ -45,7 +45,7 @@ type TopicUpdateTransaction struct {
 // updates all fields on a Topic that are set in the transaction.
 func NewTopicUpdateTransaction() *TopicUpdateTransaction {
 	tx := TopicUpdateTransaction{
-		transaction: _NewTransaction(),
+		Transaction: _NewTransaction(),
 	}
 
 	tx.e = &tx
@@ -55,14 +55,14 @@ func NewTopicUpdateTransaction() *TopicUpdateTransaction {
 	return &tx
 }
 
-func _TopicUpdateTransactionFromProtobuf(tx transaction, pb *services.TransactionBody) *TopicUpdateTransaction {
+func _TopicUpdateTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *TopicUpdateTransaction {
 	adminKey, _ := _KeyFromProtobuf(pb.GetConsensusUpdateTopic().GetAdminKey())
 	submitKey, _ := _KeyFromProtobuf(pb.GetConsensusUpdateTopic().GetSubmitKey())
 
 	expirationTime := _TimeFromProtobuf(pb.GetConsensusUpdateTopic().GetExpirationTime())
 	autoRenew := _DurationFromProtobuf(pb.GetConsensusUpdateTopic().GetAutoRenewPeriod())
 	resultTx := &TopicUpdateTransaction{
-		transaction:        tx,
+		Transaction:        tx,
 		topicID:            _TopicIDFromProtobuf(pb.GetConsensusUpdateTopic().GetTopicID()),
 		autoRenewAccountID: _AccountIDFromProtobuf(pb.GetConsensusUpdateTopic().GetAutoRenewAccount()),
 		adminKey:           adminKey,
@@ -212,14 +212,17 @@ func (tx *TopicUpdateTransaction) ClearAutoRenewAccountID() *TopicUpdateTransact
 
 // Sign uses the provided privateKey to sign the transaction.
 func (tx *TopicUpdateTransaction) Sign(privateKey PrivateKey) *TopicUpdateTransaction {
-	tx.transaction.Sign(privateKey)
+	tx.Transaction.Sign(privateKey)
 	return tx
 }
 
 // SignWithOperator signs the transaction with client's operator privateKey.
 func (tx *TopicUpdateTransaction) SignWithOperator(client *Client) (*TopicUpdateTransaction, error) {
-	_, err := tx.transaction.SignWithOperator(client)
-	return tx, err
+	_, err := tx.Transaction.SignWithOperator(client)
+	if err != nil {
+		return nil, err
+	}
+	return tx, nil
 }
 
 // SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
@@ -228,19 +231,19 @@ func (tx *TopicUpdateTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *TopicUpdateTransaction {
-	tx.transaction.SignWith(publicKey, signer)
+	tx.Transaction.SignWith(publicKey, signer)
 	return tx
 }
 
 // AddSignature adds a signature to the transaction.
 func (tx *TopicUpdateTransaction) AddSignature(publicKey PublicKey, signature []byte) *TopicUpdateTransaction {
-	tx.transaction.AddSignature(publicKey, signature)
+	tx.Transaction.AddSignature(publicKey, signature)
 	return tx
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (tx *TopicUpdateTransaction) SetGrpcDeadline(deadline *time.Duration) *TopicUpdateTransaction {
-	tx.transaction.SetGrpcDeadline(deadline)
+	tx.Transaction.SetGrpcDeadline(deadline)
 	return tx
 }
 
@@ -249,67 +252,67 @@ func (tx *TopicUpdateTransaction) Freeze() (*TopicUpdateTransaction, error) {
 }
 
 func (tx *TopicUpdateTransaction) FreezeWith(client *Client) (*TopicUpdateTransaction, error) {
-	_, err := tx.transaction.FreezeWith(client)
+	_, err := tx.Transaction.FreezeWith(client)
 	return tx, err
 }
 
 // SetMaxTransactionFee sets the max transaction fee for this TopicUpdateTransaction.
 func (tx *TopicUpdateTransaction) SetMaxTransactionFee(fee Hbar) *TopicUpdateTransaction {
-	tx.transaction.SetMaxTransactionFee(fee)
+	tx.Transaction.SetMaxTransactionFee(fee)
 	return tx
 }
 
 // SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
 func (tx *TopicUpdateTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *TopicUpdateTransaction {
-	tx.transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	tx.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
 	return tx
 }
 
 // SetTransactionMemo sets the memo for this TopicUpdateTransaction.
 func (tx *TopicUpdateTransaction) SetTransactionMemo(memo string) *TopicUpdateTransaction {
-	tx.transaction.SetTransactionMemo(memo)
+	tx.Transaction.SetTransactionMemo(memo)
 	return tx
 }
 
 // SetTransactionValidDuration sets the valid duration for this TopicUpdateTransaction.
 func (tx *TopicUpdateTransaction) SetTransactionValidDuration(duration time.Duration) *TopicUpdateTransaction {
-	tx.transaction.SetTransactionValidDuration(duration)
+	tx.Transaction.SetTransactionValidDuration(duration)
 	return tx
 }
 
 // SetTransactionID sets the TransactionID for this TopicUpdateTransaction.
 func (tx *TopicUpdateTransaction) SetTransactionID(transactionID TransactionID) *TopicUpdateTransaction {
-	tx.transaction.SetTransactionID(transactionID)
+	tx.Transaction.SetTransactionID(transactionID)
 	return tx
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for this TopicUpdateTransaction.
 func (tx *TopicUpdateTransaction) SetNodeAccountIDs(nodeID []AccountID) *TopicUpdateTransaction {
-	tx.transaction.SetNodeAccountIDs(nodeID)
+	tx.Transaction.SetNodeAccountIDs(nodeID)
 	return tx
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (tx *TopicUpdateTransaction) SetMaxRetry(count int) *TopicUpdateTransaction {
-	tx.transaction.SetMaxRetry(count)
+	tx.Transaction.SetMaxRetry(count)
 	return tx
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
 // Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (tx *TopicUpdateTransaction) SetMaxBackoff(max time.Duration) *TopicUpdateTransaction {
-	tx.transaction.SetMaxBackoff(max)
+	tx.Transaction.SetMaxBackoff(max)
 	return tx
 }
 
 // SetMinBackoff sets the minimum amount of time to wait between retries.
 func (tx *TopicUpdateTransaction) SetMinBackoff(min time.Duration) *TopicUpdateTransaction {
-	tx.transaction.SetMinBackoff(min)
+	tx.Transaction.SetMinBackoff(min)
 	return tx
 }
 
 func (tx *TopicUpdateTransaction) SetLogLevel(level LogLevel) *TopicUpdateTransaction {
-	tx.transaction.SetLogLevel(level)
+	tx.Transaction.SetLogLevel(level)
 	return tx
 }
 
@@ -342,7 +345,7 @@ func (tx *TopicUpdateTransaction) validateNetworkOnIDs(client *Client) error {
 func (tx *TopicUpdateTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
-		Memo:                     tx.transaction.memo,
+		Memo:                     tx.Transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(tx.GetTransactionValidDuration()),
 		TransactionID:            tx.transactionID._ToProtobuf(),
 		Data: &services.TransactionBody_ConsensusUpdateTopic{
@@ -354,7 +357,7 @@ func (tx *TopicUpdateTransaction) build() *services.TransactionBody {
 func (tx *TopicUpdateTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
-		Memo:           tx.transaction.memo,
+		Memo:           tx.Transaction.memo,
 		Data: &services.SchedulableTransactionBody_ConsensusUpdateTopic{
 			ConsensusUpdateTopic: tx.buildProtoBody(),
 		},

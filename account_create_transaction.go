@@ -37,7 +37,7 @@ import (
 // The current API ignores shardID, realmID, and newRealmAdminKey, and creates everything in shard 0 and realm 0,
 // with a null key. Future versions of the API will support multiple realms and multiple shards.
 type AccountCreateTransaction struct {
-	transaction
+	Transaction
 	proxyAccountID                *AccountID
 	key                           Key
 	initialBalance                uint64
@@ -55,7 +55,7 @@ type AccountCreateTransaction struct {
 // execute a Crypto Create transaction.
 func NewAccountCreateTransaction() *AccountCreateTransaction {
 	tx := AccountCreateTransaction{
-		transaction: _NewTransaction(),
+		Transaction: _NewTransaction(),
 	}
 
 	tx.e = &tx
@@ -65,7 +65,7 @@ func NewAccountCreateTransaction() *AccountCreateTransaction {
 	return &tx
 }
 
-func _AccountCreateTransactionFromProtobuf(tx transaction, pb *services.TransactionBody) *AccountCreateTransaction {
+func _AccountCreateTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *AccountCreateTransaction {
 	key, _ := _KeyFromProtobuf(pb.GetCryptoCreateAccount().GetKey())
 	renew := _DurationFromProtobuf(pb.GetCryptoCreateAccount().GetAutoRenewPeriod())
 	stakedNodeID := pb.GetCryptoCreateAccount().GetStakedNodeId()
@@ -76,7 +76,7 @@ func _AccountCreateTransactionFromProtobuf(tx transaction, pb *services.Transact
 	}
 
 	body := AccountCreateTransaction{
-		transaction:                   tx,
+		Transaction:                   tx,
 		key:                           key,
 		initialBalance:                pb.GetCryptoCreateAccount().InitialBalance,
 		autoRenewPeriod:               &renew,
@@ -94,6 +94,7 @@ func _AccountCreateTransactionFromProtobuf(tx transaction, pb *services.Transact
 
 	return &body
 }
+
 // SetKey sets the key that must sign each transfer out of the account. If RecieverSignatureRequired is true, then it
 // must also sign any transfer into the account.
 func (tx *AccountCreateTransaction) SetKey(key Key) *AccountCreateTransaction {
@@ -265,7 +266,7 @@ func (tx *AccountCreateTransaction) GetReceiverSignatureRequired() bool {
 func (tx *AccountCreateTransaction) Sign(
 	privateKey PrivateKey,
 ) *AccountCreateTransaction {
-	tx.transaction.Sign(privateKey);
+	tx.Transaction.Sign(privateKey)
 	return tx
 }
 
@@ -273,8 +274,11 @@ func (tx *AccountCreateTransaction) Sign(
 func (tx *AccountCreateTransaction) SignWithOperator(
 	client *Client,
 ) (*AccountCreateTransaction, error) {
-	_,err := tx.transaction.SignWithOperator(client)
-	return tx,err
+	_, err := tx.Transaction.SignWithOperator(client)
+	if err != nil {
+		return nil, err
+	}
+	return tx, nil
 }
 
 // SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
@@ -283,62 +287,62 @@ func (tx *AccountCreateTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *AccountCreateTransaction {
-	tx.transaction.SignWith(publicKey,signer);
+	tx.Transaction.SignWith(publicKey, signer)
 	return tx
 }
 
 // AddSignature adds a signature to the transaction.
 func (tx *AccountCreateTransaction) AddSignature(publicKey PublicKey, signature []byte) *AccountCreateTransaction {
-	tx.transaction.AddSignature(publicKey, signature)
+	tx.Transaction.AddSignature(publicKey, signature)
 	return tx
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (tx *AccountCreateTransaction) SetGrpcDeadline(deadline *time.Duration) *AccountCreateTransaction {
-	tx.transaction.SetGrpcDeadline(deadline)
+	tx.Transaction.SetGrpcDeadline(deadline)
 	return tx
 }
 
 func (tx *AccountCreateTransaction) Freeze() (*AccountCreateTransaction, error) {
-    _,err := tx.transaction.Freeze()
-	return tx,err
+	_, err := tx.Transaction.Freeze()
+	return tx, err
 }
 
 func (tx *AccountCreateTransaction) FreezeWith(client *Client) (*AccountCreateTransaction, error) {
-	_,err := tx.transaction.FreezeWith(client)
+	_, err := tx.Transaction.FreezeWith(client)
 	return tx, err
 }
 
 // GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
 func (tx *AccountCreateTransaction) GetMaxTransactionFee() Hbar {
-	return tx.transaction.GetMaxTransactionFee()
+	return tx.Transaction.GetMaxTransactionFee()
 }
 
 // SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
 func (tx *AccountCreateTransaction) SetMaxTransactionFee(fee Hbar) *AccountCreateTransaction {
 	tx._RequireNotFrozen()
-	tx.transaction.SetMaxTransactionFee(fee)
+	tx.Transaction.SetMaxTransactionFee(fee)
 	return tx
 }
 
 // SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
 func (tx *AccountCreateTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *AccountCreateTransaction {
 	tx._RequireNotFrozen()
-	tx.transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	tx.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
 	return tx
 }
 
 // SetTransactionMemo sets the memo for tx AccountCreateTransaction.
 func (tx *AccountCreateTransaction) SetTransactionMemo(memo string) *AccountCreateTransaction {
 	tx._RequireNotFrozen()
-	tx.transaction.SetTransactionMemo(memo)
+	tx.Transaction.SetTransactionMemo(memo)
 	return tx
 }
 
 // SetTransactionValidDuration sets the valid duration for tx AccountCreateTransaction.
 func (tx *AccountCreateTransaction) SetTransactionValidDuration(duration time.Duration) *AccountCreateTransaction {
 	tx._RequireNotFrozen()
-	tx.transaction.SetTransactionValidDuration(duration)
+	tx.Transaction.SetTransactionValidDuration(duration)
 	return tx
 }
 
@@ -346,43 +350,43 @@ func (tx *AccountCreateTransaction) SetTransactionValidDuration(duration time.Du
 func (tx *AccountCreateTransaction) SetTransactionID(transactionID TransactionID) *AccountCreateTransaction {
 	tx._RequireNotFrozen()
 
-	tx.transaction.SetTransactionID(transactionID)
+	tx.Transaction.SetTransactionID(transactionID)
 	return tx
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for tx AccountCreateTransaction.
 func (tx *AccountCreateTransaction) SetNodeAccountIDs(nodeID []AccountID) *AccountCreateTransaction {
-	tx.transaction.SetNodeAccountIDs(nodeID)
+	tx.Transaction.SetNodeAccountIDs(nodeID)
 	return tx
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (tx *AccountCreateTransaction) SetMaxRetry(count int) *AccountCreateTransaction {
-	tx.transaction.SetMaxRetry(count)
+	tx.Transaction.SetMaxRetry(count)
 	return tx
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
 // Every retry attempt will increase the wait time exponentially until it reaches tx time.
 func (tx *AccountCreateTransaction) SetMaxBackoff(max time.Duration) *AccountCreateTransaction {
-	tx.transaction.SetMaxBackoff(max)
-    return tx
+	tx.Transaction.SetMaxBackoff(max)
+	return tx
 }
 
 // SetMinBackoff sets the minimum amount of time to wait between retries.
 func (tx *AccountCreateTransaction) SetMinBackoff(min time.Duration) *AccountCreateTransaction {
-	tx.transaction.SetMinBackoff(min)
+	tx.Transaction.SetMinBackoff(min)
 	return tx
 }
 
 func (tx *AccountCreateTransaction) SetLogLevel(level LogLevel) *AccountCreateTransaction {
-	tx.transaction.SetLogLevel(level)
+	tx.Transaction.SetLogLevel(level)
 	return tx
 }
 
 // ----------- overriden functions ----------------
 
-func (transaction *AccountCreateTransaction) getName() string {
+func (tx *AccountCreateTransaction) getName() string {
 	return "AccountCreateTransaction"
 }
 
@@ -407,7 +411,7 @@ func (tx *AccountCreateTransaction) build() *services.TransactionBody {
 		TransactionID:            tx.transactionID._ToProtobuf(),
 		TransactionFee:           tx.transactionFee,
 		TransactionValidDuration: _DurationToProtobuf(tx.GetTransactionValidDuration()),
-		Memo:                     tx.transaction.memo,
+		Memo:                     tx.Transaction.memo,
 		Data: &services.TransactionBody_CryptoCreateAccount{
 			CryptoCreateAccount: tx.buildProtoBody(),
 		},
@@ -416,7 +420,7 @@ func (tx *AccountCreateTransaction) build() *services.TransactionBody {
 func (tx *AccountCreateTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
-		Memo:           tx.transaction.memo,
+		Memo:           tx.Transaction.memo,
 		Data: &services.SchedulableTransactionBody_CryptoCreateAccount{
 			CryptoCreateAccount: tx.buildProtoBody(),
 		},
@@ -456,6 +460,6 @@ func (tx *AccountCreateTransaction) getMethod(channel *_Channel) _Method {
 	}
 }
 
-func (this *AccountCreateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
-	return this.buildScheduled()
+func (tx *AccountCreateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	return tx.buildScheduled()
 }

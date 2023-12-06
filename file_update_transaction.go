@@ -36,7 +36,7 @@ import (
 // additional KeyList or ThresholdKey then M-of-M secondary KeyList or ThresholdKey signing
 // requirements must be meet
 type FileUpdateTransaction struct {
-	transaction
+	Transaction
 	fileID         *FileID
 	keys           *KeyList
 	expirationTime *time.Time
@@ -52,19 +52,19 @@ type FileUpdateTransaction struct {
 // requirements must be meet
 func NewFileUpdateTransaction() *FileUpdateTransaction {
 	tx := FileUpdateTransaction{
-		transaction: _NewTransaction(),
+		Transaction: _NewTransaction(),
 	}
 	tx._SetDefaultMaxTransactionFee(NewHbar(5))
 	tx.e = &tx
 	return &tx
 }
 
-func _FileUpdateTransactionFromProtobuf(tx transaction, pb *services.TransactionBody) *FileUpdateTransaction {
+func _FileUpdateTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *FileUpdateTransaction {
 	keys, _ := _KeyListFromProtobuf(pb.GetFileUpdate().GetKeys())
 	expiration := _TimeFromProtobuf(pb.GetFileUpdate().GetExpirationTime())
 
 	resultTx := &FileUpdateTransaction{
-		transaction:    tx,
+		Transaction:    tx,
 		fileID:         _FileIDFromProtobuf(pb.GetFileUpdate().GetFileID()),
 		keys:           &keys,
 		expirationTime: &expiration,
@@ -165,7 +165,7 @@ func (tx *FileUpdateTransaction) GetFileMemo() string {
 func (tx *FileUpdateTransaction) Sign(
 	privateKey PrivateKey,
 ) *FileUpdateTransaction {
-	tx.transaction.Sign(privateKey)
+	tx.Transaction.Sign(privateKey)
 	return tx
 }
 
@@ -175,8 +175,11 @@ func (tx *FileUpdateTransaction) SignWithOperator(
 ) (*FileUpdateTransaction, error) {
 	// If the transaction is not signed by the _Operator, we need
 	// to sign the transaction with the _Operator
-	_, err := tx.transaction.SignWithOperator(client)
-	return tx, err
+	_, err := tx.Transaction.SignWithOperator(client)
+	if err != nil {
+		return nil, err
+	}
+	return tx, nil
 }
 
 // SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
@@ -185,57 +188,57 @@ func (tx *FileUpdateTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *FileUpdateTransaction {
-	tx.transaction.SignWith(publicKey, signer)
+	tx.Transaction.SignWith(publicKey, signer)
 	return tx
 }
 
 // AddSignature adds a signature to the transaction.
 func (tx *FileUpdateTransaction) AddSignature(publicKey PublicKey, signature []byte) *FileUpdateTransaction {
-	tx.transaction.AddSignature(publicKey, signature)
+	tx.Transaction.AddSignature(publicKey, signature)
 	return tx
 }
 
 // When execution is attempted, a single attempt will timeout when tx deadline is reached. (The SDK may subsequently retry the execution.)
 func (tx *FileUpdateTransaction) SetGrpcDeadline(deadline *time.Duration) *FileUpdateTransaction {
-	tx.transaction.SetGrpcDeadline(deadline)
+	tx.Transaction.SetGrpcDeadline(deadline)
 	return tx
 }
 
 func (tx *FileUpdateTransaction) Freeze() (*FileUpdateTransaction, error) {
-	_, err := tx.transaction.Freeze()
+	_, err := tx.Transaction.Freeze()
 	return tx, err
 }
 
 func (tx *FileUpdateTransaction) FreezeWith(client *Client) (*FileUpdateTransaction, error) {
-	_, err := tx.transaction.FreezeWith(client)
+	_, err := tx.Transaction.FreezeWith(client)
 	return tx, err
 }
 
 // SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
 func (tx *FileUpdateTransaction) SetMaxTransactionFee(fee Hbar) *FileUpdateTransaction {
 	tx._RequireNotFrozen()
-	tx.transaction.SetMaxTransactionFee(fee)
+	tx.Transaction.SetMaxTransactionFee(fee)
 	return tx
 }
 
 // SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
 func (tx *FileUpdateTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *FileUpdateTransaction {
 	tx._RequireNotFrozen()
-	tx.transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	tx.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
 	return tx
 }
 
 // SetTransactionMemo sets the memo for tx FileUpdateTransaction.
 func (tx *FileUpdateTransaction) SetTransactionMemo(memo string) *FileUpdateTransaction {
 	tx._RequireNotFrozen()
-	tx.transaction.SetTransactionMemo(memo)
+	tx.Transaction.SetTransactionMemo(memo)
 	return tx
 }
 
 // SetTransactionValidDuration sets the valid duration for tx FileUpdateTransaction.
 func (tx *FileUpdateTransaction) SetTransactionValidDuration(duration time.Duration) *FileUpdateTransaction {
 	tx._RequireNotFrozen()
-	tx.transaction.SetTransactionValidDuration(duration)
+	tx.Transaction.SetTransactionValidDuration(duration)
 	return tx
 }
 
@@ -243,38 +246,38 @@ func (tx *FileUpdateTransaction) SetTransactionValidDuration(duration time.Durat
 func (tx *FileUpdateTransaction) SetTransactionID(transactionID TransactionID) *FileUpdateTransaction {
 	tx._RequireNotFrozen()
 
-	tx.transaction.SetTransactionID(transactionID)
+	tx.Transaction.SetTransactionID(transactionID)
 	return tx
 }
 
 // SetNodeAccountID sets the _Node AccountID for tx FileUpdateTransaction.
 func (tx *FileUpdateTransaction) SetNodeAccountIDs(nodeID []AccountID) *FileUpdateTransaction {
 	tx._RequireNotFrozen()
-	tx.transaction.SetNodeAccountIDs(nodeID)
+	tx.Transaction.SetNodeAccountIDs(nodeID)
 	return tx
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (tx *FileUpdateTransaction) SetMaxRetry(count int) *FileUpdateTransaction {
-	tx.transaction.SetMaxRetry(count)
+	tx.Transaction.SetMaxRetry(count)
 	return tx
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
 // Every retry attempt will increase the wait time exponentially until it reaches tx time.
 func (tx *FileUpdateTransaction) SetMaxBackoff(max time.Duration) *FileUpdateTransaction {
-	tx.transaction.SetMaxBackoff(max)
+	tx.Transaction.SetMaxBackoff(max)
 	return tx
 }
 
 // SetMinBackoff sets the minimum amount of time to wait between retries.
 func (tx *FileUpdateTransaction) SetMinBackoff(min time.Duration) *FileUpdateTransaction {
-	tx.transaction.SetMinBackoff(min)
+	tx.Transaction.SetMinBackoff(min)
 	return tx
 }
 
 func (tx *FileUpdateTransaction) SetLogLevel(level LogLevel) *FileUpdateTransaction {
-	tx.transaction.SetLogLevel(level)
+	tx.Transaction.SetLogLevel(level)
 	return tx
 }
 
@@ -299,7 +302,7 @@ func (tx *FileUpdateTransaction) validateNetworkOnIDs(client *Client) error {
 func (tx *FileUpdateTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
-		Memo:                     tx.transaction.memo,
+		Memo:                     tx.Transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(tx.GetTransactionValidDuration()),
 		TransactionID:            tx.transactionID._ToProtobuf(),
 		Data: &services.TransactionBody_FileUpdate{
@@ -310,7 +313,7 @@ func (tx *FileUpdateTransaction) build() *services.TransactionBody {
 func (tx *FileUpdateTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
-		Memo:           tx.transaction.memo,
+		Memo:           tx.Transaction.memo,
 		Data: &services.SchedulableTransactionBody_FileUpdate{
 			FileUpdate: tx.buildProtoBody(),
 		},

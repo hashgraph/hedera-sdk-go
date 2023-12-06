@@ -28,7 +28,7 @@ import (
 
 // PrngTransaction is used to generate a random number in a given range
 type PrngTransaction struct {
-	transaction
+	Transaction
 	rang uint32
 }
 
@@ -36,7 +36,7 @@ type PrngTransaction struct {
 // a Prng transaction.
 func NewPrngTransaction() *PrngTransaction {
 	tx := PrngTransaction{
-		transaction: _NewTransaction(),
+		Transaction: _NewTransaction(),
 	}
 
 	tx._SetDefaultMaxTransactionFee(NewHbar(5))
@@ -45,9 +45,9 @@ func NewPrngTransaction() *PrngTransaction {
 	return &tx
 }
 
-func _PrngTransactionFromProtobuf(tx transaction, pb *services.TransactionBody) *PrngTransaction {
+func _PrngTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *PrngTransaction {
 	resultTx := &PrngTransaction{
-		transaction: tx,
+		Transaction: tx,
 		rang:        uint32(pb.GetUtilPrng().GetRange()),
 	}
 	resultTx.e = resultTx
@@ -73,14 +73,17 @@ func (tx *PrngTransaction) GetRange() uint32 {
 
 // Sign uses the provided privateKey to sign the transaction.
 func (tx *PrngTransaction) Sign(privateKey PrivateKey) *PrngTransaction {
-	tx.transaction.Sign(privateKey)
+	tx.Transaction.Sign(privateKey)
 	return tx
 }
 
 // SignWithOperator signs the transaction with client's operator privateKey.
 func (tx *PrngTransaction) SignWithOperator(client *Client) (*PrngTransaction, error) {
-	_, err := tx.transaction.SignWithOperator(client)
-	return tx, err
+	_, err := tx.Transaction.SignWithOperator(client)
+	if err != nil {
+		return nil, err
+	}
+	return tx, nil
 }
 
 // SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
@@ -89,19 +92,19 @@ func (tx *PrngTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *PrngTransaction {
-	tx.transaction.SignWith(publicKey, signer)
+	tx.Transaction.SignWith(publicKey, signer)
 	return tx
 }
 
 // AddSignature adds a signature to the transaction.
 func (tx *PrngTransaction) AddSignature(publicKey PublicKey, signature []byte) *PrngTransaction {
-	tx.transaction.AddSignature(publicKey, signature)
+	tx.Transaction.AddSignature(publicKey, signature)
 	return tx
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (tx *PrngTransaction) SetGrpcDeadline(deadline *time.Duration) *PrngTransaction {
-	tx.transaction.SetGrpcDeadline(deadline)
+	tx.Transaction.SetGrpcDeadline(deadline)
 	return tx
 }
 
@@ -110,67 +113,67 @@ func (tx *PrngTransaction) Freeze() (*PrngTransaction, error) {
 }
 
 func (tx *PrngTransaction) FreezeWith(client *Client) (*PrngTransaction, error) {
-	_, err := tx.transaction.FreezeWith(client)
+	_, err := tx.Transaction.FreezeWith(client)
 	return tx, err
 }
 
 // SetMaxTransactionFee sets the max transaction fee for this PrngTransaction.
 func (tx *PrngTransaction) SetMaxTransactionFee(fee Hbar) *PrngTransaction {
-	tx.transaction.SetMaxTransactionFee(fee)
+	tx.Transaction.SetMaxTransactionFee(fee)
 	return tx
 }
 
 // SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
 func (tx *PrngTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *PrngTransaction {
-	tx.transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	tx.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
 	return tx
 }
 
 // SetTransactionMemo sets the memo for this PrngTransaction.
 func (tx *PrngTransaction) SetTransactionMemo(memo string) *PrngTransaction {
-	tx.transaction.SetTransactionMemo(memo)
+	tx.Transaction.SetTransactionMemo(memo)
 	return tx
 }
 
 // SetTransactionValidDuration sets the valid duration for this PrngTransaction.
 func (tx *PrngTransaction) SetTransactionValidDuration(duration time.Duration) *PrngTransaction {
-	tx.transaction.SetTransactionValidDuration(duration)
+	tx.Transaction.SetTransactionValidDuration(duration)
 	return tx
 }
 
 // SetTransactionID sets the TransactionID for this PrngTransaction.
 func (tx *PrngTransaction) SetTransactionID(transactionID TransactionID) *PrngTransaction {
-	tx.transaction.SetTransactionID(transactionID)
+	tx.Transaction.SetTransactionID(transactionID)
 	return tx
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for this PrngTransaction.
 func (tx *PrngTransaction) SetNodeAccountIDs(nodeID []AccountID) *PrngTransaction {
-	tx.transaction.SetNodeAccountIDs(nodeID)
+	tx.Transaction.SetNodeAccountIDs(nodeID)
 	return tx
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (tx *PrngTransaction) SetMaxRetry(count int) *PrngTransaction {
-	tx.transaction.SetMaxRetry(count)
+	tx.Transaction.SetMaxRetry(count)
 	return tx
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
 // Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (tx *PrngTransaction) SetMaxBackoff(max time.Duration) *PrngTransaction {
-	tx.transaction.SetMaxBackoff(max)
+	tx.Transaction.SetMaxBackoff(max)
 	return tx
 }
 
 // SetMinBackoff sets the minimum amount of time to wait between retries.
 func (tx *PrngTransaction) SetMinBackoff(min time.Duration) *PrngTransaction {
-	tx.transaction.SetMinBackoff(min)
+	tx.Transaction.SetMinBackoff(min)
 	return tx
 }
 
 func (tx *PrngTransaction) SetLogLevel(level LogLevel) *PrngTransaction {
-	tx.transaction.SetLogLevel(level)
+	tx.Transaction.SetLogLevel(level)
 	return tx
 }
 
@@ -183,7 +186,7 @@ func (tx *PrngTransaction) getName() string {
 func (tx *PrngTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
-		Memo:                     tx.transaction.memo,
+		Memo:                     tx.Transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(tx.GetTransactionValidDuration()),
 		TransactionID:            tx.transactionID._ToProtobuf(),
 		Data: &services.TransactionBody_UtilPrng{
@@ -195,7 +198,7 @@ func (tx *PrngTransaction) build() *services.TransactionBody {
 func (tx *PrngTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
-		Memo:           tx.transaction.memo,
+		Memo:           tx.Transaction.memo,
 		Data: &services.SchedulableTransactionBody_UtilPrng{
 			UtilPrng: tx.buildProtoBody(),
 		},

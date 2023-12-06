@@ -70,7 +70,7 @@ type ErrMaxQueryPaymentExceeded struct {
 	// The limit for a single automatic query payment, set by
 	// Client.SetMaxQueryPayment(int64) or QueryBuilder.SetMaxQueryPayment(uint64).
 	MaxQueryPayment Hbar
-	// Name of the query transaction class used for output
+	// Name of the query Transaction class used for output
 	query string
 }
 

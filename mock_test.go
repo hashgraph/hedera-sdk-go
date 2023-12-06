@@ -95,6 +95,17 @@ func TestUnitMockQuery(t *testing.T) {
 			&services.Response{
 				Response: &services.Response_CryptogetAccountBalance{
 					CryptogetAccountBalance: &services.CryptoGetAccountBalanceResponse{
+						Header: &services.ResponseHeader{NodeTransactionPrecheckCode: services.ResponseCodeEnum_OK, ResponseType: services.ResponseType_COST_ANSWER, Cost: 0},
+						AccountID: &services.AccountID{ShardNum: 0, RealmNum: 0, Account: &services.AccountID_AccountNum{
+							AccountNum: 1800,
+						}},
+						Balance: 2000,
+					},
+				},
+			},
+			&services.Response{
+				Response: &services.Response_CryptogetAccountBalance{
+					CryptogetAccountBalance: &services.CryptoGetAccountBalanceResponse{
 						Header: &services.ResponseHeader{NodeTransactionPrecheckCode: services.ResponseCodeEnum_OK, ResponseType: services.ResponseType_ANSWER_ONLY, Cost: 0},
 						AccountID: &services.AccountID{ShardNum: 0, RealmNum: 0, Account: &services.AccountID_AccountNum{
 							AccountNum: 1800,

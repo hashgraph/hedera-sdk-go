@@ -35,7 +35,7 @@ import (
 // Token A has 2 decimals. In order to burn 100 tokens, one must provide amount of 10000. In order
 // to burn 100.55 tokens, one must provide amount of 10055.
 type TokenBurnTransaction struct {
-	transaction
+	Transaction
 	tokenID *TokenID
 	amount  uint64
 	serial  []int64
@@ -51,7 +51,7 @@ type TokenBurnTransaction struct {
 // to burn 100.55 tokens, one must provide amount of 10055.
 func NewTokenBurnTransaction() *TokenBurnTransaction {
 	tx := TokenBurnTransaction{
-		transaction: _NewTransaction(),
+		Transaction: _NewTransaction(),
 	}
 
 	tx.e = &tx
@@ -60,9 +60,9 @@ func NewTokenBurnTransaction() *TokenBurnTransaction {
 	return &tx
 }
 
-func _TokenBurnTransactionFromProtobuf(tx transaction, pb *services.TransactionBody) *TokenBurnTransaction {
+func _TokenBurnTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *TokenBurnTransaction {
 	resultTx := &TokenBurnTransaction{
-		transaction: tx,
+		Transaction: tx,
 		tokenID:     _TokenIDFromProtobuf(pb.GetTokenBurn().Token),
 		amount:      pb.GetTokenBurn().GetAmount(),
 		serial:      pb.GetTokenBurn().GetSerialNumbers(),
@@ -134,14 +134,17 @@ func (tx *TokenBurnTransaction) GetSerialNumbers() []int64 {
 
 // Sign uses the provided privateKey to sign the transaction.
 func (tx *TokenBurnTransaction) Sign(privateKey PrivateKey) *TokenBurnTransaction {
-	tx.transaction.Sign(privateKey)
+	tx.Transaction.Sign(privateKey)
 	return tx
 }
 
 // SignWithOperator signs the transaction with client's operator privateKey.
 func (tx *TokenBurnTransaction) SignWithOperator(client *Client) (*TokenBurnTransaction, error) {
-	_, err := tx.transaction.SignWithOperator(client)
-	return tx, err
+	_, err := tx.Transaction.SignWithOperator(client)
+	if err != nil {
+		return nil, err
+	}
+	return tx, nil
 }
 
 // SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
@@ -150,19 +153,19 @@ func (tx *TokenBurnTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *TokenBurnTransaction {
-	tx.transaction.SignWith(publicKey, signer)
+	tx.Transaction.SignWith(publicKey, signer)
 	return tx
 }
 
 // AddSignature adds a signature to the transaction.
 func (tx *TokenBurnTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenBurnTransaction {
-	tx.transaction.AddSignature(publicKey, signature)
+	tx.Transaction.AddSignature(publicKey, signature)
 	return tx
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (tx *TokenBurnTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenBurnTransaction {
-	tx.transaction.SetGrpcDeadline(deadline)
+	tx.Transaction.SetGrpcDeadline(deadline)
 	return tx
 }
 
@@ -171,67 +174,67 @@ func (tx *TokenBurnTransaction) Freeze() (*TokenBurnTransaction, error) {
 }
 
 func (tx *TokenBurnTransaction) FreezeWith(client *Client) (*TokenBurnTransaction, error) {
-	_, err := tx.transaction.FreezeWith(client)
+	_, err := tx.Transaction.FreezeWith(client)
 	return tx, err
 }
 
 // SetMaxTransactionFee sets the max transaction fee for this TokenBurnTransaction.
 func (tx *TokenBurnTransaction) SetMaxTransactionFee(fee Hbar) *TokenBurnTransaction {
-	tx.transaction.SetMaxTransactionFee(fee)
+	tx.Transaction.SetMaxTransactionFee(fee)
 	return tx
 }
 
 // SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
 func (tx *TokenBurnTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *TokenBurnTransaction {
-	tx.transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	tx.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
 	return tx
 }
 
 // SetTransactionMemo sets the memo for this TokenBurnTransaction.
 func (tx *TokenBurnTransaction) SetTransactionMemo(memo string) *TokenBurnTransaction {
-	tx.transaction.SetTransactionMemo(memo)
+	tx.Transaction.SetTransactionMemo(memo)
 	return tx
 }
 
 // SetTransactionValidDuration sets the valid duration for this TokenBurnTransaction.
 func (tx *TokenBurnTransaction) SetTransactionValidDuration(duration time.Duration) *TokenBurnTransaction {
-	tx.transaction.SetTransactionValidDuration(duration)
+	tx.Transaction.SetTransactionValidDuration(duration)
 	return tx
 }
 
 // SetTransactionID sets the TransactionID for this TokenBurnTransaction.
 func (tx *TokenBurnTransaction) SetTransactionID(transactionID TransactionID) *TokenBurnTransaction {
-	tx.transaction.SetTransactionID(transactionID)
+	tx.Transaction.SetTransactionID(transactionID)
 	return tx
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for this TokenBurnTransaction.
 func (tx *TokenBurnTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenBurnTransaction {
-	tx.transaction.SetNodeAccountIDs(nodeID)
+	tx.Transaction.SetNodeAccountIDs(nodeID)
 	return tx
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (tx *TokenBurnTransaction) SetMaxRetry(count int) *TokenBurnTransaction {
-	tx.transaction.SetMaxRetry(count)
+	tx.Transaction.SetMaxRetry(count)
 	return tx
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
 // Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (tx *TokenBurnTransaction) SetMaxBackoff(max time.Duration) *TokenBurnTransaction {
-	tx.transaction.SetMaxBackoff(max)
+	tx.Transaction.SetMaxBackoff(max)
 	return tx
 }
 
 // SetMinBackoff sets the minimum amount of time to wait between retries.
 func (tx *TokenBurnTransaction) SetMinBackoff(min time.Duration) *TokenBurnTransaction {
-	tx.transaction.SetMinBackoff(min)
+	tx.Transaction.SetMinBackoff(min)
 	return tx
 }
 
 func (tx *TokenBurnTransaction) SetLogLevel(level LogLevel) *TokenBurnTransaction {
-	tx.transaction.SetLogLevel(level)
+	tx.Transaction.SetLogLevel(level)
 	return tx
 }
 
@@ -258,7 +261,7 @@ func (tx *TokenBurnTransaction) validateNetworkOnIDs(client *Client) error {
 func (tx *TokenBurnTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
-		Memo:                     tx.transaction.memo,
+		Memo:                     tx.Transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(tx.GetTransactionValidDuration()),
 		TransactionID:            tx.transactionID._ToProtobuf(),
 		Data: &services.TransactionBody_TokenBurn{
@@ -270,7 +273,7 @@ func (tx *TokenBurnTransaction) build() *services.TransactionBody {
 func (tx *TokenBurnTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
-		Memo:           tx.transaction.memo,
+		Memo:           tx.Transaction.memo,
 		Data: &services.SchedulableTransactionBody_TokenBurn{
 			TokenBurn: tx.buildProtoBody(),
 		},

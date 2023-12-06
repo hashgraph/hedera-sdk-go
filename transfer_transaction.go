@@ -40,7 +40,7 @@ import (
 // accounts, and for any receiving accounts that have receiverSigRequired == true. The signatures
 // are in the same order as the accounts, skipping those accounts that don't need a signature.
 type TransferTransaction struct {
-	transaction
+	Transaction
 	tokenTransfers map[TokenID]*_TokenTransfer
 	hbarTransfers  []*_HbarTransfer
 	nftTransfers   map[TokenID][]*TokenNftTransfer
@@ -58,7 +58,7 @@ type TransferTransaction struct {
 // are in the same order as the accounts, skipping those accounts that don't need a signature.
 func NewTransferTransaction() *TransferTransaction {
 	tx := TransferTransaction{
-		transaction:    _NewTransaction(),
+		Transaction:    _NewTransaction(),
 		tokenTransfers: make(map[TokenID]*_TokenTransfer),
 		hbarTransfers:  make([]*_HbarTransfer, 0),
 		nftTransfers:   make(map[TokenID][]*TokenNftTransfer),
@@ -70,7 +70,7 @@ func NewTransferTransaction() *TransferTransaction {
 	return &tx
 }
 
-func _TransferTransactionFromProtobuf(tx transaction, pb *services.TransactionBody) *TransferTransaction {
+func _TransferTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *TransferTransaction {
 	tokenTransfers := make(map[TokenID]*_TokenTransfer)
 	nftTransfers := make(map[TokenID][]*TokenNftTransfer)
 
@@ -92,7 +92,7 @@ func _TransferTransactionFromProtobuf(tx transaction, pb *services.TransactionBo
 	}
 
 	resultTx := &TransferTransaction{
-		transaction:    tx,
+		Transaction:    tx,
 		hbarTransfers:  _HbarTransferFromProtobuf(pb.GetCryptoTransfer().GetTransfers().GetAccountAmounts()),
 		tokenTransfers: tokenTransfers,
 		nftTransfers:   nftTransfers,
@@ -450,14 +450,17 @@ func (tx *TransferTransaction) AddApprovedNftTransfer(nftID NftID, sender Accoun
 
 // Sign uses the provided privateKey to sign the transaction.
 func (tx *TransferTransaction) Sign(privateKey PrivateKey) *TransferTransaction {
-	tx.transaction.Sign(privateKey)
+	tx.Transaction.Sign(privateKey)
 	return tx
 }
 
 // SignWithOperator signs the transaction with client's operator privateKey.
 func (tx *TransferTransaction) SignWithOperator(client *Client) (*TransferTransaction, error) {
-	_, err := tx.transaction.SignWithOperator(client)
-	return tx, err
+	_, err := tx.Transaction.SignWithOperator(client)
+	if err != nil {
+		return nil, err
+	}
+	return tx, nil
 }
 
 // SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
@@ -466,19 +469,19 @@ func (tx *TransferTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *TransferTransaction {
-	tx.transaction.SignWith(publicKey, signer)
+	tx.Transaction.SignWith(publicKey, signer)
 	return tx
 }
 
 // AddSignature adds a signature to the transaction.
 func (tx *TransferTransaction) AddSignature(publicKey PublicKey, signature []byte) *TransferTransaction {
-	tx.transaction.AddSignature(publicKey, signature)
+	tx.Transaction.AddSignature(publicKey, signature)
 	return tx
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (tx *TransferTransaction) SetGrpcDeadline(deadline *time.Duration) *TransferTransaction {
-	tx.transaction.SetGrpcDeadline(deadline)
+	tx.Transaction.SetGrpcDeadline(deadline)
 	return tx
 }
 
@@ -487,67 +490,67 @@ func (tx *TransferTransaction) Freeze() (*TransferTransaction, error) {
 }
 
 func (tx *TransferTransaction) FreezeWith(client *Client) (*TransferTransaction, error) {
-	_, err := tx.transaction.FreezeWith(client)
+	_, err := tx.Transaction.FreezeWith(client)
 	return tx, err
 }
 
 // SetMaxTransactionFee sets the max transaction fee for this TransferTransaction.
 func (tx *TransferTransaction) SetMaxTransactionFee(fee Hbar) *TransferTransaction {
-	tx.transaction.SetMaxTransactionFee(fee)
+	tx.Transaction.SetMaxTransactionFee(fee)
 	return tx
 }
 
 // SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
 func (tx *TransferTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *TransferTransaction {
-	tx.transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	tx.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
 	return tx
 }
 
 // SetTransactionMemo sets the memo for this TransferTransaction.
 func (tx *TransferTransaction) SetTransactionMemo(memo string) *TransferTransaction {
-	tx.transaction.SetTransactionMemo(memo)
+	tx.Transaction.SetTransactionMemo(memo)
 	return tx
 }
 
 // SetTransactionValidDuration sets the valid duration for this TransferTransaction.
 func (tx *TransferTransaction) SetTransactionValidDuration(duration time.Duration) *TransferTransaction {
-	tx.transaction.SetTransactionValidDuration(duration)
+	tx.Transaction.SetTransactionValidDuration(duration)
 	return tx
 }
 
 // SetTransactionID sets the TransactionID for this TransferTransaction.
 func (tx *TransferTransaction) SetTransactionID(transactionID TransactionID) *TransferTransaction {
-	tx.transaction.SetTransactionID(transactionID)
+	tx.Transaction.SetTransactionID(transactionID)
 	return tx
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for this TransferTransaction.
 func (tx *TransferTransaction) SetNodeAccountIDs(nodeID []AccountID) *TransferTransaction {
-	tx.transaction.SetNodeAccountIDs(nodeID)
+	tx.Transaction.SetNodeAccountIDs(nodeID)
 	return tx
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (tx *TransferTransaction) SetMaxRetry(count int) *TransferTransaction {
-	tx.transaction.SetMaxRetry(count)
+	tx.Transaction.SetMaxRetry(count)
 	return tx
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
 // Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (tx *TransferTransaction) SetMaxBackoff(max time.Duration) *TransferTransaction {
-	tx.transaction.SetMaxBackoff(max)
+	tx.Transaction.SetMaxBackoff(max)
 	return tx
 }
 
 // SetMinBackoff sets the minimum amount of time to wait between retries.
 func (tx *TransferTransaction) SetMinBackoff(min time.Duration) *TransferTransaction {
-	tx.transaction.SetMinBackoff(min)
+	tx.Transaction.SetMinBackoff(min)
 	return tx
 }
 
 func (tx *TransferTransaction) SetLogLevel(level LogLevel) *TransferTransaction {
-	tx.transaction.SetLogLevel(level)
+	tx.Transaction.SetLogLevel(level)
 	return tx
 }
 
@@ -603,7 +606,7 @@ func (tx *TransferTransaction) validateNetworkOnIDs(client *Client) error {
 func (tx *TransferTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
-		Memo:                     tx.transaction.memo,
+		Memo:                     tx.Transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(tx.GetTransactionValidDuration()),
 		TransactionID:            tx.transactionID._ToProtobuf(),
 		Data: &services.TransactionBody_CryptoTransfer{
@@ -615,7 +618,7 @@ func (tx *TransferTransaction) build() *services.TransactionBody {
 func (tx *TransferTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
-		Memo:           tx.transaction.memo,
+		Memo:           tx.Transaction.memo,
 		Data: &services.SchedulableTransactionBody_CryptoTransfer{
 			CryptoTransfer: tx.buildProtoBody(),
 		},

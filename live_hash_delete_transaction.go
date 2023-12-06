@@ -31,7 +31,7 @@ import (
 // LiveHashDeleteTransaction At consensus, deletes a livehash associated to the given account. The transaction must be signed
 // by either the key of the owning account, or at least one of the keys associated to the livehash.
 type LiveHashDeleteTransaction struct {
-	transaction
+	Transaction
 	accountID *AccountID
 	hash      []byte
 }
@@ -40,7 +40,7 @@ type LiveHashDeleteTransaction struct {
 // The transaction must be signed by either the key of the owning account, or at least one of the keys associated to the livehash.
 func NewLiveHashDeleteTransaction() *LiveHashDeleteTransaction {
 	tx := LiveHashDeleteTransaction{
-		transaction: _NewTransaction(),
+		Transaction: _NewTransaction(),
 	}
 	tx._SetDefaultMaxTransactionFee(NewHbar(2))
 	tx.e = &tx
@@ -48,9 +48,9 @@ func NewLiveHashDeleteTransaction() *LiveHashDeleteTransaction {
 	return &tx
 }
 
-func _LiveHashDeleteTransactionFromProtobuf(tx transaction, pb *services.TransactionBody) *LiveHashDeleteTransaction {
+func _LiveHashDeleteTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *LiveHashDeleteTransaction {
 	resultTx := &LiveHashDeleteTransaction{
-		transaction: tx,
+		Transaction: tx,
 		accountID:   _AccountIDFromProtobuf(pb.GetCryptoDeleteLiveHash().GetAccountOfLiveHash()),
 		hash:        pb.GetCryptoDeleteLiveHash().LiveHashToDelete,
 	}
@@ -90,14 +90,17 @@ func (tx *LiveHashDeleteTransaction) GetAccountID() AccountID {
 
 // Sign uses the provided privateKey to sign the transaction.
 func (tx *LiveHashDeleteTransaction) Sign(privateKey PrivateKey) *LiveHashDeleteTransaction {
-	tx.transaction.Sign(privateKey)
+	tx.Transaction.Sign(privateKey)
 	return tx
 }
 
 // SignWithOperator signs the transaction with client's operator privateKey.
 func (tx *LiveHashDeleteTransaction) SignWithOperator(client *Client) (*LiveHashDeleteTransaction, error) {
-	_, err := tx.transaction.SignWithOperator(client)
-	return tx, err
+	_, err := tx.Transaction.SignWithOperator(client)
+	if err != nil {
+		return nil, err
+	}
+	return tx, nil
 }
 
 // SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
@@ -106,19 +109,19 @@ func (tx *LiveHashDeleteTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *LiveHashDeleteTransaction {
-	tx.transaction.SignWith(publicKey, signer)
+	tx.Transaction.SignWith(publicKey, signer)
 	return tx
 }
 
 // AddSignature adds a signature to the transaction.
 func (tx *LiveHashDeleteTransaction) AddSignature(publicKey PublicKey, signature []byte) *LiveHashDeleteTransaction {
-	tx.transaction.AddSignature(publicKey, signature)
+	tx.Transaction.AddSignature(publicKey, signature)
 	return tx
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (tx *LiveHashDeleteTransaction) SetGrpcDeadline(deadline *time.Duration) *LiveHashDeleteTransaction {
-	tx.transaction.SetGrpcDeadline(deadline)
+	tx.Transaction.SetGrpcDeadline(deadline)
 	return tx
 }
 
@@ -127,67 +130,67 @@ func (tx *LiveHashDeleteTransaction) Freeze() (*LiveHashDeleteTransaction, error
 }
 
 func (tx *LiveHashDeleteTransaction) FreezeWith(client *Client) (*LiveHashDeleteTransaction, error) {
-	_, err := tx.transaction.FreezeWith(client)
+	_, err := tx.Transaction.FreezeWith(client)
 	return tx, err
 }
 
 // SetMaxTransactionFee sets the max transaction fee for this LiveHashDeleteTransaction.
 func (tx *LiveHashDeleteTransaction) SetMaxTransactionFee(fee Hbar) *LiveHashDeleteTransaction {
-	tx.transaction.SetMaxTransactionFee(fee)
+	tx.Transaction.SetMaxTransactionFee(fee)
 	return tx
 }
 
 // SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
 func (tx *LiveHashDeleteTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *LiveHashDeleteTransaction {
-	tx.transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	tx.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
 	return tx
 }
 
 // SetTransactionMemo sets the memo for this LiveHashDeleteTransaction.
 func (tx *LiveHashDeleteTransaction) SetTransactionMemo(memo string) *LiveHashDeleteTransaction {
-	tx.transaction.SetTransactionMemo(memo)
+	tx.Transaction.SetTransactionMemo(memo)
 	return tx
 }
 
 // SetTransactionValidDuration sets the valid duration for this LiveHashDeleteTransaction.
 func (tx *LiveHashDeleteTransaction) SetTransactionValidDuration(duration time.Duration) *LiveHashDeleteTransaction {
-	tx.transaction.SetTransactionValidDuration(duration)
+	tx.Transaction.SetTransactionValidDuration(duration)
 	return tx
 }
 
 // SetTransactionID sets the TransactionID for this LiveHashDeleteTransaction.
 func (tx *LiveHashDeleteTransaction) SetTransactionID(transactionID TransactionID) *LiveHashDeleteTransaction {
-	tx.transaction.SetTransactionID(transactionID)
+	tx.Transaction.SetTransactionID(transactionID)
 	return tx
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for this LiveHashDeleteTransaction.
 func (tx *LiveHashDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *LiveHashDeleteTransaction {
-	tx.transaction.SetNodeAccountIDs(nodeID)
+	tx.Transaction.SetNodeAccountIDs(nodeID)
 	return tx
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (tx *LiveHashDeleteTransaction) SetMaxRetry(count int) *LiveHashDeleteTransaction {
-	tx.transaction.SetMaxRetry(count)
+	tx.Transaction.SetMaxRetry(count)
 	return tx
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
 // Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (tx *LiveHashDeleteTransaction) SetMaxBackoff(max time.Duration) *LiveHashDeleteTransaction {
-	tx.transaction.SetMaxBackoff(max)
+	tx.Transaction.SetMaxBackoff(max)
 	return tx
 }
 
 // SetMinBackoff sets the minimum amount of time to wait between retries.
 func (tx *LiveHashDeleteTransaction) SetMinBackoff(min time.Duration) *LiveHashDeleteTransaction {
-	tx.transaction.SetMinBackoff(min)
+	tx.Transaction.SetMinBackoff(min)
 	return tx
 }
 
 func (tx *LiveHashDeleteTransaction) SetLogLevel(level LogLevel) *LiveHashDeleteTransaction {
-	tx.transaction.SetLogLevel(level)
+	tx.Transaction.SetLogLevel(level)
 	return tx
 }
 
@@ -214,7 +217,7 @@ func (tx *LiveHashDeleteTransaction) validateNetworkOnIDs(client *Client) error 
 func (tx *LiveHashDeleteTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
-		Memo:                     tx.transaction.memo,
+		Memo:                     tx.Transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(tx.GetTransactionValidDuration()),
 		TransactionID:            tx.transactionID._ToProtobuf(),
 		Data: &services.TransactionBody_CryptoDeleteLiveHash{

@@ -30,7 +30,7 @@ import (
 // target schedule.  A deleted schedule cannot receive any additional signing keys, nor will it be
 // executed.
 type ScheduleDeleteTransaction struct {
-	transaction
+	Transaction
 	scheduleID *ScheduleID
 }
 
@@ -39,7 +39,7 @@ type ScheduleDeleteTransaction struct {
 // A deleted schedule cannot receive any additional signing keys, nor will it be executed.
 func NewScheduleDeleteTransaction() *ScheduleDeleteTransaction {
 	tx := ScheduleDeleteTransaction{
-		transaction: _NewTransaction(),
+		Transaction: _NewTransaction(),
 	}
 	tx._SetDefaultMaxTransactionFee(NewHbar(5))
 	tx.e = &tx
@@ -47,9 +47,9 @@ func NewScheduleDeleteTransaction() *ScheduleDeleteTransaction {
 	return &tx
 }
 
-func _ScheduleDeleteTransactionFromProtobuf(tx transaction, pb *services.TransactionBody) *ScheduleDeleteTransaction {
+func _ScheduleDeleteTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *ScheduleDeleteTransaction {
 	resultTx := &ScheduleDeleteTransaction{
-		transaction: tx,
+		Transaction: tx,
 		scheduleID:  _ScheduleIDFromProtobuf(pb.GetScheduleDelete().GetScheduleID()),
 	}
 	resultTx.e = resultTx
@@ -75,14 +75,17 @@ func (tx *ScheduleDeleteTransaction) GetScheduleID() ScheduleID {
 
 // Sign uses the provided privateKey to sign the transaction.
 func (tx *ScheduleDeleteTransaction) Sign(privateKey PrivateKey) *ScheduleDeleteTransaction {
-	tx.transaction.Sign(privateKey)
+	tx.Transaction.Sign(privateKey)
 	return tx
 }
 
 // SignWithOperator signs the transaction with client's operator privateKey.
 func (tx *ScheduleDeleteTransaction) SignWithOperator(client *Client) (*ScheduleDeleteTransaction, error) {
-	_, err := tx.transaction.SignWithOperator(client)
-	return tx, err
+	_, err := tx.Transaction.SignWithOperator(client)
+	if err != nil {
+		return nil, err
+	}
+	return tx, nil
 }
 
 // SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
@@ -91,19 +94,19 @@ func (tx *ScheduleDeleteTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *ScheduleDeleteTransaction {
-	tx.transaction.SignWith(publicKey, signer)
+	tx.Transaction.SignWith(publicKey, signer)
 	return tx
 }
 
 // AddSignature adds a signature to the transaction.
 func (tx *ScheduleDeleteTransaction) AddSignature(publicKey PublicKey, signature []byte) *ScheduleDeleteTransaction {
-	tx.transaction.AddSignature(publicKey, signature)
+	tx.Transaction.AddSignature(publicKey, signature)
 	return tx
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (tx *ScheduleDeleteTransaction) SetGrpcDeadline(deadline *time.Duration) *ScheduleDeleteTransaction {
-	tx.transaction.SetGrpcDeadline(deadline)
+	tx.Transaction.SetGrpcDeadline(deadline)
 	return tx
 }
 
@@ -112,67 +115,67 @@ func (tx *ScheduleDeleteTransaction) Freeze() (*ScheduleDeleteTransaction, error
 }
 
 func (tx *ScheduleDeleteTransaction) FreezeWith(client *Client) (*ScheduleDeleteTransaction, error) {
-	_, err := tx.transaction.FreezeWith(client)
+	_, err := tx.Transaction.FreezeWith(client)
 	return tx, err
 }
 
 // SetMaxTransactionFee sets the max transaction fee for this ScheduleDeleteTransaction.
 func (tx *ScheduleDeleteTransaction) SetMaxTransactionFee(fee Hbar) *ScheduleDeleteTransaction {
-	tx.transaction.SetMaxTransactionFee(fee)
+	tx.Transaction.SetMaxTransactionFee(fee)
 	return tx
 }
 
 // SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
 func (tx *ScheduleDeleteTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *ScheduleDeleteTransaction {
-	tx.transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	tx.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
 	return tx
 }
 
 // SetTransactionMemo sets the memo for this ScheduleDeleteTransaction.
 func (tx *ScheduleDeleteTransaction) SetTransactionMemo(memo string) *ScheduleDeleteTransaction {
-	tx.transaction.SetTransactionMemo(memo)
+	tx.Transaction.SetTransactionMemo(memo)
 	return tx
 }
 
 // SetTransactionValidDuration sets the valid duration for this ScheduleDeleteTransaction.
 func (tx *ScheduleDeleteTransaction) SetTransactionValidDuration(duration time.Duration) *ScheduleDeleteTransaction {
-	tx.transaction.SetTransactionValidDuration(duration)
+	tx.Transaction.SetTransactionValidDuration(duration)
 	return tx
 }
 
 // SetTransactionID sets the TransactionID for this ScheduleDeleteTransaction.
 func (tx *ScheduleDeleteTransaction) SetTransactionID(transactionID TransactionID) *ScheduleDeleteTransaction {
-	tx.transaction.SetTransactionID(transactionID)
+	tx.Transaction.SetTransactionID(transactionID)
 	return tx
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for this ScheduleDeleteTransaction.
 func (tx *ScheduleDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *ScheduleDeleteTransaction {
-	tx.transaction.SetNodeAccountIDs(nodeID)
+	tx.Transaction.SetNodeAccountIDs(nodeID)
 	return tx
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (tx *ScheduleDeleteTransaction) SetMaxRetry(count int) *ScheduleDeleteTransaction {
-	tx.transaction.SetMaxRetry(count)
+	tx.Transaction.SetMaxRetry(count)
 	return tx
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
 // Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (tx *ScheduleDeleteTransaction) SetMaxBackoff(max time.Duration) *ScheduleDeleteTransaction {
-	tx.transaction.SetMaxBackoff(max)
+	tx.Transaction.SetMaxBackoff(max)
 	return tx
 }
 
 // SetMinBackoff sets the minimum amount of time to wait between retries.
 func (tx *ScheduleDeleteTransaction) SetMinBackoff(min time.Duration) *ScheduleDeleteTransaction {
-	tx.transaction.SetMinBackoff(min)
+	tx.Transaction.SetMinBackoff(min)
 	return tx
 }
 
 func (tx *ScheduleDeleteTransaction) SetLogLevel(level LogLevel) *ScheduleDeleteTransaction {
-	tx.transaction.SetLogLevel(level)
+	tx.Transaction.SetLogLevel(level)
 	return tx
 }
 
@@ -199,7 +202,7 @@ func (tx *ScheduleDeleteTransaction) validateNetworkOnIDs(client *Client) error 
 func (tx *ScheduleDeleteTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
-		Memo:                     tx.transaction.memo,
+		Memo:                     tx.Transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(tx.GetTransactionValidDuration()),
 		TransactionID:            tx.transactionID._ToProtobuf(),
 		Data: &services.TransactionBody_ScheduleDelete{
@@ -211,7 +214,7 @@ func (tx *ScheduleDeleteTransaction) build() *services.TransactionBody {
 func (tx *ScheduleDeleteTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
-		Memo:           tx.transaction.memo,
+		Memo:           tx.Transaction.memo,
 		Data: &services.SchedulableTransactionBody_ScheduleDelete{
 			ScheduleDelete: tx.buildProtoBody(),
 		},

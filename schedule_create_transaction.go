@@ -33,7 +33,7 @@ import (
 // When the schedule has collected enough signing Ed25519 keys to satisfy the schedule's signing
 // requirements, the schedule can be executed.
 type ScheduleCreateTransaction struct {
-	transaction
+	Transaction
 	payerAccountID  *AccountID
 	adminKey        Key
 	schedulableBody *services.SchedulableTransactionBody
@@ -49,7 +49,7 @@ type ScheduleCreateTransaction struct {
 // requirements, the schedule can be executed.
 func NewScheduleCreateTransaction() *ScheduleCreateTransaction {
 	tx := ScheduleCreateTransaction{
-		transaction: _NewTransaction(),
+		Transaction: _NewTransaction(),
 	}
 
 	tx._SetDefaultMaxTransactionFee(NewHbar(5))
@@ -58,7 +58,7 @@ func NewScheduleCreateTransaction() *ScheduleCreateTransaction {
 	return &tx
 }
 
-func _ScheduleCreateTransactionFromProtobuf(tx transaction, pb *services.TransactionBody) *ScheduleCreateTransaction {
+func _ScheduleCreateTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *ScheduleCreateTransaction {
 	key, _ := _KeyFromProtobuf(pb.GetScheduleCreate().GetAdminKey())
 	var expirationTime time.Time
 	if pb.GetScheduleCreate().GetExpirationTime() != nil {
@@ -66,7 +66,7 @@ func _ScheduleCreateTransactionFromProtobuf(tx transaction, pb *services.Transac
 	}
 
 	resultTx := &ScheduleCreateTransaction{
-		transaction:     tx,
+		Transaction:     tx,
 		payerAccountID:  _AccountIDFromProtobuf(pb.GetScheduleCreate().GetPayerAccountID()),
 		adminKey:        key,
 		schedulableBody: pb.GetScheduleCreate().GetScheduledTransactionBody(),
@@ -188,14 +188,17 @@ func (tx *ScheduleCreateTransaction) SetScheduledTransaction(scheduledTx ITransa
 
 // Sign uses the provided privateKey to sign the transaction.
 func (tx *ScheduleCreateTransaction) Sign(privateKey PrivateKey) *ScheduleCreateTransaction {
-	tx.transaction.Sign(privateKey)
+	tx.Transaction.Sign(privateKey)
 	return tx
 }
 
 // SignWithOperator signs the transaction with client's operator privateKey.
 func (tx *ScheduleCreateTransaction) SignWithOperator(client *Client) (*ScheduleCreateTransaction, error) {
-	_, err := tx.transaction.SignWithOperator(client)
-	return tx, err
+	_, err := tx.Transaction.SignWithOperator(client)
+	if err != nil {
+		return nil, err
+	}
+	return tx, nil
 }
 
 // SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
@@ -204,19 +207,19 @@ func (tx *ScheduleCreateTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *ScheduleCreateTransaction {
-	tx.transaction.SignWith(publicKey, signer)
+	tx.Transaction.SignWith(publicKey, signer)
 	return tx
 }
 
 // AddSignature adds a signature to the transaction.
 func (tx *ScheduleCreateTransaction) AddSignature(publicKey PublicKey, signature []byte) *ScheduleCreateTransaction {
-	tx.transaction.AddSignature(publicKey, signature)
+	tx.Transaction.AddSignature(publicKey, signature)
 	return tx
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (tx *ScheduleCreateTransaction) SetGrpcDeadline(deadline *time.Duration) *ScheduleCreateTransaction {
-	tx.transaction.SetGrpcDeadline(deadline)
+	tx.Transaction.SetGrpcDeadline(deadline)
 	return tx
 }
 
@@ -225,67 +228,67 @@ func (tx *ScheduleCreateTransaction) Freeze() (*ScheduleCreateTransaction, error
 }
 
 func (tx *ScheduleCreateTransaction) FreezeWith(client *Client) (*ScheduleCreateTransaction, error) {
-	_, err := tx.transaction.FreezeWith(client)
+	_, err := tx.Transaction.FreezeWith(client)
 	return tx, err
 }
 
 // SetMaxTransactionFee sets the max transaction fee for this ScheduleCreateTransaction.
 func (tx *ScheduleCreateTransaction) SetMaxTransactionFee(fee Hbar) *ScheduleCreateTransaction {
-	tx.transaction.SetMaxTransactionFee(fee)
+	tx.Transaction.SetMaxTransactionFee(fee)
 	return tx
 }
 
 // SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
 func (tx *ScheduleCreateTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *ScheduleCreateTransaction {
-	tx.transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	tx.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
 	return tx
 }
 
 // SetTransactionMemo sets the memo for this ScheduleCreateTransaction.
 func (tx *ScheduleCreateTransaction) SetTransactionMemo(memo string) *ScheduleCreateTransaction {
-	tx.transaction.SetTransactionMemo(memo)
+	tx.Transaction.SetTransactionMemo(memo)
 	return tx
 }
 
 // SetTransactionValidDuration sets the valid duration for this ScheduleCreateTransaction.
 func (tx *ScheduleCreateTransaction) SetTransactionValidDuration(duration time.Duration) *ScheduleCreateTransaction {
-	tx.transaction.SetTransactionValidDuration(duration)
+	tx.Transaction.SetTransactionValidDuration(duration)
 	return tx
 }
 
 // SetTransactionID sets the TransactionID for this ScheduleCreateTransaction.
 func (tx *ScheduleCreateTransaction) SetTransactionID(transactionID TransactionID) *ScheduleCreateTransaction {
-	tx.transaction.SetTransactionID(transactionID)
+	tx.Transaction.SetTransactionID(transactionID)
 	return tx
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for this ScheduleCreateTransaction.
 func (tx *ScheduleCreateTransaction) SetNodeAccountIDs(nodeID []AccountID) *ScheduleCreateTransaction {
-	tx.transaction.SetNodeAccountIDs(nodeID)
+	tx.Transaction.SetNodeAccountIDs(nodeID)
 	return tx
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (tx *ScheduleCreateTransaction) SetMaxRetry(count int) *ScheduleCreateTransaction {
-	tx.transaction.SetMaxRetry(count)
+	tx.Transaction.SetMaxRetry(count)
 	return tx
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
 // Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (tx *ScheduleCreateTransaction) SetMaxBackoff(max time.Duration) *ScheduleCreateTransaction {
-	tx.transaction.SetMaxBackoff(max)
+	tx.Transaction.SetMaxBackoff(max)
 	return tx
 }
 
 // SetMinBackoff sets the minimum amount of time to wait between retries.
 func (tx *ScheduleCreateTransaction) SetMinBackoff(min time.Duration) *ScheduleCreateTransaction {
-	tx.transaction.SetMinBackoff(min)
+	tx.Transaction.SetMinBackoff(min)
 	return tx
 }
 
 func (tx *ScheduleCreateTransaction) SetLogLevel(level LogLevel) *ScheduleCreateTransaction {
-	tx.transaction.SetLogLevel(level)
+	tx.Transaction.SetLogLevel(level)
 	return tx
 }
 
@@ -312,7 +315,7 @@ func (tx *ScheduleCreateTransaction) validateNetworkOnIDs(client *Client) error 
 func (tx *ScheduleCreateTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
-		Memo:                     tx.transaction.memo,
+		Memo:                     tx.Transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(tx.GetTransactionValidDuration()),
 		TransactionID:            tx.transactionID._ToProtobuf(),
 		Data: &services.TransactionBody_ScheduleCreate{

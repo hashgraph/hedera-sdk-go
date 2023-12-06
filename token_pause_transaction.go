@@ -35,7 +35,7 @@ import (
 // Once executed the Token is marked as paused and will be not able to be a part of any transaction.
 // The operation is idempotent - becomes a no-op if the Token is already Paused.
 type TokenPauseTransaction struct {
-	transaction
+	Transaction
 	tokenID *TokenID
 }
 
@@ -49,7 +49,7 @@ type TokenPauseTransaction struct {
 // The operation is idempotent - becomes a no-op if the Token is already Paused.
 func NewTokenPauseTransaction() *TokenPauseTransaction {
 	tx := TokenPauseTransaction{
-		transaction: _NewTransaction(),
+		Transaction: _NewTransaction(),
 	}
 
 	tx.e = &tx
@@ -58,9 +58,9 @@ func NewTokenPauseTransaction() *TokenPauseTransaction {
 	return &tx
 }
 
-func _TokenPauseTransactionFromProtobuf(tx transaction, pb *services.TransactionBody) *TokenPauseTransaction {
+func _TokenPauseTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *TokenPauseTransaction {
 	resultTx := &TokenPauseTransaction{
-		transaction: tx,
+		Transaction: tx,
 		tokenID:     _TokenIDFromProtobuf(pb.GetTokenDeletion().GetToken()),
 	}
 	resultTx.e = resultTx
@@ -87,14 +87,17 @@ func (tx *TokenPauseTransaction) GetTokenID() TokenID {
 
 // Sign uses the provided privateKey to sign the transaction.
 func (tx *TokenPauseTransaction) Sign(privateKey PrivateKey) *TokenPauseTransaction {
-	tx.transaction.Sign(privateKey)
+	tx.Transaction.Sign(privateKey)
 	return tx
 }
 
 // SignWithOperator signs the transaction with client's operator privateKey.
 func (tx *TokenPauseTransaction) SignWithOperator(client *Client) (*TokenPauseTransaction, error) {
-	_, err := tx.transaction.SignWithOperator(client)
-	return tx, err
+	_, err := tx.Transaction.SignWithOperator(client)
+	if err != nil {
+		return nil, err
+	}
+	return tx, nil
 }
 
 // SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
@@ -103,19 +106,19 @@ func (tx *TokenPauseTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *TokenPauseTransaction {
-	tx.transaction.SignWith(publicKey, signer)
+	tx.Transaction.SignWith(publicKey, signer)
 	return tx
 }
 
 // AddSignature adds a signature to the transaction.
 func (tx *TokenPauseTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenPauseTransaction {
-	tx.transaction.AddSignature(publicKey, signature)
+	tx.Transaction.AddSignature(publicKey, signature)
 	return tx
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (tx *TokenPauseTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenPauseTransaction {
-	tx.transaction.SetGrpcDeadline(deadline)
+	tx.Transaction.SetGrpcDeadline(deadline)
 	return tx
 }
 
@@ -124,67 +127,67 @@ func (tx *TokenPauseTransaction) Freeze() (*TokenPauseTransaction, error) {
 }
 
 func (tx *TokenPauseTransaction) FreezeWith(client *Client) (*TokenPauseTransaction, error) {
-	_, err := tx.transaction.FreezeWith(client)
+	_, err := tx.Transaction.FreezeWith(client)
 	return tx, err
 }
 
 // SetMaxTransactionFee sets the max transaction fee for this TokenPauseTransaction.
 func (tx *TokenPauseTransaction) SetMaxTransactionFee(fee Hbar) *TokenPauseTransaction {
-	tx.transaction.SetMaxTransactionFee(fee)
+	tx.Transaction.SetMaxTransactionFee(fee)
 	return tx
 }
 
 // SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
 func (tx *TokenPauseTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *TokenPauseTransaction {
-	tx.transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	tx.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
 	return tx
 }
 
 // SetTransactionMemo sets the memo for this TokenPauseTransaction.
 func (tx *TokenPauseTransaction) SetTransactionMemo(memo string) *TokenPauseTransaction {
-	tx.transaction.SetTransactionMemo(memo)
+	tx.Transaction.SetTransactionMemo(memo)
 	return tx
 }
 
 // SetTransactionValidDuration sets the valid duration for this TokenPauseTransaction.
 func (tx *TokenPauseTransaction) SetTransactionValidDuration(duration time.Duration) *TokenPauseTransaction {
-	tx.transaction.SetTransactionValidDuration(duration)
+	tx.Transaction.SetTransactionValidDuration(duration)
 	return tx
 }
 
 // SetTransactionID sets the TransactionID for this TokenPauseTransaction.
 func (tx *TokenPauseTransaction) SetTransactionID(transactionID TransactionID) *TokenPauseTransaction {
-	tx.transaction.SetTransactionID(transactionID)
+	tx.Transaction.SetTransactionID(transactionID)
 	return tx
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for this TokenPauseTransaction.
 func (tx *TokenPauseTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenPauseTransaction {
-	tx.transaction.SetNodeAccountIDs(nodeID)
+	tx.Transaction.SetNodeAccountIDs(nodeID)
 	return tx
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (tx *TokenPauseTransaction) SetMaxRetry(count int) *TokenPauseTransaction {
-	tx.transaction.SetMaxRetry(count)
+	tx.Transaction.SetMaxRetry(count)
 	return tx
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
 // Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (tx *TokenPauseTransaction) SetMaxBackoff(max time.Duration) *TokenPauseTransaction {
-	tx.transaction.SetMaxBackoff(max)
+	tx.Transaction.SetMaxBackoff(max)
 	return tx
 }
 
 // SetMinBackoff sets the minimum amount of time to wait between retries.
 func (tx *TokenPauseTransaction) SetMinBackoff(min time.Duration) *TokenPauseTransaction {
-	tx.transaction.SetMinBackoff(min)
+	tx.Transaction.SetMinBackoff(min)
 	return tx
 }
 
 func (tx *TokenPauseTransaction) SetLogLevel(level LogLevel) *TokenPauseTransaction {
-	tx.transaction.SetLogLevel(level)
+	tx.Transaction.SetLogLevel(level)
 	return tx
 }
 
@@ -211,7 +214,7 @@ func (tx *TokenPauseTransaction) validateNetworkOnIDs(client *Client) error {
 func (tx *TokenPauseTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
-		Memo:                     tx.transaction.memo,
+		Memo:                     tx.Transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(tx.GetTransactionValidDuration()),
 		TransactionID:            tx.transactionID._ToProtobuf(),
 		Data: &services.TransactionBody_TokenPause{
@@ -223,7 +226,7 @@ func (tx *TokenPauseTransaction) build() *services.TransactionBody {
 func (tx *TokenPauseTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) { //nolint
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
-		Memo:           tx.transaction.memo,
+		Memo:           tx.Transaction.memo,
 		Data: &services.SchedulableTransactionBody_TokenPause{
 			TokenPause: tx.buildProtoBody(),
 		},

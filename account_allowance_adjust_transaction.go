@@ -28,7 +28,7 @@ import (
 
 // Deprecated
 type AccountAllowanceAdjustTransaction struct {
-	transaction
+	Transaction
 	hbarAllowances  []*HbarAllowance
 	tokenAllowances []*TokenAllowance
 	nftAllowances   []*TokenNftAllowance
@@ -36,7 +36,7 @@ type AccountAllowanceAdjustTransaction struct {
 
 func NewAccountAllowanceAdjustTransaction() *AccountAllowanceAdjustTransaction {
 	tx := AccountAllowanceAdjustTransaction{
-		transaction: _NewTransaction(),
+		Transaction: _NewTransaction(),
 	}
 	tx.e = &tx
 	tx._SetDefaultMaxTransactionFee(NewHbar(2))
@@ -198,7 +198,7 @@ func (tx *AccountAllowanceAdjustTransaction) GetTokenNftAllowances() []*TokenNft
 func (tx *AccountAllowanceAdjustTransaction) Sign(
 	privateKey PrivateKey,
 ) *AccountAllowanceAdjustTransaction {
-	tx.transaction.Sign(privateKey)
+	tx.Transaction.Sign(privateKey)
 	return tx
 }
 
@@ -208,8 +208,11 @@ func (tx *AccountAllowanceAdjustTransaction) SignWithOperator(
 ) (*AccountAllowanceAdjustTransaction, error) {
 	// If the transaction is not signed by the _Operator, we need
 	// to sign the transaction with the _Operator
-	_, err := tx.transaction.SignWithOperator(client)
-	return tx, err
+	_, err := tx.Transaction.SignWithOperator(client)
+	if err != nil {
+		return nil, err
+	}
+	return tx, nil
 }
 
 // Deprecated
@@ -217,89 +220,89 @@ func (tx *AccountAllowanceAdjustTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *AccountAllowanceAdjustTransaction {
-	tx.transaction.SignWith(publicKey, signer)
+	tx.Transaction.SignWith(publicKey, signer)
 	return tx
 }
 
 // Deprecated
 func (this *AccountAllowanceAdjustTransaction) Freeze() (*AccountAllowanceAdjustTransaction, error) {
-	_, err := this.transaction.Freeze()
+	_, err := this.Transaction.Freeze()
 	return this, err
 }
 
 // Deprecated
 func (this *AccountAllowanceAdjustTransaction) FreezeWith(client *Client) (*AccountAllowanceAdjustTransaction, error) {
-	_, err := this.transaction.FreezeWith(client)
+	_, err := this.Transaction.FreezeWith(client)
 	return this, err
 }
 
 // SetMaxTransactionFee sets the max transaction fee for tx AccountAllowanceAdjustTransaction.
 func (tx *AccountAllowanceAdjustTransaction) SetMaxTransactionFee(fee Hbar) *AccountAllowanceAdjustTransaction {
 	tx._RequireNotFrozen()
-	tx.transaction.SetMaxTransactionFee(fee)
+	tx.Transaction.SetMaxTransactionFee(fee)
 	return tx
 }
 
 // SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
 func (tx *AccountAllowanceAdjustTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *AccountAllowanceAdjustTransaction {
 	tx._RequireNotFrozen()
-	tx.transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	tx.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
 	return tx
 }
 
 // SetTransactionMemo sets the memo for tx AccountAllowanceAdjustTransaction.
 func (tx *AccountAllowanceAdjustTransaction) SetTransactionMemo(memo string) *AccountAllowanceAdjustTransaction {
 	tx._RequireNotFrozen()
-	tx.transaction.SetTransactionMemo(memo)
+	tx.Transaction.SetTransactionMemo(memo)
 	return tx
 }
 
 func (tx *AccountAllowanceAdjustTransaction) GetTransactionValidDuration() time.Duration {
-	return tx.transaction.GetTransactionValidDuration()
+	return tx.Transaction.GetTransactionValidDuration()
 }
 
 // SetTransactionValidDuration sets the valid duration for tx AccountAllowanceAdjustTransaction.
 func (tx *AccountAllowanceAdjustTransaction) SetTransactionValidDuration(duration time.Duration) *AccountAllowanceAdjustTransaction {
 	tx._RequireNotFrozen()
-	tx.transaction.SetTransactionValidDuration(duration)
+	tx.Transaction.SetTransactionValidDuration(duration)
 	return tx
 }
 
 func (tx *AccountAllowanceAdjustTransaction) GetTransactionID() TransactionID {
-	return tx.transaction.GetTransactionID()
+	return tx.Transaction.GetTransactionID()
 }
 
 // SetTransactionID sets the TransactionID for tx AccountAllowanceAdjustTransaction.
 func (tx *AccountAllowanceAdjustTransaction) SetTransactionID(transactionID TransactionID) *AccountAllowanceAdjustTransaction {
 	tx._RequireNotFrozen()
 
-	tx.transaction.SetTransactionID(transactionID)
+	tx.Transaction.SetTransactionID(transactionID)
 	return tx
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for tx AccountAllowanceAdjustTransaction.
 func (tx *AccountAllowanceAdjustTransaction) SetNodeAccountIDs(nodeID []AccountID) *AccountAllowanceAdjustTransaction {
-	tx.transaction.SetNodeAccountIDs(nodeID)
+	tx.Transaction.SetNodeAccountIDs(nodeID)
 	return tx
 }
 
 func (tx *AccountAllowanceAdjustTransaction) SetMaxRetry(count int) *AccountAllowanceAdjustTransaction {
-	tx.transaction.SetMaxRetry(count)
+	tx.Transaction.SetMaxRetry(count)
 	return tx
 }
 
 func (tx *AccountAllowanceAdjustTransaction) AddSignature(publicKey PublicKey, signature []byte) *AccountAllowanceAdjustTransaction {
-	tx.transaction.AddSignature(publicKey, signature)
+	tx.Transaction.AddSignature(publicKey, signature)
 	return tx
 }
 
 func (tx *AccountAllowanceAdjustTransaction) SetMaxBackoff(max time.Duration) *AccountAllowanceAdjustTransaction {
-	tx.transaction.SetMaxBackoff(max)
+	tx.Transaction.SetMaxBackoff(max)
 	return tx
 }
 
 func (tx *AccountAllowanceAdjustTransaction) SetMinBackoff(min time.Duration) *AccountAllowanceAdjustTransaction {
-	tx.transaction.SetMinBackoff(min)
+	tx.Transaction.SetMinBackoff(min)
 	return tx
 }
 
@@ -382,4 +385,3 @@ func (tx *AccountAllowanceAdjustTransaction) buildScheduled() (*services.Schedul
 func (this *AccountAllowanceAdjustTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return this.buildScheduled()
 }
-

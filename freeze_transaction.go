@@ -27,7 +27,7 @@ import (
 )
 
 type FreezeTransaction struct {
-	transaction
+	Transaction
 	startTime  time.Time
 	endTime    time.Time
 	fileID     *FileID
@@ -37,7 +37,7 @@ type FreezeTransaction struct {
 
 func NewFreezeTransaction() *FreezeTransaction {
 	tx := FreezeTransaction{
-		transaction: _NewTransaction(),
+		Transaction: _NewTransaction(),
 	}
 
 	tx._SetDefaultMaxTransactionFee(NewHbar(2))
@@ -46,7 +46,7 @@ func NewFreezeTransaction() *FreezeTransaction {
 	return &tx
 }
 
-func _FreezeTransactionFromProtobuf(tx transaction, pb *services.TransactionBody) *FreezeTransaction {
+func _FreezeTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *FreezeTransaction {
 	startTime := time.Date(
 		time.Now().Year(), time.Now().Month(), time.Now().Day(),
 		int(pb.GetFreeze().GetStartHour()), int(pb.GetFreeze().GetStartMin()), // nolint
@@ -60,7 +60,7 @@ func _FreezeTransactionFromProtobuf(tx transaction, pb *services.TransactionBody
 	)
 
 	resultTx := &FreezeTransaction{
-		transaction: tx,
+		Transaction: tx,
 		startTime:   startTime,
 		endTime:     endTime,
 		fileID:      _FileIDFromProtobuf(pb.GetFreeze().GetUpdateFile()),
@@ -128,7 +128,7 @@ func (tx *FreezeTransaction) GetFileHash() []byte {
 func (tx *FreezeTransaction) Sign(
 	privateKey PrivateKey,
 ) *FreezeTransaction {
-	tx.transaction.Sign(privateKey)
+	tx.Transaction.Sign(privateKey)
 	return tx
 }
 
@@ -138,8 +138,11 @@ func (tx *FreezeTransaction) SignWithOperator(
 ) (*FreezeTransaction, error) {
 	// If the transaction is not signed by the _Operator, we need
 	// to sign the transaction with the _Operator
-	_, err := tx.transaction.SignWithOperator(client)
-	return tx, err
+	_, err := tx.Transaction.SignWithOperator(client)
+	if err != nil {
+		return nil, err
+	}
+	return tx, nil
 }
 
 // SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
@@ -148,55 +151,56 @@ func (tx *FreezeTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *FreezeTransaction {
-	tx.transaction.SignWith(publicKey, signer)
+	tx.Transaction.SignWith(publicKey, signer)
 	return tx
 }
+
 // AddSignature adds a signature to the transaction.
 func (tx *FreezeTransaction) AddSignature(publicKey PublicKey, signature []byte) *FreezeTransaction {
-	tx.transaction.AddSignature(publicKey, signature)
+	tx.Transaction.AddSignature(publicKey, signature)
 	return tx
 }
 
 func (tx *FreezeTransaction) Freeze() (*FreezeTransaction, error) {
-	_, err := tx.transaction.Freeze()
+	_, err := tx.Transaction.Freeze()
 	return tx, err
 }
 
 func (tx *FreezeTransaction) FreezeWith(client *Client) (*FreezeTransaction, error) {
-	_, err := tx.transaction.FreezeWith(client)
+	_, err := tx.Transaction.FreezeWith(client)
 	return tx, err
 }
 
 // GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
 func (tx *FreezeTransaction) GetMaxTransactionFee() Hbar {
-	return tx.transaction.GetMaxTransactionFee()
+	return tx.Transaction.GetMaxTransactionFee()
 }
 
 // SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
 func (tx *FreezeTransaction) SetMaxTransactionFee(fee Hbar) *FreezeTransaction {
 	tx._RequireNotFrozen()
-	tx.transaction.SetMaxTransactionFee(fee)
+	tx.Transaction.SetMaxTransactionFee(fee)
 	return tx
 }
 
 // SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
 func (tx *FreezeTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *FreezeTransaction {
 	tx._RequireNotFrozen()
-	tx.transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	tx.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
 	return tx
 }
 
 // SetTransactionMemo sets the memo for tx FreezeTransaction.
 func (tx *FreezeTransaction) SetTransactionMemo(memo string) *FreezeTransaction {
 	tx._RequireNotFrozen()
-	tx.transaction.SetTransactionMemo(memo)
+	tx.Transaction.SetTransactionMemo(memo)
 	return tx
 }
 
 // SetTransactionValidDuration sets the valid duration for tx FreezeTransaction.
 func (tx *FreezeTransaction) SetTransactionValidDuration(duration time.Duration) *FreezeTransaction {
 	tx._RequireNotFrozen()
-	tx.transaction.SetTransactionValidDuration(duration)
+	tx.Transaction.SetTransactionValidDuration(duration)
 	return tx
 }
 
@@ -204,38 +208,38 @@ func (tx *FreezeTransaction) SetTransactionValidDuration(duration time.Duration)
 func (tx *FreezeTransaction) SetTransactionID(transactionID TransactionID) *FreezeTransaction {
 	tx._RequireNotFrozen()
 
-	tx.transaction.SetTransactionID(transactionID)
+	tx.Transaction.SetTransactionID(transactionID)
 	return tx
 }
 
 // SetNodeAccountID sets the _Node AccountID for tx FreezeTransaction.
 func (tx *FreezeTransaction) SetNodeAccountIDs(nodeID []AccountID) *FreezeTransaction {
 	tx._RequireNotFrozen()
-	tx.transaction.SetNodeAccountIDs(nodeID)
+	tx.Transaction.SetNodeAccountIDs(nodeID)
 	return tx
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (tx *FreezeTransaction) SetMaxRetry(count int) *FreezeTransaction {
-	tx.transaction.SetMaxRetry(count)
+	tx.Transaction.SetMaxRetry(count)
 	return tx
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
 // Every retry attempt will increase the wait time exponentially until it reaches tx time.
 func (tx *FreezeTransaction) SetMaxBackoff(max time.Duration) *FreezeTransaction {
-	tx.transaction.SetMaxBackoff(max)
+	tx.Transaction.SetMaxBackoff(max)
 	return tx
 }
 
 // SetMinBackoff sets the minimum amount of time to wait between retries.
 func (tx *FreezeTransaction) SetMinBackoff(min time.Duration) *FreezeTransaction {
-	tx.transaction.SetMinBackoff(min)
+	tx.Transaction.SetMinBackoff(min)
 	return tx
 }
 
 func (tx *FreezeTransaction) SetLogLevel(level LogLevel) *FreezeTransaction {
-	tx.transaction.SetLogLevel(level)
+	tx.Transaction.SetLogLevel(level)
 	return tx
 }
 
@@ -247,7 +251,7 @@ func (tx *FreezeTransaction) getName() string {
 func (tx *FreezeTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
-		Memo:                     tx.transaction.memo,
+		Memo:                     tx.Transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(tx.GetTransactionValidDuration()),
 		TransactionID:            tx.transactionID._ToProtobuf(),
 		Data: &services.TransactionBody_Freeze{
@@ -258,7 +262,7 @@ func (tx *FreezeTransaction) build() *services.TransactionBody {
 func (tx *FreezeTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
-		Memo:           tx.transaction.memo,
+		Memo:           tx.Transaction.memo,
 		Data: &services.SchedulableTransactionBody_Freeze{
 			Freeze: tx.buildProtoBody(),
 		},
@@ -285,4 +289,3 @@ func (tx *FreezeTransaction) getMethod(channel *_Channel) _Method {
 func (tx *FreezeTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
-

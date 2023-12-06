@@ -308,7 +308,7 @@ func (sk _ECDSAPrivateKey) _ToProtoKey() *services.Key {
 	return sk._PublicKey()._ToProtoKey()
 }
 
-func (sk _ECDSAPrivateKey) _SignTransaction(trx *transaction) ([]byte, error) {
+func (sk _ECDSAPrivateKey) _SignTransaction(trx *Transaction) ([]byte, error) {
 	trx._RequireOneNodeAccountID()
 
 	if trx.signedTransactions._Length() == 0 {

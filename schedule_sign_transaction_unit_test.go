@@ -79,7 +79,7 @@ func TestUnitScheduleSignTransactionCoverage(t *testing.T) {
 	require.NoError(t, err)
 	_, err = TransactionFromBytes(byt)
 	require.NoError(t, err)
-	_, err = newKey.SignTransaction(&transaction.transaction)
+	_, err = newKey.SignTransaction(&transaction.Transaction)
 	require.NoError(t, err)
 
 	_, err = transaction.GetTransactionHash()

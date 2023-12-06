@@ -481,7 +481,7 @@ func TestUnitTransactionSignSwitchCases(t *testing.T) {
 
 	newKey, client, nodeAccountId := signSwitchCaseaSetup(t)
 
-	txs := []interface{}{
+	txs := []Executable{
 		NewAccountCreateTransaction(),
 		NewAccountDeleteTransaction(),
 		NewAccountUpdateTransaction(),
@@ -514,6 +514,7 @@ func TestUnitTransactionSignSwitchCases(t *testing.T) {
 	for _, tx := range txs {
 
 		txVal, signature, transferTxBytes := signSwitchCaseaHelper(t, tx, newKey, client)
+
 		signTests := signTestsForTransaction(txVal, newKey, signature, client)
 
 		for _, tt := range signTests {
@@ -837,14 +838,14 @@ func signSwitchCaseaSetup(t *testing.T) (PrivateKey, *Client, AccountID) {
 }
 
 func signSwitchCaseaHelper(t *testing.T, tx interface{}, newKey PrivateKey, client *Client) (txVal reflect.Value, signature []byte, transferTxBytes []byte) {
-	// Get the reflect.Value of the pointer to the Transaction
+	// Get the reflect.Value of the pointer to the transaction
 	txPtr := reflect.ValueOf(tx)
 	txPtr.MethodByName("FreezeWith").Call([]reflect.Value{reflect.ValueOf(client)})
 
-	// Get the reflect.Value of the Transaction
+	// Get the reflect.Value of the transaction
 	txVal = txPtr.Elem()
 
-	// Get the Transaction field by name
+	// Get the transaction field by name
 	txField := txVal.FieldByName("Transaction")
 
 	// Get the value of the Transaction field

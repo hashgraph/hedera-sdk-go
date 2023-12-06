@@ -60,7 +60,7 @@ func TestIntegrationTransactionAddSignature(t *testing.T) {
 	updateBytes, err := tx.ToBytes()
 	require.NoError(t, err)
 
-	sig1, err := newKey.SignTransaction(&tx.transaction)
+	sig1, err := newKey.SignTransaction(&tx.Transaction)
 	require.NoError(t, err)
 
 	tx2, err := TransactionFromBytes(updateBytes)
@@ -101,7 +101,7 @@ func TestIntegrationTransactionSignTransaction(t *testing.T) {
 		FreezeWith(env.Client)
 	require.NoError(t, err)
 
-	_, err = newKey.SignTransaction(&tx.transaction)
+	_, err = newKey.SignTransaction(&tx.Transaction)
 	require.NoError(t, err)
 
 	resp, err = tx.Execute(env.Client)

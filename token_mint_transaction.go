@@ -34,7 +34,7 @@ import (
 // Token A has 2 decimals. In order to mint 100 tokens, one must provide amount of 10000. In order
 // to mint 100.55 tokens, one must provide amount of 10055.
 type TokenMintTransaction struct {
-	transaction
+	Transaction
 	tokenID *TokenID
 	amount  uint64
 	meta    [][]byte
@@ -49,7 +49,7 @@ type TokenMintTransaction struct {
 // to mint 100.55 tokens, one must provide amount of 10055.
 func NewTokenMintTransaction() *TokenMintTransaction {
 	tx := TokenMintTransaction{
-		transaction: _NewTransaction(),
+		Transaction: _NewTransaction(),
 	}
 
 	tx.e = &tx
@@ -58,9 +58,9 @@ func NewTokenMintTransaction() *TokenMintTransaction {
 	return &tx
 }
 
-func _TokenMintTransactionFromProtobuf(tx transaction, pb *services.TransactionBody) *TokenMintTransaction {
+func _TokenMintTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *TokenMintTransaction {
 	resultTx := &TokenMintTransaction{
-		transaction: tx,
+		Transaction: tx,
 		tokenID:     _TokenIDFromProtobuf(pb.GetTokenMint().GetToken()),
 		amount:      pb.GetTokenMint().GetAmount(),
 		meta:        pb.GetTokenMint().GetMetadata(),
@@ -130,14 +130,17 @@ func (tx *TokenMintTransaction) GetMetadatas() [][]byte {
 
 // Sign uses the provided privateKey to sign the transaction.
 func (tx *TokenMintTransaction) Sign(privateKey PrivateKey) *TokenMintTransaction {
-	tx.transaction.Sign(privateKey)
+	tx.Transaction.Sign(privateKey)
 	return tx
 }
 
 // SignWithOperator signs the transaction with client's operator privateKey.
 func (tx *TokenMintTransaction) SignWithOperator(client *Client) (*TokenMintTransaction, error) {
-	_, err := tx.transaction.SignWithOperator(client)
-	return tx, err
+	_, err := tx.Transaction.SignWithOperator(client)
+	if err != nil {
+		return nil, err
+	}
+	return tx, nil
 }
 
 // SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
@@ -146,19 +149,19 @@ func (tx *TokenMintTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *TokenMintTransaction {
-	tx.transaction.SignWith(publicKey, signer)
+	tx.Transaction.SignWith(publicKey, signer)
 	return tx
 }
 
 // AddSignature adds a signature to the transaction.
 func (tx *TokenMintTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenMintTransaction {
-	tx.transaction.AddSignature(publicKey, signature)
+	tx.Transaction.AddSignature(publicKey, signature)
 	return tx
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (tx *TokenMintTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenMintTransaction {
-	tx.transaction.SetGrpcDeadline(deadline)
+	tx.Transaction.SetGrpcDeadline(deadline)
 	return tx
 }
 
@@ -167,67 +170,67 @@ func (tx *TokenMintTransaction) Freeze() (*TokenMintTransaction, error) {
 }
 
 func (tx *TokenMintTransaction) FreezeWith(client *Client) (*TokenMintTransaction, error) {
-	_, err := tx.transaction.FreezeWith(client)
+	_, err := tx.Transaction.FreezeWith(client)
 	return tx, err
 }
 
 // SetMaxTransactionFee sets the max transaction fee for this TokenMintTransaction.
 func (tx *TokenMintTransaction) SetMaxTransactionFee(fee Hbar) *TokenMintTransaction {
-	tx.transaction.SetMaxTransactionFee(fee)
+	tx.Transaction.SetMaxTransactionFee(fee)
 	return tx
 }
 
 // SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
 func (tx *TokenMintTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *TokenMintTransaction {
-	tx.transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	tx.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
 	return tx
 }
 
 // SetTransactionMemo sets the memo for this TokenMintTransaction.
 func (tx *TokenMintTransaction) SetTransactionMemo(memo string) *TokenMintTransaction {
-	tx.transaction.SetTransactionMemo(memo)
+	tx.Transaction.SetTransactionMemo(memo)
 	return tx
 }
 
 // SetTransactionValidDuration sets the valid duration for this TokenMintTransaction.
 func (tx *TokenMintTransaction) SetTransactionValidDuration(duration time.Duration) *TokenMintTransaction {
-	tx.transaction.SetTransactionValidDuration(duration)
+	tx.Transaction.SetTransactionValidDuration(duration)
 	return tx
 }
 
 // SetTransactionID sets the TransactionID for this TokenMintTransaction.
 func (tx *TokenMintTransaction) SetTransactionID(transactionID TransactionID) *TokenMintTransaction {
-	tx.transaction.SetTransactionID(transactionID)
+	tx.Transaction.SetTransactionID(transactionID)
 	return tx
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for this TokenMintTransaction.
 func (tx *TokenMintTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenMintTransaction {
-	tx.transaction.SetNodeAccountIDs(nodeID)
+	tx.Transaction.SetNodeAccountIDs(nodeID)
 	return tx
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (tx *TokenMintTransaction) SetMaxRetry(count int) *TokenMintTransaction {
-	tx.transaction.SetMaxRetry(count)
+	tx.Transaction.SetMaxRetry(count)
 	return tx
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
 // Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (tx *TokenMintTransaction) SetMaxBackoff(max time.Duration) *TokenMintTransaction {
-	tx.transaction.SetMaxBackoff(max)
+	tx.Transaction.SetMaxBackoff(max)
 	return tx
 }
 
 // SetMinBackoff sets the minimum amount of time to wait between retries.
 func (tx *TokenMintTransaction) SetMinBackoff(min time.Duration) *TokenMintTransaction {
-	tx.transaction.SetMinBackoff(min)
+	tx.Transaction.SetMinBackoff(min)
 	return tx
 }
 
 func (tx *TokenMintTransaction) SetLogLevel(level LogLevel) *TokenMintTransaction {
-	tx.transaction.SetLogLevel(level)
+	tx.Transaction.SetLogLevel(level)
 	return tx
 }
 
@@ -254,7 +257,7 @@ func (tx *TokenMintTransaction) validateNetworkOnIDs(client *Client) error {
 func (tx *TokenMintTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
-		Memo:                     tx.transaction.memo,
+		Memo:                     tx.Transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(tx.GetTransactionValidDuration()),
 		TransactionID:            tx.transactionID._ToProtobuf(),
 		Data: &services.TransactionBody_TokenMint{
@@ -266,7 +269,7 @@ func (tx *TokenMintTransaction) build() *services.TransactionBody {
 func (tx *TokenMintTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
-		Memo:           tx.transaction.memo,
+		Memo:           tx.Transaction.memo,
 		Data: &services.SchedulableTransactionBody_TokenMint{
 			TokenMint: tx.buildProtoBody(),
 		},
