@@ -28,7 +28,7 @@ import (
 
 // TokenInfoQuery Used get information about Token instance
 type TokenInfoQuery struct {
-	query
+	Query
 	tokenID *TokenID
 }
 
@@ -36,7 +36,7 @@ type TokenInfoQuery struct {
 func NewTokenInfoQuery() *TokenInfoQuery {
 	header := services.QueryHeader{}
 	result := TokenInfoQuery{
-		query: _NewQuery(true, &header),
+		Query: _NewQuery(true, &header),
 	}
 
 	result.e = &result
@@ -45,7 +45,7 @@ func NewTokenInfoQuery() *TokenInfoQuery {
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (q *TokenInfoQuery) SetGrpcDeadline(deadline *time.Duration) *TokenInfoQuery {
-	q.query.SetGrpcDeadline(deadline)
+	q.Query.SetGrpcDeadline(deadline)
 	return q
 }
 
@@ -66,7 +66,7 @@ func (q *TokenInfoQuery) GetTokenID() TokenID {
 
 // Execute executes the TopicInfoQuery using the provided client
 func (q *TokenInfoQuery) Execute(client *Client) (TokenInfo, error) {
-	resp, err := q.query.execute(client)
+	resp, err := q.Query.execute(client)
 
 	if err != nil {
 		return TokenInfo{}, err
@@ -77,40 +77,40 @@ func (q *TokenInfoQuery) Execute(client *Client) (TokenInfo, error) {
 	return info, nil
 }
 
-// SetMaxQueryPayment sets the maximum payment allowed for this Query.
+// SetMaxQueryPayment sets the maximum payment allowed for this QueryInterface.
 func (q *TokenInfoQuery) SetMaxQueryPayment(maxPayment Hbar) *TokenInfoQuery {
-	q.query.SetMaxQueryPayment(maxPayment)
+	q.Query.SetMaxQueryPayment(maxPayment)
 	return q
 }
 
-// SetQueryPayment sets the payment amount for this Query.
+// SetQueryPayment sets the payment amount for this QueryInterface.
 func (q *TokenInfoQuery) SetQueryPayment(paymentAmount Hbar) *TokenInfoQuery {
-	q.query.SetQueryPayment(paymentAmount)
+	q.Query.SetQueryPayment(paymentAmount)
 	return q
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for this TokenInfoQuery.
 func (q *TokenInfoQuery) SetNodeAccountIDs(accountID []AccountID) *TokenInfoQuery {
-	q.query.SetNodeAccountIDs(accountID)
+	q.Query.SetNodeAccountIDs(accountID)
 	return q
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (q *TokenInfoQuery) SetMaxRetry(count int) *TokenInfoQuery {
-	q.query.SetMaxRetry(count)
+	q.Query.SetMaxRetry(count)
 	return q
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
 // Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (q *TokenInfoQuery) SetMaxBackoff(max time.Duration) *TokenInfoQuery {
-	q.query.SetMaxBackoff(max)
+	q.Query.SetMaxBackoff(max)
 	return q
 }
 
 // SetMinBackoff sets the minimum amount of time to wait between retries.
 func (q *TokenInfoQuery) SetMinBackoff(min time.Duration) *TokenInfoQuery {
-	q.query.SetMinBackoff(min)
+	q.Query.SetMinBackoff(min)
 	return q
 }
 
@@ -121,7 +121,7 @@ func (q *TokenInfoQuery) SetPaymentTransactionID(transactionID TransactionID) *T
 }
 
 func (q *TokenInfoQuery) SetLogLevel(level LogLevel) *TokenInfoQuery {
-	q.query.SetLogLevel(level)
+	q.Query.SetLogLevel(level)
 	return q
 }
 

@@ -30,7 +30,7 @@ import (
 // Get all the information about an account, including the balance. This does not get the list of
 // account records.
 type AccountInfoQuery struct {
-	query
+	Query
 	accountID *AccountID
 }
 
@@ -40,14 +40,14 @@ type AccountInfoQuery struct {
 func NewAccountInfoQuery() *AccountInfoQuery {
 	header := services.QueryHeader{}
 	result := AccountInfoQuery{
-		query: _NewQuery(true, &header),
+		Query: _NewQuery(true, &header),
 	}
 
 	result.e = &result
 	return &result
 }
 
-// Execute executes the Query with the provided client
+// Execute executes the QueryInterface with the provided client
 func (q *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
 	resp, err := q.execute(client)
 
@@ -60,7 +60,7 @@ func (q *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
 
 // SetGrpcDeadline When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (q *AccountInfoQuery) SetGrpcDeadline(deadline *time.Duration) *AccountInfoQuery {
-	q.query.SetGrpcDeadline(deadline)
+	q.Query.SetGrpcDeadline(deadline)
 	return q
 }
 
@@ -81,17 +81,17 @@ func (q *AccountInfoQuery) GetAccountID() AccountID {
 
 // SetNodeAccountIDs sets the _Node AccountID for this AccountInfoQuery.
 func (q *AccountInfoQuery) SetNodeAccountIDs(accountID []AccountID) *AccountInfoQuery {
-	q.query.SetNodeAccountIDs(accountID)
+	q.Query.SetNodeAccountIDs(accountID)
 	return q
 }
 
-// SetQueryPayment sets the Hbar payment to pay the _Node a fee for handling this query
+// SetQueryPayment sets the Hbar payment to pay the _Node a fee for handling this Query
 func (q *AccountInfoQuery) SetQueryPayment(queryPayment Hbar) *AccountInfoQuery {
 	q.queryPayment = queryPayment
 	return q
 }
 
-// SetMaxQueryPayment sets the maximum payment allowable for this query.
+// SetMaxQueryPayment sets the maximum payment allowable for this Query.
 func (q *AccountInfoQuery) SetMaxQueryPayment(queryMaxPayment Hbar) *AccountInfoQuery {
 	q.maxQueryPayment = queryMaxPayment
 	return q
@@ -99,30 +99,30 @@ func (q *AccountInfoQuery) SetMaxQueryPayment(queryMaxPayment Hbar) *AccountInfo
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (q *AccountInfoQuery) SetMaxRetry(count int) *AccountInfoQuery {
-	q.query.SetMaxRetry(count)
+	q.Query.SetMaxRetry(count)
 	return q
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries. Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (q *AccountInfoQuery) SetMaxBackoff(max time.Duration) *AccountInfoQuery {
-	q.query.SetMaxBackoff(max)
+	q.Query.SetMaxBackoff(max)
 	return q
 }
 
 // SetMinBackoff sets the minimum amount of time to wait between retries.
 func (q *AccountInfoQuery) SetMinBackoff(min time.Duration) *AccountInfoQuery {
-	q.query.SetMinBackoff(min)
+	q.Query.SetMinBackoff(min)
 	return q
 }
 
 // SetPaymentTransactionID assigns the payment transaction id.
 func (q *AccountInfoQuery) SetPaymentTransactionID(transactionID TransactionID) *AccountInfoQuery {
-	q.query.SetPaymentTransactionID(transactionID)
+	q.Query.SetPaymentTransactionID(transactionID)
 	return q
 }
 
 func (q *AccountInfoQuery) SetLogLevel(level LogLevel) *AccountInfoQuery {
-	q.query.SetLogLevel(level)
+	q.Query.SetLogLevel(level)
 	return q
 }
 

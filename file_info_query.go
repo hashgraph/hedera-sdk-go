@@ -26,13 +26,13 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
-// FileInfoQuery is a query which can be used to get all of the information about a file, except for its contents.
+// FileInfoQuery is a Query which can be used to get all of the information about a file, except for its contents.
 // When a file expires, it no longer exists, and there will be no info about it, and the fileInfo field will be blank.
 // If a transaction or smart contract deletes the file, but it has not yet expired, then the
 // fileInfo field will be non-empty, the deleted field will be true, its size will be 0,
 // and its contents will be empty. Note that each file has a FileID, but does not have a filename.
 type FileInfoQuery struct {
-	query
+	Query
 	fileID *FileID
 }
 
@@ -40,7 +40,7 @@ type FileInfoQuery struct {
 func NewFileInfoQuery() *FileInfoQuery {
 	header := services.QueryHeader{}
 	result := FileInfoQuery{
-		query: _NewQuery(true, &header),
+		Query: _NewQuery(true, &header),
 	}
 	result.e = &result
 	return &result
@@ -48,7 +48,7 @@ func NewFileInfoQuery() *FileInfoQuery {
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (q *FileInfoQuery) SetGrpcDeadline(deadline *time.Duration) *FileInfoQuery {
-	q.query.SetGrpcDeadline(deadline)
+	q.Query.SetGrpcDeadline(deadline)
 	return q
 }
 
@@ -67,9 +67,9 @@ func (q *FileInfoQuery) GetFileID() FileID {
 	return *q.fileID
 }
 
-// Execute executes the Query with the provided client
+// Execute executes the QueryInterface with the provided client
 func (q *FileInfoQuery) Execute(client *Client) (FileInfo, error) {
-	resp, err := q.query.execute(client)
+	resp, err := q.Query.execute(client)
 
 	if err != nil {
 		return FileInfo{}, err
@@ -83,51 +83,51 @@ func (q *FileInfoQuery) Execute(client *Client) (FileInfo, error) {
 	return info, nil
 }
 
-// SetMaxQueryPayment sets the maximum payment allowed for this Query.
+// SetMaxQueryPayment sets the maximum payment allowed for this QueryInterface.
 func (q *FileInfoQuery) SetMaxQueryPayment(maxPayment Hbar) *FileInfoQuery {
-	q.query.SetMaxQueryPayment(maxPayment)
+	q.Query.SetMaxQueryPayment(maxPayment)
 	return q
 }
 
-// SetQueryPayment sets the payment amount for this Query.
+// SetQueryPayment sets the payment amount for this QueryInterface.
 func (q *FileInfoQuery) SetQueryPayment(paymentAmount Hbar) *FileInfoQuery {
-	q.query.SetQueryPayment(paymentAmount)
+	q.Query.SetQueryPayment(paymentAmount)
 	return q
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for this FileInfoQuery.
 func (q *FileInfoQuery) SetNodeAccountIDs(accountID []AccountID) *FileInfoQuery {
-	q.query.SetNodeAccountIDs(accountID)
+	q.Query.SetNodeAccountIDs(accountID)
 	return q
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (q *FileInfoQuery) SetMaxRetry(count int) *FileInfoQuery {
-	q.query.SetMaxRetry(count)
+	q.Query.SetMaxRetry(count)
 	return q
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
 // Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (q *FileInfoQuery) SetMaxBackoff(max time.Duration) *FileInfoQuery {
-	q.query.SetMaxBackoff(max)
+	q.Query.SetMaxBackoff(max)
 	return q
 }
 
 // SetMinBackoff sets the minimum amount of time to wait between retries.
 func (q *FileInfoQuery) SetMinBackoff(min time.Duration) *FileInfoQuery {
-	q.SetMinBackoff(min)
+	q.Query.SetMinBackoff(min)
 	return q
 }
 
 // SetPaymentTransactionID assigns the payment transaction id.
 func (q *FileInfoQuery) SetPaymentTransactionID(transactionID TransactionID) *FileInfoQuery {
-	q.query.SetPaymentTransactionID(transactionID)
+	q.Query.SetPaymentTransactionID(transactionID)
 	return q
 }
 
 func (q *FileInfoQuery) SetLogLevel(level LogLevel) *FileInfoQuery {
-	q.query.SetLogLevel(level)
+	q.Query.SetLogLevel(level)
 	return q
 }
 

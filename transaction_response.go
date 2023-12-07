@@ -82,14 +82,14 @@ func (response TransactionResponse) GetRecord(client *Client) (TransactionRecord
 		Execute(client)
 }
 
-// GetReceiptQuery retrieves the receipt query for the transaction
+// GetReceiptQuery retrieves the receipt Query for the transaction
 func (response TransactionResponse) GetReceiptQuery() *TransactionReceiptQuery {
 	return NewTransactionReceiptQuery().
 		SetTransactionID(response.TransactionID).
 		SetNodeAccountIDs([]AccountID{response.NodeID})
 }
 
-// GetRecordQuery retrieves the record query for the transaction
+// GetRecordQuery retrieves the record Query for the transaction
 func (response TransactionResponse) GetRecordQuery() *TransactionRecordQuery {
 	return NewTransactionRecordQuery().
 		SetTransactionID(response.TransactionID).

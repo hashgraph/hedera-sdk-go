@@ -193,7 +193,7 @@ func TestIntegrationAccountRecordQuerySetSmallMaxPayment(t *testing.T) {
 	_, err = records.Execute(env.Client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, "cost of AccountRecordsQuery ("+cost.String()+") without explicit payment is greater than the max query payment of 1 tℏ", err.Error())
+		assert.Equal(t, "cost of AccountRecordsQuery ("+cost.String()+") without explicit payment is greater than the max Query payment of 1 tℏ", err.Error())
 	}
 
 	err = CloseIntegrationTestEnv(env, nil)

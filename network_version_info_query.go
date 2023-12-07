@@ -26,17 +26,17 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
-// NetworkVersionInfoQuery is the query to be executed that would return the current version of the network's protobuf and services.
+// NetworkVersionInfoQuery is the Query to be executed that would return the current version of the network's protobuf and services.
 type NetworkVersionInfoQuery struct {
-	query
+	Query
 }
 
 // NewNetworkVersionQuery creates a NetworkVersionInfoQuery builder which can be used to construct and execute a
-// Network Get Version Info Query containing the current version of the network's protobuf and services.
+// Network Get Version Info QueryInterface containing the current version of the network's protobuf and services.
 func NewNetworkVersionQuery() *NetworkVersionInfoQuery {
 	header := services.QueryHeader{}
 	result := NetworkVersionInfoQuery{
-		query: _NewQuery(true, &header),
+		Query: _NewQuery(true, &header),
 	}
 
 	result.e = &result
@@ -45,13 +45,13 @@ func NewNetworkVersionQuery() *NetworkVersionInfoQuery {
 
 // SetGrpcDeadline When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (q *NetworkVersionInfoQuery) SetGrpcDeadline(deadline *time.Duration) *NetworkVersionInfoQuery {
-	q.query.SetGrpcDeadline(deadline)
+	q.Query.SetGrpcDeadline(deadline)
 	return q
 }
 
-// Execute executes the Query with the provided client
+// Execute executes the QueryInterface with the provided client
 func (q *NetworkVersionInfoQuery) Execute(client *Client) (NetworkVersionInfo, error) {
-	resp, err := q.query.execute(client)
+	resp, err := q.Query.execute(client)
 
 	if err != nil {
 		return NetworkVersionInfo{}, err
@@ -60,51 +60,51 @@ func (q *NetworkVersionInfoQuery) Execute(client *Client) (NetworkVersionInfo, e
 	return _NetworkVersionInfoFromProtobuf(resp.GetNetworkGetVersionInfo()), err
 }
 
-// SetMaxQueryPayment sets the maximum payment allowed for this Query.
+// SetMaxQueryPayment sets the maximum payment allowed for this QueryInterface.
 func (q *NetworkVersionInfoQuery) SetMaxQueryPayment(maxPayment Hbar) *NetworkVersionInfoQuery {
-	q.query.SetMaxQueryPayment(maxPayment)
+	q.Query.SetMaxQueryPayment(maxPayment)
 	return q
 }
 
-// SetQueryPayment sets the payment amount for this Query.
+// SetQueryPayment sets the payment amount for this QueryInterface.
 func (q *NetworkVersionInfoQuery) SetQueryPayment(paymentAmount Hbar) *NetworkVersionInfoQuery {
-	q.query.SetQueryPayment(paymentAmount)
+	q.Query.SetQueryPayment(paymentAmount)
 	return q
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for this NetworkVersionInfoQuery.
 func (q *NetworkVersionInfoQuery) SetNodeAccountIDs(accountID []AccountID) *NetworkVersionInfoQuery {
-	q.query.SetNodeAccountIDs(accountID)
+	q.Query.SetNodeAccountIDs(accountID)
 	return q
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (q *NetworkVersionInfoQuery) SetMaxRetry(count int) *NetworkVersionInfoQuery {
-	q.query.SetMaxRetry(count)
+	q.Query.SetMaxRetry(count)
 	return q
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
 // Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (q *NetworkVersionInfoQuery) SetMaxBackoff(max time.Duration) *NetworkVersionInfoQuery {
-	q.query.SetMaxBackoff(max)
+	q.Query.SetMaxBackoff(max)
 	return q
 }
 
 // SetMinBackoff sets the minimum amount of time to wait between retries.
 func (q *NetworkVersionInfoQuery) SetMinBackoff(min time.Duration) *NetworkVersionInfoQuery {
-	q.query.SetMaxBackoff(min)
+	q.Query.SetMinBackoff(min)
 	return q
 }
 
 // SetPaymentTransactionID assigns the payment transaction id.
 func (q *NetworkVersionInfoQuery) SetPaymentTransactionID(transactionID TransactionID) *NetworkVersionInfoQuery {
-	q.query.SetPaymentTransactionID(transactionID)
+	q.Query.SetPaymentTransactionID(transactionID)
 	return q
 }
 
 func (q *NetworkVersionInfoQuery) SetLogLevel(level LogLevel) *NetworkVersionInfoQuery {
-	q.query.SetLogLevel(level)
+	q.Query.SetLogLevel(level)
 	return q
 }
 
@@ -130,6 +130,10 @@ func (q *NetworkVersionInfoQuery) buildQuery() *services.Query {
 	return &services.Query{
 		Query: &pb,
 	}
+}
+
+func (q *NetworkVersionInfoQuery) validateNetworkOnIDs(*Client) error {
+	return nil
 }
 
 func (q *NetworkVersionInfoQuery) getQueryResponse(response *services.Response) queryResponse {

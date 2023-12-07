@@ -24,7 +24,6 @@ package hedera
  */
 
 import (
-	"fmt"
 	"testing"
 	"time"
 
@@ -69,7 +68,6 @@ func TestNetworkVersionInfoQuery_Get(t *testing.T) {
 	require.Equal(t, 1*time.Second, query.GetMinBackoff())
 	require.Equal(t, transactionID, query.GetPaymentTransactionID())
 	require.Equal(t, &deadline, query.GetGrpcDeadline())
-	require.Equal(t, fmt.Sprintf("NetworkVersionInfoQuery:%v", transactionID.ValidStart.UnixNano()), query.getName())
 }
 
 func TestUnitNetworkVersionInfoQueryMock(t *testing.T) {

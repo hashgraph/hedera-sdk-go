@@ -27,7 +27,7 @@ import (
 )
 
 // ContractCreateTransaction which is used to start a new smart contract instance.
-// After the instance is created, the ContractID for it is in the receipt, and can be retrieved by the Record or with a GetByKey query.
+// After the instance is created, the ContractID for it is in the receipt, and can be retrieved by the Record or with a GetByKey Query.
 // The instance will run the bytecode, either stored in a previously created file or in the transaction body itself for
 // small contracts.
 type ContractCreateTransaction struct {
@@ -49,7 +49,7 @@ type ContractCreateTransaction struct {
 }
 
 // NewContractCreateTransaction creates ContractCreateTransaction which is used to start a new smart contract instance.
-// After the instance is created, the ContractID for it is in the receipt, and can be retrieved by the Record or with a GetByKey query.
+// After the instance is created, the ContractID for it is in the receipt, and can be retrieved by the Record or with a GetByKey Query.
 // The instance will run the bytecode, either stored in a previously created file or in the transaction body itself for
 // small contracts.
 func NewContractCreateTransaction() *ContractCreateTransaction {

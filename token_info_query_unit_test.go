@@ -25,7 +25,6 @@ package hedera
 
 import (
 	"encoding/base64"
-	"fmt"
 	"testing"
 	"time"
 
@@ -170,7 +169,6 @@ func TestUnitTokenInfoQueryCoverage(t *testing.T) {
 	require.Equal(t, NewHbar(3), query.GetQueryPayment())
 	require.Equal(t, NewHbar(23), query.GetMaxQueryPayment())
 	require.Equal(t, &deadline, query.GetGrpcDeadline())
-	require.Equal(t, fmt.Sprintf("TokenInfoQuery:%v", transactionID.ValidStart.UnixNano()), query.getName())
 }
 
 func TestUnitTokenInfoQueryMock(t *testing.T) {

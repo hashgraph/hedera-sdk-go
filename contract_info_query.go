@@ -29,18 +29,18 @@ import (
 // ContractInfoQuery retrieves information about a smart contract instance. This includes the account that it uses, the
 // file containing its bytecode, and the time when it will expire.
 type ContractInfoQuery struct {
-	query
+	Query
 	contractID *ContractID
 }
 
-// NewContractInfoQuery creates a ContractInfoQuery query which can be used to construct and execute a
-// Contract Get Info Query.
+// NewContractInfoQuery creates a ContractInfoQuery Query which can be used to construct and execute a
+// Contract Get Info QueryInterface.
 func NewContractInfoQuery() *ContractInfoQuery {
 	header := services.QueryHeader{}
 	query := _NewQuery(true, &header)
 
 	result := ContractInfoQuery{
-		query: query,
+		Query: query,
 	}
 
 	result.e = &result
@@ -49,7 +49,7 @@ func NewContractInfoQuery() *ContractInfoQuery {
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (q *ContractInfoQuery) SetGrpcDeadline(deadline *time.Duration) *ContractInfoQuery {
-	q.query.SetGrpcDeadline(deadline)
+	q.Query.SetGrpcDeadline(deadline)
 	return q
 }
 
@@ -67,9 +67,9 @@ func (q *ContractInfoQuery) GetContractID() ContractID {
 	return *q.contractID
 }
 
-// Execute executes the Query with the provided client
+// Execute executes the QueryInterface with the provided client
 func (q *ContractInfoQuery) Execute(client *Client) (ContractInfo, error) {
-	resp, err := q.query.execute(client)
+	resp, err := q.Query.execute(client)
 
 	if err != nil {
 		return ContractInfo{}, err
@@ -83,50 +83,50 @@ func (q *ContractInfoQuery) Execute(client *Client) (ContractInfo, error) {
 	return info, nil
 }
 
-// SetMaxQueryPayment sets the maximum payment allowed for this Query.
+// SetMaxQueryPayment sets the maximum payment allowed for this QueryInterface.
 func (q *ContractInfoQuery) SetMaxQueryPayment(maxPayment Hbar) *ContractInfoQuery {
-	q.query.SetMaxQueryPayment(maxPayment)
+	q.Query.SetMaxQueryPayment(maxPayment)
 	return q
 }
 
-// SetQueryPayment sets the payment amount for this Query.
+// SetQueryPayment sets the payment amount for this QueryInterface.
 func (q *ContractInfoQuery) SetQueryPayment(paymentAmount Hbar) *ContractInfoQuery {
-	q.query.SetQueryPayment(paymentAmount)
+	q.Query.SetQueryPayment(paymentAmount)
 	return q
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for this ContractInfoQuery.
 func (q *ContractInfoQuery) SetNodeAccountIDs(accountID []AccountID) *ContractInfoQuery {
-	q.query.SetNodeAccountIDs(accountID)
+	q.Query.SetNodeAccountIDs(accountID)
 	return q
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (q *ContractInfoQuery) SetMaxRetry(count int) *ContractInfoQuery {
-	q.query.SetMaxRetry(count)
+	q.Query.SetMaxRetry(count)
 	return q
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
 // Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (q *ContractInfoQuery) SetMaxBackoff(max time.Duration) *ContractInfoQuery {
-	q.query.SetMaxBackoff(max)
+	q.Query.SetMaxBackoff(max)
 	return q
 }
 
 // SetMinBackoff sets the minimum amount of time to wait between retries.
 func (q *ContractInfoQuery) SetMinBackoff(min time.Duration) *ContractInfoQuery {
-	q.query.SetMinBackoff(min)
+	q.Query.SetMinBackoff(min)
 	return q
 }
 
 func (q *ContractInfoQuery) SetPaymentTransactionID(transactionID TransactionID) *ContractInfoQuery {
-	q.query.SetPaymentTransactionID(transactionID)
+	q.Query.SetPaymentTransactionID(transactionID)
 	return q
 }
 
 func (q *ContractInfoQuery) SetLogLevel(level LogLevel) *ContractInfoQuery {
-	q.query.SetLogLevel(level)
+	q.Query.SetLogLevel(level)
 	return q
 }
 

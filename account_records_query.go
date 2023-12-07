@@ -29,11 +29,11 @@ import (
 // AccountRecordsQuery gets all of the records for an account for any transfers into it and out of
 // it, that were above the threshold, during the last 25 hours.
 type AccountRecordsQuery struct {
-	query
+	Query
 	accountID *AccountID
 }
 
-// NewAccountRecordsQuery creates an AccountRecordsQuery query which can be used to construct and execute
+// NewAccountRecordsQuery creates an AccountRecordsQuery Query which can be used to construct and execute
 // an AccountRecordsQuery.
 //
 // It is recommended that you use this for creating new instances of an AccountRecordQuery
@@ -41,7 +41,7 @@ type AccountRecordsQuery struct {
 func NewAccountRecordsQuery() *AccountRecordsQuery {
 	header := services.QueryHeader{}
 	result := AccountRecordsQuery{
-		query: _NewQuery(true, &header),
+		Query: _NewQuery(true, &header),
 	}
 	result.e = &result
 
@@ -51,7 +51,7 @@ func NewAccountRecordsQuery() *AccountRecordsQuery {
 
 // SetGrpcDeadline When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (q *AccountRecordsQuery) SetGrpcDeadline(deadline *time.Duration) *AccountRecordsQuery {
-	q.query.SetGrpcDeadline(deadline)
+	q.Query.SetGrpcDeadline(deadline)
 	return q
 }
 
@@ -70,9 +70,9 @@ func (q *AccountRecordsQuery) GetAccountID() AccountID {
 	return *q.accountID
 }
 
-// Execute executes the Query with the provided client
+// Execute executes the QueryInterface with the provided client
 func (q *AccountRecordsQuery) Execute(client *Client) ([]TransactionRecord, error) {
-	resp, err := q.query.execute(client)
+	resp, err := q.Query.execute(client)
 	records := make([]TransactionRecord, 0)
 
 	if err != nil {
@@ -87,50 +87,50 @@ func (q *AccountRecordsQuery) Execute(client *Client) ([]TransactionRecord, erro
 	return records, err
 }
 
-// SetMaxQueryPayment sets the maximum payment allowed for this Query.
+// SetMaxQueryPayment sets the maximum payment allowed for this QueryInterface.
 func (q *AccountRecordsQuery) SetMaxQueryPayment(maxPayment Hbar) *AccountRecordsQuery {
-	q.query.SetMaxQueryPayment(maxPayment)
+	q.Query.SetMaxQueryPayment(maxPayment)
 	return q
 }
 
-// SetQueryPayment sets the payment amount for this Query.
+// SetQueryPayment sets the payment amount for this QueryInterface.
 func (q *AccountRecordsQuery) SetQueryPayment(paymentAmount Hbar) *AccountRecordsQuery {
-	q.query.SetQueryPayment(paymentAmount)
+	q.Query.SetQueryPayment(paymentAmount)
 	return q
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for this AccountRecordsQuery.
 func (q *AccountRecordsQuery) SetNodeAccountIDs(accountID []AccountID) *AccountRecordsQuery {
-	q.query.SetNodeAccountIDs(accountID)
+	q.Query.SetNodeAccountIDs(accountID)
 	return q
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (q *AccountRecordsQuery) SetMaxRetry(count int) *AccountRecordsQuery {
-	q.query.SetMaxRetry(count)
+	q.Query.SetMaxRetry(count)
 	return q
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
 // Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (q *AccountRecordsQuery) SetMaxBackoff(max time.Duration) *AccountRecordsQuery {
-	q.query.SetMaxBackoff(max)
+	q.Query.SetMaxBackoff(max)
 	return q
 }
 
 func (q *AccountRecordsQuery) SetMinBackoff(min time.Duration) *AccountRecordsQuery {
-	q.query.SetMinBackoff(min)
+	q.Query.SetMinBackoff(min)
 	return q
 }
 
 // SetPaymentTransactionID assigns the payment transaction id.
 func (q *AccountRecordsQuery) SetPaymentTransactionID(transactionID TransactionID) *AccountRecordsQuery {
-	q.query.SetPaymentTransactionID(transactionID)
+	q.Query.SetPaymentTransactionID(transactionID)
 	return q
 }
 
 func (q *AccountRecordsQuery) SetLogLevel(level LogLevel) *AccountRecordsQuery {
-	q.query.SetLogLevel(level)
+	q.Query.SetLogLevel(level)
 	return q
 }
 
@@ -149,7 +149,7 @@ func (q *AccountRecordsQuery) getName() string {
 func (q *AccountRecordsQuery) buildQuery() *services.Query {
 	pb := services.Query_CryptoGetAccountRecords{
 		CryptoGetAccountRecords: &services.CryptoGetAccountRecordsQuery{
-			Header: &services.QueryHeader{},
+			Header: q.pbHeader,
 		},
 	}
 

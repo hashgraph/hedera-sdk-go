@@ -28,16 +28,16 @@ import (
 
 // ContractBytecodeQuery retrieves the bytecode for a smart contract instance
 type ContractBytecodeQuery struct {
-	query
+	Query
 	contractID *ContractID
 }
 
-// NewContractBytecodeQuery creates a ContractBytecodeQuery query which can be used to construct and execute a
-// Contract Get Bytecode Query.
+// NewContractBytecodeQuery creates a ContractBytecodeQuery Query which can be used to construct and execute a
+// Contract Get Bytecode QueryInterface.
 func NewContractBytecodeQuery() *ContractBytecodeQuery {
 	header := services.QueryHeader{}
 	result := ContractBytecodeQuery{
-		query: _NewQuery(true, &header),
+		Query: _NewQuery(true, &header),
 	}
 	result.e = &result
 	return &result
@@ -45,7 +45,7 @@ func NewContractBytecodeQuery() *ContractBytecodeQuery {
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (q *ContractBytecodeQuery) SetGrpcDeadline(deadline *time.Duration) *ContractBytecodeQuery {
-	q.query.SetGrpcDeadline(deadline)
+	q.Query.SetGrpcDeadline(deadline)
 	return q
 }
 
@@ -64,9 +64,9 @@ func (q *ContractBytecodeQuery) GetContractID() ContractID {
 	return *q.contractID
 }
 
-// Execute executes the Query with the provided client
+// Execute executes the QueryInterface with the provided client
 func (q *ContractBytecodeQuery) Execute(client *Client) ([]byte, error) {
-	resp, err := q.query.execute(client)
+	resp, err := q.Query.execute(client)
 
 	if err != nil {
 		return []byte{}, err
@@ -75,40 +75,40 @@ func (q *ContractBytecodeQuery) Execute(client *Client) ([]byte, error) {
 	return resp.GetContractGetBytecodeResponse().Bytecode, nil
 }
 
-// SetMaxQueryPayment sets the maximum payment allowed for this Query.
+// SetMaxQueryPayment sets the maximum payment allowed for this QueryInterface.
 func (q *ContractBytecodeQuery) SetMaxQueryPayment(maxPayment Hbar) *ContractBytecodeQuery {
-	q.query.SetMaxQueryPayment(maxPayment)
+	q.Query.SetMaxQueryPayment(maxPayment)
 	return q
 }
 
-// SetQueryPayment sets the payment amount for this Query.
+// SetQueryPayment sets the payment amount for this QueryInterface.
 func (q *ContractBytecodeQuery) SetQueryPayment(paymentAmount Hbar) *ContractBytecodeQuery {
-	q.query.SetQueryPayment(paymentAmount)
+	q.Query.SetQueryPayment(paymentAmount)
 	return q
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for this ContractBytecodeQuery.
 func (q *ContractBytecodeQuery) SetNodeAccountIDs(accountID []AccountID) *ContractBytecodeQuery {
-	q.query.SetNodeAccountIDs(accountID)
+	q.Query.SetNodeAccountIDs(accountID)
 	return q
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (q *ContractBytecodeQuery) SetMaxRetry(count int) *ContractBytecodeQuery {
-	q.query.SetMaxRetry(count)
+	q.Query.SetMaxRetry(count)
 	return q
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
 // Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (q *ContractBytecodeQuery) SetMaxBackoff(max time.Duration) *ContractBytecodeQuery {
-	q.query.SetMaxBackoff(max)
+	q.Query.SetMaxBackoff(max)
 	return q
 }
 
 // SetMinBackoff sets the minimum amount of time to wait between retries.
 func (q *ContractBytecodeQuery) SetMinBackoff(min time.Duration) *ContractBytecodeQuery {
-	q.SetMinBackoff(min)
+	q.Query.SetMinBackoff(min)
 	return q
 }
 
@@ -119,7 +119,7 @@ func (q *ContractBytecodeQuery) SetPaymentTransactionID(transactionID Transactio
 }
 
 func (q *ContractBytecodeQuery) SetLogLevel(level LogLevel) *ContractBytecodeQuery {
-	q.query.SetLogLevel(level)
+	q.Query.SetLogLevel(level)
 	return q
 }
 

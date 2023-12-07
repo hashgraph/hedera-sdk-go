@@ -30,7 +30,7 @@ import (
 // Applicable only to tokens of type NON_FUNGIBLE_UNIQUE.
 // Gets info on a NFT for a given TokenID (of type NON_FUNGIBLE_UNIQUE) and serial number
 type TokenNftInfoQuery struct {
-	query
+	Query
 	nftID *NftID
 }
 
@@ -40,7 +40,7 @@ type TokenNftInfoQuery struct {
 func NewTokenNftInfoQuery() *TokenNftInfoQuery {
 	header := services.QueryHeader{}
 	result := TokenNftInfoQuery{
-		query: _NewQuery(true, &header),
+		Query: _NewQuery(true, &header),
 		nftID: nil,
 	}
 
@@ -50,7 +50,7 @@ func NewTokenNftInfoQuery() *TokenNftInfoQuery {
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (q *TokenNftInfoQuery) SetGrpcDeadline(deadline *time.Duration) *TokenNftInfoQuery {
-	q.query.SetGrpcDeadline(deadline)
+	q.Query.SetGrpcDeadline(deadline)
 	return q
 }
 
@@ -125,9 +125,9 @@ func (q *TokenNftInfoQuery) ByAccountID(id AccountID) *TokenNftInfoQuery {
 	return q
 }
 
-// Execute executes the Query with the provided client
+// Execute executes the QueryInterface with the provided client
 func (q *TokenNftInfoQuery) Execute(client *Client) ([]TokenNftInfo, error) {
-	resp, err := q.query.execute(client)
+	resp, err := q.Query.execute(client)
 
 	if err != nil {
 		return []TokenNftInfo{}, err
@@ -138,40 +138,40 @@ func (q *TokenNftInfoQuery) Execute(client *Client) ([]TokenNftInfo, error) {
 	return tokenInfos, nil
 }
 
-// SetMaxQueryPayment sets the maximum payment allowed for this Query.
+// SetMaxQueryPayment sets the maximum payment allowed for this QueryInterface.
 func (q *TokenNftInfoQuery) SetMaxQueryPayment(maxPayment Hbar) *TokenNftInfoQuery {
-	q.query.SetMaxQueryPayment(maxPayment)
+	q.Query.SetMaxQueryPayment(maxPayment)
 	return q
 }
 
-// SetQueryPayment sets the payment amount for this Query.
+// SetQueryPayment sets the payment amount for this QueryInterface.
 func (q *TokenNftInfoQuery) SetQueryPayment(paymentAmount Hbar) *TokenNftInfoQuery {
-	q.query.SetQueryPayment(paymentAmount)
+	q.Query.SetQueryPayment(paymentAmount)
 	return q
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for this TokenNftInfoQuery.
 func (q *TokenNftInfoQuery) SetNodeAccountIDs(accountID []AccountID) *TokenNftInfoQuery {
-	q.query.SetNodeAccountIDs(accountID)
+	q.Query.SetNodeAccountIDs(accountID)
 	return q
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (q *TokenNftInfoQuery) SetMaxRetry(count int) *TokenNftInfoQuery {
-	q.query.SetMaxRetry(count)
+	q.Query.SetMaxRetry(count)
 	return q
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
 // Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (q *TokenNftInfoQuery) SetMaxBackoff(max time.Duration) *TokenNftInfoQuery {
-	q.query.SetMaxBackoff(max)
+	q.Query.SetMaxBackoff(max)
 	return q
 }
 
 // SetMinBackoff sets the minimum amount of time to wait between retries.
 func (q *TokenNftInfoQuery) SetMinBackoff(min time.Duration) *TokenNftInfoQuery {
-	q.query.SetMinBackoff(min)
+	q.Query.SetMinBackoff(min)
 	return q
 }
 
@@ -182,7 +182,7 @@ func (q *TokenNftInfoQuery) SetPaymentTransactionID(transactionID TransactionID)
 }
 
 func (q *TokenNftInfoQuery) SetLogLevel(level LogLevel) *TokenNftInfoQuery {
-	q.query.SetLogLevel(level)
+	q.Query.SetLogLevel(level)
 	return q
 }
 

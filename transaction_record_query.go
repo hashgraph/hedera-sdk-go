@@ -35,7 +35,7 @@ import (
 // gives the details of that transfer. If the transaction didn't return anything that should be in
 // the record, then the results field will be set to nothing.
 type TransactionRecordQuery struct {
-	query
+	Query
 	transactionID       *TransactionID
 	includeChildRecords *bool
 	duplicates          *bool
@@ -52,7 +52,7 @@ type TransactionRecordQuery struct {
 func NewTransactionRecordQuery() *TransactionRecordQuery {
 	header := services.QueryHeader{}
 	result := TransactionRecordQuery{
-		query: _NewQuery(true, &header),
+		Query: _NewQuery(true, &header),
 	}
 
 	result.e = &result
@@ -61,7 +61,7 @@ func NewTransactionRecordQuery() *TransactionRecordQuery {
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (q *TransactionRecordQuery) SetGrpcDeadline(deadline *time.Duration) *TransactionRecordQuery {
-	q.query.SetGrpcDeadline(deadline)
+	q.Query.SetGrpcDeadline(deadline)
 	return q
 }
 
@@ -102,9 +102,9 @@ func (q *TransactionRecordQuery) GetIncludeDuplicates() bool {
 	return false
 }
 
-// Execute executes the Query with the provided client
+// Execute executes the QueryInterface with the provided client
 func (q *TransactionRecordQuery) Execute(client *Client) (TransactionRecord, error) {
-	resp, err := q.query.execute(client)
+	resp, err := q.Query.execute(client)
 
 	if err != nil {
 		if precheckErr, ok := err.(ErrHederaPreCheckStatus); ok {
@@ -133,38 +133,38 @@ func (q *TransactionRecordQuery) GetTransactionID() TransactionID {
 
 // SetNodeAccountIDs sets the _Node AccountID for this TransactionRecordQuery.
 func (q *TransactionRecordQuery) SetNodeAccountIDs(accountID []AccountID) *TransactionRecordQuery {
-	q.query.SetNodeAccountIDs(accountID)
+	q.Query.SetNodeAccountIDs(accountID)
 	return q
 }
 
-// SetQueryPayment sets the Hbar payment to pay the _Node a fee for handling this query
+// SetQueryPayment sets the Hbar payment to pay the _Node a fee for handling this Query
 func (q *TransactionRecordQuery) SetQueryPayment(queryPayment Hbar) *TransactionRecordQuery {
-	q.query.SetQueryPayment(queryPayment)
+	q.Query.SetQueryPayment(queryPayment)
 	return q
 }
 
-// SetMaxQueryPayment sets the maximum payment allowed for this Query.
+// SetMaxQueryPayment sets the maximum payment allowed for this QueryInterface.
 func (q *TransactionRecordQuery) SetMaxQueryPayment(queryMaxPayment Hbar) *TransactionRecordQuery {
-	q.query.SetMaxQueryPayment(queryMaxPayment)
+	q.Query.SetMaxQueryPayment(queryMaxPayment)
 	return q
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (q *TransactionRecordQuery) SetMaxRetry(count int) *TransactionRecordQuery {
-	q.query.SetMaxRetry(count)
+	q.Query.SetMaxRetry(count)
 	return q
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
 // Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (q *TransactionRecordQuery) SetMaxBackoff(max time.Duration) *TransactionRecordQuery {
-	q.query.SetMaxBackoff(max)
+	q.Query.SetMaxBackoff(max)
 	return q
 }
 
 // SetMinBackoff sets the minimum amount of time to wait between retries.
 func (q *TransactionRecordQuery) SetMinBackoff(min time.Duration) *TransactionRecordQuery {
-	q.query.SetMinBackoff(min)
+	q.Query.SetMinBackoff(min)
 	return q
 }
 
@@ -175,7 +175,7 @@ func (q *TransactionRecordQuery) SetPaymentTransactionID(transactionID Transacti
 }
 
 func (q *TransactionRecordQuery) SetLogLevel(level LogLevel) *TransactionRecordQuery {
-	q.query.SetLogLevel(level)
+	q.Query.SetLogLevel(level)
 	return q
 }
 
@@ -200,7 +200,7 @@ func (q *TransactionRecordQuery) mapStatusError(response interface{}) error {
 
 	return ErrHederaReceiptStatus{
 		Status: Status(query.GetTransactionGetRecord().GetTransactionRecord().GetReceipt().GetStatus()),
-		// TxID:    _TransactionIDFromProtobuf(_Request.query.pb.GetTransactionGetRecord().TransactionID, networkName),
+		// TxID:    _TransactionIDFromProtobuf(_Request.Query.pb.GetTransactionGetRecord().TransactionID, networkName),
 		Receipt: _TransactionReceiptFromProtobuf(query.GetTransactionGetReceipt(), nil),
 	}
 }

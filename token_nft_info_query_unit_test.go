@@ -24,7 +24,6 @@ package hedera
  */
 
 import (
-	"fmt"
 	"testing"
 	"time"
 
@@ -130,7 +129,6 @@ func TestUnitTokenNftInfoQueryGet(t *testing.T) {
 	require.Equal(t, NewHbar(3), query.GetQueryPayment())
 	require.Equal(t, NewHbar(23), query.GetMaxQueryPayment())
 	require.Equal(t, &deadline, query.GetGrpcDeadline())
-	require.Equal(t, fmt.Sprintf("TokenNftInfoQuery:%v", transactionID.ValidStart.UnixNano()), query.getName())
 }
 
 func TestUnitTokenNftInfoQueryMock(t *testing.T) {

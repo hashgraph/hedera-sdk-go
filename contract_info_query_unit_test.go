@@ -24,7 +24,6 @@ package hedera
  */
 
 import (
-	"fmt"
 	"testing"
 	"time"
 
@@ -247,7 +246,6 @@ func TestUnitContractInfoQueryCoverage(t *testing.T) {
 	require.Equal(t, nodeAccountID, query.GetNodeAccountIDs())
 	require.Equal(t, time.Second*30, query.GetMaxBackoff())
 	require.Equal(t, time.Second*10, query.GetMinBackoff())
-	require.Equal(t, fmt.Sprintf("ContractInfoQuery:%v", transactionID.ValidStart.UnixNano()), query.getName())
 	require.Equal(t, contract, query.GetContractID())
 	require.Equal(t, &deadline, query.GetGrpcDeadline())
 }

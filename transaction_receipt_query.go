@@ -30,10 +30,10 @@ import (
 // Get the receipt of a transaction, given its transaction ID. Once a transaction reaches consensus,
 // then information about whether it succeeded or failed will be available until the end of the
 // receipt period.  Before and after the receipt period, and for a transaction that was never
-// submitted, the receipt is unknown.  This query is free (the payment field is left empty). No
+// submitted, the receipt is unknown.  This Query is free (the payment field is left empty). No
 // State proof is available for this response
 type TransactionReceiptQuery struct {
-	query
+	Query
 	transactionID *TransactionID
 	childReceipts *bool
 	duplicates    *bool
@@ -44,12 +44,12 @@ type TransactionReceiptQuery struct {
 // gets the receipt of a transaction, given its transaction ID. Once a transaction reaches consensus,
 // then information about whether it succeeded or failed will be available until the end of the
 // receipt period.  Before and after the receipt period, and for a transaction that was never
-// submitted, the receipt is unknown.  This query is free (the payment field is left empty). No
+// submitted, the receipt is unknown.  This Query is free (the payment field is left empty). No
 // State proof is available for this response
 func NewTransactionReceiptQuery() *TransactionReceiptQuery {
 	header := services.QueryHeader{}
 	result := TransactionReceiptQuery{
-		query: _NewQuery(false, &header),
+		Query: _NewQuery(false, &header),
 	}
 	result.e = &result
 	return &result
@@ -57,7 +57,7 @@ func NewTransactionReceiptQuery() *TransactionReceiptQuery {
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (q *TransactionReceiptQuery) SetGrpcDeadline(deadline *time.Duration) *TransactionReceiptQuery {
-	q.query.SetGrpcDeadline(deadline)
+	q.Query.SetGrpcDeadline(deadline)
 	return q
 }
 
@@ -98,7 +98,7 @@ func (q *TransactionReceiptQuery) GetIncludeDuplicates() bool {
 	return false
 }
 
-// Execute executes the Query with the provided client
+// Execute executes the QueryInterface with the provided client
 func (q *TransactionReceiptQuery) Execute(client *Client) (TransactionReceipt, error) {
 	//TODO(Toni): Custom execute here, should be checked against the common execute
 	if client == nil {
@@ -156,49 +156,49 @@ func (q *TransactionReceiptQuery) GetTransactionID() TransactionID {
 
 // SetNodeAccountIDs sets the _Node AccountID for this TransactionReceiptQuery.
 func (q *TransactionReceiptQuery) SetNodeAccountIDs(accountID []AccountID) *TransactionReceiptQuery {
-	q.query.SetNodeAccountIDs(accountID)
+	q.Query.SetNodeAccountIDs(accountID)
 	return q
 }
 
-// SetQueryPayment sets the Hbar payment to pay the _Node a fee for handling this query
+// SetQueryPayment sets the Hbar payment to pay the _Node a fee for handling this Query
 func (q *TransactionReceiptQuery) SetQueryPayment(queryPayment Hbar) *TransactionReceiptQuery {
-	q.query.SetQueryPayment(queryPayment)
+	q.Query.SetQueryPayment(queryPayment)
 	return q
 }
 
-// SetMaxQueryPayment sets the maximum payment allowed for this Query.
+// SetMaxQueryPayment sets the maximum payment allowed for this QueryInterface.
 func (q *TransactionReceiptQuery) SetMaxQueryPayment(queryMaxPayment Hbar) *TransactionReceiptQuery {
-	q.query.SetMaxQueryPayment(queryMaxPayment)
+	q.Query.SetMaxQueryPayment(queryMaxPayment)
 	return q
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (q *TransactionReceiptQuery) SetMaxRetry(count int) *TransactionReceiptQuery {
-	q.query.SetMaxRetry(count)
+	q.Query.SetMaxRetry(count)
 	return q
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
 // Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (q *TransactionReceiptQuery) SetMaxBackoff(max time.Duration) *TransactionReceiptQuery {
-	q.query.SetMaxBackoff(max)
+	q.Query.SetMaxBackoff(max)
 	return q
 }
 
 // SetMinBackoff sets the minimum amount of time to wait between retries.
 func (q *TransactionReceiptQuery) SetMinBackoff(min time.Duration) *TransactionReceiptQuery {
-	q.query.SetMinBackoff(min)
+	q.Query.SetMinBackoff(min)
 	return q
 }
 
 // SetPaymentTransactionID assigns the payment transaction id.
 func (q *TransactionReceiptQuery) SetPaymentTransactionID(transactionID TransactionID) *TransactionReceiptQuery {
-	q.query.SetPaymentTransactionID(transactionID)
+	q.Query.SetPaymentTransactionID(transactionID)
 	return q
 }
 
 func (q *TransactionReceiptQuery) SetLogLevel(level LogLevel) *TransactionReceiptQuery {
-	q.query.SetLogLevel(level)
+	q.Query.SetLogLevel(level)
 	return q
 }
 

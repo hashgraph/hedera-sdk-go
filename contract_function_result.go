@@ -42,7 +42,7 @@ import (
 // ```
 // contractFunctionResult.GetUint256(<index>)
 // bInt := new(big.Int)
-// bInt.SetBytes(query.GetUint256(0))
+// bInt.SetBytes(Query.GetUint256(0))
 // ```
 type ContractFunctionResult struct {
 	// ContractID is the smart contract instance whose function was called

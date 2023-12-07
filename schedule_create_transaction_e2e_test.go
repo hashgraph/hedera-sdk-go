@@ -92,7 +92,7 @@ func TestIntegrationScheduleCreateTransactionCanExecute(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	// Making sure the scheduled transaction executed properly with schedule info query
+	// Making sure the scheduled transaction executed properly with schedule info Query
 	info, err := NewScheduleInfoQuery().
 		SetScheduleID(scheduleID).
 		SetNodeAccountIDs(env.NodeAccountIDs).

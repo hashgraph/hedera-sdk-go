@@ -28,7 +28,7 @@ import (
 
 // FileCreateTransaction creates a new file, containing the given contents.  It is referenced by its FileID, and does
 // not have a filename, so it is important to get and hold onto the FileID. After the file is created, the FileID for
-// it can be found in the receipt, or retrieved with a GetByKey query, or by asking for a Record of the transaction to
+// it can be found in the receipt, or retrieved with a GetByKey Query, or by asking for a Record of the transaction to
 // be created, and retrieving that.
 //
 // See FileInfoQuery for more information about files.
@@ -45,7 +45,7 @@ type FileCreateTransaction struct {
 
 // NewFileCreateTransaction creates a FileCreateTransaction which creates a new file, containing the given contents.  It is referenced by its FileID, and does
 // not have a filename, so it is important to get and hold onto the FileID. After the file is created, the FileID for
-// it can be found in the receipt, or retrieved with a GetByKey query, or by asking for a Record of the transaction to
+// it can be found in the receipt, or retrieved with a GetByKey Query, or by asking for a Record of the transaction to
 // be created, and retrieving that.
 //
 // See FileInfoQuery for more information about files.

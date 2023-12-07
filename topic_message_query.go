@@ -38,7 +38,7 @@ import (
 var rstStream = regexp.MustCompile("(?i)\\brst[^0-9a-zA-Z]stream\\b") //nolint
 
 // TopicMessageQuery
-// Query that listens to messages sent to the specific TopicID
+// QueryInterface that listens to messages sent to the specific TopicID
 type TopicMessageQuery struct {
 	errorHandler      func(stat status.Status)
 	completionHandler func()
@@ -132,19 +132,19 @@ func (query *TopicMessageQuery) GetMaxAttempts() uint64 {
 	return query.maxAttempts
 }
 
-// SetErrorHandler Sets the error handler for this query
+// SetErrorHandler Sets the error handler for this Query
 func (query *TopicMessageQuery) SetErrorHandler(errorHandler func(stat status.Status)) *TopicMessageQuery {
 	query.errorHandler = errorHandler
 	return query
 }
 
-// SetCompletionHandler Sets the completion handler for this query
+// SetCompletionHandler Sets the completion handler for this Query
 func (query *TopicMessageQuery) SetCompletionHandler(completionHandler func()) *TopicMessageQuery {
 	query.completionHandler = completionHandler
 	return query
 }
 
-// SetRetryHandler Sets the retry handler for this query
+// SetRetryHandler Sets the retry handler for this Query
 func (query *TopicMessageQuery) SetRetryHandler(retryHandler func(err error) bool) *TopicMessageQuery {
 	query.retryHandler = retryHandler
 	return query

@@ -28,8 +28,8 @@ import (
 	protobuf "google.golang.org/protobuf/proto"
 )
 
-// query is the struct used to build queries.
-type query struct {
+// Query is the struct used to build queries.
+type Query struct {
 	executable
 	pb       *services.Query
 	pbHeader *services.QueryHeader //nolint
@@ -48,7 +48,7 @@ type queryResponse interface {
 	GetHeader() *services.ResponseHeader
 }
 
-type Query interface {
+type QueryInterface interface {
 	Executable
 
 	execute(client *Client) (*services.Response, error)
@@ -58,10 +58,10 @@ type Query interface {
 
 // -------- Executable functions ----------
 
-func _NewQuery(isPaymentRequired bool, header *services.QueryHeader) query {
+func _NewQuery(isPaymentRequired bool, header *services.QueryHeader) Query {
 	minBackoff := 250 * time.Millisecond
 	maxBackoff := 8 * time.Second
-	return query{
+	return Query{
 		pb:                    &services.Query{},
 		pbHeader:              header,
 		paymentTransactionIDs: _NewLockableSlice(),
@@ -78,30 +78,30 @@ func _NewQuery(isPaymentRequired bool, header *services.QueryHeader) query {
 	}
 }
 
-// SetMaxQueryPayment sets the maximum payment allowed for q Query.
-func (q *query) SetMaxQueryPayment(maxPayment Hbar) *query {
+// SetMaxQueryPayment sets the maximum payment allowed for this Query.
+func (q *Query) SetMaxQueryPayment(maxPayment Hbar) *Query {
 	q.maxQueryPayment = maxPayment
 	return q
 }
 
-// SetQueryPayment sets the payment amount for q Query.
-func (q *query) SetQueryPayment(paymentAmount Hbar) *query {
+// SetQueryPayment sets the payment amount for this Query.
+func (q *Query) SetQueryPayment(paymentAmount Hbar) *Query {
 	q.queryPayment = paymentAmount
 	return q
 }
 
-// GetMaxQueryPayment returns the maximum payment allowed for q Query.
-func (q *query) GetMaxQueryPayment() Hbar {
+// GetMaxQueryPayment returns the maximum payment allowed for this Query.
+func (q *Query) GetMaxQueryPayment() Hbar {
 	return q.maxQueryPayment
 }
 
-// GetQueryPayment returns the payment amount for q Query.
-func (q *query) GetQueryPayment() Hbar {
+// GetQueryPayment returns the payment amount for this Query.
+func (q *Query) GetQueryPayment() Hbar {
 	return q.queryPayment
 }
 
 // GetCost returns the fee that would be charged to get the requested information (if a cost was requested).
-func (q *query) GetCost(client *Client) (Hbar, error) {
+func (q *Query) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
 		return Hbar{}, errNoClientProvided
 	}
@@ -126,7 +126,7 @@ func (q *query) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, err
 	}
 
-	q.pb = q.e.(Query).buildQuery()
+	q.pb = q.e.(QueryInterface).buildQuery()
 
 	q.pbHeader.ResponseType = services.ResponseType_COST_ANSWER
 	q.paymentTransactionIDs._Advance()
@@ -139,7 +139,7 @@ func (q *query) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, err
 	}
 
-	queryResp := q.e.(Query).getQueryResponse(resp.(*services.Response))
+	queryResp := q.e.(QueryInterface).getQueryResponse(resp.(*services.Response))
 	cost := int64(queryResp.GetHeader().Cost)
 
 	return HbarFromTinybar(cost), nil
@@ -174,7 +174,7 @@ func _QueryMakePaymentTransaction(transactionID TransactionID, nodeAccountID Acc
 
 	bodyBytes, err := protobuf.Marshal(&body)
 	if err != nil {
-		return nil, errors.Wrap(err, "error serializing query body")
+		return nil, errors.Wrap(err, "error serializing Query body")
 	}
 
 	signature := operator.signer(bodyBytes)
@@ -190,7 +190,7 @@ func _QueryMakePaymentTransaction(transactionID TransactionID, nodeAccountID Acc
 }
 
 // GetPaymentTransactionID returns the payment transaction id.
-func (q *query) GetPaymentTransactionID() TransactionID {
+func (q *Query) GetPaymentTransactionID() TransactionID {
 	if !q.paymentTransactionIDs._IsEmpty() {
 		return q.paymentTransactionIDs._GetCurrent().(TransactionID)
 	}
@@ -199,17 +199,17 @@ func (q *query) GetPaymentTransactionID() TransactionID {
 }
 
 // GetMaxRetryCount returns the max number of errors before execution will fail.
-func (q *query) GetMaxRetryCount() int {
+func (q *Query) GetMaxRetryCount() int {
 	return q.GetMaxRetry()
 }
 
 // SetPaymentTransactionID assigns the payment transaction id.
-func (q *query) SetPaymentTransactionID(transactionID TransactionID) *query {
+func (q *Query) SetPaymentTransactionID(transactionID TransactionID) *Query {
 	q.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
 	return q
 }
 
-func (q *query) execute(client *Client) (*services.Response, error) {
+func (q *Query) execute(client *Client) (*services.Response, error) {
 	if client == nil || client.operator == nil {
 		return nil, errNoClientProvided
 	}
@@ -265,7 +265,7 @@ func (q *query) execute(client *Client) (*services.Response, error) {
 		}
 	}
 
-	q.pb = q.e.(Query).buildQuery()
+	q.pb = q.e.(QueryInterface).buildQuery()
 	q.pbHeader.ResponseType = services.ResponseType_ANSWER_ONLY
 
 	if q.isPaymentRequired && len(q.paymentTransactions) > 0 {
@@ -280,8 +280,8 @@ func (q *query) execute(client *Client) (*services.Response, error) {
 	return resp.(*services.Response), nil
 }
 
-func (q *query) shouldRetry(response interface{}) _ExecutionState {
-	queryResp := q.e.(Query).getQueryResponse(response.(*services.Response))
+func (q *Query) shouldRetry(response interface{}) _ExecutionState {
+	queryResp := q.e.(QueryInterface).getQueryResponse(response.(*services.Response))
 	status := Status(queryResp.GetHeader().NodeTransactionPrecheckCode)
 	switch status {
 	case StatusPlatformTransactionNotCreated, StatusPlatformNotActive, StatusBusy:
@@ -293,7 +293,7 @@ func (q *query) shouldRetry(response interface{}) _ExecutionState {
 	return executionStateError
 }
 
-func (q *query) generatePayments(client *Client, cost Hbar) error {
+func (q *Query) generatePayments(client *Client, cost Hbar) error {
 	for _, nodeID := range q.nodeAccountIDs.slice {
 		tx, err := _QueryMakePaymentTransaction(
 			q.paymentTransactionIDs._GetCurrent().(TransactionID),
@@ -311,11 +311,11 @@ func (q *query) generatePayments(client *Client, cost Hbar) error {
 	return nil
 }
 
-func (q *query) advanceRequest() {
+func (q *Query) advanceRequest() {
 	q.nodeAccountIDs._Advance()
 }
 
-func (q *query) makeRequest() interface{} {
+func (q *Query) makeRequest() interface{} {
 	if q.isPaymentRequired && len(q.paymentTransactions) > 0 {
 		q.pbHeader.Payment = q.paymentTransactions[q.paymentTransactionIDs.index]
 	}
@@ -323,16 +323,16 @@ func (q *query) makeRequest() interface{} {
 	return q.pb
 }
 
-func (q *query) mapResponse(response interface{}, _ AccountID, protoRequest interface{}) (interface{}, error) {
+func (q *Query) mapResponse(response interface{}, _ AccountID, protoRequest interface{}) (interface{}, error) {
 	return response.(*services.Response), nil
 }
 
-func (q *query) isTransaction() bool {
+func (q *Query) isTransaction() bool {
 	return false
 }
 
-func (q *query) mapStatusError(response interface{}) error {
-	queryResp := q.e.(Query).getQueryResponse(response.(*services.Response))
+func (q *Query) mapStatusError(response interface{}) error {
+	queryResp := q.e.(QueryInterface).getQueryResponse(response.(*services.Response))
 	return ErrHederaPreCheckStatus{
 		Status: Status(queryResp.GetHeader().NodeTransactionPrecheckCode),
 	}
@@ -345,24 +345,32 @@ func (q *query) mapStatusError(response interface{}) error {
 //	return ErrHederaPreCheckStatus{
 //		Status: Status(response.(*services.Response).GetNetworkGetVersionInfo().Header.NodeTransactionPrecheckCode),
 //	}
-func (q *query) getMethod(*_Channel) _Method {
+func (q *Query) getMethod(*_Channel) _Method {
 	return _Method{}
 }
 
-func (q *query) getName() string {
-	return "Query"
+func (q *Query) getName() string {
+	return "QueryInterface"
 }
 
 // NOTE: Should be implemented in every inheritor.
-func (q *query) buildQuery() *services.Query {
+func (q *Query) buildQuery() *services.Query {
 	return nil
 }
 
-func (q *query) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (q *Query) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return nil, errors.New("Not implemented")
 }
 
 // NOTE: Should be implemented in every inheritor.
-func (q *query) validateNetworkOnIDs(client *Client) error {
+func (q *Query) validateNetworkOnIDs(*Client) error {
 	return errors.New("Not implemented")
+}
+
+func (q *Query) getTransactionIDAndMessage() (string, string) {
+	txID := q.GetPaymentTransactionID().String()
+	if txID == "" {
+		txID = "None"
+	}
+	return txID, "QueryInterface status received"
 }

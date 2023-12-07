@@ -68,6 +68,7 @@ type Executable interface {
 	validateNetworkOnIDs(client *Client) error
 	isTransaction() bool
 	getLogger(Logger) Logger
+	getTransactionIDAndMessage() (string, string)
 }
 
 type executable struct {
@@ -190,21 +191,6 @@ func (e *executable) getNodeAccountID() AccountID {
 	return e.nodeAccountIDs._GetCurrent().(AccountID)
 }
 
-func getTransactionIDAndMessage(request interface{}) (string, string) {
-	switch req := request.(type) {
-	case *Transaction:
-		return req.GetTransactionID().String(), "transaction status received"
-	case *query:
-		txID := req.GetPaymentTransactionID().String()
-		if txID == "" {
-			txID = "None"
-		}
-		return txID, "Query status received"
-	default:
-		return "", ""
-	}
-}
-
 func _Execute(client *Client, e Executable) (interface{}, error) {
 	var maxAttempts int
 	backOff := backoff.NewExponentialBackOff()
@@ -225,8 +211,7 @@ func _Execute(client *Client, e Executable) (interface{}, error) {
 	var marshaledRequest []byte
 
 	txLogger := e.getLogger(client.logger)
-	//txID, msg := getTransactionIDAndMessage()
-	txID, msg := "TODO", "TODO"
+	txID, msg := e.getTransactionIDAndMessage()
 
 	for attempt = int64(0); attempt < int64(maxAttempts); attempt, currentBackoff = attempt+1, currentBackoff*2 {
 		var protoRequest interface{}
@@ -336,20 +321,17 @@ func _Execute(client *Client, e Executable) (interface{}, error) {
 			_DelayForAttempt(e.getName(), backOff.NextBackOff(), attempt, txLogger)
 			continue
 		case executionStateExpired:
-			//if e.isTransaction() {
-			//	if !client.GetOperatorAccountID()._IsZero() && transaction.regenerateTransactionID && !transaction.transactionIDs.locked {
-			//		txLogger.Trace("received `TRANSACTION_EXPIRED` with transaction ID regeneration enabled; regenerating", "requestId", e.getName())
-			//		transaction.transactionIDs._Set(transaction.transactionIDs.index, TransactionIDGenerate(client.GetOperatorAccountID()))
-			//		if err != nil {
-			//			panic(err)
-			//		}
-			//		continue
-			//	} else {
-			//		return TransactionResponse{}, e.mapStatusError(resp)
-			//	}
-			//} else {
-			//	return &services.Response{}, e.mapStatusError(resp)
-			//}
+			if e.isTransaction() {
+				transaction := e.(TransactionInterface)
+				if transaction.regenerateID(client) {
+					txLogger.Trace("received `TRANSACTION_EXPIRED` with transaction ID regeneration enabled; regenerating", "requestId", e.getName())
+					continue
+				} else {
+					return TransactionResponse{}, e.mapStatusError(resp)
+				}
+			} else {
+				return &services.Response{}, e.mapStatusError(resp)
+			}
 		case executionStateError:
 			if e.isTransaction() {
 				return TransactionResponse{}, e.mapStatusError(resp)

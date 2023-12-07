@@ -402,7 +402,7 @@ func TestUnitQueryRegression(t *testing.T) {
 	require.NoError(t, err)
 
 	var paymentTx services.TransactionBody
-	_ = protobuf.Unmarshal(query.query.paymentTransactions[0].BodyBytes, &paymentTx)
+	_ = protobuf.Unmarshal(query.Query.paymentTransactions[0].BodyBytes, &paymentTx)
 
 	require.Equal(t, body.GetCryptoGetInfo().AccountID.String(), accountID._ToProtobuf().String())
 	require.Equal(t, paymentTx.NodeAccountID.String(), node[0]._ToProtobuf().String())

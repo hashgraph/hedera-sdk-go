@@ -359,7 +359,7 @@ func (tx *TopicMessageSubmitTransaction) getMethod(channel *_Channel) _Method {
 	}
 }
 
-// Execute executes the Query with the provided client
+// Execute executes the QueryInterface with the provided client
 func (tx *TopicMessageSubmitTransaction) Execute(
 	client *Client,
 ) (TransactionResponse, error) {

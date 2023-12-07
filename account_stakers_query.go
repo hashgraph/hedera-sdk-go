@@ -29,11 +29,11 @@ import (
 // AccountStakersQuery gets all of the accounts that are proxy staking to this account. For each of  them, the amount
 // currently staked will be given. This is not yet implemented, but will be in a future version of the API.
 type AccountStakersQuery struct {
-	query
+	Query
 	accountID *AccountID
 }
 
-// NewAccountStakersQuery creates an AccountStakersQuery query which can be used to construct and execute
+// NewAccountStakersQuery creates an AccountStakersQuery Query which can be used to construct and execute
 // an AccountStakersQuery.
 //
 // It is recommended that you use this for creating new instances of an AccountStakersQuery
@@ -41,7 +41,7 @@ type AccountStakersQuery struct {
 func NewAccountStakersQuery() *AccountStakersQuery {
 	header := services.QueryHeader{}
 	result := AccountStakersQuery{
-		query: _NewQuery(true, &header),
+		Query: _NewQuery(true, &header),
 	}
 
 	result.e = &result
@@ -50,7 +50,7 @@ func NewAccountStakersQuery() *AccountStakersQuery {
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (q *AccountStakersQuery) SetGrpcDeadline(deadline *time.Duration) *AccountStakersQuery {
-	q.query.SetGrpcDeadline(deadline)
+	q.Query.SetGrpcDeadline(deadline)
 	return q
 }
 
@@ -70,7 +70,7 @@ func (q *AccountStakersQuery) GetAccountID() AccountID {
 }
 
 func (q *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) {
-	resp, err := q.query.execute(client)
+	resp, err := q.Query.execute(client)
 
 	if err != nil {
 		return []Transfer{}, err
@@ -96,51 +96,51 @@ func (q *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) {
 	return stakers, err
 }
 
-// SetMaxQueryPayment sets the maximum payment allowed for this Query.
+// SetMaxQueryPayment sets the maximum payment allowed for this QueryInterface.
 func (q *AccountStakersQuery) SetMaxQueryPayment(maxPayment Hbar) *AccountStakersQuery {
-	q.query.SetMaxQueryPayment(maxPayment)
+	q.Query.SetMaxQueryPayment(maxPayment)
 	return q
 }
 
-// SetQueryPayment sets the payment amount for this Query.
+// SetQueryPayment sets the payment amount for this QueryInterface.
 func (q *AccountStakersQuery) SetQueryPayment(paymentAmount Hbar) *AccountStakersQuery {
-	q.query.SetQueryPayment(paymentAmount)
+	q.Query.SetQueryPayment(paymentAmount)
 	return q
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for this AccountStakersQuery.
 func (q *AccountStakersQuery) SetNodeAccountIDs(accountID []AccountID) *AccountStakersQuery {
-	q.query.SetNodeAccountIDs(accountID)
+	q.Query.SetNodeAccountIDs(accountID)
 	return q
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (q *AccountStakersQuery) SetMaxRetry(count int) *AccountStakersQuery {
-	q.query.SetMaxRetry(count)
+	q.Query.SetMaxRetry(count)
 	return q
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
 // Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (q *AccountStakersQuery) SetMaxBackoff(max time.Duration) *AccountStakersQuery {
-	q.query.SetMaxBackoff(max)
+	q.Query.SetMaxBackoff(max)
 	return q
 }
 
 // SetMinBackoff sets the minimum amount of time to wait between retries.
 func (q *AccountStakersQuery) SetMinBackoff(min time.Duration) *AccountStakersQuery {
-	q.query.SetMinBackoff(min)
+	q.Query.SetMinBackoff(min)
 	return q
 }
 
 // SetPaymentTransactionID assigns the payment transaction id.
 func (q *AccountStakersQuery) SetPaymentTransactionID(transactionID TransactionID) *AccountStakersQuery {
-	q.query.SetPaymentTransactionID(transactionID)
+	q.Query.SetPaymentTransactionID(transactionID)
 	return q
 }
 
 func (q *AccountStakersQuery) SetLogLevel(level LogLevel) *AccountStakersQuery {
-	q.query.SetLogLevel(level)
+	q.Query.SetLogLevel(level)
 	return q
 }
 

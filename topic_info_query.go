@@ -26,19 +26,19 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
-// TopicInfo is the Query for retrieving information about a topic stored on the Hedera network.
+// TopicInfo is the QueryInterface for retrieving information about a topic stored on the Hedera network.
 type TopicInfoQuery struct {
-	query
+	Query
 	topicID *TopicID
 }
 
-// NewTopicInfoQuery creates a TopicInfoQuery query which can be used to construct and execute a
+// NewTopicInfoQuery creates a TopicInfoQuery Query which can be used to construct and execute a
 //
-//	Get Topic Info Query.
+//	Get Topic Info QueryInterface.
 func NewTopicInfoQuery() *TopicInfoQuery {
 	header := services.QueryHeader{}
 	result := TopicInfoQuery{
-		query: _NewQuery(true, &header),
+		Query: _NewQuery(true, &header),
 	}
 
 	result.e = &result
@@ -47,7 +47,7 @@ func NewTopicInfoQuery() *TopicInfoQuery {
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (q *TopicInfoQuery) SetGrpcDeadline(deadline *time.Duration) *TopicInfoQuery {
-	q.query.SetGrpcDeadline(deadline)
+	q.Query.SetGrpcDeadline(deadline)
 	return q
 }
 
@@ -68,7 +68,7 @@ func (q *TopicInfoQuery) GetTopicID() TopicID {
 
 // Execute executes the TopicInfoQuery using the provided client
 func (q *TopicInfoQuery) Execute(client *Client) (TopicInfo, error) {
-	resp, err := q.query.execute(client)
+	resp, err := q.Query.execute(client)
 
 	if err != nil {
 		return TopicInfo{}, err
@@ -77,40 +77,40 @@ func (q *TopicInfoQuery) Execute(client *Client) (TopicInfo, error) {
 	return _TopicInfoFromProtobuf(resp.GetConsensusGetTopicInfo().TopicInfo)
 }
 
-// SetMaxQueryPayment sets the maximum payment allowed for this Query.
+// SetMaxQueryPayment sets the maximum payment allowed for this QueryInterface.
 func (q *TopicInfoQuery) SetMaxQueryPayment(maxPayment Hbar) *TopicInfoQuery {
-	q.query.SetMaxQueryPayment(maxPayment)
+	q.Query.SetMaxQueryPayment(maxPayment)
 	return q
 }
 
-// SetQueryPayment sets the payment amount for this Query.
+// SetQueryPayment sets the payment amount for this QueryInterface.
 func (q *TopicInfoQuery) SetQueryPayment(paymentAmount Hbar) *TopicInfoQuery {
-	q.query.SetQueryPayment(paymentAmount)
+	q.Query.SetQueryPayment(paymentAmount)
 	return q
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for this TopicInfoQuery.
 func (q *TopicInfoQuery) SetNodeAccountIDs(accountID []AccountID) *TopicInfoQuery {
-	q.query.SetNodeAccountIDs(accountID)
+	q.Query.SetNodeAccountIDs(accountID)
 	return q
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (q *TopicInfoQuery) SetMaxRetry(count int) *TopicInfoQuery {
-	q.query.SetMaxRetry(count)
+	q.Query.SetMaxRetry(count)
 	return q
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
 // Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (q *TopicInfoQuery) SetMaxBackoff(max time.Duration) *TopicInfoQuery {
-	q.query.SetMaxBackoff(max)
+	q.Query.SetMaxBackoff(max)
 	return q
 }
 
 // SetMinBackoff sets the minimum amount of time to wait between retries.
 func (q *TopicInfoQuery) SetMinBackoff(min time.Duration) *TopicInfoQuery {
-	q.query.SetMinBackoff(min)
+	q.Query.SetMinBackoff(min)
 	return q
 }
 
@@ -120,7 +120,7 @@ func (q *TopicInfoQuery) SetPaymentTransactionID(transactionID TransactionID) *T
 }
 
 func (q *TopicInfoQuery) SetLogLevel(level LogLevel) *TopicInfoQuery {
-	q.query.SetLogLevel(level)
+	q.Query.SetLogLevel(level)
 	return q
 }
 

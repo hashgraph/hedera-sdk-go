@@ -49,6 +49,7 @@ type TransactionInterface interface {
 	build() *services.TransactionBody
 	buildScheduled() (*services.SchedulableTransactionBody, error)
 	preFreezeWith(*Client)
+	regenerateID(*Client) bool
 }
 
 // Transaction is base struct for all transactions that may be built and submitted to Hedera.
@@ -4853,4 +4854,16 @@ func (tx *Transaction) preFreezeWith(*Client) {
 
 func (tx *Transaction) isTransaction() bool {
 	return true
+}
+
+func (tx *Transaction) getTransactionIDAndMessage() (string, string) {
+	return tx.GetTransactionID().String(), "transaction status received"
+}
+
+func (tx *Transaction) regenerateID(client *Client) bool {
+	if !client.GetOperatorAccountID()._IsZero() && tx.regenerateTransactionID && !tx.transactionIDs.locked {
+		tx.transactionIDs._Set(tx.transactionIDs.index, TransactionIDGenerate(client.GetOperatorAccountID()))
+		return true
+	}
+	return false
 }

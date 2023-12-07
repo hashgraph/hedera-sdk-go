@@ -35,7 +35,7 @@ import (
 // purely read the state and don't change it. It is faster and cheaper than a ContractExecuteTransaction, because it is
 // purely local to a single  _Node.
 type ContractCallQuery struct {
-	query
+	Query
 	contractID         *ContractID
 	gas                uint64
 	maxResultSize      uint64
@@ -43,14 +43,14 @@ type ContractCallQuery struct {
 	senderID           *AccountID
 }
 
-// NewContractCallQuery creates a ContractCallQuery query which can be used to construct and execute a
-// Contract Call Local Query.
+// NewContractCallQuery creates a ContractCallQuery Query which can be used to construct and execute a
+// Contract Call Local QueryInterface.
 func NewContractCallQuery() *ContractCallQuery {
 	header := services.QueryHeader{}
 	query := _NewQuery(true, &header)
 
 	result := ContractCallQuery{
-		query: query,
+		Query: query,
 	}
 
 	result.e = &result
@@ -59,7 +59,7 @@ func NewContractCallQuery() *ContractCallQuery {
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (q *ContractCallQuery) SetGrpcDeadline(deadline *time.Duration) *ContractCallQuery {
-	q.query.SetGrpcDeadline(deadline)
+	q.Query.SetGrpcDeadline(deadline)
 	return q
 }
 
@@ -134,9 +134,9 @@ func (q *ContractCallQuery) GetFunctionParameters() []byte {
 	return q.functionParameters
 }
 
-// Execute executes the Query with the provided client
+// Execute executes the QueryInterface with the provided client
 func (q *ContractCallQuery) Execute(client *Client) (ContractFunctionResult, error) {
-	resp, err := q.query.execute(client)
+	resp, err := q.Query.execute(client)
 
 	if err != nil {
 		return ContractFunctionResult{}, err
@@ -145,40 +145,40 @@ func (q *ContractCallQuery) Execute(client *Client) (ContractFunctionResult, err
 	return _ContractFunctionResultFromProtobuf(resp.GetContractCallLocal().FunctionResult), nil
 }
 
-// SetMaxQueryPayment sets the maximum payment allowed for this Query.
+// SetMaxQueryPayment sets the maximum payment allowed for this QueryInterface.
 func (q *ContractCallQuery) SetMaxQueryPayment(maxPayment Hbar) *ContractCallQuery {
-	q.query.SetMaxQueryPayment(maxPayment)
+	q.Query.SetMaxQueryPayment(maxPayment)
 	return q
 }
 
-// SetQueryPayment sets the payment amount for this Query.
+// SetQueryPayment sets the payment amount for this QueryInterface.
 func (q *ContractCallQuery) SetQueryPayment(paymentAmount Hbar) *ContractCallQuery {
-	q.query.SetQueryPayment(paymentAmount)
+	q.Query.SetQueryPayment(paymentAmount)
 	return q
 }
 
 // SetNodeAccountIDs sets the _Node AccountID for this ContractCallQuery.
 func (q *ContractCallQuery) SetNodeAccountIDs(accountID []AccountID) *ContractCallQuery {
-	q.query.SetNodeAccountIDs(accountID)
+	q.Query.SetNodeAccountIDs(accountID)
 	return q
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
 func (q *ContractCallQuery) SetMaxRetry(count int) *ContractCallQuery {
-	q.query.SetMaxRetry(count)
+	q.Query.SetMaxRetry(count)
 	return q
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
 // Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (q *ContractCallQuery) SetMaxBackoff(max time.Duration) *ContractCallQuery {
-	q.query.SetMaxBackoff(max)
+	q.Query.SetMaxBackoff(max)
 	return q
 }
 
 // SetMinBackoff sets the minimum amount of time to wait between retries.
 func (q *ContractCallQuery) SetMinBackoff(min time.Duration) *ContractCallQuery {
-	q.query.SetMinBackoff(min)
+	q.Query.SetMinBackoff(min)
 	return q
 }
 
@@ -189,7 +189,7 @@ func (q *ContractCallQuery) SetPaymentTransactionID(transactionID TransactionID)
 }
 
 func (q *ContractCallQuery) SetLogLevel(level LogLevel) *ContractCallQuery {
-	q.query.SetLogLevel(level)
+	q.Query.SetLogLevel(level)
 	return q
 }
 

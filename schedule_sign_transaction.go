@@ -34,7 +34,7 @@ import (
 // Otherwise, if the resulting set of signing keys satisfy the
 // scheduled transaction's signing requirements, it will be executed immediately after the
 // triggering ScheduleSign.
-// Upon SUCCESS, the receipt includes the scheduledTransactionID to use to query
+// Upon SUCCESS, the receipt includes the scheduledTransactionID to use to Query
 // for the record of the scheduled transaction's execution (if it occurs).
 type ScheduleSignTransaction struct {
 	Transaction
@@ -47,7 +47,7 @@ type ScheduleSignTransaction struct {
 // Otherwise, if the resulting set of signing keys satisfy the
 // scheduled transaction's signing requirements, it will be executed immediately after the
 // triggering ScheduleSign.
-// Upon SUCCESS, the receipt includes the scheduledTransactionID to use to query
+// Upon SUCCESS, the receipt includes the scheduledTransactionID to use to Query
 // for the record of the scheduled transaction's execution (if it occurs).
 func NewScheduleSignTransaction() *ScheduleSignTransaction {
 	tx := ScheduleSignTransaction{

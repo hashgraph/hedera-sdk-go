@@ -32,7 +32,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// AddressBookQuery query an address book for its list of nodes
+// AddressBookQuery Query an address book for its list of nodes
 type AddressBookQuery struct {
 	attempt     uint64
 	maxAttempts uint64
@@ -40,7 +40,7 @@ type AddressBookQuery struct {
 	limit       int32
 }
 
-// Query the mirror node for the address book.
+// QueryInterface the mirror node for the address book.
 func NewAddressBookQuery() *AddressBookQuery {
 	return &AddressBookQuery{
 		fileID: nil,
@@ -108,7 +108,7 @@ func (q *AddressBookQuery) build() *mirror.AddressBookQuery {
 	return body
 }
 
-// Execute executes the Query with the provided client
+// Execute executes the QueryInterface with the provided client
 func (q *AddressBookQuery) Execute(client *Client) (NodeAddressBook, error) {
 	var cancel func()
 	var ctx context.Context
