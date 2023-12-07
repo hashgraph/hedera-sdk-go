@@ -698,6 +698,13 @@ func (tx *TokenCreateTransaction) getMethod(channel *_Channel) _Method {
 		transaction: channel._GetToken().CreateToken,
 	}
 }
+
+func (tx *TokenCreateTransaction) preFreezeWith(client *Client) {
+	if tx.autoRenewAccountID == nil && tx.autoRenewPeriod != nil && client != nil && !client.GetOperatorAccountID()._IsZero() {
+		tx.SetAutoRenewAccount(client.GetOperatorAccountID())
+	}
+}
+
 func (tx *TokenCreateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }

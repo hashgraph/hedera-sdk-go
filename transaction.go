@@ -48,6 +48,7 @@ type TransactionInterface interface {
 
 	build() *services.TransactionBody
 	buildScheduled() (*services.SchedulableTransactionBody, error)
+	preFreezeWith(*Client)
 }
 
 // Transaction is base struct for all transactions that may be built and submitted to Hedera.
@@ -919,6 +920,8 @@ func (tx *Transaction) FreezeWith(client *Client) (TransactionInterface, error) 
 	if tx.IsFrozen() {
 		return tx, nil
 	}
+
+	tx.e.(TransactionInterface).preFreezeWith(client)
 
 	tx._InitFee(client)
 	if err := tx._InitTransactionID(client); err != nil {
@@ -4842,6 +4845,10 @@ func (tx *Transaction) getName() string {
 // Building empty object as "default" implementation. All inhertents must implement their own implementation.
 func (tx *Transaction) validateNetworkOnIDs(client *Client) error {
 	return errors.New("Function not implemented")
+}
+
+func (tx *Transaction) preFreezeWith(*Client) {
+	// NO-OP
 }
 
 func (tx *Transaction) isTransaction() bool {
