@@ -327,7 +327,7 @@ func TestUnitTopicCreateTransactionSerialization(t *testing.T) {
 	txParsed, err := TransactionFromBytes(transactionBytes)
 	require.NoError(t, err)
 
-	result, ok := txParsed.(TopicCreateTransaction)
+	result, ok := txParsed.(*TopicCreateTransaction)
 	require.True(t, ok)
 
 	require.Equal(t, topicCreate.GetTopicMemo(), result.GetTopicMemo())
