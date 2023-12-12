@@ -21,6 +21,7 @@ package hedera
  */
 
 import (
+	"github.com/pkg/errors"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -152,6 +153,93 @@ func (tx *FileCreateTransaction) SetMemo(memo string) *FileCreateTransaction {
 // GetMemo returns the memo associated with the file (UTF-8 encoding max 100 bytes)
 func (tx *FileCreateTransaction) GetMemo() string {
 	return tx.memo
+}
+
+// Execute executes the Transaction with the provided client
+func (tx *FileAppendTransaction) Execute(
+	client *Client,
+) (TransactionResponse, error) {
+	if client == nil {
+		return TransactionResponse{}, errNoClientProvided
+	}
+
+	if tx.freezeError != nil {
+		return TransactionResponse{}, tx.freezeError
+	}
+
+	list, err := tx.ExecuteAll(client)
+
+	if err != nil {
+		if len(list) > 0 {
+			return TransactionResponse{
+				TransactionID: tx.GetTransactionID(),
+				NodeID:        list[0].NodeID,
+				Hash:          make([]byte, 0),
+			}, err
+		}
+		return TransactionResponse{
+			TransactionID: tx.GetTransactionID(),
+			Hash:          make([]byte, 0),
+		}, err
+	}
+
+	return list[0], nil
+}
+
+// ExecuteAll executes the all the Transactions with the provided client
+func (tx *FileAppendTransaction) ExecuteAll(
+	client *Client,
+) ([]TransactionResponse, error) {
+	if client == nil || client.operator == nil {
+		return []TransactionResponse{}, errNoClientProvided
+	}
+
+	if !tx.IsFrozen() {
+		_, err := tx.FreezeWith(client)
+		if err != nil {
+			return []TransactionResponse{}, err
+		}
+	}
+
+	var transactionID TransactionID
+	if tx.transactionIDs._Length() > 0 {
+		transactionID = tx.GetTransactionID()
+	} else {
+		return []TransactionResponse{}, errors.New("transactionID list is empty")
+	}
+
+	if !client.GetOperatorAccountID()._IsZero() && client.GetOperatorAccountID()._Equals(*transactionID.AccountID) {
+		tx.SignWith(
+			client.GetOperatorPublicKey(),
+			client.operator.signer,
+		)
+	}
+
+	size := tx.signedTransactions._Length() / tx.nodeAccountIDs._Length()
+	list := make([]TransactionResponse, size)
+
+	for i := 0; i < size; i++ {
+		resp, err := _Execute(
+			client,
+			tx.e,
+		)
+
+		if err != nil {
+			return list, err
+		}
+
+		list[i] = resp.(TransactionResponse)
+
+		_, err = NewTransactionReceiptQuery().
+			SetNodeAccountIDs([]AccountID{resp.(TransactionResponse).NodeID}).
+			SetTransactionID(resp.(TransactionResponse).TransactionID).
+			Execute(client)
+		if err != nil {
+			return list, err
+		}
+	}
+
+	return list, nil
 }
 
 // ---- Required Interfaces ---- //
