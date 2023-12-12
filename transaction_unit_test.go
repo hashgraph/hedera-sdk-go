@@ -282,7 +282,7 @@ func TestUnitTransactionToFromBytes(t *testing.T) {
 
 	newTransaction, err := TransactionFromBytes(txBytes)
 
-	_ = protobuf.Unmarshal(newTransaction.(TransferTransaction).signedTransactions._Get(0).(*services.SignedTransaction).BodyBytes, &tx)
+	_ = protobuf.Unmarshal(newTransaction.(*TransferTransaction).signedTransactions._Get(0).(*services.SignedTransaction).BodyBytes, &tx)
 	require.Equal(t, tx.TransactionID.String(), testTransactionID._ToProtobuf().String())
 	require.Equal(t, tx.NodeAccountID.String(), node[0]._ToProtobuf().String())
 	require.Equal(t, tx.Memo, "go sdk example multi_app_transfer/main.go")

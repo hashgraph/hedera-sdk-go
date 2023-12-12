@@ -61,7 +61,6 @@ func TestIntegrationTestnetTls(t *testing.T) {
 		"3.testnet.hedera.com:50212": {Account: 6},
 		"4.testnet.hedera.com:50212": {Account: 7},
 	}
-
 	client := ClientForNetwork(network)
 	ledger, _ := LedgerIDFromNetworkName(NetworkNameTestnet)
 	client.SetTransportSecurity(true)
