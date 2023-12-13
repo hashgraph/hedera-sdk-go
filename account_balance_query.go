@@ -93,13 +93,32 @@ func (q *AccountBalanceQuery) GetContractID() ContractID {
 
 // Execute executes the QueryInterface with the provided client
 func (q *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error) {
-	resp, err := q.Query.execute(client)
-
-	if err != nil {
-		return AccountBalance{}, nil
+	if client == nil {
+		return AccountBalance{}, errNoClientProvided
 	}
 
-	return _AccountBalanceFromProtobuf(resp.GetCryptogetAccountBalance()), nil
+	var err error
+
+	err = q.validateNetworkOnIDs(client)
+	if err != nil {
+		return AccountBalance{}, err
+	}
+
+	q.timestamp = time.Now()
+	q.paymentTransactions = make([]*services.Transaction, 0)
+	q.pb = q.buildQuery()
+
+	resp, err := _Execute(
+		client,
+		q.e,
+	)
+
+	if err != nil {
+		return AccountBalance{}, err
+	}
+
+	return _AccountBalanceFromProtobuf(resp.(*services.Response).GetCryptogetAccountBalance()), nil
+
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this QueryInterface.
@@ -161,8 +180,8 @@ func (q *AccountBalanceQuery) getName() string {
 	return "AccountBalanceQuery"
 }
 
-func (q *AccountBalanceQuery) buildQuery() *services.Query {
-	pb := services.CryptoGetAccountBalanceQuery{Header: q.pbHeader}
+func (q *AccountBalanceQuery) buildProtoBody() *services.CryptoGetAccountBalanceQuery {
+	pb := services.CryptoGetAccountBalanceQuery{Header: &services.QueryHeader{}}
 
 	if q.accountID != nil {
 		pb.BalanceSource = &services.CryptoGetAccountBalanceQuery_AccountID{
@@ -175,10 +194,14 @@ func (q *AccountBalanceQuery) buildQuery() *services.Query {
 			ContractID: q.contractID._ToProtobuf(),
 		}
 	}
+	return &pb
+}
+func (q *AccountBalanceQuery) buildQuery() *services.Query {
+	pb := q.buildProtoBody()
 
 	return &services.Query{
 		Query: &services.Query_CryptogetAccountBalance{
-			CryptogetAccountBalance: &pb,
+			CryptogetAccountBalance: pb,
 		},
 	}
 }

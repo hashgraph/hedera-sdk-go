@@ -210,9 +210,7 @@ func (q *Query) SetPaymentTransactionID(transactionID TransactionID) *Query {
 }
 
 func (q *Query) execute(client *Client) (*services.Response, error) {
-	// Check if query is AccountBalanceQuery, because AccountBalanceQuery could be executed without operator
-	_, ok := interface{}(q).(AccountBalanceQuery)
-	if client == nil || (!ok && client.operator == nil) {
+	if client == nil || client.operator == nil {
 		return nil, errNoClientProvided
 	}
 
