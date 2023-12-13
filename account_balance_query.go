@@ -96,7 +96,7 @@ func (q *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error) {
 	resp, err := q.Query.execute(client)
 
 	if err != nil {
-		return AccountBalance{}, err
+		return AccountBalance{}, nil
 	}
 
 	return _AccountBalanceFromProtobuf(resp.GetCryptogetAccountBalance()), nil
