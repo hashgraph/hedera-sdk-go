@@ -172,7 +172,7 @@ func (tx *ScheduleCreateTransaction) GetScheduleMemo() string {
 
 // SetScheduledTransaction Sets the scheduled transaction
 func (tx *ScheduleCreateTransaction) SetScheduledTransaction(scheduledTx ITransaction) (*ScheduleCreateTransaction, error) {
-	//TODO(Toni): This must be fixed before refactor is merged
+	// TODO(Toni): This must be fixed before refactor is merged
 	tx._RequireNotFrozen()
 
 	scheduled, err := scheduledTx._ConstructScheduleProtobuf()

@@ -100,7 +100,7 @@ func (q *TransactionReceiptQuery) GetIncludeDuplicates() bool {
 
 // Execute executes the QueryInterface with the provided client
 func (q *TransactionReceiptQuery) Execute(client *Client) (TransactionReceipt, error) {
-	//TODO(Toni): Custom execute here, should be checked against the common execute
+	// TODO(Toni): Custom execute here, should be checked against the common execute
 	if client == nil {
 		return TransactionReceipt{}, errNoClientProvided
 	}

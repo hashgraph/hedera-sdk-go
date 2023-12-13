@@ -378,21 +378,7 @@ func (tx *FileCreateTransaction) getName() string {
 	return "FileCreateTransaction"
 }
 func (tx *FileCreateTransaction) build() *services.TransactionBody {
-	body := &services.FileCreateTransactionBody{
-		Memo: tx.memo,
-	}
-
-	if tx.expirationTime != nil {
-		body.ExpirationTime = _TimeToProtobuf(*tx.expirationTime)
-	}
-
-	if tx.keys != nil {
-		body.Keys = tx.keys._ToProtoKeyList()
-	}
-
-	if tx.contents != nil {
-		body.Contents = tx.contents
-	}
+	body := tx.buildProtoBody()
 
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
@@ -410,21 +396,7 @@ func (tx *FileCreateTransaction) validateNetworkOnIDs(client *Client) error {
 }
 
 func (tx *FileCreateTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
-	body := &services.FileCreateTransactionBody{
-		Memo: tx.memo,
-	}
-
-	if tx.expirationTime != nil {
-		body.ExpirationTime = _TimeToProtobuf(*tx.expirationTime)
-	}
-
-	if tx.keys != nil {
-		body.Keys = tx.keys._ToProtoKeyList()
-	}
-
-	if tx.contents != nil {
-		body.Contents = tx.contents
-	}
+	body := tx.buildProtoBody()
 
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,

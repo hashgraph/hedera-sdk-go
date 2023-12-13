@@ -69,6 +69,7 @@ func _NewQuery(isPaymentRequired bool, header *services.QueryHeader) Query {
 		isPaymentRequired:     isPaymentRequired,
 		maxQueryPayment:       NewHbar(0),
 		queryPayment:          NewHbar(0),
+		timestamp:             time.Now(),
 		executable: executable{
 			nodeAccountIDs: _NewLockableSlice(),
 			maxBackoff:     &maxBackoff,
@@ -323,7 +324,7 @@ func (q *Query) makeRequest() interface{} {
 	return q.pb
 }
 
-func (q *Query) mapResponse(response interface{}, _ AccountID, protoRequest interface{}) (interface{}, error) {
+func (q *Query) mapResponse(response interface{}, _ AccountID, _ interface{}) (interface{}, error) {
 	return response.(*services.Response), nil
 }
 

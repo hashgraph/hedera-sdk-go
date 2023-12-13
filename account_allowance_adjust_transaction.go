@@ -306,7 +306,7 @@ func (tx *AccountAllowanceAdjustTransaction) SetMinBackoff(min time.Duration) *A
 	return tx
 }
 
-// ----------- overriden functions ----------------
+// ----------- overridden functions ----------------
 
 func (transaction *AccountAllowanceAdjustTransaction) getName() string {
 	return "AccountAllowanceAdjustTransaction"

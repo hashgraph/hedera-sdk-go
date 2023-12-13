@@ -253,7 +253,7 @@ func (tx *AccountAllowanceDeleteTransaction) SetMinBackoff(min time.Duration) *A
 	return tx
 }
 
-// ----------- overriden functions ----------------
+// ----------- overridden functions ----------------
 func (tx *AccountAllowanceDeleteTransaction) getName() string {
 	return "AccountAllowanceDeleteTransaction"
 }
