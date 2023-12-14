@@ -60,11 +60,10 @@ func _AccountAllowanceDeleteTransactionFromProtobuf(transaction Transaction, pb 
 		nftWipe = append(nftWipe, &temp)
 	}
 
-	resultTx := &AccountAllowanceDeleteTransaction{
+	return &AccountAllowanceDeleteTransaction{
 		Transaction: transaction,
 		nftWipe:     nftWipe,
 	}
-	return resultTx
 }
 
 // Deprecated
@@ -159,7 +158,7 @@ func (tx *AccountAllowanceDeleteTransaction) SignWithOperator(
 	return tx, nil
 }
 
-// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
 // with the publicKey as the map key.
 func (tx *AccountAllowanceDeleteTransaction) SignWith(
 	publicKey PublicKey,
@@ -190,7 +189,7 @@ func (tx *AccountAllowanceDeleteTransaction) FreezeWith(client *Client) (*Accoun
 	return tx, err
 }
 
-// SetMaxTransactionFee sets the max transaction fee for tx AccountAllowanceDeleteTransaction.
+// SetMaxTransactionFee sets the max transaction fee for this AccountAllowanceDeleteTransaction.
 func (tx *AccountAllowanceDeleteTransaction) SetMaxTransactionFee(fee Hbar) *AccountAllowanceDeleteTransaction {
 	tx._RequireNotFrozen()
 	tx.Transaction.SetMaxTransactionFee(fee)
@@ -204,19 +203,19 @@ func (tx *AccountAllowanceDeleteTransaction) SetRegenerateTransactionID(regenera
 	return tx
 }
 
-// SetTransactionMemo sets the memo for tx AccountAllowanceDeleteTransaction.
+// SetTransactionMemo sets the memo for this AccountAllowanceDeleteTransaction.
 func (tx *AccountAllowanceDeleteTransaction) SetTransactionMemo(memo string) *AccountAllowanceDeleteTransaction {
 	tx.Transaction.SetTransactionMemo(memo)
 	return tx
 }
 
-// SetTransactionValidDuration sets the valid duration for tx AccountAllowanceDeleteTransaction.
+// SetTransactionValidDuration sets the valid duration for this AccountAllowanceDeleteTransaction.
 func (tx *AccountAllowanceDeleteTransaction) SetTransactionValidDuration(duration time.Duration) *AccountAllowanceDeleteTransaction {
 	tx.Transaction.SetTransactionValidDuration(duration)
 	return tx
 }
 
-// SetTransactionID sets the TransactionID for tx AccountAllowanceDeleteTransaction.
+// SetTransactionID sets the TransactionID for this AccountAllowanceDeleteTransaction.
 func (tx *AccountAllowanceDeleteTransaction) SetTransactionID(transactionID TransactionID) *AccountAllowanceDeleteTransaction {
 	tx._RequireNotFrozen()
 
@@ -224,7 +223,7 @@ func (tx *AccountAllowanceDeleteTransaction) SetTransactionID(transactionID Tran
 	return tx
 }
 
-// SetNodeAccountIDs sets the _Node AccountID for tx AccountAllowanceDeleteTransaction.
+// SetNodeAccountIDs sets the _Node AccountID for this AccountAllowanceDeleteTransaction.
 func (tx *AccountAllowanceDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *AccountAllowanceDeleteTransaction {
 	tx._RequireNotFrozen()
 	tx.Transaction.SetNodeAccountIDs(nodeID)
@@ -238,13 +237,13 @@ func (tx *AccountAllowanceDeleteTransaction) SetMaxRetry(count int) *AccountAllo
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches tx time.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (tx *AccountAllowanceDeleteTransaction) SetMaxBackoff(max time.Duration) *AccountAllowanceDeleteTransaction {
 	tx.Transaction.SetMaxBackoff(max)
 	return tx
 }
 
-// SetMinBackoff sets the min back off for tx AccountAllowanceDeleteTransaction.
+// SetMinBackoff sets the min back off for this AccountAllowanceDeleteTransaction.
 func (tx *AccountAllowanceDeleteTransaction) SetMinBackoff(min time.Duration) *AccountAllowanceDeleteTransaction {
 	tx.Transaction.SetMinBackoff(min)
 	return tx

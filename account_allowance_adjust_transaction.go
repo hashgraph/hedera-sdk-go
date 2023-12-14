@@ -193,7 +193,6 @@ func (tx *AccountAllowanceAdjustTransaction) GetTokenNftAllowances() []*TokenNft
 	return tx.nftAllowances
 }
 
-// Deprecated
 func (tx *AccountAllowanceAdjustTransaction) Sign(
 	privateKey PrivateKey,
 ) *AccountAllowanceAdjustTransaction {
@@ -201,7 +200,6 @@ func (tx *AccountAllowanceAdjustTransaction) Sign(
 	return tx
 }
 
-// Deprecated
 func (tx *AccountAllowanceAdjustTransaction) SignWithOperator(
 	client *Client,
 ) (*AccountAllowanceAdjustTransaction, error) {
@@ -214,7 +212,6 @@ func (tx *AccountAllowanceAdjustTransaction) SignWithOperator(
 	return tx, nil
 }
 
-// Deprecated
 func (tx *AccountAllowanceAdjustTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
@@ -223,18 +220,16 @@ func (tx *AccountAllowanceAdjustTransaction) SignWith(
 	return tx
 }
 
-// Deprecated
 func (tx *AccountAllowanceAdjustTransaction) Freeze() (*AccountAllowanceAdjustTransaction, error) {
 	return tx.FreezeWith(nil)
 }
 
-// Deprecated
 func (tx *AccountAllowanceAdjustTransaction) FreezeWith(client *Client) (*AccountAllowanceAdjustTransaction, error) {
 	_, err := tx.Transaction.freezeWith(client, tx)
 	return tx, err
 }
 
-// SetMaxTransactionFee sets the max transaction fee for tx AccountAllowanceAdjustTransaction.
+// SetMaxTransactionFee sets the max transaction fee for this AccountAllowanceAdjustTransaction.
 func (tx *AccountAllowanceAdjustTransaction) SetMaxTransactionFee(fee Hbar) *AccountAllowanceAdjustTransaction {
 	tx._RequireNotFrozen()
 	tx.Transaction.SetMaxTransactionFee(fee)
@@ -248,29 +243,21 @@ func (tx *AccountAllowanceAdjustTransaction) SetRegenerateTransactionID(regenera
 	return tx
 }
 
-// SetTransactionMemo sets the memo for tx AccountAllowanceAdjustTransaction.
+// SetTransactionMemo sets the memo for this AccountAllowanceAdjustTransaction.
 func (tx *AccountAllowanceAdjustTransaction) SetTransactionMemo(memo string) *AccountAllowanceAdjustTransaction {
 	tx._RequireNotFrozen()
 	tx.Transaction.SetTransactionMemo(memo)
 	return tx
 }
 
-func (tx *AccountAllowanceAdjustTransaction) GetTransactionValidDuration() time.Duration {
-	return tx.Transaction.GetTransactionValidDuration()
-}
-
-// SetTransactionValidDuration sets the valid duration for tx AccountAllowanceAdjustTransaction.
+// SetTransactionValidDuration sets the valid duration for this AccountAllowanceAdjustTransaction.
 func (tx *AccountAllowanceAdjustTransaction) SetTransactionValidDuration(duration time.Duration) *AccountAllowanceAdjustTransaction {
 	tx._RequireNotFrozen()
 	tx.Transaction.SetTransactionValidDuration(duration)
 	return tx
 }
 
-func (tx *AccountAllowanceAdjustTransaction) GetTransactionID() TransactionID {
-	return tx.Transaction.GetTransactionID()
-}
-
-// SetTransactionID sets the TransactionID for tx AccountAllowanceAdjustTransaction.
+// SetTransactionID sets the TransactionID for this AccountAllowanceAdjustTransaction.
 func (tx *AccountAllowanceAdjustTransaction) SetTransactionID(transactionID TransactionID) *AccountAllowanceAdjustTransaction {
 	tx._RequireNotFrozen()
 
@@ -278,7 +265,7 @@ func (tx *AccountAllowanceAdjustTransaction) SetTransactionID(transactionID Tran
 	return tx
 }
 
-// SetNodeAccountIDs sets the _Node AccountID for tx AccountAllowanceAdjustTransaction.
+// SetNodeAccountIDs sets the _Node AccountID for this AccountAllowanceAdjustTransaction.
 func (tx *AccountAllowanceAdjustTransaction) SetNodeAccountIDs(nodeID []AccountID) *AccountAllowanceAdjustTransaction {
 	tx.Transaction.SetNodeAccountIDs(nodeID)
 	return tx

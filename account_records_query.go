@@ -40,11 +40,9 @@ type AccountRecordsQuery struct {
 // instead of manually creating an instance of the struct.
 func NewAccountRecordsQuery() *AccountRecordsQuery {
 	header := services.QueryHeader{}
-	result := AccountRecordsQuery{
+	return &AccountRecordsQuery{
 		Query: _NewQuery(true, &header),
 	}
-
-	return &result
 }
 
 // SetGrpcDeadline When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
@@ -72,7 +70,7 @@ func (q *AccountRecordsQuery) GetCost(client *Client) (Hbar, error) {
 	return q.Query.getCost(client, q)
 }
 
-// Execute executes the QueryInterface with the provided client
+// Execute executes the Query with the provided client
 func (q *AccountRecordsQuery) Execute(client *Client) ([]TransactionRecord, error) {
 	resp, err := q.Query.execute(client, q)
 	records := make([]TransactionRecord, 0)
@@ -89,13 +87,13 @@ func (q *AccountRecordsQuery) Execute(client *Client) ([]TransactionRecord, erro
 	return records, err
 }
 
-// SetMaxQueryPayment sets the maximum payment allowed for this QueryInterface.
+// SetMaxQueryPayment sets the maximum payment allowed for this Query.
 func (q *AccountRecordsQuery) SetMaxQueryPayment(maxPayment Hbar) *AccountRecordsQuery {
 	q.Query.SetMaxQueryPayment(maxPayment)
 	return q
 }
 
-// SetQueryPayment sets the payment amount for this QueryInterface.
+// SetQueryPayment sets the payment amount for this Query.
 func (q *AccountRecordsQuery) SetQueryPayment(paymentAmount Hbar) *AccountRecordsQuery {
 	q.Query.SetQueryPayment(paymentAmount)
 	return q

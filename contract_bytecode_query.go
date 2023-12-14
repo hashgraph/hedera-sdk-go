@@ -32,14 +32,13 @@ type ContractBytecodeQuery struct {
 	contractID *ContractID
 }
 
-// NewContractBytecodeQuery creates a ContractBytecodeQuery Query which can be used to construct and execute a
-// Contract Get Bytecode QueryInterface.
+// NewContractBytecodeQuery creates a ContractBytecodeQuery query which can be used to construct and execute a
+// Contract Get Bytecode Query.
 func NewContractBytecodeQuery() *ContractBytecodeQuery {
 	header := services.QueryHeader{}
-	result := ContractBytecodeQuery{
+	return &ContractBytecodeQuery{
 		Query: _NewQuery(true, &header),
 	}
-	return &result
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
@@ -67,7 +66,7 @@ func (q *ContractBytecodeQuery) GetCost(client *Client) (Hbar, error) {
 	return q.Query.getCost(client, q)
 }
 
-// Execute executes the QueryInterface with the provided client
+// Execute executes the Query with the provided client
 func (q *ContractBytecodeQuery) Execute(client *Client) ([]byte, error) {
 	resp, err := q.Query.execute(client, q)
 
@@ -78,13 +77,13 @@ func (q *ContractBytecodeQuery) Execute(client *Client) ([]byte, error) {
 	return resp.GetContractGetBytecodeResponse().Bytecode, nil
 }
 
-// SetMaxQueryPayment sets the maximum payment allowed for this QueryInterface.
+// SetMaxQueryPayment sets the maximum payment allowed for this Query.
 func (q *ContractBytecodeQuery) SetMaxQueryPayment(maxPayment Hbar) *ContractBytecodeQuery {
 	q.Query.SetMaxQueryPayment(maxPayment)
 	return q
 }
 
-// SetQueryPayment sets the payment amount for this QueryInterface.
+// SetQueryPayment sets the payment amount for this Query.
 func (q *ContractBytecodeQuery) SetQueryPayment(paymentAmount Hbar) *ContractBytecodeQuery {
 	q.Query.SetQueryPayment(paymentAmount)
 	return q

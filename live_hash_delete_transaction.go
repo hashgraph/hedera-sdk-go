@@ -48,12 +48,11 @@ func NewLiveHashDeleteTransaction() *LiveHashDeleteTransaction {
 }
 
 func _LiveHashDeleteTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *LiveHashDeleteTransaction {
-	resultTx := &LiveHashDeleteTransaction{
+	return &LiveHashDeleteTransaction{
 		Transaction: tx,
 		accountID:   _AccountIDFromProtobuf(pb.GetCryptoDeleteLiveHash().GetAccountOfLiveHash()),
 		hash:        pb.GetCryptoDeleteLiveHash().LiveHashToDelete,
 	}
-	return resultTx
 }
 
 // SetHash Set the SHA-384 livehash to delete from the account
@@ -101,7 +100,7 @@ func (tx *LiveHashDeleteTransaction) SignWithOperator(client *Client) (*LiveHash
 	return tx, nil
 }
 
-// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
 // with the publicKey as the map key.
 func (tx *LiveHashDeleteTransaction) SignWith(
 	publicKey PublicKey,
@@ -132,7 +131,7 @@ func (tx *LiveHashDeleteTransaction) FreezeWith(client *Client) (*LiveHashDelete
 	return tx, err
 }
 
-// SetMaxTransactionFee sets the max transaction fee for this LiveHashDeleteTransaction.
+// SetMaxTransactionFee sets the maximum transaction fee for this LiveHashDeleteTransaction.
 func (tx *LiveHashDeleteTransaction) SetMaxTransactionFee(fee Hbar) *LiveHashDeleteTransaction {
 	tx.Transaction.SetMaxTransactionFee(fee)
 	return tx

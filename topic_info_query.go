@@ -26,22 +26,20 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
-// TopicInfo is the QueryInterface for retrieving information about a topic stored on the Hedera network.
+// TopicInfo is the Query for retrieving information about a topic stored on the Hedera network.
 type TopicInfoQuery struct {
 	Query
 	topicID *TopicID
 }
 
-// NewTopicInfoQuery creates a TopicInfoQuery Query which can be used to construct and execute a
+// NewTopicInfoQuery creates a TopicInfoQuery query which can be used to construct and execute a
 //
-//	Get Topic Info QueryInterface.
+//	Get Topic Info Query.
 func NewTopicInfoQuery() *TopicInfoQuery {
 	header := services.QueryHeader{}
-	result := TopicInfoQuery{
+	return &TopicInfoQuery{
 		Query: _NewQuery(true, &header),
 	}
-
-	return &result
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
@@ -80,13 +78,13 @@ func (q *TopicInfoQuery) Execute(client *Client) (TopicInfo, error) {
 	return _TopicInfoFromProtobuf(resp.GetConsensusGetTopicInfo().TopicInfo)
 }
 
-// SetMaxQueryPayment sets the maximum payment allowed for this QueryInterface.
+// SetMaxQueryPayment sets the maximum payment allowed for this Query.
 func (q *TopicInfoQuery) SetMaxQueryPayment(maxPayment Hbar) *TopicInfoQuery {
 	q.Query.SetMaxQueryPayment(maxPayment)
 	return q
 }
 
-// SetQueryPayment sets the payment amount for this QueryInterface.
+// SetQueryPayment sets the payment amount for this Query.
 func (q *TopicInfoQuery) SetQueryPayment(paymentAmount Hbar) *TopicInfoQuery {
 	q.Query.SetQueryPayment(paymentAmount)
 	return q

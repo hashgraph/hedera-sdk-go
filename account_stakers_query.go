@@ -33,18 +33,16 @@ type AccountStakersQuery struct {
 	accountID *AccountID
 }
 
-// NewAccountStakersQuery creates an AccountStakersQuery Query which can be used to construct and execute
+// NewAccountStakersQuery creates an AccountStakersQuery query which can be used to construct and execute
 // an AccountStakersQuery.
 //
 // It is recommended that you use this for creating new instances of an AccountStakersQuery
 // instead of manually creating an instance of the struct.
 func NewAccountStakersQuery() *AccountStakersQuery {
 	header := services.QueryHeader{}
-	result := AccountStakersQuery{
+	return &AccountStakersQuery{
 		Query: _NewQuery(true, &header),
 	}
-
-	return &result
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
@@ -72,7 +70,7 @@ func (q *AccountStakersQuery) GetCost(client *Client) (Hbar, error) {
 	return q.Query.getCost(client, q)
 }
 
-// Execute executes the QueryInterface with the provided client
+// Execute executes the Query with the provided client
 func (q *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) {
 	resp, err := q.Query.execute(client, q)
 
@@ -100,13 +98,13 @@ func (q *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) {
 	return stakers, err
 }
 
-// SetMaxQueryPayment sets the maximum payment allowed for this QueryInterface.
+// SetMaxQueryPayment sets the maximum payment allowed for this Query.
 func (q *AccountStakersQuery) SetMaxQueryPayment(maxPayment Hbar) *AccountStakersQuery {
 	q.Query.SetMaxQueryPayment(maxPayment)
 	return q
 }
 
-// SetQueryPayment sets the payment amount for this QueryInterface.
+// SetQueryPayment sets the payment amount for this Query.
 func (q *AccountStakersQuery) SetQueryPayment(paymentAmount Hbar) *AccountStakersQuery {
 	q.Query.SetQueryPayment(paymentAmount)
 	return q

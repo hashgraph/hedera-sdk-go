@@ -239,14 +239,14 @@ func (pk _ECDSAPublicKey) _Verify(message []byte, signature []byte) bool {
 	return crypto.VerifySignature(pk._BytesRaw(), message, signature)
 }
 
-func (pk _ECDSAPublicKey) _VerifyTransaction(trx Transaction) bool {
-	if trx.signedTransactions._Length() == 0 {
+func (pk _ECDSAPublicKey) _VerifyTransaction(tx Transaction) bool {
+	if tx.signedTransactions._Length() == 0 {
 		return false
 	}
 
-	_, _ = trx._BuildAllTransactions()
+	_, _ = tx._BuildAllTransactions()
 
-	for _, value := range trx.signedTransactions.slice {
+	for _, value := range tx.signedTransactions.slice {
 		tx := value.(*services.SignedTransaction)
 		found := false
 		for _, sigPair := range tx.SigMap.GetSigPair() {

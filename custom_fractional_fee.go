@@ -132,7 +132,7 @@ func _CustomFractionalFeeFromProtobuf(fractionalFee *services.FractionalFee, fee
 	}
 }
 
-func (fee CustomFractionalFee) validateNetworkOnIDs(client *Client) error {
+func (fee *CustomFractionalFee) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -154,7 +154,7 @@ func (fee *CustomFractionalFee) SetAllCollectorsAreExempt(exempt bool) *CustomFr
 	return fee
 }
 
-func (fee CustomFractionalFee) _ToProtobuf() *services.CustomFee {
+func (fee *CustomFractionalFee) _ToProtobuf() *services.CustomFee {
 	var FeeCollectorAccountID *services.AccountID
 	if fee.FeeCollectorAccountID != nil {
 		FeeCollectorAccountID = fee.CustomFee.FeeCollectorAccountID._ToProtobuf()

@@ -35,11 +35,9 @@ type TokenInfoQuery struct {
 // NewTokenInfoQuery creates a TokenInfoQuery which is used get information about Token instance
 func NewTokenInfoQuery() *TokenInfoQuery {
 	header := services.QueryHeader{}
-	result := TokenInfoQuery{
+	return &TokenInfoQuery{
 		Query: _NewQuery(true, &header),
 	}
-
-	return &result
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
@@ -80,13 +78,13 @@ func (q *TokenInfoQuery) Execute(client *Client) (TokenInfo, error) {
 	return info, nil
 }
 
-// SetMaxQueryPayment sets the maximum payment allowed for this QueryInterface.
+// SetMaxQueryPayment sets the maximum payment allowed for this Query.
 func (q *TokenInfoQuery) SetMaxQueryPayment(maxPayment Hbar) *TokenInfoQuery {
 	q.Query.SetMaxQueryPayment(maxPayment)
 	return q
 }
 
-// SetQueryPayment sets the payment amount for this QueryInterface.
+// SetQueryPayment sets the payment amount for this Query.
 func (q *TokenInfoQuery) SetQueryPayment(paymentAmount Hbar) *TokenInfoQuery {
 	q.Query.SetQueryPayment(paymentAmount)
 	return q

@@ -47,11 +47,10 @@ func NewScheduleDeleteTransaction() *ScheduleDeleteTransaction {
 }
 
 func _ScheduleDeleteTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *ScheduleDeleteTransaction {
-	resultTx := &ScheduleDeleteTransaction{
+	return &ScheduleDeleteTransaction{
 		Transaction: tx,
 		scheduleID:  _ScheduleIDFromProtobuf(pb.GetScheduleDelete().GetScheduleID()),
 	}
-	return resultTx
 }
 
 // SetScheduleID Sets the ScheduleID of the scheduled transaction to be deleted
@@ -86,7 +85,7 @@ func (tx *ScheduleDeleteTransaction) SignWithOperator(client *Client) (*Schedule
 	return tx, nil
 }
 
-// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
 // with the publicKey as the map key.
 func (tx *ScheduleDeleteTransaction) SignWith(
 	publicKey PublicKey,

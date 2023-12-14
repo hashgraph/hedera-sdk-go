@@ -62,7 +62,7 @@ func _FileUpdateTransactionFromProtobuf(tx Transaction, pb *services.Transaction
 	keys, _ := _KeyListFromProtobuf(pb.GetFileUpdate().GetKeys())
 	expiration := _TimeFromProtobuf(pb.GetFileUpdate().GetExpirationTime())
 
-	resultTx := &FileUpdateTransaction{
+	return &FileUpdateTransaction{
 		Transaction:    tx,
 		fileID:         _FileIDFromProtobuf(pb.GetFileUpdate().GetFileID()),
 		keys:           &keys,
@@ -70,7 +70,6 @@ func _FileUpdateTransactionFromProtobuf(tx Transaction, pb *services.Transaction
 		contents:       pb.GetFileUpdate().GetContents(),
 		memo:           pb.GetFileUpdate().GetMemo().Value,
 	}
-	return resultTx
 }
 
 // SetFileID Sets the FileID to be updated
@@ -180,7 +179,7 @@ func (tx *FileUpdateTransaction) SignWithOperator(
 	return tx, nil
 }
 
-// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
 // with the publicKey as the map key.
 func (tx *FileUpdateTransaction) SignWith(
 	publicKey PublicKey,
@@ -225,21 +224,21 @@ func (tx *FileUpdateTransaction) SetRegenerateTransactionID(regenerateTransactio
 	return tx
 }
 
-// SetTransactionMemo sets the memo for tx FileUpdateTransaction.
+// SetTransactionMemo sets the memo for this FileUpdateTransaction.
 func (tx *FileUpdateTransaction) SetTransactionMemo(memo string) *FileUpdateTransaction {
 	tx._RequireNotFrozen()
 	tx.Transaction.SetTransactionMemo(memo)
 	return tx
 }
 
-// SetTransactionValidDuration sets the valid duration for tx FileUpdateTransaction.
+// SetTransactionValidDuration sets the valid duration for this FileUpdateTransaction.
 func (tx *FileUpdateTransaction) SetTransactionValidDuration(duration time.Duration) *FileUpdateTransaction {
 	tx._RequireNotFrozen()
 	tx.Transaction.SetTransactionValidDuration(duration)
 	return tx
 }
 
-// SetTransactionID sets the TransactionID for tx FileUpdateTransaction.
+// SetTransactionID sets the TransactionID for this FileUpdateTransaction.
 func (tx *FileUpdateTransaction) SetTransactionID(transactionID TransactionID) *FileUpdateTransaction {
 	tx._RequireNotFrozen()
 
@@ -247,7 +246,7 @@ func (tx *FileUpdateTransaction) SetTransactionID(transactionID TransactionID) *
 	return tx
 }
 
-// SetNodeAccountID sets the _Node AccountID for tx FileUpdateTransaction.
+// SetNodeAccountID sets the _Node AccountID for this FileUpdateTransaction.
 func (tx *FileUpdateTransaction) SetNodeAccountIDs(nodeID []AccountID) *FileUpdateTransaction {
 	tx._RequireNotFrozen()
 	tx.Transaction.SetNodeAccountIDs(nodeID)
@@ -261,7 +260,7 @@ func (tx *FileUpdateTransaction) SetMaxRetry(count int) *FileUpdateTransaction {
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches tx time.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (tx *FileUpdateTransaction) SetMaxBackoff(max time.Duration) *FileUpdateTransaction {
 	tx.Transaction.SetMaxBackoff(max)
 	return tx

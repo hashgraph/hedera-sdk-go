@@ -64,7 +64,7 @@ func _ScheduleCreateTransactionFromProtobuf(tx Transaction, pb *services.Transac
 		expirationTime = _TimeFromProtobuf(pb.GetScheduleCreate().GetExpirationTime())
 	}
 
-	resultTx := &ScheduleCreateTransaction{
+	return &ScheduleCreateTransaction{
 		Transaction:     tx,
 		payerAccountID:  _AccountIDFromProtobuf(pb.GetScheduleCreate().GetPayerAccountID()),
 		adminKey:        key,
@@ -73,7 +73,6 @@ func _ScheduleCreateTransactionFromProtobuf(tx Transaction, pb *services.Transac
 		expirationTime:  &expirationTime,
 		waitForExpiry:   pb.GetScheduleCreate().WaitForExpiry,
 	}
-	return resultTx
 }
 
 // SetPayerAccountID Sets an optional id of the account to be charged the service fee for the scheduled transaction at
@@ -198,7 +197,7 @@ func (tx *ScheduleCreateTransaction) SignWithOperator(client *Client) (*Schedule
 	return tx, nil
 }
 
-// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
 // with the publicKey as the map key.
 func (tx *ScheduleCreateTransaction) SignWith(
 	publicKey PublicKey,
@@ -214,7 +213,7 @@ func (tx *ScheduleCreateTransaction) AddSignature(publicKey PublicKey, signature
 	return tx
 }
 
-// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
+// SetGrpcDeadline When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (tx *ScheduleCreateTransaction) SetGrpcDeadline(deadline *time.Duration) *ScheduleCreateTransaction {
 	tx.Transaction.SetGrpcDeadline(deadline)
 	return tx
@@ -229,7 +228,7 @@ func (tx *ScheduleCreateTransaction) FreezeWith(client *Client) (*ScheduleCreate
 	return tx, err
 }
 
-// SetMaxTransactionFee sets the max transaction fee for this ScheduleCreateTransaction.
+// SetMaxTransactionFee sets the maximum transaction fee for this ScheduleCreateTransaction.
 func (tx *ScheduleCreateTransaction) SetMaxTransactionFee(fee Hbar) *ScheduleCreateTransaction {
 	tx.Transaction.SetMaxTransactionFee(fee)
 	return tx

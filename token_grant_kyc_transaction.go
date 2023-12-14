@@ -63,12 +63,11 @@ func NewTokenGrantKycTransaction() *TokenGrantKycTransaction {
 }
 
 func _TokenGrantKycTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *TokenGrantKycTransaction {
-	resultTx := &TokenGrantKycTransaction{
+	return &TokenGrantKycTransaction{
 		Transaction: tx,
 		tokenID:     _TokenIDFromProtobuf(pb.GetTokenGrantKyc().GetToken()),
 		accountID:   _AccountIDFromProtobuf(pb.GetTokenGrantKyc().GetAccount()),
 	}
-	return resultTx
 }
 
 // SetTokenID Sets the token for which this account will be granted KYC.
@@ -121,7 +120,7 @@ func (tx *TokenGrantKycTransaction) SignWithOperator(client *Client) (*TokenGran
 	return tx, nil
 }
 
-// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
 // with the publicKey as the map key.
 func (tx *TokenGrantKycTransaction) SignWith(
 	publicKey PublicKey,

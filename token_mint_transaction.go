@@ -58,13 +58,12 @@ func NewTokenMintTransaction() *TokenMintTransaction {
 }
 
 func _TokenMintTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *TokenMintTransaction {
-	resultTx := &TokenMintTransaction{
+	return &TokenMintTransaction{
 		Transaction: tx,
 		tokenID:     _TokenIDFromProtobuf(pb.GetTokenMint().GetToken()),
 		amount:      pb.GetTokenMint().GetAmount(),
 		meta:        pb.GetTokenMint().GetMetadata(),
 	}
-	return resultTx
 }
 
 // SetTokenID Sets the token for which to mint tokens. If token does not exist, transaction results in
@@ -141,7 +140,7 @@ func (tx *TokenMintTransaction) SignWithOperator(client *Client) (*TokenMintTran
 	return tx, nil
 }
 
-// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
 // with the publicKey as the map key.
 func (tx *TokenMintTransaction) SignWith(
 	publicKey PublicKey,

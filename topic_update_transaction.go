@@ -60,7 +60,7 @@ func _TopicUpdateTransactionFromProtobuf(tx Transaction, pb *services.Transactio
 
 	expirationTime := _TimeFromProtobuf(pb.GetConsensusUpdateTopic().GetExpirationTime())
 	autoRenew := _DurationFromProtobuf(pb.GetConsensusUpdateTopic().GetAutoRenewPeriod())
-	resultTx := &TopicUpdateTransaction{
+	return &TopicUpdateTransaction{
 		Transaction:        tx,
 		topicID:            _TopicIDFromProtobuf(pb.GetConsensusUpdateTopic().GetTopicID()),
 		autoRenewAccountID: _AccountIDFromProtobuf(pb.GetConsensusUpdateTopic().GetAutoRenewAccount()),
@@ -70,7 +70,6 @@ func _TopicUpdateTransactionFromProtobuf(tx Transaction, pb *services.Transactio
 		autoRenewPeriod:    &autoRenew,
 		expirationTime:     &expirationTime,
 	}
-	return resultTx
 }
 
 // SetTopicID sets the topic to be updated.
@@ -223,7 +222,7 @@ func (tx *TopicUpdateTransaction) SignWithOperator(client *Client) (*TopicUpdate
 	return tx, nil
 }
 
-// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
 // with the publicKey as the map key.
 func (tx *TopicUpdateTransaction) SignWith(
 	publicKey PublicKey,

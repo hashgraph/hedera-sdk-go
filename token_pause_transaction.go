@@ -27,7 +27,7 @@ import (
 )
 
 // TokenPauseTransaction
-// Pauses the Token from being involved in any kind of transaction until it is unpaused.
+// Pauses the Token from being involved in any kind of Transaction until it is unpaused.
 // Must be signed with the Token's pause key.
 // If the provided token is not found, the transaction will resolve to INVALID_TOKEN_ID.
 // If the provided token has been deleted, the transaction will resolve to TOKEN_WAS_DELETED.
@@ -40,7 +40,7 @@ type TokenPauseTransaction struct {
 }
 
 // NewTokenPauseTransaction creates TokenPauseTransaction which
-// pauses the Token from being involved in any kind of transaction until it is unpaused.
+// pauses the Token from being involved in any kind of Transaction until it is unpaused.
 // Must be signed with the Token's pause key.
 // If the provided token is not found, the transaction will resolve to INVALID_TOKEN_ID.
 // If the provided token has been deleted, the transaction will resolve to TOKEN_WAS_DELETED.
@@ -58,11 +58,10 @@ func NewTokenPauseTransaction() *TokenPauseTransaction {
 }
 
 func _TokenPauseTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *TokenPauseTransaction {
-	resultTx := &TokenPauseTransaction{
+	return &TokenPauseTransaction{
 		Transaction: tx,
 		tokenID:     _TokenIDFromProtobuf(pb.GetTokenDeletion().GetToken()),
 	}
-	return resultTx
 }
 
 // SetTokenID Sets the token to be paused
@@ -98,7 +97,7 @@ func (tx *TokenPauseTransaction) SignWithOperator(client *Client) (*TokenPauseTr
 	return tx, nil
 }
 
-// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
 // with the publicKey as the map key.
 func (tx *TokenPauseTransaction) SignWith(
 	publicKey PublicKey,

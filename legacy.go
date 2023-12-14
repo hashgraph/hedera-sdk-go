@@ -2817,7 +2817,7 @@ var legacy = [...]string{
 	"quebec",
 	"queen",
 	"queer",
-	"Query",
+	"query",
 	"quest",
 	"queue",
 	"quick",

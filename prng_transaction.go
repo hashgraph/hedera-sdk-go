@@ -33,7 +33,7 @@ type PrngTransaction struct {
 }
 
 // NewPrngTransaction creates a PrngTransaction transaction which can be used to construct and execute
-// a Prng transaction.
+// a Prng Transaction.
 func NewPrngTransaction() *PrngTransaction {
 	tx := PrngTransaction{
 		Transaction: _NewTransaction(),
@@ -45,11 +45,10 @@ func NewPrngTransaction() *PrngTransaction {
 }
 
 func _PrngTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *PrngTransaction {
-	resultTx := &PrngTransaction{
+	return &PrngTransaction{
 		Transaction: tx,
 		rang:        uint32(pb.GetUtilPrng().GetRange()),
 	}
-	return resultTx
 }
 
 // SetPayerAccountID Sets an optional id of the account to be charged the service fee for the scheduled transaction at
@@ -84,7 +83,7 @@ func (tx *PrngTransaction) SignWithOperator(client *Client) (*PrngTransaction, e
 	return tx, nil
 }
 
-// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
 // with the publicKey as the map key.
 func (tx *PrngTransaction) SignWith(
 	publicKey PublicKey,
@@ -100,7 +99,7 @@ func (tx *PrngTransaction) AddSignature(publicKey PublicKey, signature []byte) *
 	return tx
 }
 
-// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
+// SetGrpcDeadline When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (tx *PrngTransaction) SetGrpcDeadline(deadline *time.Duration) *PrngTransaction {
 	tx.Transaction.SetGrpcDeadline(deadline)
 	return tx
@@ -115,7 +114,7 @@ func (tx *PrngTransaction) FreezeWith(client *Client) (*PrngTransaction, error) 
 	return tx, err
 }
 
-// SetMaxTransactionFee sets the max transaction fee for this PrngTransaction.
+// SetMaxTransactionFee sets the maximum transaction fee for this PrngTransaction.
 func (tx *PrngTransaction) SetMaxTransactionFee(fee Hbar) *PrngTransaction {
 	tx.Transaction.SetMaxTransactionFee(fee)
 	return tx

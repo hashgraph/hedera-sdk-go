@@ -41,7 +41,7 @@ type SystemDeleteTransaction struct {
 }
 
 // NewSystemDeleteTransaction creates a SystemDeleteTransaction transaction which can be
-// used to construct and execute a System Delete transaction.
+// used to construct and execute a System Delete Transaction.
 func NewSystemDeleteTransaction() *SystemDeleteTransaction {
 	tx := SystemDeleteTransaction{
 		Transaction: _NewTransaction(),
@@ -57,13 +57,12 @@ func _SystemDeleteTransactionFromProtobuf(tx Transaction, pb *services.Transacti
 		time.Now().Hour(), time.Now().Minute(),
 		int(pb.GetSystemDelete().ExpirationTime.Seconds), time.Now().Nanosecond(), time.Now().Location(),
 	)
-	resultTx := &SystemDeleteTransaction{
+	return &SystemDeleteTransaction{
 		Transaction:    tx,
 		contractID:     _ContractIDFromProtobuf(pb.GetSystemDelete().GetContractID()),
 		fileID:         _FileIDFromProtobuf(pb.GetSystemDelete().GetFileID()),
 		expirationTime: &expiration,
 	}
-	return resultTx
 }
 
 // SetExpirationTime sets the time at which this transaction will expire.
@@ -131,7 +130,7 @@ func (tx *SystemDeleteTransaction) SignWithOperator(client *Client) (*SystemDele
 	return tx, nil
 }
 
-// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
 // with the publicKey as the map key.
 func (tx *SystemDeleteTransaction) SignWith(
 	publicKey PublicKey,

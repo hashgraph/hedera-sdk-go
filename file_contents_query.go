@@ -35,11 +35,9 @@ type FileContentsQuery struct {
 // NewFileContentsQuery creates a FileContentsQuery which retrieves the contents of a file.
 func NewFileContentsQuery() *FileContentsQuery {
 	header := services.QueryHeader{}
-	result := FileContentsQuery{
+	return &FileContentsQuery{
 		Query: _NewQuery(true, &header),
 	}
-
-	return &result
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
@@ -67,7 +65,7 @@ func (q *FileContentsQuery) GetCost(client *Client) (Hbar, error) {
 	return q.Query.getCost(client, q)
 }
 
-// Execute executes the QueryInterface with the provided client
+// Execute executes the Query with the provided client
 func (q *FileContentsQuery) Execute(client *Client) ([]byte, error) {
 	resp, err := q.Query.execute(client, q)
 
@@ -78,13 +76,13 @@ func (q *FileContentsQuery) Execute(client *Client) ([]byte, error) {
 	return resp.GetFileGetContents().FileContents.Contents, nil
 }
 
-// SetMaxQueryPayment sets the maximum payment allowed for this QueryInterface.
+// SetMaxQueryPayment sets the maximum payment allowed for this Query.
 func (q *FileContentsQuery) SetMaxQueryPayment(maxPayment Hbar) *FileContentsQuery {
 	q.Query.SetMaxQueryPayment(maxPayment)
 	return q
 }
 
-// SetQueryPayment sets the payment amount for this QueryInterface.
+// SetQueryPayment sets the payment amount for this Query.
 func (q *FileContentsQuery) SetQueryPayment(paymentAmount Hbar) *FileContentsQuery {
 	q.Query.SetQueryPayment(paymentAmount)
 	return q

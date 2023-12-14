@@ -34,7 +34,7 @@ import (
 // Otherwise, if the resulting set of signing keys satisfy the
 // scheduled transaction's signing requirements, it will be executed immediately after the
 // triggering ScheduleSign.
-// Upon SUCCESS, the receipt includes the scheduledTransactionID to use to Query
+// Upon SUCCESS, the receipt includes the scheduledTransactionID to use to query
 // for the record of the scheduled transaction's execution (if it occurs).
 type ScheduleSignTransaction struct {
 	Transaction
@@ -47,7 +47,7 @@ type ScheduleSignTransaction struct {
 // Otherwise, if the resulting set of signing keys satisfy the
 // scheduled transaction's signing requirements, it will be executed immediately after the
 // triggering ScheduleSign.
-// Upon SUCCESS, the receipt includes the scheduledTransactionID to use to Query
+// Upon SUCCESS, the receipt includes the scheduledTransactionID to use to query
 // for the record of the scheduled transaction's execution (if it occurs).
 func NewScheduleSignTransaction() *ScheduleSignTransaction {
 	tx := ScheduleSignTransaction{
@@ -59,11 +59,10 @@ func NewScheduleSignTransaction() *ScheduleSignTransaction {
 }
 
 func _ScheduleSignTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *ScheduleSignTransaction {
-	resultTx := &ScheduleSignTransaction{
+	return &ScheduleSignTransaction{
 		Transaction: tx,
 		scheduleID:  _ScheduleIDFromProtobuf(pb.GetScheduleSign().GetScheduleID()),
 	}
-	return resultTx
 }
 
 // SetScheduleID Sets the id of the schedule to add signing keys to
@@ -99,7 +98,7 @@ func (tx *ScheduleSignTransaction) SignWithOperator(client *Client) (*ScheduleSi
 	return tx, nil
 }
 
-// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
 // with the publicKey as the map key.
 func (tx *ScheduleSignTransaction) SignWith(
 	publicKey PublicKey,

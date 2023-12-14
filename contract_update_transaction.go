@@ -30,16 +30,16 @@ import (
 
 // ContractUpdateTransaction is used to modify a smart contract instance to have the given parameter values. Any nil
 // field is ignored (left unchanged). If only the contractInstanceExpirationTime is being modified, then no signature is
-// needed on tx transaction other than for the account paying for the transaction itself. But if any of the other
+// needed on this transaction other than for the account paying for the transaction itself. But if any of the other
 // fields are being modified, then it must be signed by the adminKey. The use of adminKey is not currently supported in
-// tx API, but in the future will be implemented to allow these fields to be modified, and also to make modifications
+// this API, but in the future will be implemented to allow these fields to be modified, and also to make modifications
 // to the state of the instance. If the contract is created with no admin key, then none of the fields can be changed
 // that need an admin signature, and therefore no admin key can ever be added. So if there is no admin key, then things
 // like the bytecode are immutable. But if there is an admin key, then they can be changed.
 //
 // For example, the admin key might be a threshold key, which requires 3 of 5 binding arbitration judges to agree before
 // the bytecode can be changed. This can be used to add flexibility to the management of smart contract behavior. But
-// tx is optional. If the smart contract is created without an admin key, then such a key can never be added, and its
+// this is optional. If the smart contract is created without an admin key, then such a key can never be added, and its
 // bytecode will be immutable.
 type ContractUpdateTransaction struct {
 	Transaction
@@ -58,19 +58,19 @@ type ContractUpdateTransaction struct {
 }
 
 // NewContractUpdateTransaction creates a ContractUpdateTransaction transaction which can be
-// used to construct and execute a Contract Update transaction.
+// used to construct and execute a Contract Update Transaction.
 // ContractUpdateTransaction is used to modify a smart contract instance to have the given parameter values. Any nil
 // field is ignored (left unchanged). If only the contractInstanceExpirationTime is being modified, then no signature is
-// needed on tx transaction other than for the account paying for the transaction itself. But if any of the other
+// needed on this transaction other than for the account paying for the transaction itself. But if any of the other
 // fields are being modified, then it must be signed by the adminKey. The use of adminKey is not currently supported in
-// tx API, but in the future will be implemented to allow these fields to be modified, and also to make modifications
+// this API, but in the future will be implemented to allow these fields to be modified, and also to make modifications
 // to the state of the instance. If the contract is created with no admin key, then none of the fields can be changed
 // that need an admin signature, and therefore no admin key can ever be added. So if there is no admin key, then things
 // like the bytecode are immutable. But if there is an admin key, then they can be changed.
 //
 // For example, the admin key might be a threshold key, which requires 3 of 5 binding arbitration judges to agree before
 // the bytecode can be changed. This can be used to add flexibility to the management of smart contract behavior. But
-// tx is optional. If the smart contract is created without an admin key, then such a key can never be added, and its
+// this is optional. If the smart contract is created without an admin key, then such a key can never be added, and its
 // bytecode will be immutable.
 func NewContractUpdateTransaction() *ContractUpdateTransaction {
 	tx := ContractUpdateTransaction{
@@ -106,7 +106,7 @@ func _ContractUpdateTransactionFromProtobuf(tx Transaction, pb *services.Transac
 		autoRenewAccountID = _AccountIDFromProtobuf(pb.GetContractUpdateInstance().GetAutoRenewAccountId())
 	}
 
-	resultTx := &ContractUpdateTransaction{
+	return &ContractUpdateTransaction{
 		Transaction:                   tx,
 		contractID:                    _ContractIDFromProtobuf(pb.GetContractUpdateInstance().GetContractID()),
 		adminKey:                      key,
@@ -119,10 +119,9 @@ func _ContractUpdateTransactionFromProtobuf(tx Transaction, pb *services.Transac
 		stakedNodeID:                  &stakedNodeID,
 		declineReward:                 pb.GetContractUpdateInstance().GetDeclineReward().GetValue(),
 	}
-	return resultTx
 }
 
-// SetContractID sets The Contract ID instance to update (tx can't be changed on the contract)
+// SetContractID sets The Contract ID instance to update (this can't be changed on the contract)
 func (tx *ContractUpdateTransaction) SetContractID(contractID ContractID) *ContractUpdateTransaction {
 	tx.contractID = &contractID
 	return tx
@@ -166,8 +165,8 @@ func (tx *ContractUpdateTransaction) GetAdminKey() (Key, error) {
 }
 
 // Deprecated
-// SetProxyAccountID sets the ID of the account to which tx contract is proxy staked. If proxyAccountID is left unset,
-// is an invalID account, or is an account that isn't a _Node, then tx contract is automatically proxy staked to a _Node
+// SetProxyAccountID sets the ID of the account to which this contract is proxy staked. If proxyAccountID is left unset,
+// is an invalID account, or is an account that isn't a _Node, then this contract is automatically proxy staked to a _Node
 // chosen by the _Network, but without earning payments. If the proxyAccountID account refuses to accept proxy staking,
 // or if it is not currently running a _Node, then it will behave as if proxyAccountID was never set.
 func (tx *ContractUpdateTransaction) SetProxyAccountID(proxyAccountID AccountID) *ContractUpdateTransaction {
@@ -233,7 +232,7 @@ func (tx *ContractUpdateTransaction) SetContractMemo(memo string) *ContractUpdat
 }
 
 // SetAutoRenewAccountID
-// An account to charge for auto-renewal of tx contract. If not set, or set to an
+// An account to charge for auto-renewal of this contract. If not set, or set to an
 // account with zero hbar balance, the contract's own hbar balance will be used to
 // cover auto-renewal fees.
 func (tx *ContractUpdateTransaction) SetAutoRenewAccountID(id AccountID) *ContractUpdateTransaction {
@@ -251,7 +250,7 @@ func (tx *ContractUpdateTransaction) GetAutoRenewAccountID() AccountID {
 }
 
 // SetMaxAutomaticTokenAssociations
-// The maximum number of tokens that tx contract can be automatically associated
+// The maximum number of tokens that this contract can be automatically associated
 // with (i.e., receive air-drops from).
 func (tx *ContractUpdateTransaction) SetMaxAutomaticTokenAssociations(max int32) *ContractUpdateTransaction {
 	tx._RequireNotFrozen()
@@ -340,7 +339,7 @@ func (tx *ContractUpdateTransaction) SignWithOperator(
 	return tx, nil
 }
 
-// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
 // with the publicKey as the map key.
 func (tx *ContractUpdateTransaction) SignWith(
 	publicKey PublicKey,
@@ -385,21 +384,21 @@ func (tx *ContractUpdateTransaction) SetRegenerateTransactionID(regenerateTransa
 	return tx
 }
 
-// SetTransactionMemo sets the memo for tx ContractUpdateTransaction.
+// SetTransactionMemo sets the memo for this ContractUpdateTransaction.
 func (tx *ContractUpdateTransaction) SetTransactionMemo(memo string) *ContractUpdateTransaction {
 	tx._RequireNotFrozen()
 	tx.Transaction.SetTransactionMemo(memo)
 	return tx
 }
 
-// SetTransactionValidDuration sets the valid duration for tx ContractUpdateTransaction.
+// SetTransactionValidDuration sets the valid duration for this ContractUpdateTransaction.
 func (tx *ContractUpdateTransaction) SetTransactionValidDuration(duration time.Duration) *ContractUpdateTransaction {
 	tx._RequireNotFrozen()
 	tx.Transaction.SetTransactionValidDuration(duration)
 	return tx
 }
 
-// SetTransactionID sets the TransactionID for tx ContractUpdateTransaction.
+// SetTransactionID sets the TransactionID for this ContractUpdateTransaction.
 func (tx *ContractUpdateTransaction) SetTransactionID(transactionID TransactionID) *ContractUpdateTransaction {
 	tx._RequireNotFrozen()
 
@@ -407,7 +406,7 @@ func (tx *ContractUpdateTransaction) SetTransactionID(transactionID TransactionI
 	return tx
 }
 
-// SetNodeAccountID sets the _Node AccountID for tx ContractUpdateTransaction.
+// SetNodeAccountID sets the _Node AccountID for this ContractUpdateTransaction.
 func (tx *ContractUpdateTransaction) SetNodeAccountIDs(nodeID []AccountID) *ContractUpdateTransaction {
 	tx._RequireNotFrozen()
 	tx.Transaction.SetNodeAccountIDs(nodeID)
@@ -421,7 +420,7 @@ func (tx *ContractUpdateTransaction) SetMaxRetry(count int) *ContractUpdateTrans
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches tx time.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (tx *ContractUpdateTransaction) SetMaxBackoff(max time.Duration) *ContractUpdateTransaction {
 	tx.Transaction.SetMaxBackoff(max)
 	return tx

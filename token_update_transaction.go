@@ -109,7 +109,7 @@ func _TokenUpdateTransactionFromProtobuf(tx Transaction, pb *services.Transactio
 	expirationTime := _TimeFromProtobuf(pb.GetTokenUpdate().GetExpiry())
 	autoRenew := _DurationFromProtobuf(pb.GetTokenUpdate().GetAutoRenewPeriod())
 
-	resultTx := &TokenUpdateTransaction{
+	return &TokenUpdateTransaction{
 		Transaction:        tx,
 		tokenID:            _TokenIDFromProtobuf(pb.GetTokenUpdate().GetToken()),
 		treasuryAccountID:  _AccountIDFromProtobuf(pb.GetTokenUpdate().GetTreasury()),
@@ -127,7 +127,6 @@ func _TokenUpdateTransactionFromProtobuf(tx Transaction, pb *services.Transactio
 		expirationTime:     &expirationTime,
 		autoRenewPeriod:    &autoRenew,
 	}
-	return resultTx
 }
 
 // SetTokenID Sets the Token to be updated
@@ -357,7 +356,7 @@ func (tx *TokenUpdateTransaction) SignWithOperator(client *Client) (*TokenUpdate
 	return tx, nil
 }
 
-// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
 // with the publicKey as the map key.
 func (tx *TokenUpdateTransaction) SignWith(
 	publicKey PublicKey,

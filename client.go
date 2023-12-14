@@ -44,7 +44,7 @@ var testnetAddress []byte
 var testnetNodes, _ = NodeAddressBookFromBytes(testnetAddress)
 
 // Client is the Hedera protocol wrapper for the SDK used by all
-// transaction and Query types.
+// transaction and query types.
 type Client struct {
 	defaultMaxTransactionFee Hbar
 	defaultMaxQueryPayment   Hbar
@@ -427,12 +427,12 @@ func (client *Client) GetMinBackoff() time.Duration {
 	return client.minBackoff
 }
 
-// SetMaxAttempts sets the maximum number of times to attempt a transaction or Query.
+// SetMaxAttempts sets the maximum number of times to attempt a transaction or query.
 func (client *Client) SetMaxAttempts(max int) {
 	client.maxAttempts = &max
 }
 
-// GetMaxAttempts returns the maximum number of times to attempt a transaction or Query.
+// GetMaxAttempts returns the maximum number of times to attempt a transaction or query.
 func (client *Client) GetMaxAttempts() int {
 	if client.maxAttempts == nil {
 		return -1
@@ -441,12 +441,12 @@ func (client *Client) GetMaxAttempts() int {
 	return *client.maxAttempts
 }
 
-// SetMaxNodeAttempts sets the maximum number of times to attempt a transaction or Query on a single node.
+// SetMaxNodeAttempts sets the maximum number of times to attempt a transaction or query on a single node.
 func (client *Client) SetMaxNodeAttempts(max int) {
 	client.network._SetMaxNodeAttempts(max)
 }
 
-// GetMaxNodeAttempts returns the maximum number of times to attempt a transaction or Query on a single node.
+// GetMaxNodeAttempts returns the maximum number of times to attempt a transaction or query on a single node.
 func (client *Client) GetMaxNodeAttempts() int {
 	return client.network._GetMaxNodeAttempts()
 }

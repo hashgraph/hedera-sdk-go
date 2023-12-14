@@ -76,24 +76,24 @@ func _NewQuery(isPaymentRequired bool, header *services.QueryHeader) Query {
 	}
 }
 
-// SetMaxQueryPayment sets the maximum payment allowed for this Query.
+// SetMaxQueryPayment sets the maximum payment allowed for this query.
 func (q *Query) SetMaxQueryPayment(maxPayment Hbar) *Query {
 	q.maxQueryPayment = maxPayment
 	return q
 }
 
-// SetQueryPayment sets the payment amount for this Query.
+// SetQueryPayment sets the payment amount for this query.
 func (q *Query) SetQueryPayment(paymentAmount Hbar) *Query {
 	q.queryPayment = paymentAmount
 	return q
 }
 
-// GetMaxQueryPayment returns the maximum payment allowed for this Query.
+// GetMaxQueryPayment returns the maximum payment allowed for this query.
 func (q *Query) GetMaxQueryPayment() Hbar {
 	return q.maxQueryPayment
 }
 
-// GetQueryPayment returns the payment amount for this Query.
+// GetQueryPayment returns the payment amount for this query.
 func (q *Query) GetQueryPayment() Hbar {
 	return q.queryPayment
 }

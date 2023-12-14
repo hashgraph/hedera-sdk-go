@@ -37,7 +37,7 @@ type TopicCreateTransaction struct {
 }
 
 // NewTopicCreateTransaction creates a TopicCreateTransaction transaction which can be
-// used to construct and execute a  Create Topic transaction.
+// used to construct and execute a  Create Topic Transaction.
 func NewTopicCreateTransaction() *TopicCreateTransaction {
 	tx := TopicCreateTransaction{
 		Transaction: _NewTransaction(),
@@ -45,12 +45,6 @@ func NewTopicCreateTransaction() *TopicCreateTransaction {
 
 	tx.SetAutoRenewPeriod(7890000 * time.Second)
 	tx._SetDefaultMaxTransactionFee(NewHbar(2))
-
-	// Default to maximum values for record thresholds. Without this records would be
-	// auto-created whenever a send or receive tx takes place for this new account.
-	// This should be an explicit ask.
-	// tx.SetReceiveRecordThreshold(MaxHbar)
-	// tx.SetSendRecordThreshold(MaxHbar)
 
 	return &tx
 }
@@ -60,7 +54,7 @@ func _TopicCreateTransactionFromProtobuf(tx Transaction, pb *services.Transactio
 	submitKey, _ := _KeyFromProtobuf(pb.GetConsensusCreateTopic().GetSubmitKey())
 
 	autoRenew := _DurationFromProtobuf(pb.GetConsensusCreateTopic().GetAutoRenewPeriod())
-	resultTx := &TopicCreateTransaction{
+	return &TopicCreateTransaction{
 		Transaction:        tx,
 		autoRenewAccountID: _AccountIDFromProtobuf(pb.GetConsensusCreateTopic().GetAutoRenewAccount()),
 		adminKey:           adminKey,
@@ -68,7 +62,6 @@ func _TopicCreateTransactionFromProtobuf(tx Transaction, pb *services.Transactio
 		memo:               pb.GetConsensusCreateTopic().GetMemo(),
 		autoRenewPeriod:    &autoRenew,
 	}
-	return resultTx
 }
 
 // SetAdminKey sets the key required to update or delete the topic. If unspecified, anyone can increase the topic's
@@ -164,7 +157,7 @@ func (tx *TopicCreateTransaction) SignWithOperator(client *Client) (*TopicCreate
 	return tx, nil
 }
 
-// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
 // with the publicKey as the map key.
 func (tx *TopicCreateTransaction) SignWith(
 	publicKey PublicKey,

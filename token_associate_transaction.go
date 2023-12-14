@@ -85,12 +85,11 @@ func _TokenAssociateTransactionFromProtobuf(tx Transaction, pb *services.Transac
 		}
 	}
 
-	resultTx := &TokenAssociateTransaction{
+	return &TokenAssociateTransaction{
 		Transaction: tx,
 		accountID:   _AccountIDFromProtobuf(pb.GetTokenAssociate().GetAccount()),
 		tokens:      tokens,
 	}
-	return resultTx
 }
 
 // SetAccountID Sets the account to be associated with the provided tokens
@@ -155,7 +154,7 @@ func (tx *TokenAssociateTransaction) SignWithOperator(client *Client) (*TokenAss
 	return tx, nil
 }
 
-// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
 // with the publicKey as the map key.
 func (tx *TokenAssociateTransaction) SignWith(
 	publicKey PublicKey,

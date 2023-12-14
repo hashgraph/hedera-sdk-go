@@ -65,12 +65,11 @@ func NewTokenFreezeTransaction() *TokenFreezeTransaction {
 }
 
 func _TokenFreezeTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *TokenFreezeTransaction {
-	resultTx := &TokenFreezeTransaction{
+	return &TokenFreezeTransaction{
 		Transaction: tx,
 		tokenID:     _TokenIDFromProtobuf(pb.GetTokenFreeze().GetToken()),
 		accountID:   _AccountIDFromProtobuf(pb.GetTokenFreeze().GetAccount()),
 	}
-	return resultTx
 }
 
 // SetTokenID Sets the token for which this account will be frozen. If token does not exist, transaction results
@@ -123,7 +122,7 @@ func (tx *TokenFreezeTransaction) SignWithOperator(client *Client) (*TokenFreeze
 	return tx, nil
 }
 
-// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
 // with the publicKey as the map key.
 func (tx *TokenFreezeTransaction) SignWith(
 	publicKey PublicKey,

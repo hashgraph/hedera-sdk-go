@@ -65,12 +65,11 @@ func NewTokenUnfreezeTransaction() *TokenUnfreezeTransaction {
 }
 
 func _TokenUnfreezeTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *TokenUnfreezeTransaction {
-	resultTx := &TokenUnfreezeTransaction{
+	return &TokenUnfreezeTransaction{
 		Transaction: tx,
 		tokenID:     _TokenIDFromProtobuf(pb.GetTokenUnfreeze().GetToken()),
 		accountID:   _AccountIDFromProtobuf(pb.GetTokenUnfreeze().GetAccount()),
 	}
-	return resultTx
 }
 
 // SetTokenID Sets the token for which this account will be unfrozen.
@@ -123,7 +122,7 @@ func (tx *TokenUnfreezeTransaction) SignWithOperator(client *Client) (*TokenUnfr
 	return tx, nil
 }
 
-// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
 // with the publicKey as the map key.
 func (tx *TokenUnfreezeTransaction) SignWith(
 	publicKey PublicKey,

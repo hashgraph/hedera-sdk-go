@@ -33,7 +33,7 @@ import (
 // of transaction is considered to be the owner for that particular allowance.
 // Setting the amount to zero in CryptoAllowance or TokenAllowance will remove the respective allowance for the spender.
 //
-// (So if account <tt>0.0.X</tt> pays for tx transaction and owner is not specified in the allowance,
+// (So if account <tt>0.0.X</tt> pays for this transaction and owner is not specified in the allowance,
 // then at consensus each spender account will have new allowances to spend hbar or tokens from <tt>0.0.X</tt>).
 type AccountAllowanceApproveTransaction struct {
 	Transaction
@@ -50,7 +50,7 @@ type AccountAllowanceApproveTransaction struct {
 // of transaction is considered to be the owner for that particular allowance.
 // Setting the amount to zero in CryptoAllowance or TokenAllowance will remove the respective allowance for the spender.
 //
-// (So if account 0.0.X pays for tx transaction and owner is not specified in the allowance,
+// (So if account 0.0.X pays for this transaction and owner is not specified in the allowance,
 // then at consensus each spender account will have new allowances to spend hbar or tokens from 0.0.X).
 func NewAccountAllowanceApproveTransaction() *AccountAllowanceApproveTransaction {
 	tx := AccountAllowanceApproveTransaction{
@@ -81,13 +81,12 @@ func _AccountAllowanceApproveTransactionFromProtobuf(tx Transaction, pb *service
 		nftApproval = append(nftApproval, &temp)
 	}
 
-	resultTx := &AccountAllowanceApproveTransaction{
+	return &AccountAllowanceApproveTransaction{
 		Transaction:     tx,
 		hbarAllowances:  accountApproval,
 		tokenAllowances: tokenApproval,
 		nftAllowances:   nftApproval,
 	}
-	return resultTx
 }
 
 func (tx *AccountAllowanceApproveTransaction) _ApproveHbarApproval(ownerAccountID *AccountID, id AccountID, amount Hbar) *AccountAllowanceApproveTransaction {
@@ -276,7 +275,7 @@ func (tx *AccountAllowanceApproveTransaction) SignWithOperator(
 	return tx, nil
 }
 
-// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
 // with the publicKey as the map key.
 func (tx *AccountAllowanceApproveTransaction) SignWith(
 	publicKey PublicKey,
@@ -325,26 +324,26 @@ func (tx *AccountAllowanceApproveTransaction) SetRegenerateTransactionID(regener
 	return tx
 }
 
-// SetTransactionMemo sets the memo for tx AccountAllowanceApproveTransaction.
+// SetTransactionMemo sets the memo for this AccountAllowanceApproveTransaction.
 func (tx *AccountAllowanceApproveTransaction) SetTransactionMemo(memo string) *AccountAllowanceApproveTransaction {
 	tx._RequireNotFrozen()
 	tx.Transaction.SetTransactionMemo(memo)
 	return tx
 }
 
-// SetTransactionValidDuration sets the valid duration for tx AccountAllowanceApproveTransaction.
+// SetTransactionValidDuration sets the valid duration for this AccountAllowanceApproveTransaction.
 func (tx *AccountAllowanceApproveTransaction) SetTransactionValidDuration(duration time.Duration) *AccountAllowanceApproveTransaction {
 	tx.Transaction.SetTransactionValidDuration(duration)
 	return tx
 }
 
-// SetTransactionID sets the TransactionID for tx AccountAllowanceApproveTransaction.
+// SetTransactionID sets the TransactionID for this AccountAllowanceApproveTransaction.
 func (tx *AccountAllowanceApproveTransaction) SetTransactionID(transactionID TransactionID) *AccountAllowanceApproveTransaction {
 	tx.Transaction.SetTransactionID(transactionID)
 	return tx
 }
 
-// SetNodeAccountIDs sets the _Node AccountID for tx AccountAllowanceApproveTransaction.
+// SetNodeAccountIDs sets the _Node AccountID for this AccountAllowanceApproveTransaction.
 func (tx *AccountAllowanceApproveTransaction) SetNodeAccountIDs(nodeID []AccountID) *AccountAllowanceApproveTransaction {
 	tx._RequireNotFrozen()
 	tx.Transaction.SetNodeAccountIDs(nodeID)
@@ -358,13 +357,13 @@ func (tx *AccountAllowanceApproveTransaction) SetMaxRetry(count int) *AccountAll
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches tx time.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (tx *AccountAllowanceApproveTransaction) SetMaxBackoff(max time.Duration) *AccountAllowanceApproveTransaction {
 	tx.Transaction.SetMaxBackoff(max)
 	return tx
 }
 
-// SetMinBackoff sets the min back off for tx AccountAllowanceApproveTransaction.
+// SetMinBackoff sets the min back off for this AccountAllowanceApproveTransaction.
 func (tx *AccountAllowanceApproveTransaction) SetMinBackoff(min time.Duration) *AccountAllowanceApproveTransaction {
 	tx.Transaction.SetMinBackoff(min)
 	return tx

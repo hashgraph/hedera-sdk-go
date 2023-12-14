@@ -58,14 +58,13 @@ func _FreezeTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody
 		0, time.Now().Nanosecond(), time.Now().Location(),
 	)
 
-	resultTx := &FreezeTransaction{
+	return &FreezeTransaction{
 		Transaction: tx,
 		startTime:   startTime,
 		endTime:     endTime,
 		fileID:      _FileIDFromProtobuf(pb.GetFreeze().GetUpdateFile()),
 		fileHash:    pb.GetFreeze().FileHash,
 	}
-	return resultTx
 }
 
 func (tx *FreezeTransaction) SetStartTime(startTime time.Time) *FreezeTransaction {
@@ -143,7 +142,7 @@ func (tx *FreezeTransaction) SignWithOperator(
 	return tx, nil
 }
 
-// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
 // with the publicKey as the map key.
 func (tx *FreezeTransaction) SignWith(
 	publicKey PublicKey,
@@ -187,21 +186,21 @@ func (tx *FreezeTransaction) SetRegenerateTransactionID(regenerateTransactionID 
 	return tx
 }
 
-// SetTransactionMemo sets the memo for tx FreezeTransaction.
+// SetTransactionMemo sets the memo for this FreezeTransaction.
 func (tx *FreezeTransaction) SetTransactionMemo(memo string) *FreezeTransaction {
 	tx._RequireNotFrozen()
 	tx.Transaction.SetTransactionMemo(memo)
 	return tx
 }
 
-// SetTransactionValidDuration sets the valid duration for tx FreezeTransaction.
+// SetTransactionValidDuration sets the valid duration for this FreezeTransaction.
 func (tx *FreezeTransaction) SetTransactionValidDuration(duration time.Duration) *FreezeTransaction {
 	tx._RequireNotFrozen()
 	tx.Transaction.SetTransactionValidDuration(duration)
 	return tx
 }
 
-// SetTransactionID sets the TransactionID for tx FreezeTransaction.
+// SetTransactionID sets the TransactionID for this FreezeTransaction.
 func (tx *FreezeTransaction) SetTransactionID(transactionID TransactionID) *FreezeTransaction {
 	tx._RequireNotFrozen()
 
@@ -209,7 +208,7 @@ func (tx *FreezeTransaction) SetTransactionID(transactionID TransactionID) *Free
 	return tx
 }
 
-// SetNodeAccountID sets the _Node AccountID for tx FreezeTransaction.
+// SetNodeAccountID sets the _Node AccountID for this FreezeTransaction.
 func (tx *FreezeTransaction) SetNodeAccountIDs(nodeID []AccountID) *FreezeTransaction {
 	tx._RequireNotFrozen()
 	tx.Transaction.SetNodeAccountIDs(nodeID)
@@ -223,7 +222,7 @@ func (tx *FreezeTransaction) SetMaxRetry(count int) *FreezeTransaction {
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches tx time.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (tx *FreezeTransaction) SetMaxBackoff(max time.Duration) *FreezeTransaction {
 	tx.Transaction.SetMaxBackoff(max)
 	return tx

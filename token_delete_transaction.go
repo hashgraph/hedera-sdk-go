@@ -40,7 +40,7 @@ type TokenDeleteTransaction struct {
 // NewTokenDeleteTransaction creates TokenDeleteTransaction which marks a token as deleted,
 // though it will remain in the ledger.
 // The operation must be signed by the specified Admin Key of the Token. If
-// admin key is not set, transaction will result in TOKEN_IS_IMMUTABlE.
+// admin key is not set, Transaction will result in TOKEN_IS_IMMUTABlE.
 // Once deleted update, mint, burn, wipe, freeze, unfreeze, grant kyc, revoke
 // kyc and token transfer transactions will resolve to TOKEN_WAS_DELETED.
 func NewTokenDeleteTransaction() *TokenDeleteTransaction {
@@ -54,11 +54,10 @@ func NewTokenDeleteTransaction() *TokenDeleteTransaction {
 }
 
 func _TokenDeleteTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *TokenDeleteTransaction {
-	resultTx := &TokenDeleteTransaction{
+	return &TokenDeleteTransaction{
 		Transaction: tx,
 		tokenID:     _TokenIDFromProtobuf(pb.GetTokenDeletion().GetToken()),
 	}
-	return resultTx
 }
 
 // SetTokenID Sets the Token to be deleted
@@ -94,7 +93,7 @@ func (tx *TokenDeleteTransaction) SignWithOperator(client *Client) (*TokenDelete
 	return tx, nil
 }
 
-// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
 // with the publicKey as the map key.
 func (tx *TokenDeleteTransaction) SignWith(
 	publicKey PublicKey,

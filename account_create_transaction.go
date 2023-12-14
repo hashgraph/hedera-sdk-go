@@ -52,7 +52,7 @@ type AccountCreateTransaction struct {
 }
 
 // NewAccountCreateTransaction creates an AccountCreateTransaction transaction which can be used to construct and
-// execute a Crypto Create transaction.
+// execute a Crypto Create Transaction.
 func NewAccountCreateTransaction() *AccountCreateTransaction {
 	tx := AccountCreateTransaction{
 		Transaction: _NewTransaction(),
@@ -155,8 +155,8 @@ func (tx *AccountCreateTransaction) GetAutoRenewPeriod() time.Duration {
 }
 
 // Deprecated
-// SetProxyAccountID sets the ID of the account to which tx account is proxy staked. If proxyAccountID is not set,
-// is an invalid account, or is an account that isn't a _Node, then tx account is automatically proxy staked to a _Node
+// SetProxyAccountID sets the ID of the account to which this account is proxy staked. If proxyAccountID is not set,
+// is an invalid account, or is an account that isn't a _Node, then this account is automatically proxy staked to a _Node
 // chosen by the _Network, but without earning payments. If the proxyAccountID account refuses to accept proxy staking ,
 // or if it is not currently running a _Node, then it will behave as if proxyAccountID was not set.
 func (tx *AccountCreateTransaction) SetProxyAccountID(id AccountID) *AccountCreateTransaction {
@@ -186,14 +186,14 @@ func (tx *AccountCreateTransaction) GetAccountMemo() string {
 	return tx.memo
 }
 
-// SetStakedAccountID Set the account to which tx account will stake.
+// SetStakedAccountID Set the account to which this account will stake.
 func (tx *AccountCreateTransaction) SetStakedAccountID(id AccountID) *AccountCreateTransaction {
 	tx._RequireNotFrozen()
 	tx.stakedAccountID = &id
 	return tx
 }
 
-// GetStakedAccountID returns the account to which tx account will stake.
+// GetStakedAccountID returns the account to which this account will stake.
 func (tx *AccountCreateTransaction) GetStakedAccountID() AccountID {
 	if tx.stakedAccountID != nil {
 		return *tx.stakedAccountID
@@ -202,14 +202,14 @@ func (tx *AccountCreateTransaction) GetStakedAccountID() AccountID {
 	return AccountID{}
 }
 
-// SetStakedNodeID Set the node to which tx account will stake
+// SetStakedNodeID Set the node to which this account will stake
 func (tx *AccountCreateTransaction) SetStakedNodeID(id int64) *AccountCreateTransaction {
 	tx._RequireNotFrozen()
 	tx.stakedNodeID = &id
 	return tx
 }
 
-// GetStakedNodeID returns the node to which tx account will stake
+// GetStakedNodeID returns the node to which this account will stake
 func (tx *AccountCreateTransaction) GetStakedNodeID() int64 {
 	if tx.stakedNodeID != nil {
 		return *tx.stakedNodeID
@@ -245,7 +245,7 @@ func (tx *AccountCreateTransaction) GetAlias() []byte {
 }
 
 // SetReceiverSignatureRequired sets the receiverSigRequired flag. If the receiverSigRequired flag is set to true, then
-// all cryptocurrency transfers must be signed by tx account's key, both for transfers in and out. If it is false,
+// all cryptocurrency transfers must be signed by this account's key, both for transfers in and out. If it is false,
 // then only transfers out have to be signed by it. This transaction must be signed by the
 // payer account. If receiverSigRequired is false, then the transaction does not have to be signed by the keys in the
 // keys field. If it is true, then it must be signed by them, in addition to the keys of the payer account.
@@ -280,7 +280,7 @@ func (tx *AccountCreateTransaction) SignWithOperator(
 	return tx, nil
 }
 
-// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
 // with the publicKey as the map key.
 func (tx *AccountCreateTransaction) SignWith(
 	publicKey PublicKey,
@@ -329,25 +329,25 @@ func (tx *AccountCreateTransaction) SetRegenerateTransactionID(regenerateTransac
 	return tx
 }
 
-// SetTransactionMemo sets the memo for tx AccountCreateTransaction.
+// SetTransactionMemo sets the memo for this AccountCreateTransaction.
 func (tx *AccountCreateTransaction) SetTransactionMemo(memo string) *AccountCreateTransaction {
 	tx.Transaction.SetTransactionMemo(memo)
 	return tx
 }
 
-// SetTransactionValidDuration sets the valid duration for tx AccountCreateTransaction.
+// SetTransactionValidDuration sets the valid duration for this AccountCreateTransaction.
 func (tx *AccountCreateTransaction) SetTransactionValidDuration(duration time.Duration) *AccountCreateTransaction {
 	tx.Transaction.SetTransactionValidDuration(duration)
 	return tx
 }
 
-// SetTransactionID sets the TransactionID for tx AccountCreateTransaction.
+// SetTransactionID sets the TransactionID for this AccountCreateTransaction.
 func (tx *AccountCreateTransaction) SetTransactionID(transactionID TransactionID) *AccountCreateTransaction {
 	tx.Transaction.SetTransactionID(transactionID)
 	return tx
 }
 
-// SetNodeAccountIDs sets the _Node AccountID for tx AccountCreateTransaction.
+// SetNodeAccountIDs sets the _Node AccountID for this AccountCreateTransaction.
 func (tx *AccountCreateTransaction) SetNodeAccountIDs(nodeID []AccountID) *AccountCreateTransaction {
 	tx.Transaction.SetNodeAccountIDs(nodeID)
 	return tx
@@ -360,7 +360,7 @@ func (tx *AccountCreateTransaction) SetMaxRetry(count int) *AccountCreateTransac
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches tx time.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (tx *AccountCreateTransaction) SetMaxBackoff(max time.Duration) *AccountCreateTransaction {
 	tx.Transaction.SetMaxBackoff(max)
 	return tx

@@ -35,7 +35,7 @@ type SystemUndeleteTransaction struct {
 }
 
 // NewSystemUndeleteTransaction creates a SystemUndeleteTransaction transaction which can be
-// used to construct and execute a System Undelete transaction.
+// used to construct and execute a System Undelete Transaction.
 func NewSystemUndeleteTransaction() *SystemUndeleteTransaction {
 	tx := SystemUndeleteTransaction{
 		Transaction: _NewTransaction(),
@@ -46,12 +46,11 @@ func NewSystemUndeleteTransaction() *SystemUndeleteTransaction {
 }
 
 func _SystemUndeleteTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *SystemUndeleteTransaction {
-	resultTx := &SystemUndeleteTransaction{
+	return &SystemUndeleteTransaction{
 		Transaction: tx,
 		contractID:  _ContractIDFromProtobuf(pb.GetSystemUndelete().GetContractID()),
 		fileID:      _FileIDFromProtobuf(pb.GetSystemUndelete().GetFileID()),
 	}
-	return resultTx
 }
 
 // SetContractID sets the ContractID of the contract whose deletion is being undone.
@@ -103,7 +102,7 @@ func (tx *SystemUndeleteTransaction) SignWithOperator(client *Client) (*SystemUn
 	return tx, nil
 }
 
-// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
 // with the publicKey as the map key.
 func (tx *SystemUndeleteTransaction) SignWith(
 	publicKey PublicKey,

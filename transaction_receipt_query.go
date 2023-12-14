@@ -30,7 +30,7 @@ import (
 // Get the receipt of a transaction, given its transaction ID. Once a transaction reaches consensus,
 // then information about whether it succeeded or failed will be available until the end of the
 // receipt period.  Before and after the receipt period, and for a transaction that was never
-// submitted, the receipt is unknown.  This Query is free (the payment field is left empty). No
+// submitted, the receipt is unknown.  This query is free (the payment field is left empty). No
 // State proof is available for this response
 type TransactionReceiptQuery struct {
 	Query
@@ -44,14 +44,13 @@ type TransactionReceiptQuery struct {
 // gets the receipt of a transaction, given its transaction ID. Once a transaction reaches consensus,
 // then information about whether it succeeded or failed will be available until the end of the
 // receipt period.  Before and after the receipt period, and for a transaction that was never
-// submitted, the receipt is unknown.  This Query is free (the payment field is left empty). No
+// submitted, the receipt is unknown.  This query is free (the payment field is left empty). No
 // State proof is available for this response
 func NewTransactionReceiptQuery() *TransactionReceiptQuery {
 	header := services.QueryHeader{}
-	result := TransactionReceiptQuery{
+	return &TransactionReceiptQuery{
 		Query: _NewQuery(false, &header),
 	}
-	return &result
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
@@ -101,7 +100,7 @@ func (q *TransactionReceiptQuery) GetCost(client *Client) (Hbar, error) {
 	return q.Query.getCost(client, q)
 }
 
-// Execute executes the QueryInterface with the provided client
+// Execute executes the Query with the provided client
 func (q *TransactionReceiptQuery) Execute(client *Client) (TransactionReceipt, error) {
 	// TODO(Toni): Custom execute here, should be checked against the common execute
 	if client == nil {
@@ -160,13 +159,13 @@ func (q *TransactionReceiptQuery) SetNodeAccountIDs(accountID []AccountID) *Tran
 	return q
 }
 
-// SetQueryPayment sets the Hbar payment to pay the _Node a fee for handling this Query
+// SetQueryPayment sets the Hbar payment to pay the _Node a fee for handling this query
 func (q *TransactionReceiptQuery) SetQueryPayment(queryPayment Hbar) *TransactionReceiptQuery {
 	q.Query.SetQueryPayment(queryPayment)
 	return q
 }
 
-// SetMaxQueryPayment sets the maximum payment allowed for this QueryInterface.
+// SetMaxQueryPayment sets the maximum payment allowed for this Query.
 func (q *TransactionReceiptQuery) SetMaxQueryPayment(queryMaxPayment Hbar) *TransactionReceiptQuery {
 	q.Query.SetMaxQueryPayment(queryMaxPayment)
 	return q

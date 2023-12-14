@@ -39,12 +39,10 @@ type TokenNftInfoQuery struct {
 // Applicable only to tokens of type NON_FUNGIBLE_UNIQUE.
 func NewTokenNftInfoQuery() *TokenNftInfoQuery {
 	header := services.QueryHeader{}
-	result := TokenNftInfoQuery{
+	return &TokenNftInfoQuery{
 		Query: _NewQuery(true, &header),
 		nftID: nil,
 	}
-
-	return &result
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
@@ -128,7 +126,7 @@ func (q *TokenNftInfoQuery) GetCost(client *Client) (Hbar, error) {
 	return q.Query.getCost(client, q)
 }
 
-// Execute executes the QueryInterface with the provided client
+// Execute executes the Query with the provided client
 func (q *TokenNftInfoQuery) Execute(client *Client) ([]TokenNftInfo, error) {
 	resp, err := q.Query.execute(client, q)
 
@@ -141,13 +139,13 @@ func (q *TokenNftInfoQuery) Execute(client *Client) ([]TokenNftInfo, error) {
 	return tokenInfos, nil
 }
 
-// SetMaxQueryPayment sets the maximum payment allowed for this QueryInterface.
+// SetMaxQueryPayment sets the maximum payment allowed for this Query.
 func (q *TokenNftInfoQuery) SetMaxQueryPayment(maxPayment Hbar) *TokenNftInfoQuery {
 	q.Query.SetMaxQueryPayment(maxPayment)
 	return q
 }
 
-// SetQueryPayment sets the payment amount for this QueryInterface.
+// SetQueryPayment sets the payment amount for this Query.
 func (q *TokenNftInfoQuery) SetQueryPayment(paymentAmount Hbar) *TokenNftInfoQuery {
 	q.Query.SetQueryPayment(paymentAmount)
 	return q

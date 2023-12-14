@@ -60,7 +60,7 @@ func _CustomFixedFeeFromProtobuf(fixedFee *services.FixedFee, customFee CustomFe
 	}
 }
 
-func (fee CustomFixedFee) validateNetworkOnIDs(client *Client) error {
+func (fee *CustomFixedFee) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -83,7 +83,7 @@ func (fee CustomFixedFee) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (fee CustomFixedFee) _ToProtobuf() *services.CustomFee {
+func (fee *CustomFixedFee) _ToProtobuf() *services.CustomFee {
 	var tokenID *services.TokenID
 	if fee.DenominationTokenID != nil {
 		tokenID = fee.DenominationTokenID._ToProtobuf()
@@ -168,7 +168,7 @@ func (fee *CustomFixedFee) SetAllCollectorsAreExempt(exempt bool) *CustomFixedFe
 }
 
 // ToBytes returns the byte representation of the CustomFixedFee
-func (fee CustomFixedFee) ToBytes() []byte {
+func (fee *CustomFixedFee) ToBytes() []byte {
 	data, err := protobuf.Marshal(fee._ToProtobuf())
 	if err != nil {
 		return make([]byte, 0)
@@ -178,7 +178,7 @@ func (fee CustomFixedFee) ToBytes() []byte {
 }
 
 // String returns a string representation of the CustomFixedFee
-func (fee CustomFixedFee) String() string {
+func (fee *CustomFixedFee) String() string {
 	if fee.DenominationTokenID != nil {
 		return fmt.Sprintf("feeCollectorAccountID: %s, amount: %d, denominatingTokenID: %s", fee.FeeCollectorAccountID.String(), fee.Amount, fee.DenominationTokenID.String())
 	}

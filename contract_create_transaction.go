@@ -27,7 +27,7 @@ import (
 )
 
 // ContractCreateTransaction which is used to start a new smart contract instance.
-// After the instance is created, the ContractID for it is in the receipt, and can be retrieved by the Record or with a GetByKey Query.
+// After the instance is created, the ContractID for it is in the receipt, and can be retrieved by the Record or with a GetByKey query.
 // The instance will run the bytecode, either stored in a previously created file or in the transaction body itself for
 // small contracts.
 type ContractCreateTransaction struct {
@@ -49,7 +49,7 @@ type ContractCreateTransaction struct {
 }
 
 // NewContractCreateTransaction creates ContractCreateTransaction which is used to start a new smart contract instance.
-// After the instance is created, the ContractID for it is in the receipt, and can be retrieved by the Record or with a GetByKey Query.
+// After the instance is created, the ContractID for it is in the receipt, and can be retrieved by the Record or with a GetByKey query.
 // The instance will run the bytecode, either stored in a previously created file or in the transaction body itself for
 // small contracts.
 func NewContractCreateTransaction() *ContractCreateTransaction {
@@ -78,7 +78,7 @@ func _ContractCreateTransactionFromProtobuf(tx Transaction, pb *services.Transac
 		autoRenewAccountID = _AccountIDFromProtobuf(pb.GetContractCreateInstance().GetAutoRenewAccountId())
 	}
 
-	resultTx := &ContractCreateTransaction{
+	return &ContractCreateTransaction{
 		Transaction:                   tx,
 		byteCodeFileID:                _FileIDFromProtobuf(pb.GetContractCreateInstance().GetFileID()),
 		adminKey:                      key,
@@ -94,7 +94,6 @@ func _ContractCreateTransactionFromProtobuf(tx Transaction, pb *services.Transac
 		stakedNodeID:                  &stakedNodeID,
 		declineReward:                 pb.GetContractCreateInstance().GetDeclineReward(),
 	}
-	return resultTx
 }
 
 // SetBytecodeFileID
@@ -130,9 +129,9 @@ func (tx *ContractCreateTransaction) GetBytecode() []byte {
 }
 
 /**
- * Sets the state of the instance and its fields can be modified arbitrarily if tx key signs a transaction
- * to modify it. If tx is null, then such modifications are not possible, and there is no administrator
- * that can override the normal operation of tx smart contract instance. Note that if it is created with no
+ * Sets the state of the instance and its fields can be modified arbitrarily if this key signs a transaction
+ * to modify it. If this is null, then such modifications are not possible, and there is no administrator
+ * that can override the normal operation of this smart contract instance. Note that if it is created with no
  * admin keys, then there is no administrator to authorize changing the admin keys, so
  * there can never be any admin keys for that instance.
  */
@@ -143,7 +142,7 @@ func (tx *ContractCreateTransaction) SetAdminKey(adminKey Key) *ContractCreateTr
 }
 
 // GetAdminKey returns the key that can sign to modify the state of the instance
-// and its fields can be modified arbitrarily if tx key signs a transaction
+// and its fields can be modified arbitrarily if this key signs a transaction
 func (tx *ContractCreateTransaction) GetAdminKey() (Key, error) {
 	return tx.adminKey, nil
 }
@@ -178,10 +177,10 @@ func (tx *ContractCreateTransaction) GetInitialBalance() Hbar {
 // renew for another auto renew period. If it does not have enough hbars to renew for that long, then the  remaining
 // hbars are used to extend its expiration as long as possible. If it is has a zero balance when it expires,
 // then it is deleted.
-func (transaction *ContractCreateTransaction) SetAutoRenewPeriod(autoRenewPeriod time.Duration) *ContractCreateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.autoRenewPeriod = &autoRenewPeriod
-	return transaction
+func (tx *ContractCreateTransaction) SetAutoRenewPeriod(autoRenewPeriod time.Duration) *ContractCreateTransaction {
+	tx._RequireNotFrozen()
+	tx.autoRenewPeriod = &autoRenewPeriod
+	return tx
 }
 
 func (tx *ContractCreateTransaction) GetAutoRenewPeriod() time.Duration {
@@ -193,8 +192,8 @@ func (tx *ContractCreateTransaction) GetAutoRenewPeriod() time.Duration {
 }
 
 // Deprecated
-// SetProxyAccountID sets the ID of the account to which tx account is proxy staked. If proxyAccountID is not set,
-// is an invalID account, or is an account that isn't a _Node, then tx account is automatically proxy staked to a _Node
+// SetProxyAccountID sets the ID of the account to which this account is proxy staked. If proxyAccountID is not set,
+// is an invalID account, or is an account that isn't a _Node, then this account is automatically proxy staked to a _Node
 // chosen by the _Network, but without earning payments. If the proxyAccountID account refuses to accept proxy staking ,
 // or if it is not currently running a _Node, then it will behave as if proxyAccountID was not set.
 func (tx *ContractCreateTransaction) SetProxyAccountID(proxyAccountID AccountID) *ContractCreateTransaction {
@@ -231,20 +230,20 @@ func (tx *ContractCreateTransaction) GetConstructorParameters() []byte {
 	return tx.parameters
 }
 
-// SetContractMemo Sets the memo to be associated with tx contract.
+// SetContractMemo Sets the memo to be associated with this contract.
 func (tx *ContractCreateTransaction) SetContractMemo(memo string) *ContractCreateTransaction {
 	tx._RequireNotFrozen()
 	tx.memo = memo
 	return tx
 }
 
-// GetContractMemo returns the memo associated with tx contract.
+// GetContractMemo returns the memo associated with this contract.
 func (tx *ContractCreateTransaction) GetContractMemo() string {
 	return tx.memo
 }
 
 // SetAutoRenewAccountID
-// An account to charge for auto-renewal of tx contract. If not set, or set to an
+// An account to charge for auto-renewal of this contract. If not set, or set to an
 // account with zero hbar balance, the contract's own hbar balance will be used to
 // cover auto-renewal fees.
 func (tx *ContractCreateTransaction) SetAutoRenewAccountID(id AccountID) *ContractCreateTransaction {
@@ -263,7 +262,7 @@ func (tx *ContractCreateTransaction) GetAutoRenewAccountID() AccountID {
 }
 
 // SetMaxAutomaticTokenAssociations
-// The maximum number of tokens that tx contract can be automatically associated
+// The maximum number of tokens that this contract can be automatically associated
 // with (i.e., receive air-drops from).
 func (tx *ContractCreateTransaction) SetMaxAutomaticTokenAssociations(max int32) *ContractCreateTransaction {
 	tx._RequireNotFrozen()
@@ -271,19 +270,19 @@ func (tx *ContractCreateTransaction) SetMaxAutomaticTokenAssociations(max int32)
 	return tx
 }
 
-// GetMaxAutomaticTokenAssociations returns the maximum number of tokens that tx contract can be automatically associated
+// GetMaxAutomaticTokenAssociations returns the maximum number of tokens that this contract can be automatically associated
 func (tx *ContractCreateTransaction) GetMaxAutomaticTokenAssociations() int32 {
 	return tx.maxAutomaticTokenAssociations
 }
 
-// SetStakedAccountID sets the account ID of the account to which tx contract is staked.
+// SetStakedAccountID sets the account ID of the account to which this contract is staked.
 func (tx *ContractCreateTransaction) SetStakedAccountID(id AccountID) *ContractCreateTransaction {
 	tx._RequireNotFrozen()
 	tx.stakedAccountID = &id
 	return tx
 }
 
-// GetStakedAccountID returns the account ID of the account to which tx contract is staked.
+// GetStakedAccountID returns the account ID of the account to which this contract is staked.
 func (tx *ContractCreateTransaction) GetStakedAccountID() AccountID {
 	if tx.stakedAccountID != nil {
 		return *tx.stakedAccountID
@@ -292,14 +291,14 @@ func (tx *ContractCreateTransaction) GetStakedAccountID() AccountID {
 	return AccountID{}
 }
 
-// SetStakedNodeID sets the node ID of the node to which tx contract is staked.
+// SetStakedNodeID sets the node ID of the node to which this contract is staked.
 func (tx *ContractCreateTransaction) SetStakedNodeID(id int64) *ContractCreateTransaction {
 	tx._RequireNotFrozen()
 	tx.stakedNodeID = &id
 	return tx
 }
 
-// GetStakedNodeID returns the node ID of the node to which tx contract is staked.
+// GetStakedNodeID returns the node ID of the node to which this contract is staked.
 func (tx *ContractCreateTransaction) GetStakedNodeID() int64 {
 	if tx.stakedNodeID != nil {
 		return *tx.stakedNodeID
@@ -343,7 +342,7 @@ func (tx *ContractCreateTransaction) SignWithOperator(
 	return tx, nil
 }
 
-// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
 // with the publicKey as the map key.
 func (tx *ContractCreateTransaction) SignWith(
 	publicKey PublicKey,
@@ -388,21 +387,21 @@ func (tx *ContractCreateTransaction) SetRegenerateTransactionID(regenerateTransa
 	return tx
 }
 
-// SetTransactionMemo sets the memo for tx ContractCreateTransaction.
+// SetTransactionMemo sets the memo for this ContractCreateTransaction.
 func (tx *ContractCreateTransaction) SetTransactionMemo(memo string) *ContractCreateTransaction {
 	tx._RequireNotFrozen()
 	tx.Transaction.SetTransactionMemo(memo)
 	return tx
 }
 
-// SetTransactionValidDuration sets the valid duration for tx ContractCreateTransaction.
+// SetTransactionValidDuration sets the valid duration for this ContractCreateTransaction.
 func (tx *ContractCreateTransaction) SetTransactionValidDuration(duration time.Duration) *ContractCreateTransaction {
 	tx._RequireNotFrozen()
 	tx.Transaction.SetTransactionValidDuration(duration)
 	return tx
 }
 
-// SetTransactionID sets the TransactionID for tx ContractCreateTransaction.
+// SetTransactionID sets the TransactionID for this ContractCreateTransaction.
 func (tx *ContractCreateTransaction) SetTransactionID(transactionID TransactionID) *ContractCreateTransaction {
 	tx._RequireNotFrozen()
 
@@ -410,7 +409,7 @@ func (tx *ContractCreateTransaction) SetTransactionID(transactionID TransactionI
 	return tx
 }
 
-// SetNodeAccountIDs sets the _Node AccountID for tx ContractCreateTransaction.
+// SetNodeAccountIDs sets the _Node AccountID for this ContractCreateTransaction.
 func (tx *ContractCreateTransaction) SetNodeAccountIDs(nodeID []AccountID) *ContractCreateTransaction {
 	tx._RequireNotFrozen()
 	tx.Transaction.SetNodeAccountIDs(nodeID)
@@ -424,7 +423,7 @@ func (tx *ContractCreateTransaction) SetMaxRetry(count int) *ContractCreateTrans
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches tx time.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (tx *ContractCreateTransaction) SetMaxBackoff(max time.Duration) *ContractCreateTransaction {
 	tx.Transaction.SetMaxBackoff(max)
 	return tx

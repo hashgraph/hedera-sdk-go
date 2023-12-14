@@ -33,17 +33,15 @@ type ContractInfoQuery struct {
 	contractID *ContractID
 }
 
-// NewContractInfoQuery creates a ContractInfoQuery Query which can be used to construct and execute a
-// Contract Get Info QueryInterface.
+// NewContractInfoQuery creates a ContractInfoQuery query which can be used to construct and execute a
+// Contract Get Info Query.
 func NewContractInfoQuery() *ContractInfoQuery {
 	header := services.QueryHeader{}
 	query := _NewQuery(true, &header)
 
-	result := ContractInfoQuery{
+	return &ContractInfoQuery{
 		Query: query,
 	}
-
-	return &result
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
@@ -70,7 +68,7 @@ func (q *ContractInfoQuery) GetCost(client *Client) (Hbar, error) {
 	return q.Query.getCost(client, q)
 }
 
-// Execute executes the QueryInterface with the provided client
+// Execute executes the Query with the provided client
 func (q *ContractInfoQuery) Execute(client *Client) (ContractInfo, error) {
 	resp, err := q.Query.execute(client, q)
 
@@ -86,13 +84,13 @@ func (q *ContractInfoQuery) Execute(client *Client) (ContractInfo, error) {
 	return info, nil
 }
 
-// SetMaxQueryPayment sets the maximum payment allowed for this QueryInterface.
+// SetMaxQueryPayment sets the maximum payment allowed for this Query.
 func (q *ContractInfoQuery) SetMaxQueryPayment(maxPayment Hbar) *ContractInfoQuery {
 	q.Query.SetMaxQueryPayment(maxPayment)
 	return q
 }
 
-// SetQueryPayment sets the payment amount for this QueryInterface.
+// SetQueryPayment sets the payment amount for this Query.
 func (q *ContractInfoQuery) SetQueryPayment(paymentAmount Hbar) *ContractInfoQuery {
 	q.Query.SetQueryPayment(paymentAmount)
 	return q

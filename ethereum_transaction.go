@@ -29,7 +29,7 @@ import (
 )
 
 // EthereumTransaction is used to create a EthereumTransaction transaction which can be used to construct and execute
-// a Ethereum transaction.
+// a Ethereum Transaction.
 type EthereumTransaction struct {
 	Transaction
 	ethereumData  []byte
@@ -38,7 +38,7 @@ type EthereumTransaction struct {
 }
 
 // NewEthereumTransaction creates a EthereumTransaction transaction which can be used to construct and execute
-// a Ethereum transaction.
+// a Ethereum Transaction.
 func NewEthereumTransaction() *EthereumTransaction {
 	tx := EthereumTransaction{
 		Transaction: _NewTransaction(),
@@ -49,13 +49,12 @@ func NewEthereumTransaction() *EthereumTransaction {
 }
 
 func _EthereumTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *EthereumTransaction {
-	resultTx := &EthereumTransaction{
+	return &EthereumTransaction{
 		Transaction:   tx,
 		ethereumData:  pb.GetEthereumTransaction().EthereumData,
 		callData:      _FileIDFromProtobuf(pb.GetEthereumTransaction().CallData),
 		MaxGasAllowed: pb.GetEthereumTransaction().MaxGasAllowance,
 	}
-	return resultTx
 }
 
 // SetEthereumData
@@ -87,7 +86,7 @@ func (tx *EthereumTransaction) SetCallDataFileID(file FileID) *EthereumTransacti
 }
 
 // GetCallData
-// For large transactions (for example contract create) tx is the callData
+// For large transactions (for example contract create) this is the callData
 // of the ethereumData. The data in the ethereumData will be re-written with
 // the callData element as a zero length string with the original contents in
 // the referenced file at time of execution. The ethereumData will need to be
@@ -146,7 +145,7 @@ func (tx *EthereumTransaction) SignWithOperator(
 	return tx, nil
 }
 
-// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
 // with the publicKey as the map key.
 func (tx *EthereumTransaction) SignWith(
 	publicKey PublicKey,
@@ -196,26 +195,26 @@ func (tx *EthereumTransaction) GetRegenerateTransactionID() bool {
 	return tx.Transaction.GetRegenerateTransactionID()
 }
 
-// GetTransactionMemo returns the memo for tx EthereumTransaction.
+// GetTransactionMemo returns the memo for this EthereumTransaction.
 func (tx *EthereumTransaction) GetTransactionMemo() string {
 	return tx.Transaction.GetTransactionMemo()
 }
 
-// SetTransactionMemo sets the memo for tx EthereumTransaction.
+// SetTransactionMemo sets the memo for this EthereumTransaction.
 func (tx *EthereumTransaction) SetTransactionMemo(memo string) *EthereumTransaction {
 	tx._RequireNotFrozen()
 	tx.Transaction.SetTransactionMemo(memo)
 	return tx
 }
 
-// SetTransactionValidDuration sets the valid duration for tx EthereumTransaction.
+// SetTransactionValidDuration sets the valid duration for this EthereumTransaction.
 func (tx *EthereumTransaction) SetTransactionValidDuration(duration time.Duration) *EthereumTransaction {
 	tx._RequireNotFrozen()
 	tx.Transaction.SetTransactionValidDuration(duration)
 	return tx
 }
 
-// SetTransactionID sets the TransactionID for tx EthereumTransaction.
+// SetTransactionID sets the TransactionID for this EthereumTransaction.
 func (tx *EthereumTransaction) SetTransactionID(transactionID TransactionID) *EthereumTransaction {
 	tx._RequireNotFrozen()
 
@@ -223,7 +222,7 @@ func (tx *EthereumTransaction) SetTransactionID(transactionID TransactionID) *Et
 	return tx
 }
 
-// SetNodeAccountIDs sets the _Node AccountID for tx EthereumTransaction.
+// SetNodeAccountIDs sets the _Node AccountID for this EthereumTransaction.
 func (tx *EthereumTransaction) SetNodeAccountIDs(nodeID []AccountID) *EthereumTransaction {
 	tx._RequireNotFrozen()
 	tx.Transaction.SetNodeAccountIDs(nodeID)
@@ -237,7 +236,7 @@ func (tx *EthereumTransaction) SetMaxRetry(count int) *EthereumTransaction {
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches tx time.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (tx *EthereumTransaction) SetMaxBackoff(max time.Duration) *EthereumTransaction {
 	tx.Transaction.SetMaxBackoff(max)
 	return tx

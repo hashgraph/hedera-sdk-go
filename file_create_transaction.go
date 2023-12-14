@@ -28,7 +28,7 @@ import (
 
 // FileCreateTransaction creates a new file, containing the given contents.  It is referenced by its FileID, and does
 // not have a filename, so it is important to get and hold onto the FileID. After the file is created, the FileID for
-// it can be found in the receipt, or retrieved with a GetByKey Query, or by asking for a Record of the transaction to
+// it can be found in the receipt, or retrieved with a GetByKey query, or by asking for a Record of the transaction to
 // be created, and retrieving that.
 //
 // See FileInfoQuery for more information about files.
@@ -45,7 +45,7 @@ type FileCreateTransaction struct {
 
 // NewFileCreateTransaction creates a FileCreateTransaction which creates a new file, containing the given contents.  It is referenced by its FileID, and does
 // not have a filename, so it is important to get and hold onto the FileID. After the file is created, the FileID for
-// it can be found in the receipt, or retrieved with a GetByKey Query, or by asking for a Record of the transaction to
+// it can be found in the receipt, or retrieved with a GetByKey query, or by asking for a Record of the transaction to
 // be created, and retrieving that.
 //
 // See FileInfoQuery for more information about files.
@@ -67,20 +67,19 @@ func _FileCreateTransactionFromProtobuf(tx Transaction, pb *services.Transaction
 	keys, _ := _KeyListFromProtobuf(pb.GetFileCreate().GetKeys())
 	expiration := _TimeFromProtobuf(pb.GetFileCreate().GetExpirationTime())
 
-	resultTx := &FileCreateTransaction{
+	return &FileCreateTransaction{
 		Transaction:    tx,
 		keys:           &keys,
 		expirationTime: &expiration,
 		contents:       pb.GetFileCreate().GetContents(),
 		memo:           pb.GetMemo(),
 	}
-	return resultTx
 }
 
 // AddKey adds a key to the internal list of keys associated with the file. All of the keys on the list must sign to
 // create or modify a file, but only one of them needs to sign in order to delete the file. Each of those "keys" may
 // itself be threshold key containing other keys (including other threshold keys). In other words, the behavior is an
-// AND for create/modify, OR for delete. tx is useful for acting as a revocation server. If it is desired to have the
+// AND for create/modify, OR for delete. This is useful for acting as a revocation server. If it is desired to have the
 // behavior be AND for all 3 operations (or OR for all 3), then the list should have only a single Key, which is a
 // threshold key, with N=1 for OR, N=M for AND.
 //
@@ -108,7 +107,7 @@ func (tx *FileCreateTransaction) GetKeys() KeyList {
 	return KeyList{}
 }
 
-// SetExpirationTime sets the time at which tx file should expire (unless FileUpdateTransaction is used before then to
+// SetExpirationTime sets the time at which this file should expire (unless FileUpdateTransaction is used before then to
 // extend its life). The file will automatically disappear at the fileExpirationTime, unless its expiration is extended
 // by another transaction before that time. If the file is deleted, then its contents will become empty and it will be
 // marked as deleted until it expires, and then it will cease to exist.
@@ -175,7 +174,7 @@ func (tx *FileCreateTransaction) SignWithOperator(
 	return tx, nil
 }
 
-// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
 // with the publicKey as the map key.
 func (tx *FileCreateTransaction) SignWith(
 	publicKey PublicKey,
@@ -229,21 +228,21 @@ func (tx *FileCreateTransaction) SetRegenerateTransactionID(regenerateTransactio
 	return tx
 }
 
-// SetTransactionMemo sets the memo for tx FileCreateTransaction.
+// SetTransactionMemo sets the memo for this FileCreateTransaction.
 func (tx *FileCreateTransaction) SetTransactionMemo(memo string) *FileCreateTransaction {
 	tx._RequireNotFrozen()
 	tx.Transaction.SetTransactionMemo(memo)
 	return tx
 }
 
-// SetTransactionValidDuration sets the valid duration for tx FileCreateTransaction.
+// SetTransactionValidDuration sets the valid duration for this FileCreateTransaction.
 func (tx *FileCreateTransaction) SetTransactionValidDuration(duration time.Duration) *FileCreateTransaction {
 	tx._RequireNotFrozen()
 	tx.Transaction.SetTransactionValidDuration(duration)
 	return tx
 }
 
-// SetTransactionID sets the TransactionID for tx FileCreateTransaction.
+// SetTransactionID sets the TransactionID for this FileCreateTransaction.
 func (tx *FileCreateTransaction) SetTransactionID(transactionID TransactionID) *FileCreateTransaction {
 	tx._RequireNotFrozen()
 
@@ -251,7 +250,7 @@ func (tx *FileCreateTransaction) SetTransactionID(transactionID TransactionID) *
 	return tx
 }
 
-// SetNodeAccountID sets the _Node AccountID for tx FileCreateTransaction.
+// SetNodeAccountID sets the _Node AccountID for this FileCreateTransaction.
 func (tx *FileCreateTransaction) SetNodeAccountIDs(nodeID []AccountID) *FileCreateTransaction {
 	tx._RequireNotFrozen()
 	tx.Transaction.SetNodeAccountIDs(nodeID)
@@ -265,7 +264,7 @@ func (tx *FileCreateTransaction) SetMaxRetry(count int) *FileCreateTransaction {
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches tx time.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (tx *FileCreateTransaction) SetMaxBackoff(max time.Duration) *FileCreateTransaction {
 	tx.Transaction.SetMaxBackoff(max)
 	return tx

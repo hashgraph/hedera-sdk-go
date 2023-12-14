@@ -51,11 +51,9 @@ type TransactionRecordQuery struct {
 // the record, then the results field will be set to nothing.
 func NewTransactionRecordQuery() *TransactionRecordQuery {
 	header := services.QueryHeader{}
-	result := TransactionRecordQuery{
+	return &TransactionRecordQuery{
 		Query: _NewQuery(true, &header),
 	}
-
-	return &result
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
@@ -105,7 +103,7 @@ func (q *TransactionRecordQuery) GetCost(client *Client) (Hbar, error) {
 	return q.Query.getCost(client, q)
 }
 
-// Execute executes the QueryInterface with the provided client
+// Execute executes the Query with the provided client
 func (q *TransactionRecordQuery) Execute(client *Client) (TransactionRecord, error) {
 	resp, err := q.Query.execute(client, q)
 
@@ -140,13 +138,13 @@ func (q *TransactionRecordQuery) SetNodeAccountIDs(accountID []AccountID) *Trans
 	return q
 }
 
-// SetQueryPayment sets the Hbar payment to pay the _Node a fee for handling this Query
+// SetQueryPayment sets the Hbar payment to pay the _Node a fee for handling this query
 func (q *TransactionRecordQuery) SetQueryPayment(queryPayment Hbar) *TransactionRecordQuery {
 	q.Query.SetQueryPayment(queryPayment)
 	return q
 }
 
-// SetMaxQueryPayment sets the maximum payment allowed for this QueryInterface.
+// SetMaxQueryPayment sets the maximum payment allowed for this Query.
 func (q *TransactionRecordQuery) SetMaxQueryPayment(queryMaxPayment Hbar) *TransactionRecordQuery {
 	q.Query.SetMaxQueryPayment(queryMaxPayment)
 	return q

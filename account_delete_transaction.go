@@ -37,12 +37,11 @@ type AccountDeleteTransaction struct {
 }
 
 func _AccountDeleteTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) *AccountDeleteTransaction {
-	resultTx := &AccountDeleteTransaction{
+	return &AccountDeleteTransaction{
 		Transaction:       transaction,
 		transferAccountID: _AccountIDFromProtobuf(pb.GetCryptoDelete().GetTransferAccountID()),
 		deleteAccountID:   _AccountIDFromProtobuf(pb.GetCryptoDelete().GetDeleteAccountID()),
 	}
-	return resultTx
 }
 
 // NewAccountDeleteTransaction creates AccountDeleteTransaction which marks an account as deleted, moving all its current hbars to another account. It will remain in
@@ -58,7 +57,7 @@ func NewAccountDeleteTransaction() *AccountDeleteTransaction {
 	return &tx
 }
 
-// SetNodeAccountID sets the _Node AccountID for tx AccountDeleteTransaction.
+// SetNodeAccountID sets the _Node AccountID for this AccountDeleteTransaction.
 func (tx *AccountDeleteTransaction) SetAccountID(accountID AccountID) *AccountDeleteTransaction {
 	tx._RequireNotFrozen()
 	tx.deleteAccountID = &accountID
@@ -104,8 +103,6 @@ func (tx *AccountDeleteTransaction) Sign(
 func (tx *AccountDeleteTransaction) SignWithOperator(
 	client *Client,
 ) (*AccountDeleteTransaction, error) {
-	// If the transaction is not signed by the _Operator, we need
-	// to sign the transaction with the _Operator
 	_, err := tx.Transaction.signWithOperator(client, tx)
 	if err != nil {
 		return nil, err
@@ -113,7 +110,7 @@ func (tx *AccountDeleteTransaction) SignWithOperator(
 	return tx, nil
 }
 
-// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
 // with the publicKey as the map key.
 func (tx *AccountDeleteTransaction) SignWith(
 	publicKey PublicKey,
@@ -158,21 +155,21 @@ func (tx *AccountDeleteTransaction) SetRegenerateTransactionID(regenerateTransac
 	return tx
 }
 
-// SetTransactionMemo sets the memo for tx AccountDeleteTransaction.
+// SetTransactionMemo sets the memo for this AccountDeleteTransaction.
 func (tx *AccountDeleteTransaction) SetTransactionMemo(memo string) *AccountDeleteTransaction {
 	tx._RequireNotFrozen()
 	tx.Transaction.SetTransactionMemo(memo)
 	return tx
 }
 
-// SetTransactionValidDuration sets the valid duration for tx AccountDeleteTransaction.
+// SetTransactionValidDuration sets the valid duration for this AccountDeleteTransaction.
 func (tx *AccountDeleteTransaction) SetTransactionValidDuration(duration time.Duration) *AccountDeleteTransaction {
 	tx._RequireNotFrozen()
 	tx.Transaction.SetTransactionValidDuration(duration)
 	return tx
 }
 
-// SetTransactionID sets the TransactionID for tx AccountDeleteTransaction.
+// SetTransactionID sets the TransactionID for this AccountDeleteTransaction.
 func (tx *AccountDeleteTransaction) SetTransactionID(transactionID TransactionID) *AccountDeleteTransaction {
 	tx._RequireNotFrozen()
 
@@ -180,7 +177,7 @@ func (tx *AccountDeleteTransaction) SetTransactionID(transactionID TransactionID
 	return tx
 }
 
-// SetNodeAccountIDs sets the _Node AccountID for tx AccountDeleteTransaction.
+// SetNodeAccountIDs sets the _Node AccountID for this AccountDeleteTransaction.
 func (tx *AccountDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *AccountDeleteTransaction {
 	tx._RequireNotFrozen()
 	tx.Transaction.SetNodeAccountIDs(nodeID)
@@ -193,7 +190,7 @@ func (tx *AccountDeleteTransaction) SetMaxRetry(count int) *AccountDeleteTransac
 	return tx
 }
 
-// SetMaxBackoff The maximum amount of time to wait between retries. Every retry attempt will increase the wait time exponentially until it reaches tx time.
+// SetMaxBackoff The maximum amount of time to wait between retries. Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (tx *AccountDeleteTransaction) SetMaxBackoff(max time.Duration) *AccountDeleteTransaction {
 	tx.Transaction.SetMaxBackoff(max)
 	return tx

@@ -60,13 +60,12 @@ func NewTokenBurnTransaction() *TokenBurnTransaction {
 }
 
 func _TokenBurnTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *TokenBurnTransaction {
-	resultTx := &TokenBurnTransaction{
+	return &TokenBurnTransaction{
 		Transaction: tx,
 		tokenID:     _TokenIDFromProtobuf(pb.GetTokenBurn().Token),
 		amount:      pb.GetTokenBurn().GetAmount(),
 		serial:      pb.GetTokenBurn().GetSerialNumbers(),
 	}
-	return resultTx
 }
 
 // SetTokenID Sets the token for which to burn tokens. If token does not exist, transaction results in
@@ -145,7 +144,7 @@ func (tx *TokenBurnTransaction) SignWithOperator(client *Client) (*TokenBurnTran
 	return tx, nil
 }
 
-// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
 // with the publicKey as the map key.
 func (tx *TokenBurnTransaction) SignWith(
 	publicKey PublicKey,

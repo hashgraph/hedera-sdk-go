@@ -80,12 +80,11 @@ func _TokenDissociateTransactionFromProtobuf(tx Transaction, pb *services.Transa
 		}
 	}
 
-	resultTx := &TokenDissociateTransaction{
+	return &TokenDissociateTransaction{
 		Transaction: tx,
 		accountID:   _AccountIDFromProtobuf(pb.GetTokenDissociate().GetAccount()),
 		tokens:      tokens,
 	}
-	return resultTx
 }
 
 // SetAccountID Sets the account to be dissociated with the provided tokens
@@ -149,7 +148,7 @@ func (tx *TokenDissociateTransaction) SignWithOperator(client *Client) (*TokenDi
 	return tx, nil
 }
 
-// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
 // with the publicKey as the map key.
 func (tx *TokenDissociateTransaction) SignWith(
 	publicKey PublicKey,

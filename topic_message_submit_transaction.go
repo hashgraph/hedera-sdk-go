@@ -55,14 +55,12 @@ func NewTopicMessageSubmitTransaction() *TopicMessageSubmitTransaction {
 }
 
 func _TopicMessageSubmitTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *TopicMessageSubmitTransaction {
-	tmsTx := &TopicMessageSubmitTransaction{
+	return &TopicMessageSubmitTransaction{
 		Transaction: tx,
 		maxChunks:   20,
 		message:     pb.GetConsensusSubmitMessage().GetMessage(),
 		topicID:     _TopicIDFromProtobuf(pb.GetConsensusSubmitMessage().GetTopicID()),
 	}
-
-	return tmsTx
 }
 
 // SetTopicID Sets the topic to submit message to.
@@ -121,7 +119,7 @@ func (tx *TopicMessageSubmitTransaction) SignWithOperator(client *Client) (*Topi
 	return tx, nil
 }
 
-// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
 // with the publicKey as the map key.
 func (tx *TopicMessageSubmitTransaction) SignWith(
 	publicKey PublicKey,
@@ -358,7 +356,7 @@ func (tx *TopicMessageSubmitTransaction) getMethod(channel *_Channel) _Method {
 	}
 }
 
-// Execute executes the QueryInterface with the provided client
+// Execute executes the Query with the provided client
 func (tx *TopicMessageSubmitTransaction) Execute(
 	client *Client,
 ) (TransactionResponse, error) {

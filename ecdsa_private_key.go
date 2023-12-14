@@ -164,7 +164,7 @@ func _ECDSAPrivateKeyFromString(s string) (*_ECDSAPrivateKey, error) {
 	return _ECDSAPrivateKeyFromBytes(b)
 }
 
-func (sk *_ECDSAPrivateKey) _PublicKey() *_ECDSAPublicKey {
+func (sk _ECDSAPrivateKey) _PublicKey() *_ECDSAPublicKey {
 	if sk.keyData.Y == nil && sk.keyData.X == nil {
 		b := sk.keyData.D.Bytes()
 		x, y := crypto.S256().ScalarBaseMult(b)
@@ -308,14 +308,14 @@ func (sk _ECDSAPrivateKey) _ToProtoKey() *services.Key {
 	return sk._PublicKey()._ToProtoKey()
 }
 
-func (sk _ECDSAPrivateKey) _SignTransaction(trx *Transaction) ([]byte, error) {
-	trx._RequireOneNodeAccountID()
+func (sk _ECDSAPrivateKey) _SignTransaction(tx *Transaction) ([]byte, error) {
+	tx._RequireOneNodeAccountID()
 
-	if trx.signedTransactions._Length() == 0 {
+	if tx.signedTransactions._Length() == 0 {
 		return make([]byte, 0), errTransactionRequiresSingleNodeAccountID
 	}
 
-	signature := sk._Sign(trx.signedTransactions._Get(0).(*services.SignedTransaction).GetBodyBytes())
+	signature := sk._Sign(tx.signedTransactions._Get(0).(*services.SignedTransaction).GetBodyBytes())
 
 	publicKey := sk._PublicKey()
 	if publicKey == nil {
@@ -326,23 +326,23 @@ func (sk _ECDSAPrivateKey) _SignTransaction(trx *Transaction) ([]byte, error) {
 		ecdsaPublicKey: publicKey,
 	}
 
-	if trx._KeyAlreadySigned(wrappedPublicKey) {
+	if tx._KeyAlreadySigned(wrappedPublicKey) {
 		return []byte{}, nil
 	}
 
-	trx.transactions = _NewLockableSlice()
-	trx.publicKeys = append(trx.publicKeys, wrappedPublicKey)
-	trx.transactionSigners = append(trx.transactionSigners, nil)
-	trx.transactionIDs.locked = true
+	tx.transactions = _NewLockableSlice()
+	tx.publicKeys = append(tx.publicKeys, wrappedPublicKey)
+	tx.transactionSigners = append(tx.transactionSigners, nil)
+	tx.transactionIDs.locked = true
 
-	for index := 0; index < trx.signedTransactions._Length(); index++ {
-		temp := trx.signedTransactions._Get(index).(*services.SignedTransaction)
+	for index := 0; index < tx.signedTransactions._Length(); index++ {
+		temp := tx.signedTransactions._Get(index).(*services.SignedTransaction)
 
 		temp.SigMap.SigPair = append(
 			temp.SigMap.SigPair,
 			publicKey._ToSignaturePairProtobuf(signature),
 		)
-		trx.signedTransactions._Set(index, temp)
+		tx.signedTransactions._Set(index, temp)
 	}
 
 	return signature, nil

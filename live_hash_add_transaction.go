@@ -32,7 +32,7 @@ import (
 // provide a revocation service for their implied credentials; for example, when an authority grants
 // a credential to the account, the account owner will cosign with the authority (or authorities) to
 // attach a hash of the credential to the account---hence proving the grant. If the credential is
-// revoked, then any of the authorities may delete it (or the account owner). In tx way, the
+// revoked, then any of the authorities may delete it (or the account owner). In this way, the
 // livehash mechanism acts as a revocation service.  An account cannot have two identical livehashes
 // associated. To modify the list of keys in a livehash, the livehash should first be deleted, then
 // recreated with a new list of keys.
@@ -49,7 +49,7 @@ type LiveHashAddTransaction struct {
 // provide a revocation service for their implied credentials; for example, when an authority grants
 // a credential to the account, the account owner will cosign with the authority (or authorities) to
 // attach a hash of the credential to the account---hence proving the grant. If the credential is
-// revoked, then any of the authorities may delete it (or the account owner). In tx way, the
+// revoked, then any of the authorities may delete it (or the account owner). In this way, the
 // livehash mechanism acts as a revocation service.  An account cannot have two identical livehashes
 // associated. To modify the list of keys in a livehash, the livehash should first be deleted, then
 // recreated with a new list of keys.
@@ -65,17 +65,16 @@ func _LiveHashAddTransactionFromProtobuf(tx Transaction, pb *services.Transactio
 	keys, _ := _KeyListFromProtobuf(pb.GetCryptoAddLiveHash().LiveHash.GetKeys())
 	duration := _DurationFromProtobuf(pb.GetCryptoAddLiveHash().LiveHash.Duration)
 
-	resultTx := &LiveHashAddTransaction{
+	return &LiveHashAddTransaction{
 		Transaction: tx,
 		accountID:   _AccountIDFromProtobuf(pb.GetCryptoAddLiveHash().GetLiveHash().GetAccountId()),
 		hash:        pb.GetCryptoAddLiveHash().LiveHash.Hash,
 		keys:        &keys,
 		duration:    &duration,
 	}
-	return resultTx
 }
 
-// When execution is attempted, a single attempt will timeout when tx deadline is reached. (The SDK may subsequently retry the execution.)
+// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (tx *LiveHashAddTransaction) SetGrpcDeadline(deadline *time.Duration) *LiveHashAddTransaction {
 	tx.Transaction.SetGrpcDeadline(deadline)
 	return tx
@@ -170,7 +169,7 @@ func (tx *LiveHashAddTransaction) SignWithOperator(
 	return tx, nil
 }
 
-// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
 // with the publicKey as the map key.
 func (tx *LiveHashAddTransaction) SignWith(
 	publicKey PublicKey,
@@ -214,25 +213,25 @@ func (tx *LiveHashAddTransaction) SetRegenerateTransactionID(regenerateTransacti
 	return tx
 }
 
-// SetTransactionMemo sets the memo for tx LiveHashAddTransaction.
+// SetTransactionMemo sets the memo for this LiveHashAddTransaction.
 func (tx *LiveHashAddTransaction) SetTransactionMemo(memo string) *LiveHashAddTransaction {
 	tx._RequireNotFrozen()
 	tx.Transaction.SetTransactionMemo(memo)
 	return tx
 }
 
-// SetTransactionValidDuration sets the valid duration for tx LiveHashAddTransaction.
+// SetTransactionValidDuration sets the valid duration for this LiveHashAddTransaction.
 func (tx *LiveHashAddTransaction) SetTransactionValidDuration(duration time.Duration) *LiveHashAddTransaction {
 	tx.Transaction.SetTransactionValidDuration(duration)
 	return tx
 }
 
-// GetTransactionID gets the TransactionID for tx	 LiveHashAddTransaction.
+// GetTransactionID gets the TransactionID for this	 LiveHashAddTransaction.
 func (tx *LiveHashAddTransaction) GetTransactionID() TransactionID {
 	return tx.Transaction.GetTransactionID()
 }
 
-// SetTransactionID sets the TransactionID for tx LiveHashAddTransaction.
+// SetTransactionID sets the TransactionID for this LiveHashAddTransaction.
 func (tx *LiveHashAddTransaction) SetTransactionID(transactionID TransactionID) *LiveHashAddTransaction {
 	tx._RequireNotFrozen()
 
@@ -240,7 +239,7 @@ func (tx *LiveHashAddTransaction) SetTransactionID(transactionID TransactionID) 
 	return tx
 }
 
-// SetNodeAccountID sets the _Node AccountID for tx LiveHashAddTransaction.
+// SetNodeAccountID sets the _Node AccountID for this LiveHashAddTransaction.
 func (tx *LiveHashAddTransaction) SetNodeAccountIDs(nodeID []AccountID) *LiveHashAddTransaction {
 	tx._RequireNotFrozen()
 	tx.Transaction.SetNodeAccountIDs(nodeID)
@@ -254,7 +253,7 @@ func (tx *LiveHashAddTransaction) SetMaxRetry(count int) *LiveHashAddTransaction
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches tx time.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (tx *LiveHashAddTransaction) SetMaxBackoff(max time.Duration) *LiveHashAddTransaction {
 	tx.Transaction.SetMaxBackoff(max)
 	return tx

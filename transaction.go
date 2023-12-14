@@ -520,6 +520,7 @@ func _TransactionFreezeWith(
 	for _, nodeAccountID := range transaction.nodeAccountIDs.slice {
 		body.NodeAccountID = nodeAccountID.(AccountID)._ToProtobuf()
 		bodyBytes, err := protobuf.Marshal(body)
+
 		if err != nil {
 			// This should be unreachable
 			// From the documentation this appears to only be possible if there are missing proto types
@@ -4811,6 +4812,10 @@ func (tx *Transaction) execute(client *Client, e TransactionInterface) (Transact
 			client.GetOperatorPublicKey(),
 			client.operator.signer,
 		)
+	}
+
+	if tx.grpcDeadline == nil {
+		tx.grpcDeadline = client.requestTimeout
 	}
 
 	resp, err := _Execute(client, e)

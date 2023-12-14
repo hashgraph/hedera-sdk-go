@@ -48,14 +48,13 @@ func NewContractDeleteTransaction() *ContractDeleteTransaction {
 }
 
 func _ContractDeleteTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *ContractDeleteTransaction {
-	resultTx := &ContractDeleteTransaction{
+	return &ContractDeleteTransaction{
 		Transaction:       tx,
 		contractID:        _ContractIDFromProtobuf(pb.GetContractDeleteInstance().GetContractID()),
 		transferContactID: _ContractIDFromProtobuf(pb.GetContractDeleteInstance().GetTransferContractID()),
 		transferAccountID: _AccountIDFromProtobuf(pb.GetContractDeleteInstance().GetTransferAccountID()),
 		permanentRemoval:  pb.GetContractDeleteInstance().GetPermanentRemoval(),
 	}
-	return resultTx
 }
 
 // Sets the contract ID which will be deleted.
@@ -108,9 +107,9 @@ func (tx *ContractDeleteTransaction) GetTransferAccountID() AccountID {
 }
 
 // SetPermanentRemoval
-// If set to true, means tx is a "synthetic" system transaction being used to
+// If set to true, means this is a "synthetic" system transaction being used to
 // alert mirror nodes that the contract is being permanently removed from the ledger.
-// IMPORTANT: User transactions cannot set tx field to true, as permanent
+// IMPORTANT: User transactions cannot set this field to true, as permanent
 // removal is always managed by the ledger itself. Any ContractDeleteTransaction
 // submitted to HAPI with permanent_removal=true will be rejected with precheck status
 // PERMANENT_REMOVAL_REQUIRES_SYSTEM_INITIATION.
@@ -121,7 +120,7 @@ func (tx *ContractDeleteTransaction) SetPermanentRemoval(remove bool) *ContractD
 	return tx
 }
 
-// GetPermanentRemoval returns true if tx is a "synthetic" system transaction.
+// GetPermanentRemoval returns true if this is a "synthetic" system transaction.
 func (tx *ContractDeleteTransaction) GetPermanentRemoval() bool {
 	return tx.permanentRemoval
 }
@@ -140,8 +139,6 @@ func (tx *ContractDeleteTransaction) Sign(
 func (tx *ContractDeleteTransaction) SignWithOperator(
 	client *Client,
 ) (*ContractDeleteTransaction, error) {
-	// If the transaction is not signed by the _Operator, we need
-	// to sign the transaction with the _Operator
 	_, err := tx.Transaction.signWithOperator(client, tx)
 	if err != nil {
 		return nil, err
@@ -149,7 +146,7 @@ func (tx *ContractDeleteTransaction) SignWithOperator(
 	return tx, nil
 }
 
-// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
 // with the publicKey as the map key.
 func (tx *ContractDeleteTransaction) SignWith(
 	publicKey PublicKey,
@@ -193,21 +190,21 @@ func (tx *ContractDeleteTransaction) SetRegenerateTransactionID(regenerateTransa
 	return tx
 }
 
-// SetTransactionMemo sets the memo for tx ContractDeleteTransaction.
+// SetTransactionMemo sets the memo for this ContractDeleteTransaction.
 func (tx *ContractDeleteTransaction) SetTransactionMemo(memo string) *ContractDeleteTransaction {
 	tx._RequireNotFrozen()
 	tx.Transaction.SetTransactionMemo(memo)
 	return tx
 }
 
-// SetTransactionValidDuration sets the valid duration for tx ContractDeleteTransaction.
+// SetTransactionValidDuration sets the valid duration for this ContractDeleteTransaction.
 func (tx *ContractDeleteTransaction) SetTransactionValidDuration(duration time.Duration) *ContractDeleteTransaction {
 	tx._RequireNotFrozen()
 	tx.Transaction.SetTransactionValidDuration(duration)
 	return tx
 }
 
-// SetTransactionID sets the TransactionID for tx ContractDeleteTransaction.
+// SetTransactionID sets the TransactionID for this ContractDeleteTransaction.
 func (tx *ContractDeleteTransaction) SetTransactionID(transactionID TransactionID) *ContractDeleteTransaction {
 	tx._RequireNotFrozen()
 
@@ -215,7 +212,7 @@ func (tx *ContractDeleteTransaction) SetTransactionID(transactionID TransactionI
 	return tx
 }
 
-// SetNodeAccountIDs sets the _Node AccountID for tx ContractDeleteTransaction.
+// SetNodeAccountIDs sets the _Node AccountID for this ContractDeleteTransaction.
 func (tx *ContractDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *ContractDeleteTransaction {
 	tx._RequireNotFrozen()
 	tx.Transaction.SetNodeAccountIDs(nodeID)
@@ -229,7 +226,7 @@ func (tx *ContractDeleteTransaction) SetMaxRetry(count int) *ContractDeleteTrans
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches tx time.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (tx *ContractDeleteTransaction) SetMaxBackoff(max time.Duration) *ContractDeleteTransaction {
 	tx.Transaction.SetMaxBackoff(max)
 	return tx

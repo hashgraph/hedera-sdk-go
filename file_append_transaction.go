@@ -40,7 +40,7 @@ type FileAppendTransaction struct {
 }
 
 // NewFileAppendTransaction creates a FileAppendTransaction transaction which can be
-// used to construct and execute a File Append transaction.
+// used to construct and execute a File Append Transaction.
 func NewFileAppendTransaction() *FileAppendTransaction {
 	tx := FileAppendTransaction{
 		Transaction: _NewTransaction(),
@@ -54,14 +54,13 @@ func NewFileAppendTransaction() *FileAppendTransaction {
 }
 
 func _FileAppendTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *FileAppendTransaction {
-	resultTx := &FileAppendTransaction{
+	return &FileAppendTransaction{
 		Transaction: tx,
 		maxChunks:   20,
 		contents:    pb.GetFileAppend().GetContents(),
 		chunkSize:   2048,
 		fileID:      _FileIDFromProtobuf(pb.GetFileAppend().GetFileID()),
 	}
-	return resultTx
 }
 
 // SetFileID sets the FileID of the file to which the bytes are appended to.
@@ -139,7 +138,7 @@ func (tx *FileAppendTransaction) SignWithOperator(
 	return tx, nil
 }
 
-// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
 // with the publicKey as the map key.
 func (tx *FileAppendTransaction) SignWith(
 	publicKey PublicKey,
@@ -259,21 +258,21 @@ func (tx *FileAppendTransaction) SetRegenerateTransactionID(regenerateTransactio
 	return tx
 }
 
-// SetTransactionMemo sets the memo for tx FileAppendTransaction.
+// SetTransactionMemo sets the memo for this FileAppendTransaction.
 func (tx *FileAppendTransaction) SetTransactionMemo(memo string) *FileAppendTransaction {
 	tx._RequireNotFrozen()
 	tx.Transaction.SetTransactionMemo(memo)
 	return tx
 }
 
-// SetTransactionValidDuration sets the valid duration for tx FileAppendTransaction.
+// SetTransactionValidDuration sets the valid duration for this FileAppendTransaction.
 func (tx *FileAppendTransaction) SetTransactionValidDuration(duration time.Duration) *FileAppendTransaction {
 	tx._RequireNotFrozen()
 	tx.Transaction.SetTransactionValidDuration(duration)
 	return tx
 }
 
-// SetTransactionID sets the TransactionID for tx FileAppendTransaction.
+// SetTransactionID sets the TransactionID for this FileAppendTransaction.
 func (tx *FileAppendTransaction) SetTransactionID(transactionID TransactionID) *FileAppendTransaction {
 	tx._RequireNotFrozen()
 
@@ -281,7 +280,7 @@ func (tx *FileAppendTransaction) SetTransactionID(transactionID TransactionID) *
 	return tx
 }
 
-// SetNodeAccountID sets the _Node AccountID for tx FileAppendTransaction.
+// SetNodeAccountID sets the _Node AccountID for this FileAppendTransaction.
 func (tx *FileAppendTransaction) SetNodeAccountIDs(nodeAccountIDs []AccountID) *FileAppendTransaction {
 	tx._RequireNotFrozen()
 	tx.Transaction.SetNodeAccountIDs(nodeAccountIDs)
@@ -295,7 +294,7 @@ func (tx *FileAppendTransaction) SetMaxRetry(count int) *FileAppendTransaction {
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches tx time.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (tx *FileAppendTransaction) SetMaxBackoff(max time.Duration) *FileAppendTransaction {
 	tx.Transaction.SetMaxBackoff(max)
 	return tx
@@ -397,6 +396,14 @@ func (tx *FileAppendTransaction) ExecuteAll(
 }
 
 func (tx *FileAppendTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	chunks := uint64((len(tx.contents) + (tx.chunkSize - 1)) / tx.chunkSize)
+	if chunks > 1 {
+		return &ScheduleCreateTransaction{}, ErrMaxChunksExceeded{
+			Chunks:    chunks,
+			MaxChunks: 1,
+		}
+	}
+
 	return tx.Transaction.schedule(tx)
 }
 

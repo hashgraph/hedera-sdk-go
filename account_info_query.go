@@ -39,18 +39,17 @@ type AccountInfoQuery struct {
 // account records.
 func NewAccountInfoQuery() *AccountInfoQuery {
 	header := services.QueryHeader{}
-	result := AccountInfoQuery{
+	return &AccountInfoQuery{
 		Query: _NewQuery(true, &header),
 	}
 
-	return &result
 }
 
 func (q *AccountInfoQuery) GetCost(client *Client) (Hbar, error) {
 	return q.Query.getCost(client, q)
 }
 
-// Execute executes the QueryInterface with the provided client
+// Execute executes the Query with the provided client
 func (q *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
 	resp, err := q.execute(client, q)
 
@@ -88,13 +87,13 @@ func (q *AccountInfoQuery) SetNodeAccountIDs(accountID []AccountID) *AccountInfo
 	return q
 }
 
-// SetQueryPayment sets the Hbar payment to pay the _Node a fee for handling this Query
+// SetQueryPayment sets the Hbar payment to pay the _Node a fee for handling this query
 func (q *AccountInfoQuery) SetQueryPayment(queryPayment Hbar) *AccountInfoQuery {
 	q.queryPayment = queryPayment
 	return q
 }
 
-// SetMaxQueryPayment sets the maximum payment allowable for this Query.
+// SetMaxQueryPayment sets the maximum payment allowable for this query.
 func (q *AccountInfoQuery) SetMaxQueryPayment(queryMaxPayment Hbar) *AccountInfoQuery {
 	q.maxQueryPayment = queryMaxPayment
 	return q

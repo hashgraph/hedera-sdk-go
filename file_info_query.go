@@ -26,7 +26,7 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
-// FileInfoQuery is a Query which can be used to get all of the information about a file, except for its contents.
+// FileInfoQuery is a query which can be used to get all of the information about a file, except for its contents.
 // When a file expires, it no longer exists, and there will be no info about it, and the fileInfo field will be blank.
 // If a transaction or smart contract deletes the file, but it has not yet expired, then the
 // fileInfo field will be non-empty, the deleted field will be true, its size will be 0,
@@ -39,10 +39,9 @@ type FileInfoQuery struct {
 // NewFileInfoQuery creates a FileInfoQuery which can be used to get all of the information about a file, except for its contents.
 func NewFileInfoQuery() *FileInfoQuery {
 	header := services.QueryHeader{}
-	result := FileInfoQuery{
+	return &FileInfoQuery{
 		Query: _NewQuery(true, &header),
 	}
-	return &result
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
@@ -70,7 +69,7 @@ func (q *FileInfoQuery) GetCost(client *Client) (Hbar, error) {
 	return q.Query.getCost(client, q)
 }
 
-// Execute executes the QueryInterface with the provided client
+// Execute executes the Query with the provided client
 func (q *FileInfoQuery) Execute(client *Client) (FileInfo, error) {
 	resp, err := q.Query.execute(client, q)
 
@@ -86,13 +85,13 @@ func (q *FileInfoQuery) Execute(client *Client) (FileInfo, error) {
 	return info, nil
 }
 
-// SetMaxQueryPayment sets the maximum payment allowed for this QueryInterface.
+// SetMaxQueryPayment sets the maximum payment allowed for this Query.
 func (q *FileInfoQuery) SetMaxQueryPayment(maxPayment Hbar) *FileInfoQuery {
 	q.Query.SetMaxQueryPayment(maxPayment)
 	return q
 }
 
-// SetQueryPayment sets the payment amount for this QueryInterface.
+// SetQueryPayment sets the payment amount for this Query.
 func (q *FileInfoQuery) SetQueryPayment(paymentAmount Hbar) *FileInfoQuery {
 	q.Query.SetQueryPayment(paymentAmount)
 	return q

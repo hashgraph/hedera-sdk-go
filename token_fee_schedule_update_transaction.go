@@ -69,12 +69,11 @@ func _TokenFeeScheduleUpdateTransactionFromProtobuf(transaction Transaction, pb 
 		customFees = append(customFees, _CustomFeeFromProtobuf(fee))
 	}
 
-	resultTx := &TokenFeeScheduleUpdateTransaction{
+	return &TokenFeeScheduleUpdateTransaction{
 		Transaction: transaction,
 		tokenID:     _TokenIDFromProtobuf(pb.GetTokenFeeScheduleUpdate().TokenId),
 		customFees:  customFees,
 	}
-	return resultTx
 }
 
 // SetTokenID Sets the token whose fee schedule is to be updated
@@ -122,7 +121,7 @@ func (tx *TokenFeeScheduleUpdateTransaction) SignWithOperator(client *Client) (*
 	return tx, nil
 }
 
-// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
 // with the publicKey as the map key.
 func (tx *TokenFeeScheduleUpdateTransaction) SignWith(
 	publicKey PublicKey,

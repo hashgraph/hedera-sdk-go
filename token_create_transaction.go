@@ -162,7 +162,7 @@ func _TokenCreateTransactionFromProtobuf(tx Transaction, pb *services.Transactio
 	expirationTime := _TimeFromProtobuf(pb.GetTokenCreation().GetExpiry())
 	autoRenew := _DurationFromProtobuf(pb.GetTokenCreation().GetAutoRenewPeriod())
 
-	resultTx := &TokenCreateTransaction{
+	return &TokenCreateTransaction{
 		Transaction:        tx,
 		treasuryAccountID:  _AccountIDFromProtobuf(pb.GetTokenCreation().GetTreasury()),
 		autoRenewAccountID: _AccountIDFromProtobuf(pb.GetTokenCreation().GetAutoRenewAccount()),
@@ -186,7 +186,6 @@ func _TokenCreateTransactionFromProtobuf(tx Transaction, pb *services.Transactio
 		expirationTime:     &expirationTime,
 		autoRenewPeriod:    &autoRenew,
 	}
-	return resultTx
 }
 
 // SetTokenName Sets the publicly visible name of the token, specified as a string of only ASCII characters
@@ -476,7 +475,7 @@ func (tx *TokenCreateTransaction) SignWithOperator(client *Client) (*TokenCreate
 	return tx, nil
 }
 
-// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
 // with the publicKey as the map key.
 func (tx *TokenCreateTransaction) SignWith(
 	publicKey PublicKey,

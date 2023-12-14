@@ -34,17 +34,15 @@ type AccountBalanceQuery struct {
 	contractID *ContractID
 }
 
-// NewAccountBalanceQuery creates an AccountBalanceQuery Query which can be used to construct and execute
+// NewAccountBalanceQuery creates an AccountBalanceQuery query which can be used to construct and execute
 // an AccountBalanceQuery.
 // It is recommended that you use this for creating new instances of an AccountBalanceQuery
 // instead of manually creating an instance of the struct.
 func NewAccountBalanceQuery() *AccountBalanceQuery {
 	header := services.QueryHeader{}
-	result := AccountBalanceQuery{
+	return &AccountBalanceQuery{
 		Query: _NewQuery(false, &header),
 	}
-
-	return &result
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
@@ -53,16 +51,16 @@ func (q *AccountBalanceQuery) SetGrpcDeadline(deadline *time.Duration) *AccountB
 	return q
 }
 
-// SetAccountID sets the AccountID for which you wish to Query the balance.
+// SetAccountID sets the AccountID for which you wish to query the balance.
 //
-// Note: you can only Query an Account or Contract but not both -- if a Contract ID or Account ID has already been set,
+// Note: you can only query an Account or Contract but not both -- if a Contract ID or Account ID has already been set,
 // it will be overwritten by this _Method.
 func (q *AccountBalanceQuery) SetAccountID(accountID AccountID) *AccountBalanceQuery {
 	q.accountID = &accountID
 	return q
 }
 
-// GetAccountID returns the AccountID for which you wish to Query the balance.
+// GetAccountID returns the AccountID for which you wish to query the balance.
 func (q *AccountBalanceQuery) GetAccountID() AccountID {
 	if q.accountID == nil {
 		return AccountID{}
@@ -71,16 +69,16 @@ func (q *AccountBalanceQuery) GetAccountID() AccountID {
 	return *q.accountID
 }
 
-// SetContractID sets the ContractID for which you wish to Query the balance.
+// SetContractID sets the ContractID for which you wish to query the balance.
 //
-// Note: you can only Query an Account or Contract but not both -- if a Contract ID or Account ID has already been set,
+// Note: you can only query an Account or Contract but not both -- if a Contract ID or Account ID has already been set,
 // it will be overwritten by this _Method.
 func (q *AccountBalanceQuery) SetContractID(contractID ContractID) *AccountBalanceQuery {
 	q.contractID = &contractID
 	return q
 }
 
-// GetContractID returns the ContractID for which you wish to Query the balance.
+// GetContractID returns the ContractID for which you wish to query the balance.
 func (q *AccountBalanceQuery) GetContractID() ContractID {
 	if q.contractID == nil {
 		return ContractID{}
@@ -93,7 +91,7 @@ func (q *AccountBalanceQuery) GetCost(client *Client) (Hbar, error) {
 	return q.Query.getCost(client, q)
 }
 
-// Execute executes the QueryInterface with the provided client
+// Execute executes the query with the provided client
 func (q *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error) {
 	if client == nil {
 		return AccountBalance{}, errNoClientProvided
@@ -116,16 +114,15 @@ func (q *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error) {
 	}
 
 	return _AccountBalanceFromProtobuf(resp.(*services.Response).GetCryptogetAccountBalance()), nil
-
 }
 
-// SetMaxQueryPayment sets the maximum payment allowed for this QueryInterface.
+// SetMaxQueryPayment sets the maximum payment allowed for this query.
 func (q *AccountBalanceQuery) SetMaxQueryPayment(maxPayment Hbar) *AccountBalanceQuery {
 	q.Query.SetMaxQueryPayment(maxPayment)
 	return q
 }
 
-// SetQueryPayment sets the payment amount for this QueryInterface.
+// SetQueryPayment sets the payment amount for this query.
 func (q *AccountBalanceQuery) SetQueryPayment(paymentAmount Hbar) *AccountBalanceQuery {
 	q.Query.SetQueryPayment(paymentAmount)
 	return q

@@ -63,12 +63,11 @@ func NewTokenRevokeKycTransaction() *TokenRevokeKycTransaction {
 }
 
 func _TokenRevokeKycTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) *TokenRevokeKycTransaction {
-	resultTx := &TokenRevokeKycTransaction{
+	return &TokenRevokeKycTransaction{
 		Transaction: transaction,
 		tokenID:     _TokenIDFromProtobuf(pb.GetTokenRevokeKyc().GetToken()),
 		accountID:   _AccountIDFromProtobuf(pb.GetTokenRevokeKyc().GetAccount()),
 	}
-	return resultTx
 }
 
 // SetTokenID Sets the token for which this account will get his KYC revoked.
@@ -121,7 +120,7 @@ func (tx *TokenRevokeKycTransaction) SignWithOperator(client *Client) (*TokenRev
 	return tx, nil
 }
 
-// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
 // with the publicKey as the map key.
 func (tx *TokenRevokeKycTransaction) SignWith(
 	publicKey PublicKey,

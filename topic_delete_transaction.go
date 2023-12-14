@@ -33,7 +33,7 @@ type TopicDeleteTransaction struct {
 }
 
 // NewTopicDeleteTransaction creates a TopicDeleteTransaction which can be used to construct
-// and execute a Consensus Delete Topic transaction.
+// and execute a Consensus Delete Topic Transaction.
 func NewTopicDeleteTransaction() *TopicDeleteTransaction {
 	tx := TopicDeleteTransaction{
 		Transaction: _NewTransaction(),
@@ -45,11 +45,10 @@ func NewTopicDeleteTransaction() *TopicDeleteTransaction {
 }
 
 func _TopicDeleteTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *TopicDeleteTransaction {
-	resultTx := &TopicDeleteTransaction{
+	return &TopicDeleteTransaction{
 		Transaction: tx,
 		topicID:     _TopicIDFromProtobuf(pb.GetConsensusDeleteTopic().GetTopicID()),
 	}
-	return resultTx
 }
 
 // SetTopicID sets the topic IDentifier.
@@ -85,7 +84,7 @@ func (tx *TopicDeleteTransaction) SignWithOperator(client *Client) (*TopicDelete
 	return tx, nil
 }
 
-// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
 // with the publicKey as the map key.
 func (tx *TopicDeleteTransaction) SignWith(
 	publicKey PublicKey,

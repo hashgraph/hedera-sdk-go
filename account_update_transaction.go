@@ -30,7 +30,7 @@ import (
 
 // AccountUpdateTransaction
 // Change properties for the given account. Any null field is ignored (left unchanged). This
-// transaction must be signed by the existing key for tx account. If the transaction is changing
+// transaction must be signed by the existing key for this account. If the transaction is changing
 // the key field, then the transaction must be signed by both the old key (from before the change)
 // and the new key. The old key must sign for security. The new key must sign as a safeguard to
 // avoid accidentally changing to an invalid key, and then having no way to recover.
@@ -53,7 +53,7 @@ type AccountUpdateTransaction struct {
 // NewAccountUpdateTransaction
 // Creates AccoutnUppdateTransaction which changes properties for the given account.
 // Any null field is ignored (left unchanged).
-// This transaction must be signed by the existing key for tx account. If the transaction is changing
+// This transaction must be signed by the existing key for this account. If the transaction is changing
 // the key field, then the transaction must be signed by both the old key (from before the change)
 // and the new key. The old key must sign for security. The new key must sign as a safeguard to
 // avoid accidentally changing to an invalid key, and then having no way to recover.
@@ -67,7 +67,7 @@ func NewAccountUpdateTransaction() *AccountUpdateTransaction {
 	return &tx
 }
 
-func _AccountUpdateTransactionFromProtobuf(transact Transaction, pb *services.TransactionBody) *AccountUpdateTransaction {
+func _AccountUpdateTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *AccountUpdateTransaction {
 	key, _ := _KeyFromProtobuf(pb.GetCryptoUpdateAccount().GetKey())
 	var receiverSignatureRequired bool
 
@@ -88,8 +88,8 @@ func _AccountUpdateTransactionFromProtobuf(transact Transaction, pb *services.Tr
 		stakeNodeAccountID = _AccountIDFromProtobuf(pb.GetCryptoUpdateAccount().GetStakedAccountId())
 	}
 
-	resultTx := &AccountUpdateTransaction{
-		Transaction:                   transact,
+	return &AccountUpdateTransaction{
+		Transaction:                   tx,
 		accountID:                     _AccountIDFromProtobuf(pb.GetCryptoUpdateAccount().GetAccountIDToUpdate()),
 		key:                           key,
 		autoRenewPeriod:               &autoRenew,
@@ -101,7 +101,6 @@ func _AccountUpdateTransactionFromProtobuf(transact Transaction, pb *services.Tr
 		stakedNodeID:                  &stakedNodeID,
 		declineReward:                 pb.GetCryptoUpdateAccount().GetDeclineReward().GetValue(),
 	}
-	return resultTx
 }
 
 // SetKey Sets the new key for the Account
@@ -210,7 +209,7 @@ func (tx *AccountUpdateTransaction) GetMaxAutomaticTokenAssociations() uint32 {
 }
 
 // SetReceiverSignatureRequired
-// If true, tx account's key must sign any transaction depositing into tx account (in
+// If true, this account's key must sign any transaction depositing into this account (in
 // addition to all withdrawals)
 func (tx *AccountUpdateTransaction) SetReceiverSignatureRequired(receiverSignatureRequired bool) *AccountUpdateTransaction {
 	tx._RequireNotFrozen()
@@ -223,7 +222,7 @@ func (tx *AccountUpdateTransaction) GetReceiverSignatureRequired() bool {
 }
 
 // Deprecated
-// SetProxyAccountID Sets the ID of the account to which tx account is proxy staked.
+// SetProxyAccountID Sets the ID of the account to which this account is proxy staked.
 func (tx *AccountUpdateTransaction) SetProxyAccountID(proxyAccountID AccountID) *AccountUpdateTransaction {
 	tx._RequireNotFrozen()
 	tx.proxyAccountID = &proxyAccountID
@@ -303,7 +302,7 @@ func (tx *AccountUpdateTransaction) SignWithOperator(
 	return tx, nil
 }
 
-// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
 // with the publicKey as the map key.
 func (tx *AccountUpdateTransaction) SignWith(
 	publicKey PublicKey,
@@ -348,21 +347,21 @@ func (tx *AccountUpdateTransaction) SetRegenerateTransactionID(regenerateTransac
 	return tx
 }
 
-// SetTransactionMemo sets the memo for tx AccountUpdateTransaction.
+// SetTransactionMemo sets the memo for this AccountUpdateTransaction.
 func (tx *AccountUpdateTransaction) SetTransactionMemo(memo string) *AccountUpdateTransaction {
 	tx._RequireNotFrozen()
 	tx.Transaction.SetTransactionMemo(memo)
 	return tx
 }
 
-// SetTransactionValidDuration sets the valid duration for tx AccountUpdateTransaction.
+// SetTransactionValidDuration sets the valid duration for this AccountUpdateTransaction.
 func (tx *AccountUpdateTransaction) SetTransactionValidDuration(duration time.Duration) *AccountUpdateTransaction {
 	tx._RequireNotFrozen()
 	tx.Transaction.SetTransactionValidDuration(duration)
 	return tx
 }
 
-// SetTransactionID sets the TransactionID for tx AccountUpdateTransaction.
+// SetTransactionID sets the TransactionID for this AccountUpdateTransaction.
 func (tx *AccountUpdateTransaction) SetTransactionID(transactionID TransactionID) *AccountUpdateTransaction {
 	tx._RequireNotFrozen()
 
@@ -370,7 +369,7 @@ func (tx *AccountUpdateTransaction) SetTransactionID(transactionID TransactionID
 	return tx
 }
 
-// SetNodeAccountIDs sets the _Node AccountID for tx AccountUpdateTransaction.
+// SetNodeAccountIDs sets the _Node AccountID for this AccountUpdateTransaction.
 func (tx *AccountUpdateTransaction) SetNodeAccountIDs(nodeID []AccountID) *AccountUpdateTransaction {
 	tx._RequireNotFrozen()
 	tx.Transaction.SetNodeAccountIDs(nodeID)
@@ -384,7 +383,7 @@ func (tx *AccountUpdateTransaction) SetMaxRetry(count int) *AccountUpdateTransac
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches tx time.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (tx *AccountUpdateTransaction) SetMaxBackoff(max time.Duration) *AccountUpdateTransaction {
 	tx.Transaction.SetMaxBackoff(max)
 	return tx

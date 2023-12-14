@@ -42,7 +42,7 @@ type ContractExecuteTransaction struct {
 }
 
 // NewContractExecuteTransaction creates a ContractExecuteTransaction transaction which can be
-// used to construct and execute a Contract Call transaction.
+// used to construct and execute a Contract Call Transaction.
 func NewContractExecuteTransaction() *ContractExecuteTransaction {
 	tx := ContractExecuteTransaction{
 		Transaction: _NewTransaction(),
@@ -53,14 +53,13 @@ func NewContractExecuteTransaction() *ContractExecuteTransaction {
 }
 
 func _ContractExecuteTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *ContractExecuteTransaction {
-	resultTx := &ContractExecuteTransaction{
+	return &ContractExecuteTransaction{
 		Transaction: tx,
 		contractID:  _ContractIDFromProtobuf(pb.GetContractCall().GetContractID()),
 		gas:         pb.GetContractCall().GetGas(),
 		amount:      pb.GetContractCall().GetAmount(),
 		parameters:  pb.GetContractCall().GetFunctionParameters(),
 	}
-	return resultTx
 }
 
 // SetContractID sets the contract instance to call.
@@ -91,15 +90,15 @@ func (tx *ContractExecuteTransaction) GetGas() uint64 {
 	return uint64(tx.gas)
 }
 
-// SetPayableAmount sets the amount of Hbar sent (the function must be payable if tx is nonzero)
+// SetPayableAmount sets the amount of Hbar sent (the function must be payable if this is nonzero)
 func (tx *ContractExecuteTransaction) SetPayableAmount(amount Hbar) *ContractExecuteTransaction {
 	tx._RequireNotFrozen()
 	tx.amount = amount.AsTinybar()
 	return tx
 }
 
-// GetPayableAmount returns the amount of Hbar sent (the function must be payable if tx is nonzero)
-func (tx ContractExecuteTransaction) GetPayableAmount() Hbar {
+// GetPayableAmount returns the amount of Hbar sent (the function must be payable if this is nonzero)
+func (tx *ContractExecuteTransaction) GetPayableAmount() Hbar {
 	return HbarFromTinybar(tx.amount)
 }
 
@@ -140,8 +139,6 @@ func (tx *ContractExecuteTransaction) Sign(
 func (tx *ContractExecuteTransaction) SignWithOperator(
 	client *Client,
 ) (*ContractExecuteTransaction, error) {
-	// If the transaction is not signed by the _Operator, we need
-	// to sign the transaction with the _Operator
 	_, err := tx.Transaction.signWithOperator(client, tx)
 	if err != nil {
 		return nil, err
@@ -149,7 +146,7 @@ func (tx *ContractExecuteTransaction) SignWithOperator(
 	return tx, nil
 }
 
-// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
 // with the publicKey as the map key.
 func (tx *ContractExecuteTransaction) SignWith(
 	publicKey PublicKey,
@@ -194,21 +191,21 @@ func (tx *ContractExecuteTransaction) SetRegenerateTransactionID(regenerateTrans
 	return tx
 }
 
-// SetTransactionMemo sets the memo for tx ContractExecuteTransaction.
+// SetTransactionMemo sets the memo for this ContractExecuteTransaction.
 func (tx *ContractExecuteTransaction) SetTransactionMemo(memo string) *ContractExecuteTransaction {
 	tx._RequireNotFrozen()
 	tx.Transaction.SetTransactionMemo(memo)
 	return tx
 }
 
-// SetTransactionValidDuration sets the valid duration for tx ContractExecuteTransaction.
+// SetTransactionValidDuration sets the valid duration for this ContractExecuteTransaction.
 func (tx *ContractExecuteTransaction) SetTransactionValidDuration(duration time.Duration) *ContractExecuteTransaction {
 	tx._RequireNotFrozen()
 	tx.Transaction.SetTransactionValidDuration(duration)
 	return tx
 }
 
-// SetTransactionID sets the TransactionID for tx ContractExecuteTransaction.
+// SetTransactionID sets the TransactionID for this ContractExecuteTransaction.
 func (tx *ContractExecuteTransaction) SetTransactionID(transactionID TransactionID) *ContractExecuteTransaction {
 	tx._RequireNotFrozen()
 
@@ -216,7 +213,7 @@ func (tx *ContractExecuteTransaction) SetTransactionID(transactionID Transaction
 	return tx
 }
 
-// SetNodeAccountIDs sets the _Node AccountID for tx ContractExecuteTransaction.
+// SetNodeAccountIDs sets the _Node AccountID for this ContractExecuteTransaction.
 func (tx *ContractExecuteTransaction) SetNodeAccountIDs(nodeID []AccountID) *ContractExecuteTransaction {
 	tx._RequireNotFrozen()
 	tx.Transaction.SetNodeAccountIDs(nodeID)
@@ -230,7 +227,7 @@ func (tx *ContractExecuteTransaction) SetMaxRetry(count int) *ContractExecuteTra
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches tx time.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (tx *ContractExecuteTransaction) SetMaxBackoff(max time.Duration) *ContractExecuteTransaction {
 	tx.Transaction.SetMaxBackoff(max)
 	return tx

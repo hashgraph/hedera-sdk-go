@@ -252,7 +252,7 @@ func intType(t *testing.T, env IntegrationTestEnv, intType string, value string)
 		SetContractID(contractID).
 		SetFunction(data.fnName, data.fnAdd(NewContractFunctionParameters(), math.U256Bytes(valueBigInt))).
 		Execute(env.Client)
-	// Due to parallel execution of tests, sometimes the Query expires. There is nothing we can do about it.
+	// Due to parallel execution of tests, sometimes the query expires. There is nothing we can do about it.
 	if err != nil {
 		contractCall, err = NewContractCallQuery().SetGas(15000000).
 			SetContractID(contractID).

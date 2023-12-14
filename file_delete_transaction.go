@@ -29,7 +29,7 @@ import (
 // FileDeleteTransaction Deletes the given file. After deletion, it will be marked as deleted and will have no contents.
 // But information about it will continue to exist until it expires. A list of keys was given when
 // the file was created. All the top level keys on that list must sign transactions to create or
-// modify the file, but any single one of the top level keys can be used to delete the file. tx
+// modify the file, but any single one of the top level keys can be used to delete the file. This
 // transaction must be signed by 1-of-M KeyList keys. If keys contains additional KeyList or
 // ThresholdKey then 1-of-M secondary KeyList or ThresholdKey signing requirements must be meet.
 type FileDeleteTransaction struct {
@@ -41,7 +41,7 @@ type FileDeleteTransaction struct {
 // it will be marked as deleted and will have no contents.
 // But information about it will continue to exist until it expires. A list of keys was given when
 // the file was created. All the top level keys on that list must sign transactions to create or
-// modify the file, but any single one of the top level keys can be used to delete the file. tx
+// modify the file, but any single one of the top level keys can be used to delete the file. This
 // transaction must be signed by 1-of-M KeyList keys. If keys contains additional KeyList or
 // ThresholdKey then 1-of-M secondary KeyList or ThresholdKey signing requirements must be meet.
 func NewFileDeleteTransaction() *FileDeleteTransaction {
@@ -54,11 +54,10 @@ func NewFileDeleteTransaction() *FileDeleteTransaction {
 }
 
 func _FileDeleteTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *FileDeleteTransaction {
-	resultTx := &FileDeleteTransaction{
+	return &FileDeleteTransaction{
 		Transaction: tx,
 		fileID:      _FileIDFromProtobuf(pb.GetFileDelete().GetFileID()),
 	}
-	return resultTx
 }
 
 // SetFileID Sets the FileID of the file to be deleted
@@ -100,7 +99,7 @@ func (tx *FileDeleteTransaction) SignWithOperator(
 	return tx, nil
 }
 
-// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
 // with the publicKey as the map key.
 func (tx *FileDeleteTransaction) SignWith(
 	publicKey PublicKey,
@@ -150,21 +149,21 @@ func (tx *FileDeleteTransaction) SetRegenerateTransactionID(regenerateTransactio
 	return tx
 }
 
-// SetTransactionMemo sets the memo for tx FileDeleteTransaction.
+// SetTransactionMemo sets the memo for this FileDeleteTransaction.
 func (tx *FileDeleteTransaction) SetTransactionMemo(memo string) *FileDeleteTransaction {
 	tx._RequireNotFrozen()
 	tx.Transaction.SetTransactionMemo(memo)
 	return tx
 }
 
-// SetTransactionValidDuration sets the valid duration for tx FileDeleteTransaction.
+// SetTransactionValidDuration sets the valid duration for this FileDeleteTransaction.
 func (tx *FileDeleteTransaction) SetTransactionValidDuration(duration time.Duration) *FileDeleteTransaction {
 	tx._RequireNotFrozen()
 	tx.Transaction.SetTransactionValidDuration(duration)
 	return tx
 }
 
-// SetTransactionID sets the TransactionID for tx FileDeleteTransaction.
+// SetTransactionID sets the TransactionID for this FileDeleteTransaction.
 func (tx *FileDeleteTransaction) SetTransactionID(transactionID TransactionID) *FileDeleteTransaction {
 	tx._RequireNotFrozen()
 
@@ -172,7 +171,7 @@ func (tx *FileDeleteTransaction) SetTransactionID(transactionID TransactionID) *
 	return tx
 }
 
-// SetNodeAccountID sets the _Node AccountID for tx FileDeleteTransaction.
+// SetNodeAccountID sets the _Node AccountID for this FileDeleteTransaction.
 func (tx *FileDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *FileDeleteTransaction {
 	tx._RequireNotFrozen()
 	tx.Transaction.SetNodeAccountIDs(nodeID)
@@ -186,7 +185,7 @@ func (tx *FileDeleteTransaction) SetMaxRetry(count int) *FileDeleteTransaction {
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches tx time.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (tx *FileDeleteTransaction) SetMaxBackoff(max time.Duration) *FileDeleteTransaction {
 	tx.Transaction.SetMaxBackoff(max)
 	return tx

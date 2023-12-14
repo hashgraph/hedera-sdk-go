@@ -35,9 +35,8 @@ func _ContractNonceInfoFromProtobuf(contractNonceInfo *services.ContractNonceInf
 		return nil
 	}
 
-	result := ContractNonceInfo{
+	return &ContractNonceInfo{
 		ContractID: _ContractIDFromProtobuf(contractNonceInfo.GetContractId()),
 		Nonce:      contractNonceInfo.GetNonce(),
 	}
-	return &result
 }

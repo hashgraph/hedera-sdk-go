@@ -26,20 +26,19 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
-// NetworkVersionInfoQuery is the Query to be executed that would return the current version of the network's protobuf and services.
+// NetworkVersionInfoQuery is the query to be executed that would return the current version of the network's protobuf and services.
 type NetworkVersionInfoQuery struct {
 	Query
 }
 
 // NewNetworkVersionQuery creates a NetworkVersionInfoQuery builder which can be used to construct and execute a
-// Network Get Version Info QueryInterface containing the current version of the network's protobuf and services.
+// Network Get Version Info Query containing the current version of the network's protobuf and services.
 func NewNetworkVersionQuery() *NetworkVersionInfoQuery {
 	header := services.QueryHeader{}
-	result := NetworkVersionInfoQuery{
+	return &NetworkVersionInfoQuery{
 		Query: _NewQuery(true, &header),
 	}
 
-	return &result
 }
 
 // SetGrpcDeadline When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
@@ -52,7 +51,7 @@ func (q *NetworkVersionInfoQuery) GetCost(client *Client) (Hbar, error) {
 	return q.Query.getCost(client, q)
 }
 
-// Execute executes the QueryInterface with the provided client
+// Execute executes the Query with the provided client
 func (q *NetworkVersionInfoQuery) Execute(client *Client) (NetworkVersionInfo, error) {
 	resp, err := q.Query.execute(client, q)
 
@@ -63,13 +62,13 @@ func (q *NetworkVersionInfoQuery) Execute(client *Client) (NetworkVersionInfo, e
 	return _NetworkVersionInfoFromProtobuf(resp.GetNetworkGetVersionInfo()), err
 }
 
-// SetMaxQueryPayment sets the maximum payment allowed for this QueryInterface.
+// SetMaxQueryPayment sets the maximum payment allowed for this Query.
 func (q *NetworkVersionInfoQuery) SetMaxQueryPayment(maxPayment Hbar) *NetworkVersionInfoQuery {
 	q.Query.SetMaxQueryPayment(maxPayment)
 	return q
 }
 
-// SetQueryPayment sets the payment amount for this QueryInterface.
+// SetQueryPayment sets the payment amount for this Query.
 func (q *NetworkVersionInfoQuery) SetQueryPayment(paymentAmount Hbar) *NetworkVersionInfoQuery {
 	q.Query.SetQueryPayment(paymentAmount)
 	return q

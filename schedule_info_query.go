@@ -35,11 +35,10 @@ type ScheduleInfoQuery struct {
 // NewScheduleInfoQuery creates ScheduleInfoQuery which gets information about a schedule in the network's action queue.
 func NewScheduleInfoQuery() *ScheduleInfoQuery {
 	header := services.QueryHeader{}
-	result := ScheduleInfoQuery{
+	return &ScheduleInfoQuery{
 		Query: _NewQuery(true, &header),
 	}
 
-	return &result
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
@@ -67,7 +66,7 @@ func (q *ScheduleInfoQuery) GetCost(client *Client) (Hbar, error) {
 	return q.Query.getCost(client, q)
 }
 
-// Execute executes the QueryInterface with the provided client
+// Execute executes the Query with the provided client
 func (q *ScheduleInfoQuery) Execute(client *Client) (ScheduleInfo, error) {
 	resp, err := q.Query.execute(client, q)
 
@@ -78,13 +77,13 @@ func (q *ScheduleInfoQuery) Execute(client *Client) (ScheduleInfo, error) {
 	return _ScheduleInfoFromProtobuf(resp.GetScheduleGetInfo().ScheduleInfo), nil
 }
 
-// SetMaxQueryPayment sets the maximum payment allowed for this QueryInterface.
+// SetMaxQueryPayment sets the maximum payment allowed for this Query.
 func (q *ScheduleInfoQuery) SetMaxQueryPayment(maxPayment Hbar) *ScheduleInfoQuery {
 	q.Query.SetMaxQueryPayment(maxPayment)
 	return q
 }
 
-// SetQueryPayment sets the payment amount for this QueryInterface.
+// SetQueryPayment sets the payment amount for this Query.
 func (q *ScheduleInfoQuery) SetQueryPayment(paymentAmount Hbar) *ScheduleInfoQuery {
 	q.Query.SetQueryPayment(paymentAmount)
 	return q

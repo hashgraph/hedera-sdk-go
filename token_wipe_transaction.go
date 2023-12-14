@@ -79,14 +79,13 @@ func NewTokenWipeTransaction() *TokenWipeTransaction {
 }
 
 func _TokenWipeTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *TokenWipeTransaction {
-	resultTx := &TokenWipeTransaction{
+	return &TokenWipeTransaction{
 		Transaction: tx,
 		tokenID:     _TokenIDFromProtobuf(pb.GetTokenWipe().GetToken()),
 		accountID:   _AccountIDFromProtobuf(pb.GetTokenWipe().GetAccount()),
 		amount:      pb.GetTokenWipe().Amount,
 		serial:      pb.GetTokenWipe().GetSerialNumbers(),
 	}
-	return resultTx
 }
 
 // SetTokenID Sets the token for which the account will be wiped. If token does not exist, transaction results in
@@ -172,7 +171,7 @@ func (tx *TokenWipeTransaction) SignWithOperator(client *Client) (*TokenWipeTran
 	return tx, nil
 }
 
-// SignWith executes the TransactionSigner and adds the resulting signature data to the transaction's signature map
+// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
 // with the publicKey as the map key.
 func (tx *TokenWipeTransaction) SignWith(
 	publicKey PublicKey,
