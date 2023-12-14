@@ -60,7 +60,7 @@ func _CustomFixedFeeFromProtobuf(fixedFee *services.FixedFee, customFee CustomFe
 	}
 }
 
-func (fee *CustomFixedFee) validateNetworkOnIDs(client *Client) error {
+func (fee CustomFixedFee) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -83,7 +83,7 @@ func (fee *CustomFixedFee) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (fee *CustomFixedFee) _ToProtobuf() *services.CustomFee {
+func (fee CustomFixedFee) _ToProtobuf() *services.CustomFee {
 	var tokenID *services.TokenID
 	if fee.DenominationTokenID != nil {
 		tokenID = fee.DenominationTokenID._ToProtobuf()

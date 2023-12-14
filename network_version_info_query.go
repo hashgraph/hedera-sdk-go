@@ -38,7 +38,6 @@ func NewNetworkVersionQuery() *NetworkVersionInfoQuery {
 	return &NetworkVersionInfoQuery{
 		Query: _NewQuery(true, &header),
 	}
-
 }
 
 // SetGrpcDeadline When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)

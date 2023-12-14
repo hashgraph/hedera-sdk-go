@@ -318,7 +318,7 @@ func (q *Query) makeRequest() interface{} {
 	return q.pb
 }
 
-func (q *Query) mapResponse(response interface{}, _ AccountID, _ interface{}) (interface{}, error) {
+func (q *Query) mapResponse(response interface{}, _ AccountID, _ interface{}) (interface{}, error) { // nolint
 	return response.(*services.Response), nil
 }
 

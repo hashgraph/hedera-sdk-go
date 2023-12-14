@@ -42,7 +42,6 @@ func NewAccountInfoQuery() *AccountInfoQuery {
 	return &AccountInfoQuery{
 		Query: _NewQuery(true, &header),
 	}
-
 }
 
 func (q *AccountInfoQuery) GetCost(client *Client) (Hbar, error) {

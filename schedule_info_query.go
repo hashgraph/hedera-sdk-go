@@ -38,7 +38,6 @@ func NewScheduleInfoQuery() *ScheduleInfoQuery {
 	return &ScheduleInfoQuery{
 		Query: _NewQuery(true, &header),
 	}
-
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)

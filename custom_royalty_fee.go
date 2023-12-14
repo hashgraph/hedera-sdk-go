@@ -117,7 +117,7 @@ func _CustomRoyaltyFeeFromProtobuf(royalty *services.RoyaltyFee, fee CustomFee) 
 	}
 }
 
-func (fee *CustomRoyaltyFee) validateNetworkOnIDs(client *Client) error {
+func (fee CustomRoyaltyFee) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums || fee.FallbackFee == nil {
 		return nil
 	}
@@ -125,7 +125,7 @@ func (fee *CustomRoyaltyFee) validateNetworkOnIDs(client *Client) error {
 	return fee.FallbackFee.validateNetworkOnIDs(client)
 }
 
-func (fee *CustomRoyaltyFee) _ToProtobuf() *services.CustomFee {
+func (fee CustomRoyaltyFee) _ToProtobuf() *services.CustomFee {
 	var fallback *services.FixedFee
 	if fee.FallbackFee != nil {
 		fallback = fee.FallbackFee._ToProtobuf().GetFixedFee()

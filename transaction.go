@@ -812,7 +812,7 @@ func (tx *Transaction) SetNodeAccountIDs(nodeAccountIDs []AccountID) *Transactio
 func (tx *Transaction) Sign(privateKey PrivateKey) TransactionInterface {
 	return tx.SignWith(privateKey.PublicKey(), privateKey.Sign)
 }
-func (tx *Transaction) signWithOperator(client *Client, e TransactionInterface) (TransactionInterface, error) {
+func (tx *Transaction) signWithOperator(client *Client, e TransactionInterface) (TransactionInterface, error) { // nolint
 	// If the transaction is not signed by the _Operator, we need
 	// to sign the transaction with the _Operator
 
@@ -4836,7 +4836,7 @@ func (tx *Transaction) execute(client *Client, e TransactionInterface) (Transact
 	}, nil
 }
 
-func (tx *Transaction) freezeWith(client *Client, e TransactionInterface) (TransactionInterface, error) {
+func (tx *Transaction) freezeWith(client *Client, e TransactionInterface) (TransactionInterface, error) { //nolint
 	if tx.IsFrozen() {
 		return tx, nil
 	}
