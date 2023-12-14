@@ -44,8 +44,6 @@ type ITransaction interface {
 type TransactionInterface interface {
 	Executable
 
-	Execute(client *Client) (TransactionResponse, error)
-
 	build() *services.TransactionBody
 	buildScheduled() (*services.SchedulableTransactionBody, error)
 	preFreezeWith(*Client)
@@ -810,55 +808,10 @@ func (tx *Transaction) SetNodeAccountIDs(nodeAccountIDs []AccountID) *Transactio
 }
 
 // ------------ Transaction methdos ---------------
-func (tx *Transaction) Execute(client *Client) (TransactionResponse, error) {
-	if client == nil {
-		return TransactionResponse{}, errNoClientProvided
-	}
-
-	if tx.freezeError != nil {
-		return TransactionResponse{}, tx.freezeError
-	}
-
-	if !tx.IsFrozen() {
-		_, err := tx.FreezeWith(client)
-		if err != nil {
-			return TransactionResponse{}, err
-		}
-	}
-
-	transactionID := tx.transactionIDs._GetCurrent().(TransactionID)
-
-	if !client.GetOperatorAccountID()._IsZero() && client.GetOperatorAccountID()._Equals(*transactionID.AccountID) {
-		tx.SignWith(
-			client.GetOperatorPublicKey(),
-			client.operator.signer,
-		)
-	}
-
-	resp, err := _Execute(
-		client,
-		tx.e,
-	)
-
-	if err != nil {
-		return TransactionResponse{
-			TransactionID:  tx.GetTransactionID(),
-			NodeID:         resp.(TransactionResponse).NodeID,
-			ValidateStatus: true,
-		}, err
-	}
-
-	return TransactionResponse{
-		TransactionID:  tx.GetTransactionID(),
-		NodeID:         resp.(TransactionResponse).NodeID,
-		Hash:           resp.(TransactionResponse).Hash,
-		ValidateStatus: true,
-	}, nil
-}
 func (tx *Transaction) Sign(privateKey PrivateKey) TransactionInterface {
 	return tx.SignWith(privateKey.PublicKey(), privateKey.Sign)
 }
-func (tx *Transaction) SignWithOperator(client *Client) (TransactionInterface, error) {
+func (tx *Transaction) signWithOperator(client *Client, e TransactionInterface) (TransactionInterface, error) {
 	// If the transaction is not signed by the _Operator, we need
 	// to sign the transaction with the _Operator
 
@@ -869,7 +822,7 @@ func (tx *Transaction) SignWithOperator(client *Client) (TransactionInterface, e
 	}
 
 	if !tx.IsFrozen() {
-		_, err := tx.FreezeWith(client)
+		_, err := tx.freezeWith(client, e)
 		if err != nil {
 			return tx, err
 		}
@@ -913,40 +866,6 @@ func (tx *Transaction) AddSignature(publicKey PublicKey, signature []byte) Trans
 	}
 
 	return tx
-}
-func (tx *Transaction) Freeze() (TransactionInterface, error) {
-	return tx.FreezeWith(nil)
-}
-func (tx *Transaction) FreezeWith(client *Client) (TransactionInterface, error) {
-	if tx.IsFrozen() {
-		return tx, nil
-	}
-
-	tx.e.(TransactionInterface).preFreezeWith(client)
-
-	tx._InitFee(client)
-	if err := tx._InitTransactionID(client); err != nil {
-		return tx, err
-	}
-
-	err := tx.e.validateNetworkOnIDs(client)
-	if err != nil {
-		return &Transaction{}, err
-	}
-	body := tx.e.(TransactionInterface).build()
-
-	return tx, _TransactionFreezeWith(tx, client, body)
-}
-
-func (tx *Transaction) Schedule() (*ScheduleCreateTransaction, error) {
-	tx._RequireNotFrozen()
-
-	scheduled, err := tx.e.(TransactionInterface).buildScheduled()
-	if err != nil {
-		return nil, err
-	}
-
-	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
 // Building empty object as "default" implementation. All inhertents must implement their own implementation.
@@ -4779,7 +4698,7 @@ func TransactionExecute(transaction interface{}, client *Client) (TransactionRes
 
 // ------------ Executable Functions ------------
 
-func (tx *Transaction) shouldRetry(response interface{}) _ExecutionState {
+func (tx *Transaction) shouldRetry(_ Executable, response interface{}) _ExecutionState {
 	status := Status(response.(*services.TransactionResponse).NodeTransactionPrecheckCode)
 	switch status {
 	case StatusPlatformTransactionNotCreated, StatusPlatformNotActive, StatusBusy:
@@ -4810,6 +4729,7 @@ func (tx *Transaction) getNodeAccountID() AccountID {
 }
 
 func (tx *Transaction) mapStatusError(
+	_ Executable,
 	response interface{},
 ) error {
 	return ErrHederaPreCheckStatus{
@@ -4835,7 +4755,7 @@ func (tx *Transaction) mapResponse(_ interface{}, nodeID AccountID, protoRequest
 
 // Building empty object as "default" implementation. All inhertents must implement their own implementation.
 func (tx *Transaction) getMethod(ch *_Channel) _Method {
-	return tx.e.getMethod(ch)
+	return _Method{}
 }
 
 // Building empty object as "default" implementation. All inhertents must implement their own implementation.
@@ -4866,4 +4786,79 @@ func (tx *Transaction) regenerateID(client *Client) bool {
 		return true
 	}
 	return false
+}
+
+func (tx *Transaction) execute(client *Client, e TransactionInterface) (TransactionResponse, error) {
+	if client == nil {
+		return TransactionResponse{}, errNoClientProvided
+	}
+
+	if tx.freezeError != nil {
+		return TransactionResponse{}, tx.freezeError
+	}
+
+	if !tx.IsFrozen() {
+		_, err := tx.freezeWith(client, e)
+		if err != nil {
+			return TransactionResponse{}, err
+		}
+	}
+
+	transactionID := tx.transactionIDs._GetCurrent().(TransactionID)
+
+	if !client.GetOperatorAccountID()._IsZero() && client.GetOperatorAccountID()._Equals(*transactionID.AccountID) {
+		tx.SignWith(
+			client.GetOperatorPublicKey(),
+			client.operator.signer,
+		)
+	}
+
+	resp, err := _Execute(client, e)
+
+	if err != nil {
+		return TransactionResponse{
+			TransactionID:  tx.GetTransactionID(),
+			NodeID:         resp.(TransactionResponse).NodeID,
+			ValidateStatus: true,
+		}, err
+	}
+
+	return TransactionResponse{
+		TransactionID:  tx.GetTransactionID(),
+		NodeID:         resp.(TransactionResponse).NodeID,
+		Hash:           resp.(TransactionResponse).Hash,
+		ValidateStatus: true,
+	}, nil
+}
+
+func (tx *Transaction) freezeWith(client *Client, e TransactionInterface) (TransactionInterface, error) {
+	if tx.IsFrozen() {
+		return tx, nil
+	}
+
+	e.preFreezeWith(client)
+
+	tx._InitFee(client)
+	if err := tx._InitTransactionID(client); err != nil {
+		return tx, err
+	}
+
+	err := e.validateNetworkOnIDs(client)
+	if err != nil {
+		return &Transaction{}, err
+	}
+	body := e.build()
+
+	return tx, _TransactionFreezeWith(tx, client, body)
+}
+
+func (tx *Transaction) schedule(e TransactionInterface) (*ScheduleCreateTransaction, error) {
+	tx._RequireNotFrozen()
+
+	scheduled, err := e.buildScheduled()
+	if err != nil {
+		return nil, err
+	}
+
+	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }

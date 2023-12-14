@@ -49,7 +49,6 @@ func NewTopicMessageSubmitTransaction() *TopicMessageSubmitTransaction {
 		message:     make([]byte, 0),
 	}
 
-	tx.e = &tx
 	tx._SetDefaultMaxTransactionFee(NewHbar(2))
 
 	return &tx
@@ -115,7 +114,7 @@ func (tx *TopicMessageSubmitTransaction) Sign(privateKey PrivateKey) *TopicMessa
 
 // SignWithOperator signs the transaction with client's operator privateKey.
 func (tx *TopicMessageSubmitTransaction) SignWithOperator(client *Client) (*TopicMessageSubmitTransaction, error) {
-	_, err := tx.Transaction.SignWithOperator(client)
+	_, err := tx.Transaction.signWithOperator(client, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -297,10 +296,10 @@ func (tx *TopicMessageSubmitTransaction) Schedule() (*ScheduleCreateTransaction,
 		}
 	}
 
-	return tx.Transaction.Schedule()
+	return tx.Transaction.schedule(tx)
 }
 
-// ----------- overriden functions ----------------
+// ----------- Overridden functions ----------------
 
 func (tx *TopicMessageSubmitTransaction) getName() string {
 	return "TopicMessageSubmitTransaction"

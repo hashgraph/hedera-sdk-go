@@ -59,7 +59,6 @@ func NewContractCreateTransaction() *ContractCreateTransaction {
 
 	tx.SetAutoRenewPeriod(131500 * time.Minute)
 	tx._SetDefaultMaxTransactionFee(NewHbar(20))
-	tx.e = &tx
 
 	return &tx
 }
@@ -95,7 +94,6 @@ func _ContractCreateTransactionFromProtobuf(tx Transaction, pb *services.Transac
 		stakedNodeID:                  &stakedNodeID,
 		declineReward:                 pb.GetContractCreateInstance().GetDeclineReward(),
 	}
-	resultTx.e = resultTx
 	return resultTx
 }
 
@@ -338,7 +336,7 @@ func (tx *ContractCreateTransaction) SignWithOperator(
 ) (*ContractCreateTransaction, error) {
 	// If the transaction is not signed by the _Operator, we need
 	// to sign the transaction with the _Operator
-	_, err := tx.Transaction.SignWithOperator(client)
+	_, err := tx.Transaction.signWithOperator(client, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -368,12 +366,11 @@ func (tx *ContractCreateTransaction) SetGrpcDeadline(deadline *time.Duration) *C
 }
 
 func (tx *ContractCreateTransaction) Freeze() (*ContractCreateTransaction, error) {
-	_, err := tx.Transaction.Freeze()
-	return tx, err
+	return tx.FreezeWith(nil)
 }
 
 func (tx *ContractCreateTransaction) FreezeWith(client *Client) (*ContractCreateTransaction, error) {
-	_, err := tx.Transaction.FreezeWith(client)
+	_, err := tx.Transaction.freezeWith(client, tx)
 	return tx, err
 }
 
@@ -444,7 +441,15 @@ func (tx *ContractCreateTransaction) SetLogLevel(level LogLevel) *ContractCreate
 	return tx
 }
 
-// ----------- overriden functions ----------------
+func (tx *ContractCreateTransaction) Execute(client *Client) (TransactionResponse, error) {
+	return tx.Transaction.execute(client, tx)
+}
+
+func (tx *ContractCreateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	return tx.Transaction.schedule(tx)
+}
+
+// ----------- Overridden functions ----------------
 
 func (tx *ContractCreateTransaction) getName() string {
 	return "ContractCreateTransaction"

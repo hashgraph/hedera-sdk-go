@@ -37,7 +37,6 @@ func NewEthereumFlow() *EthereumFlow {
 		Transaction: _NewTransaction(),
 	}
 
-	tx.e = &tx
 	tx._SetDefaultMaxTransactionFee(NewHbar(20))
 
 	return &tx

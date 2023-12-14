@@ -58,7 +58,6 @@ func NewAccountCreateTransaction() *AccountCreateTransaction {
 		Transaction: _NewTransaction(),
 	}
 
-	tx.e = &tx
 	tx.SetAutoRenewPeriod(7890000 * time.Second)
 	tx._SetDefaultMaxTransactionFee(NewHbar(5))
 
@@ -274,7 +273,7 @@ func (tx *AccountCreateTransaction) Sign(
 func (tx *AccountCreateTransaction) SignWithOperator(
 	client *Client,
 ) (*AccountCreateTransaction, error) {
-	_, err := tx.Transaction.SignWithOperator(client)
+	_, err := tx.Transaction.signWithOperator(client, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -304,12 +303,11 @@ func (tx *AccountCreateTransaction) SetGrpcDeadline(deadline *time.Duration) *Ac
 }
 
 func (tx *AccountCreateTransaction) Freeze() (*AccountCreateTransaction, error) {
-	_, err := tx.Transaction.Freeze()
-	return tx, err
+	return tx.FreezeWith(nil)
 }
 
 func (tx *AccountCreateTransaction) FreezeWith(client *Client) (*AccountCreateTransaction, error) {
-	_, err := tx.Transaction.FreezeWith(client)
+	_, err := tx.Transaction.freezeWith(client, tx)
 	return tx, err
 }
 
@@ -327,29 +325,24 @@ func (tx *AccountCreateTransaction) SetMaxTransactionFee(fee Hbar) *AccountCreat
 
 // SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
 func (tx *AccountCreateTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *AccountCreateTransaction {
-	tx._RequireNotFrozen()
 	tx.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
 	return tx
 }
 
 // SetTransactionMemo sets the memo for tx AccountCreateTransaction.
 func (tx *AccountCreateTransaction) SetTransactionMemo(memo string) *AccountCreateTransaction {
-	tx._RequireNotFrozen()
 	tx.Transaction.SetTransactionMemo(memo)
 	return tx
 }
 
 // SetTransactionValidDuration sets the valid duration for tx AccountCreateTransaction.
 func (tx *AccountCreateTransaction) SetTransactionValidDuration(duration time.Duration) *AccountCreateTransaction {
-	tx._RequireNotFrozen()
 	tx.Transaction.SetTransactionValidDuration(duration)
 	return tx
 }
 
 // SetTransactionID sets the TransactionID for tx AccountCreateTransaction.
 func (tx *AccountCreateTransaction) SetTransactionID(transactionID TransactionID) *AccountCreateTransaction {
-	tx._RequireNotFrozen()
-
 	tx.Transaction.SetTransactionID(transactionID)
 	return tx
 }
@@ -384,7 +377,15 @@ func (tx *AccountCreateTransaction) SetLogLevel(level LogLevel) *AccountCreateTr
 	return tx
 }
 
-// ----------- overriden functions ----------------
+func (tx *AccountCreateTransaction) Execute(client *Client) (TransactionResponse, error) {
+	return tx.Transaction.execute(client, tx)
+}
+
+func (tx *AccountCreateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	return tx.Transaction.schedule(tx)
+}
+
+// ----------- Overridden functions ----------------
 
 func (tx *AccountCreateTransaction) getName() string {
 	return "AccountCreateTransaction"

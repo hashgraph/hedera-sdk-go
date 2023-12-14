@@ -49,7 +49,6 @@ func NewFileAppendTransaction() *FileAppendTransaction {
 		chunkSize:   2048,
 	}
 	tx._SetDefaultMaxTransactionFee(NewHbar(5))
-	tx.e = &tx
 
 	return &tx
 }
@@ -62,7 +61,6 @@ func _FileAppendTransactionFromProtobuf(tx Transaction, pb *services.Transaction
 		chunkSize:   2048,
 		fileID:      _FileIDFromProtobuf(pb.GetFileAppend().GetFileID()),
 	}
-	resultTx.e = resultTx
 	return resultTx
 }
 
@@ -134,7 +132,7 @@ func (tx *FileAppendTransaction) SignWithOperator(
 ) (*FileAppendTransaction, error) {
 	// If the transaction is not signed by the _Operator, we need
 	// to sign the transaction with the _Operator
-	_, err := tx.Transaction.SignWithOperator(client)
+	_, err := tx.Transaction.signWithOperator(client, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -314,7 +312,95 @@ func (tx *FileAppendTransaction) SetLogLevel(level LogLevel) *FileAppendTransact
 	return tx
 }
 
-// ----------- overriden functions ----------------
+// Execute executes the Transaction with the provided client
+func (tx *FileAppendTransaction) Execute(
+	client *Client,
+) (TransactionResponse, error) {
+	if client == nil {
+		return TransactionResponse{}, errNoClientProvided
+	}
+
+	if tx.freezeError != nil {
+		return TransactionResponse{}, tx.freezeError
+	}
+
+	list, err := tx.ExecuteAll(client)
+
+	if err != nil {
+		if len(list) > 0 {
+			return TransactionResponse{
+				TransactionID: tx.GetTransactionID(),
+				NodeID:        list[0].NodeID,
+				Hash:          make([]byte, 0),
+			}, err
+		}
+		return TransactionResponse{
+			TransactionID: tx.GetTransactionID(),
+			Hash:          make([]byte, 0),
+		}, err
+	}
+
+	return list[0], nil
+}
+
+// ExecuteAll executes the all the Transactions with the provided client
+func (tx *FileAppendTransaction) ExecuteAll(
+	client *Client,
+) ([]TransactionResponse, error) {
+	if client == nil || client.operator == nil {
+		return []TransactionResponse{}, errNoClientProvided
+	}
+
+	if !tx.IsFrozen() {
+		_, err := tx.FreezeWith(client)
+		if err != nil {
+			return []TransactionResponse{}, err
+		}
+	}
+
+	var transactionID TransactionID
+	if tx.transactionIDs._Length() > 0 {
+		transactionID = tx.GetTransactionID()
+	} else {
+		return []TransactionResponse{}, errors.New("transactionID list is empty")
+	}
+
+	if !client.GetOperatorAccountID()._IsZero() && client.GetOperatorAccountID()._Equals(*transactionID.AccountID) {
+		tx.SignWith(
+			client.GetOperatorPublicKey(),
+			client.operator.signer,
+		)
+	}
+
+	size := tx.signedTransactions._Length() / tx.nodeAccountIDs._Length()
+	list := make([]TransactionResponse, size)
+
+	for i := 0; i < size; i++ {
+		resp, err := _Execute(client, tx)
+
+		if err != nil {
+			return list, err
+		}
+
+		list[i] = resp.(TransactionResponse)
+
+		_, err = NewTransactionReceiptQuery().
+			SetNodeAccountIDs([]AccountID{resp.(TransactionResponse).NodeID}).
+			SetTransactionID(resp.(TransactionResponse).TransactionID).
+			Execute(client)
+		if err != nil {
+			return list, err
+		}
+	}
+
+	return list, nil
+}
+
+func (tx *FileAppendTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	return tx.Transaction.schedule(tx)
+}
+
+// ----------- Overridden functions ----------------
 
 func (tx *FileAppendTransaction) getName() string {
 	return "FileAppendTransaction"

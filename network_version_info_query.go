@@ -39,7 +39,6 @@ func NewNetworkVersionQuery() *NetworkVersionInfoQuery {
 		Query: _NewQuery(true, &header),
 	}
 
-	result.e = &result
 	return &result
 }
 
@@ -49,9 +48,13 @@ func (q *NetworkVersionInfoQuery) SetGrpcDeadline(deadline *time.Duration) *Netw
 	return q
 }
 
+func (q *NetworkVersionInfoQuery) GetCost(client *Client) (Hbar, error) {
+	return q.Query.getCost(client, q)
+}
+
 // Execute executes the QueryInterface with the provided client
 func (q *NetworkVersionInfoQuery) Execute(client *Client) (NetworkVersionInfo, error) {
-	resp, err := q.Query.execute(client)
+	resp, err := q.Query.execute(client, q)
 
 	if err != nil {
 		return NetworkVersionInfo{}, err
@@ -138,5 +141,4 @@ func (q *NetworkVersionInfoQuery) validateNetworkOnIDs(*Client) error {
 
 func (q *NetworkVersionInfoQuery) getQueryResponse(response *services.Response) queryResponse {
 	return response.GetNetworkGetVersionInfo()
-
 }

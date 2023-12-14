@@ -41,6 +41,7 @@ import (
 )
 
 func TestUnitMockQuery(t *testing.T) {
+	t.Parallel()
 	responses := [][]interface{}{
 		{
 			&services.Response{
@@ -180,6 +181,7 @@ func DisabledTestUnitMockBackoff(t *testing.T) {
 }
 
 func TestUnitMockAddressBookQuery(t *testing.T) {
+	t.Parallel()
 	responses := [][]interface{}{{
 		&services.NodeAddress{
 			RSA_PubKey: "",
@@ -246,6 +248,7 @@ func TestUnitMockAddressBookQuery(t *testing.T) {
 }
 
 func TestUnitMockGenerateTransactionIDsPerExecution(t *testing.T) {
+	t.Parallel()
 	count := 0
 	transactionIds := make(map[string]bool)
 
@@ -314,6 +317,7 @@ func TestUnitMockGenerateTransactionIDsPerExecution(t *testing.T) {
 }
 
 func TestUnitMockSingleTransactionIDForExecutions(t *testing.T) {
+	t.Parallel()
 	count := 0
 	tran := TransactionIDGenerate(AccountID{Account: 1800})
 	transactionIds := make(map[string]bool)
@@ -384,6 +388,7 @@ func TestUnitMockSingleTransactionIDForExecutions(t *testing.T) {
 }
 
 func TestUnitMockSingleTransactionIDForExecutionsWithTimeout(t *testing.T) {
+	t.Parallel()
 	count := 0
 	tran := TransactionIDGenerate(AccountID{Account: 1800})
 	transactionIds := make(map[string]bool)

@@ -50,7 +50,6 @@ func NewContractCreateFlow() *ContractCreateFlow {
 		Transaction: _NewTransaction(),
 	}
 
-	this.e = &this
 	this.SetAutoRenewPeriod(131500 * time.Minute)
 	this.SetMaxTransactionFee(NewHbar(20))
 

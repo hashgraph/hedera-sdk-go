@@ -41,7 +41,6 @@ func NewSystemUndeleteTransaction() *SystemUndeleteTransaction {
 		Transaction: _NewTransaction(),
 	}
 	tx._SetDefaultMaxTransactionFee(NewHbar(2))
-	tx.e = &tx
 
 	return &tx
 }
@@ -52,7 +51,6 @@ func _SystemUndeleteTransactionFromProtobuf(tx Transaction, pb *services.Transac
 		contractID:  _ContractIDFromProtobuf(pb.GetSystemUndelete().GetContractID()),
 		fileID:      _FileIDFromProtobuf(pb.GetSystemUndelete().GetFileID()),
 	}
-	resultTx.e = resultTx
 	return resultTx
 }
 
@@ -98,7 +96,7 @@ func (tx *SystemUndeleteTransaction) Sign(privateKey PrivateKey) *SystemUndelete
 
 // SignWithOperator signs the transaction with client's operator privateKey.
 func (tx *SystemUndeleteTransaction) SignWithOperator(client *Client) (*SystemUndeleteTransaction, error) {
-	_, err := tx.Transaction.SignWithOperator(client)
+	_, err := tx.Transaction.signWithOperator(client, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -132,7 +130,7 @@ func (tx *SystemUndeleteTransaction) Freeze() (*SystemUndeleteTransaction, error
 }
 
 func (tx *SystemUndeleteTransaction) FreezeWith(client *Client) (*SystemUndeleteTransaction, error) {
-	_, err := tx.Transaction.FreezeWith(client)
+	_, err := tx.Transaction.freezeWith(client, tx)
 	return tx, err
 }
 
@@ -196,7 +194,15 @@ func (tx *SystemUndeleteTransaction) SetLogLevel(level LogLevel) *SystemUndelete
 	return tx
 }
 
-// ----------- overriden functions ----------------
+func (tx *SystemUndeleteTransaction) Execute(client *Client) (TransactionResponse, error) {
+	return tx.Transaction.execute(client, tx)
+}
+
+func (tx *SystemUndeleteTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	return tx.Transaction.schedule(tx)
+}
+
+// ----------- Overridden functions ----------------
 
 func (tx *SystemUndeleteTransaction) getName() string {
 	return "SystemUndeleteTransaction"

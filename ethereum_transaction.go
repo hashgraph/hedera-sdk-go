@@ -43,7 +43,6 @@ func NewEthereumTransaction() *EthereumTransaction {
 	tx := EthereumTransaction{
 		Transaction: _NewTransaction(),
 	}
-	tx.e = &tx
 	tx._SetDefaultMaxTransactionFee(NewHbar(2))
 
 	return &tx
@@ -56,7 +55,6 @@ func _EthereumTransactionFromProtobuf(tx Transaction, pb *services.TransactionBo
 		callData:      _FileIDFromProtobuf(pb.GetEthereumTransaction().CallData),
 		MaxGasAllowed: pb.GetEthereumTransaction().MaxGasAllowance,
 	}
-	resultTx.e = resultTx
 	return resultTx
 }
 
@@ -141,7 +139,7 @@ func (tx *EthereumTransaction) SignWithOperator(
 ) (*EthereumTransaction, error) {
 	// If the transaction is not signed by the _Operator, we need
 	// to sign the transaction with the _Operator
-	_, err := tx.Transaction.SignWithOperator(client)
+	_, err := tx.Transaction.signWithOperator(client, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -171,12 +169,11 @@ func (tx *EthereumTransaction) SetGrpcDeadline(deadline *time.Duration) *Ethereu
 }
 
 func (tx *EthereumTransaction) Freeze() (*EthereumTransaction, error) {
-	_, err := tx.Transaction.Freeze()
-	return tx, err
+	return tx.FreezeWith(nil)
 }
 
 func (tx *EthereumTransaction) FreezeWith(client *Client) (*EthereumTransaction, error) {
-	_, err := tx.Transaction.FreezeWith(client)
+	_, err := tx.Transaction.freezeWith(client, tx)
 	return tx, err
 }
 
@@ -252,7 +249,20 @@ func (tx *EthereumTransaction) SetMinBackoff(min time.Duration) *EthereumTransac
 	return tx
 }
 
-// ----------- overriden functions ----------------
+func (tx *EthereumTransaction) SetLogLevel(level LogLevel) *EthereumTransaction {
+	tx.Transaction.SetLogLevel(level)
+	return tx
+}
+
+func (tx *EthereumTransaction) Execute(client *Client) (TransactionResponse, error) {
+	return tx.Transaction.execute(client, tx)
+}
+
+func (tx *EthereumTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	return tx.Transaction.schedule(tx)
+}
+
+// ----------- Overridden functions ----------------
 
 func (tx *EthereumTransaction) getName() string {
 	return "EthereumTransaction"

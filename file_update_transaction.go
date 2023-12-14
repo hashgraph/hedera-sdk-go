@@ -55,7 +55,6 @@ func NewFileUpdateTransaction() *FileUpdateTransaction {
 		Transaction: _NewTransaction(),
 	}
 	tx._SetDefaultMaxTransactionFee(NewHbar(5))
-	tx.e = &tx
 	return &tx
 }
 
@@ -71,7 +70,6 @@ func _FileUpdateTransactionFromProtobuf(tx Transaction, pb *services.Transaction
 		contents:       pb.GetFileUpdate().GetContents(),
 		memo:           pb.GetFileUpdate().GetMemo().Value,
 	}
-	resultTx.e = resultTx
 	return resultTx
 }
 
@@ -175,7 +173,7 @@ func (tx *FileUpdateTransaction) SignWithOperator(
 ) (*FileUpdateTransaction, error) {
 	// If the transaction is not signed by the _Operator, we need
 	// to sign the transaction with the _Operator
-	_, err := tx.Transaction.SignWithOperator(client)
+	_, err := tx.Transaction.signWithOperator(client, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -205,12 +203,11 @@ func (tx *FileUpdateTransaction) SetGrpcDeadline(deadline *time.Duration) *FileU
 }
 
 func (tx *FileUpdateTransaction) Freeze() (*FileUpdateTransaction, error) {
-	_, err := tx.Transaction.Freeze()
-	return tx, err
+	return tx.FreezeWith(nil)
 }
 
 func (tx *FileUpdateTransaction) FreezeWith(client *Client) (*FileUpdateTransaction, error) {
-	_, err := tx.Transaction.FreezeWith(client)
+	_, err := tx.Transaction.freezeWith(client, tx)
 	return tx, err
 }
 
@@ -281,7 +278,15 @@ func (tx *FileUpdateTransaction) SetLogLevel(level LogLevel) *FileUpdateTransact
 	return tx
 }
 
-// ----------- overriden functions ----------------
+func (tx *FileUpdateTransaction) Execute(client *Client) (TransactionResponse, error) {
+	return tx.Transaction.execute(client, tx)
+}
+
+func (tx *FileUpdateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	return tx.Transaction.schedule(tx)
+}
+
+// ----------- Overridden functions ----------------
 
 func (tx *FileUpdateTransaction) getName() string {
 	return "FileUpdateTransaction"

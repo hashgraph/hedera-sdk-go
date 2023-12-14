@@ -30,6 +30,7 @@ import (
 )
 
 func TestIntegrationTokenPauseTransactionCanExecute(t *testing.T) {
+	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenCreateTransaction().

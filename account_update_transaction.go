@@ -61,7 +61,6 @@ func NewAccountUpdateTransaction() *AccountUpdateTransaction {
 	tx := AccountUpdateTransaction{
 		Transaction: _NewTransaction(),
 	}
-	tx.e = &tx
 	tx.SetAutoRenewPeriod(7890000 * time.Second)
 	tx._SetDefaultMaxTransactionFee(NewHbar(2))
 
@@ -102,7 +101,6 @@ func _AccountUpdateTransactionFromProtobuf(transact Transaction, pb *services.Tr
 		stakedNodeID:                  &stakedNodeID,
 		declineReward:                 pb.GetCryptoUpdateAccount().GetDeclineReward().GetValue(),
 	}
-	resultTx.e = resultTx
 	return resultTx
 }
 
@@ -298,7 +296,7 @@ func (tx *AccountUpdateTransaction) SignWithOperator(
 ) (*AccountUpdateTransaction, error) {
 	// If the transaction is not signed by the _Operator, we need
 	// to sign the transaction with the _Operator
-	_, err := tx.Transaction.SignWithOperator(client)
+	_, err := tx.Transaction.signWithOperator(client, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -328,12 +326,11 @@ func (tx *AccountUpdateTransaction) SetGrpcDeadline(deadline *time.Duration) *Ac
 }
 
 func (tx *AccountUpdateTransaction) Freeze() (*AccountUpdateTransaction, error) {
-	_, err := tx.Transaction.Freeze()
-	return tx, err
+	return tx.FreezeWith(nil)
 }
 
 func (tx *AccountUpdateTransaction) FreezeWith(client *Client) (*AccountUpdateTransaction, error) {
-	_, err := tx.Transaction.FreezeWith(client)
+	_, err := tx.Transaction.freezeWith(client, tx)
 	return tx, err
 }
 
@@ -399,12 +396,20 @@ func (tx *AccountUpdateTransaction) SetMinBackoff(min time.Duration) *AccountUpd
 	return tx
 }
 
-func (transaction *AccountUpdateTransaction) SetLogLevel(level LogLevel) *AccountUpdateTransaction {
-	transaction.Transaction.SetLogLevel(level)
-	return transaction
+func (tx *AccountUpdateTransaction) SetLogLevel(level LogLevel) *AccountUpdateTransaction {
+	tx.Transaction.SetLogLevel(level)
+	return tx
 }
 
-// ----------- overriden functions ----------------
+func (tx *AccountUpdateTransaction) Execute(client *Client) (TransactionResponse, error) {
+	return tx.Transaction.execute(client, tx)
+}
+
+func (tx *AccountUpdateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	return tx.Transaction.schedule(tx)
+}
+
+// ----------- Overridden functions ----------------
 
 func (tx *AccountUpdateTransaction) getName() string {
 	return "AccountUpdateTransaction"

@@ -136,7 +136,6 @@ func NewTokenCreateTransaction() *TokenCreateTransaction {
 		Transaction: _NewTransaction(),
 	}
 
-	tx.e = &tx
 	tx.SetAutoRenewPeriod(7890000 * time.Second)
 	tx._SetDefaultMaxTransactionFee(NewHbar(40))
 	tx.SetTokenType(TokenTypeFungibleCommon)
@@ -187,7 +186,6 @@ func _TokenCreateTransactionFromProtobuf(tx Transaction, pb *services.Transactio
 		expirationTime:     &expirationTime,
 		autoRenewPeriod:    &autoRenew,
 	}
-	resultTx.e = resultTx
 	return resultTx
 }
 
@@ -471,7 +469,7 @@ func (tx *TokenCreateTransaction) Sign(privateKey PrivateKey) *TokenCreateTransa
 
 // SignWithOperator signs the transaction with client's operator privateKey.
 func (tx *TokenCreateTransaction) SignWithOperator(client *Client) (*TokenCreateTransaction, error) {
-	_, err := tx.Transaction.SignWithOperator(client)
+	_, err := tx.Transaction.signWithOperator(client, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -505,7 +503,7 @@ func (tx *TokenCreateTransaction) Freeze() (*TokenCreateTransaction, error) {
 }
 
 func (tx *TokenCreateTransaction) FreezeWith(client *Client) (*TokenCreateTransaction, error) {
-	_, err := tx.Transaction.FreezeWith(client)
+	_, err := tx.Transaction.freezeWith(client, tx)
 	return tx, err
 }
 
@@ -569,7 +567,15 @@ func (tx *TokenCreateTransaction) SetLogLevel(level LogLevel) *TokenCreateTransa
 	return tx
 }
 
-// ----------- overriden functions ----------------
+func (tx *TokenCreateTransaction) Execute(client *Client) (TransactionResponse, error) {
+	return tx.Transaction.execute(client, tx)
+}
+
+func (tx *TokenCreateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	return tx.Transaction.schedule(tx)
+}
+
+// ----------- Overridden functions ----------------
 
 func (tx *TokenCreateTransaction) getName() string {
 	return "TokenCreateTransaction"

@@ -21,7 +21,6 @@ package hedera
  */
 
 import (
-	"github.com/pkg/errors"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -60,7 +59,6 @@ func NewFileCreateTransaction() *FileCreateTransaction {
 
 	tx.SetExpirationTime(time.Now().Add(7890000 * time.Second))
 	tx._SetDefaultMaxTransactionFee(NewHbar(5))
-	tx.e = &tx
 
 	return &tx
 }
@@ -76,7 +74,6 @@ func _FileCreateTransactionFromProtobuf(tx Transaction, pb *services.Transaction
 		contents:       pb.GetFileCreate().GetContents(),
 		memo:           pb.GetMemo(),
 	}
-	resultTx.e = resultTx
 	return resultTx
 }
 
@@ -155,93 +152,6 @@ func (tx *FileCreateTransaction) GetMemo() string {
 	return tx.memo
 }
 
-// Execute executes the Transaction with the provided client
-func (tx *FileAppendTransaction) Execute(
-	client *Client,
-) (TransactionResponse, error) {
-	if client == nil {
-		return TransactionResponse{}, errNoClientProvided
-	}
-
-	if tx.freezeError != nil {
-		return TransactionResponse{}, tx.freezeError
-	}
-
-	list, err := tx.ExecuteAll(client)
-
-	if err != nil {
-		if len(list) > 0 {
-			return TransactionResponse{
-				TransactionID: tx.GetTransactionID(),
-				NodeID:        list[0].NodeID,
-				Hash:          make([]byte, 0),
-			}, err
-		}
-		return TransactionResponse{
-			TransactionID: tx.GetTransactionID(),
-			Hash:          make([]byte, 0),
-		}, err
-	}
-
-	return list[0], nil
-}
-
-// ExecuteAll executes the all the Transactions with the provided client
-func (tx *FileAppendTransaction) ExecuteAll(
-	client *Client,
-) ([]TransactionResponse, error) {
-	if client == nil || client.operator == nil {
-		return []TransactionResponse{}, errNoClientProvided
-	}
-
-	if !tx.IsFrozen() {
-		_, err := tx.FreezeWith(client)
-		if err != nil {
-			return []TransactionResponse{}, err
-		}
-	}
-
-	var transactionID TransactionID
-	if tx.transactionIDs._Length() > 0 {
-		transactionID = tx.GetTransactionID()
-	} else {
-		return []TransactionResponse{}, errors.New("transactionID list is empty")
-	}
-
-	if !client.GetOperatorAccountID()._IsZero() && client.GetOperatorAccountID()._Equals(*transactionID.AccountID) {
-		tx.SignWith(
-			client.GetOperatorPublicKey(),
-			client.operator.signer,
-		)
-	}
-
-	size := tx.signedTransactions._Length() / tx.nodeAccountIDs._Length()
-	list := make([]TransactionResponse, size)
-
-	for i := 0; i < size; i++ {
-		resp, err := _Execute(
-			client,
-			tx.e,
-		)
-
-		if err != nil {
-			return list, err
-		}
-
-		list[i] = resp.(TransactionResponse)
-
-		_, err = NewTransactionReceiptQuery().
-			SetNodeAccountIDs([]AccountID{resp.(TransactionResponse).NodeID}).
-			SetTransactionID(resp.(TransactionResponse).TransactionID).
-			Execute(client)
-		if err != nil {
-			return list, err
-		}
-	}
-
-	return list, nil
-}
-
 // ---- Required Interfaces ---- //
 
 // Sign uses the provided privateKey to sign the transaction.
@@ -258,7 +168,7 @@ func (tx *FileCreateTransaction) SignWithOperator(
 ) (*FileCreateTransaction, error) {
 	// If the transaction is not signed by the _Operator, we need
 	// to sign the transaction with the _Operator
-	_, err := tx.Transaction.SignWithOperator(client)
+	_, err := tx.Transaction.signWithOperator(client, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -372,21 +282,27 @@ func (tx *FileCreateTransaction) SetLogLevel(level LogLevel) *FileCreateTransact
 	return tx
 }
 
-// ----------- overriden functions ----------------
+func (tx *FileCreateTransaction) Execute(client *Client) (TransactionResponse, error) {
+	return tx.Transaction.execute(client, tx)
+}
+
+func (tx *FileCreateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	return tx.Transaction.schedule(tx)
+}
+
+// ----------- Overridden functions ----------------
 
 func (tx *FileCreateTransaction) getName() string {
 	return "FileCreateTransaction"
 }
 func (tx *FileCreateTransaction) build() *services.TransactionBody {
-	body := tx.buildProtoBody()
-
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
 		Memo:                     tx.Transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(tx.GetTransactionValidDuration()),
 		TransactionID:            tx.transactionID._ToProtobuf(),
 		Data: &services.TransactionBody_FileCreate{
-			FileCreate: body,
+			FileCreate: tx.buildProtoBody(),
 		},
 	}
 }
@@ -396,16 +312,15 @@ func (tx *FileCreateTransaction) validateNetworkOnIDs(client *Client) error {
 }
 
 func (tx *FileCreateTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
-	body := tx.buildProtoBody()
-
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Memo:           tx.Transaction.memo,
 		Data: &services.SchedulableTransactionBody_FileCreate{
-			FileCreate: body,
+			FileCreate: tx.buildProtoBody(),
 		},
 	}, nil
 }
+
 func (tx *FileCreateTransaction) buildProtoBody() *services.FileCreateTransactionBody {
 	body := &services.FileCreateTransactionBody{
 		Memo: tx.memo,

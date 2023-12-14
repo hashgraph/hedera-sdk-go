@@ -39,7 +39,6 @@ func NewTopicDeleteTransaction() *TopicDeleteTransaction {
 		Transaction: _NewTransaction(),
 	}
 
-	tx.e = &tx
 	tx._SetDefaultMaxTransactionFee(NewHbar(2))
 
 	return &tx
@@ -50,7 +49,6 @@ func _TopicDeleteTransactionFromProtobuf(tx Transaction, pb *services.Transactio
 		Transaction: tx,
 		topicID:     _TopicIDFromProtobuf(pb.GetConsensusDeleteTopic().GetTopicID()),
 	}
-	resultTx.e = resultTx
 	return resultTx
 }
 
@@ -80,7 +78,7 @@ func (tx *TopicDeleteTransaction) Sign(privateKey PrivateKey) *TopicDeleteTransa
 
 // SignWithOperator signs the transaction with client's operator privateKey.
 func (tx *TopicDeleteTransaction) SignWithOperator(client *Client) (*TopicDeleteTransaction, error) {
-	_, err := tx.Transaction.SignWithOperator(client)
+	_, err := tx.Transaction.signWithOperator(client, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -114,7 +112,7 @@ func (tx *TopicDeleteTransaction) Freeze() (*TopicDeleteTransaction, error) {
 }
 
 func (tx *TopicDeleteTransaction) FreezeWith(client *Client) (*TopicDeleteTransaction, error) {
-	_, err := tx.Transaction.FreezeWith(client)
+	_, err := tx.Transaction.freezeWith(client, tx)
 	return tx, err
 }
 
@@ -178,7 +176,15 @@ func (tx *TopicDeleteTransaction) SetLogLevel(level LogLevel) *TopicDeleteTransa
 	return tx
 }
 
-// ----------- overriden functions ----------------
+func (tx *TopicDeleteTransaction) Execute(client *Client) (TransactionResponse, error) {
+	return tx.Transaction.execute(client, tx)
+}
+
+func (tx *TopicDeleteTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	return tx.Transaction.schedule(tx)
+}
+
+// ----------- Overridden functions ----------------
 
 func (tx *TopicDeleteTransaction) getName() string {
 	return "TopicDeleteTransaction"

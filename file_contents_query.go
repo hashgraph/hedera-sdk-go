@@ -39,7 +39,6 @@ func NewFileContentsQuery() *FileContentsQuery {
 		Query: _NewQuery(true, &header),
 	}
 
-	result.e = &result
 	return &result
 }
 
@@ -64,9 +63,13 @@ func (q *FileContentsQuery) GetFileID() FileID {
 	return *q.fileID
 }
 
+func (q *FileContentsQuery) GetCost(client *Client) (Hbar, error) {
+	return q.Query.getCost(client, q)
+}
+
 // Execute executes the QueryInterface with the provided client
 func (q *FileContentsQuery) Execute(client *Client) ([]byte, error) {
-	resp, err := q.Query.execute(client)
+	resp, err := q.Query.execute(client, q)
 
 	if err != nil {
 		return []byte{}, err

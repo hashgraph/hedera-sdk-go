@@ -43,10 +43,8 @@ func NewAccountRecordsQuery() *AccountRecordsQuery {
 	result := AccountRecordsQuery{
 		Query: _NewQuery(true, &header),
 	}
-	result.e = &result
 
 	return &result
-
 }
 
 // SetGrpcDeadline When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
@@ -70,9 +68,13 @@ func (q *AccountRecordsQuery) GetAccountID() AccountID {
 	return *q.accountID
 }
 
+func (q *AccountRecordsQuery) GetCost(client *Client) (Hbar, error) {
+	return q.Query.getCost(client, q)
+}
+
 // Execute executes the QueryInterface with the provided client
 func (q *AccountRecordsQuery) Execute(client *Client) ([]TransactionRecord, error) {
-	resp, err := q.Query.execute(client)
+	resp, err := q.Query.execute(client, q)
 	records := make([]TransactionRecord, 0)
 
 	if err != nil {

@@ -59,7 +59,6 @@ func NewTokenUnfreezeTransaction() *TokenUnfreezeTransaction {
 		Transaction: _NewTransaction(),
 	}
 
-	tx.e = &tx
 	tx._SetDefaultMaxTransactionFee(NewHbar(30))
 
 	return &tx
@@ -71,7 +70,6 @@ func _TokenUnfreezeTransactionFromProtobuf(tx Transaction, pb *services.Transact
 		tokenID:     _TokenIDFromProtobuf(pb.GetTokenUnfreeze().GetToken()),
 		accountID:   _AccountIDFromProtobuf(pb.GetTokenUnfreeze().GetAccount()),
 	}
-	resultTx.e = resultTx
 	return resultTx
 }
 
@@ -118,7 +116,7 @@ func (tx *TokenUnfreezeTransaction) Sign(privateKey PrivateKey) *TokenUnfreezeTr
 
 // SignWithOperator signs the transaction with client's operator privateKey.
 func (tx *TokenUnfreezeTransaction) SignWithOperator(client *Client) (*TokenUnfreezeTransaction, error) {
-	_, err := tx.Transaction.SignWithOperator(client)
+	_, err := tx.Transaction.signWithOperator(client, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -152,7 +150,7 @@ func (tx *TokenUnfreezeTransaction) Freeze() (*TokenUnfreezeTransaction, error) 
 }
 
 func (tx *TokenUnfreezeTransaction) FreezeWith(client *Client) (*TokenUnfreezeTransaction, error) {
-	_, err := tx.Transaction.FreezeWith(client)
+	_, err := tx.Transaction.freezeWith(client, tx)
 	return tx, err
 }
 
@@ -216,7 +214,15 @@ func (tx *TokenUnfreezeTransaction) SetLogLevel(level LogLevel) *TokenUnfreezeTr
 	return tx
 }
 
-// ----------- overriden functions ----------------
+func (tx *TokenUnfreezeTransaction) Execute(client *Client) (TransactionResponse, error) {
+	return tx.Transaction.execute(client, tx)
+}
+
+func (tx *TokenUnfreezeTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	return tx.Transaction.schedule(tx)
+}
+
+// ----------- Overridden functions ----------------
 
 func (tx *TokenUnfreezeTransaction) getName() string {
 	return "TokenUnfreezeTransaction"

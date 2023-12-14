@@ -57,7 +57,6 @@ func NewTokenRevokeKycTransaction() *TokenRevokeKycTransaction {
 		Transaction: _NewTransaction(),
 	}
 
-	tx.e = &tx
 	tx._SetDefaultMaxTransactionFee(NewHbar(30))
 
 	return &tx
@@ -69,7 +68,6 @@ func _TokenRevokeKycTransactionFromProtobuf(transaction Transaction, pb *service
 		tokenID:     _TokenIDFromProtobuf(pb.GetTokenRevokeKyc().GetToken()),
 		accountID:   _AccountIDFromProtobuf(pb.GetTokenRevokeKyc().GetAccount()),
 	}
-	resultTx.e = resultTx
 	return resultTx
 }
 
@@ -116,7 +114,7 @@ func (tx *TokenRevokeKycTransaction) Sign(privateKey PrivateKey) *TokenRevokeKyc
 
 // SignWithOperator signs the transaction with client's operator privateKey.
 func (tx *TokenRevokeKycTransaction) SignWithOperator(client *Client) (*TokenRevokeKycTransaction, error) {
-	_, err := tx.Transaction.SignWithOperator(client)
+	_, err := tx.Transaction.signWithOperator(client, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -150,7 +148,7 @@ func (tx *TokenRevokeKycTransaction) Freeze() (*TokenRevokeKycTransaction, error
 }
 
 func (tx *TokenRevokeKycTransaction) FreezeWith(client *Client) (*TokenRevokeKycTransaction, error) {
-	_, err := tx.Transaction.FreezeWith(client)
+	_, err := tx.Transaction.freezeWith(client, tx)
 	return tx, err
 }
 
@@ -214,7 +212,15 @@ func (tx *TokenRevokeKycTransaction) SetLogLevel(level LogLevel) *TokenRevokeKyc
 	return tx
 }
 
-// ----------- overriden functions ----------------
+func (tx *TokenRevokeKycTransaction) Execute(client *Client) (TransactionResponse, error) {
+	return tx.Transaction.execute(client, tx)
+}
+
+func (tx *TokenRevokeKycTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	return tx.Transaction.schedule(tx)
+}
+
+// ----------- Overridden functions ----------------
 
 func (tx *TokenRevokeKycTransaction) getName() string {
 	return "TokenRevokeKycTransaction"

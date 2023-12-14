@@ -41,7 +41,6 @@ func NewFreezeTransaction() *FreezeTransaction {
 	}
 
 	tx._SetDefaultMaxTransactionFee(NewHbar(2))
-	tx.e = &tx
 
 	return &tx
 }
@@ -66,7 +65,6 @@ func _FreezeTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody
 		fileID:      _FileIDFromProtobuf(pb.GetFreeze().GetUpdateFile()),
 		fileHash:    pb.GetFreeze().FileHash,
 	}
-	resultTx.e = resultTx
 	return resultTx
 }
 
@@ -138,7 +136,7 @@ func (tx *FreezeTransaction) SignWithOperator(
 ) (*FreezeTransaction, error) {
 	// If the transaction is not signed by the _Operator, we need
 	// to sign the transaction with the _Operator
-	_, err := tx.Transaction.SignWithOperator(client)
+	_, err := tx.Transaction.signWithOperator(client, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -162,12 +160,11 @@ func (tx *FreezeTransaction) AddSignature(publicKey PublicKey, signature []byte)
 }
 
 func (tx *FreezeTransaction) Freeze() (*FreezeTransaction, error) {
-	_, err := tx.Transaction.Freeze()
-	return tx, err
+	return tx.FreezeWith(nil)
 }
 
 func (tx *FreezeTransaction) FreezeWith(client *Client) (*FreezeTransaction, error) {
-	_, err := tx.Transaction.FreezeWith(client)
+	_, err := tx.Transaction.freezeWith(client, tx)
 	return tx, err
 }
 
@@ -243,7 +240,15 @@ func (tx *FreezeTransaction) SetLogLevel(level LogLevel) *FreezeTransaction {
 	return tx
 }
 
-// ----------- overriden functions ----------------
+func (tx *FreezeTransaction) Execute(client *Client) (TransactionResponse, error) {
+	return tx.Transaction.execute(client, tx)
+}
+
+func (tx *FreezeTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	return tx.Transaction.schedule(tx)
+}
+
+// ----------- Overridden functions ----------------
 
 func (tx *FreezeTransaction) getName() string {
 	return "FreezeTransaction"

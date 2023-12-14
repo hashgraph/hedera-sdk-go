@@ -53,7 +53,6 @@ func NewScheduleCreateTransaction() *ScheduleCreateTransaction {
 	}
 
 	tx._SetDefaultMaxTransactionFee(NewHbar(5))
-	tx.e = &tx
 
 	return &tx
 }
@@ -74,7 +73,6 @@ func _ScheduleCreateTransactionFromProtobuf(tx Transaction, pb *services.Transac
 		expirationTime:  &expirationTime,
 		waitForExpiry:   pb.GetScheduleCreate().WaitForExpiry,
 	}
-	resultTx.e = resultTx
 	return resultTx
 }
 
@@ -172,7 +170,6 @@ func (tx *ScheduleCreateTransaction) GetScheduleMemo() string {
 
 // SetScheduledTransaction Sets the scheduled transaction
 func (tx *ScheduleCreateTransaction) SetScheduledTransaction(scheduledTx ITransaction) (*ScheduleCreateTransaction, error) {
-	// TODO(Toni): This must be fixed before refactor is merged
 	tx._RequireNotFrozen()
 
 	scheduled, err := scheduledTx._ConstructScheduleProtobuf()
@@ -194,7 +191,7 @@ func (tx *ScheduleCreateTransaction) Sign(privateKey PrivateKey) *ScheduleCreate
 
 // SignWithOperator signs the transaction with client's operator privateKey.
 func (tx *ScheduleCreateTransaction) SignWithOperator(client *Client) (*ScheduleCreateTransaction, error) {
-	_, err := tx.Transaction.SignWithOperator(client)
+	_, err := tx.Transaction.signWithOperator(client, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -228,7 +225,7 @@ func (tx *ScheduleCreateTransaction) Freeze() (*ScheduleCreateTransaction, error
 }
 
 func (tx *ScheduleCreateTransaction) FreezeWith(client *Client) (*ScheduleCreateTransaction, error) {
-	_, err := tx.Transaction.FreezeWith(client)
+	_, err := tx.Transaction.freezeWith(client, tx)
 	return tx, err
 }
 
@@ -292,7 +289,15 @@ func (tx *ScheduleCreateTransaction) SetLogLevel(level LogLevel) *ScheduleCreate
 	return tx
 }
 
-// ----------- overriden functions ----------------
+func (tx *ScheduleCreateTransaction) Execute(client *Client) (TransactionResponse, error) {
+	return tx.Transaction.execute(client, tx)
+}
+
+func (tx *ScheduleCreateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	return tx.Transaction.schedule(tx)
+}
+
+// ----------- Overridden functions ----------------
 
 func (tx *ScheduleCreateTransaction) getName() string {
 	return "ScheduleCreateTransaction"

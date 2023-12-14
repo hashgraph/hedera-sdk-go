@@ -51,7 +51,6 @@ func NewTransactionReceiptQuery() *TransactionReceiptQuery {
 	result := TransactionReceiptQuery{
 		Query: _NewQuery(false, &header),
 	}
-	result.e = &result
 	return &result
 }
 
@@ -98,6 +97,10 @@ func (q *TransactionReceiptQuery) GetIncludeDuplicates() bool {
 	return false
 }
 
+func (q *TransactionReceiptQuery) GetCost(client *Client) (Hbar, error) {
+	return q.Query.getCost(client, q)
+}
+
 // Execute executes the QueryInterface with the provided client
 func (q *TransactionReceiptQuery) Execute(client *Client) (TransactionReceipt, error) {
 	// TODO(Toni): Custom execute here, should be checked against the common execute
@@ -123,10 +126,7 @@ func (q *TransactionReceiptQuery) Execute(client *Client) (TransactionReceipt, e
 	}
 	q.pbHeader.ResponseType = services.ResponseType_ANSWER_ONLY
 
-	resp, err := _Execute(
-		client,
-		q.e,
-	)
+	resp, err := _Execute(client, q)
 
 	if err, ok := err.(ErrHederaPreCheckStatus); ok {
 		if resp.(*services.Response).GetTransactionGetReceipt() != nil {
@@ -210,13 +210,14 @@ func (q *TransactionReceiptQuery) getMethod(channel *_Channel) _Method {
 	}
 }
 
-func (q *TransactionReceiptQuery) mapStatusError(response interface{}) error {
-	switch Status(response.(*services.Response).GetTransactionGetReceipt().GetHeader().GetNodeTransactionPrecheckCode()) {
+func (q *TransactionReceiptQuery) mapStatusError(_ Executable, response interface{}) error {
+	status := Status(response.(*services.Response).GetTransactionGetReceipt().GetHeader().GetNodeTransactionPrecheckCode())
+	switch status {
 	case StatusPlatformTransactionNotCreated, StatusBusy, StatusUnknown, StatusOk:
 		break
 	default:
 		return ErrHederaPreCheckStatus{
-			Status: Status(response.(*services.Response).GetTransactionGetReceipt().GetHeader().GetNodeTransactionPrecheckCode()),
+			Status: status,
 		}
 	}
 
@@ -265,7 +266,7 @@ func (q *TransactionReceiptQuery) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (q *TransactionReceiptQuery) shouldRetry(response interface{}) _ExecutionState {
+func (q *TransactionReceiptQuery) shouldRetry(_ Executable, response interface{}) _ExecutionState {
 	status := Status(response.(*services.Response).GetTransactionGetReceipt().GetHeader().GetNodeTransactionPrecheckCode())
 
 	switch status {

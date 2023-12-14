@@ -39,7 +39,6 @@ func NewLiveHashQuery() *LiveHashQuery {
 	result := LiveHashQuery{
 		Query: _NewQuery(true, &header),
 	}
-	result.e = &result
 	return &result
 }
 
@@ -75,9 +74,13 @@ func (q *LiveHashQuery) GetGetHash() []byte {
 	return q.hash
 }
 
+func (q *LiveHashQuery) GetCost(client *Client) (Hbar, error) {
+	return q.Query.getCost(client, q)
+}
+
 // Execute executes the QueryInterface with the provided client
 func (q *LiveHashQuery) Execute(client *Client) (LiveHash, error) {
-	resp, err := q.Query.execute(client)
+	resp, err := q.Query.execute(client, q)
 
 	if err != nil {
 		return LiveHash{}, err

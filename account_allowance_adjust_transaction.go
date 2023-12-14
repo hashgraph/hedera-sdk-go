@@ -38,7 +38,6 @@ func NewAccountAllowanceAdjustTransaction() *AccountAllowanceAdjustTransaction {
 	tx := AccountAllowanceAdjustTransaction{
 		Transaction: _NewTransaction(),
 	}
-	tx.e = &tx
 	tx._SetDefaultMaxTransactionFee(NewHbar(2))
 
 	return &tx
@@ -208,7 +207,7 @@ func (tx *AccountAllowanceAdjustTransaction) SignWithOperator(
 ) (*AccountAllowanceAdjustTransaction, error) {
 	// If the transaction is not signed by the _Operator, we need
 	// to sign the transaction with the _Operator
-	_, err := tx.Transaction.SignWithOperator(client)
+	_, err := tx.Transaction.signWithOperator(client, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -225,15 +224,14 @@ func (tx *AccountAllowanceAdjustTransaction) SignWith(
 }
 
 // Deprecated
-func (this *AccountAllowanceAdjustTransaction) Freeze() (*AccountAllowanceAdjustTransaction, error) {
-	_, err := this.Transaction.Freeze()
-	return this, err
+func (tx *AccountAllowanceAdjustTransaction) Freeze() (*AccountAllowanceAdjustTransaction, error) {
+	return tx.FreezeWith(nil)
 }
 
 // Deprecated
-func (this *AccountAllowanceAdjustTransaction) FreezeWith(client *Client) (*AccountAllowanceAdjustTransaction, error) {
-	_, err := this.Transaction.FreezeWith(client)
-	return this, err
+func (tx *AccountAllowanceAdjustTransaction) FreezeWith(client *Client) (*AccountAllowanceAdjustTransaction, error) {
+	_, err := tx.Transaction.freezeWith(client, tx)
+	return tx, err
 }
 
 // SetMaxTransactionFee sets the max transaction fee for tx AccountAllowanceAdjustTransaction.
@@ -306,9 +304,9 @@ func (tx *AccountAllowanceAdjustTransaction) SetMinBackoff(min time.Duration) *A
 	return tx
 }
 
-// ----------- overridden functions ----------------
+// ----------- Overridden functions ----------------
 
-func (transaction *AccountAllowanceAdjustTransaction) getName() string {
+func (tx *AccountAllowanceAdjustTransaction) getName() string {
 	return "AccountAllowanceAdjustTransaction"
 }
 
@@ -382,6 +380,6 @@ func (tx *AccountAllowanceAdjustTransaction) buildScheduled() (*services.Schedul
 	return &services.SchedulableTransactionBody{}, nil
 }
 
-func (this *AccountAllowanceAdjustTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
-	return this.buildScheduled()
+func (tx *AccountAllowanceAdjustTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	return tx.buildScheduled()
 }

@@ -49,7 +49,6 @@ func NewFileDeleteTransaction() *FileDeleteTransaction {
 		Transaction: _NewTransaction(),
 	}
 	tx._SetDefaultMaxTransactionFee(NewHbar(5))
-	tx.e = &tx
 
 	return &tx
 }
@@ -59,7 +58,6 @@ func _FileDeleteTransactionFromProtobuf(tx Transaction, pb *services.Transaction
 		Transaction: tx,
 		fileID:      _FileIDFromProtobuf(pb.GetFileDelete().GetFileID()),
 	}
-	resultTx.e = resultTx
 	return resultTx
 }
 
@@ -95,7 +93,7 @@ func (tx *FileDeleteTransaction) SignWithOperator(
 ) (*FileDeleteTransaction, error) {
 	// If the transaction is not signed by the _Operator, we need
 	// to sign the transaction with the _Operator
-	_, err := tx.Transaction.SignWithOperator(client)
+	_, err := tx.Transaction.signWithOperator(client, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -125,12 +123,11 @@ func (tx *FileDeleteTransaction) SetGrpcDeadline(deadline *time.Duration) *FileD
 }
 
 func (tx *FileDeleteTransaction) Freeze() (*FileDeleteTransaction, error) {
-	_, err := tx.Transaction.Freeze()
-	return tx, err
+	return tx.FreezeWith(nil)
 }
 
 func (tx *FileDeleteTransaction) FreezeWith(client *Client) (*FileDeleteTransaction, error) {
-	_, err := tx.Transaction.FreezeWith(client)
+	_, err := tx.Transaction.freezeWith(client, tx)
 	return tx, err
 }
 
@@ -206,7 +203,15 @@ func (tx *FileDeleteTransaction) SetLogLevel(level LogLevel) *FileDeleteTransact
 	return tx
 }
 
-// ----------- overriden functions ----------------
+func (tx *FileDeleteTransaction) Execute(client *Client) (TransactionResponse, error) {
+	return tx.Transaction.execute(client, tx)
+}
+
+func (tx *FileDeleteTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	return tx.Transaction.schedule(tx)
+}
+
+// ----------- Overridden functions ----------------
 
 func (tx *FileDeleteTransaction) getName() string {
 	return "FileDeleteTransaction"

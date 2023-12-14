@@ -42,7 +42,6 @@ func _AccountDeleteTransactionFromProtobuf(transaction Transaction, pb *services
 		transferAccountID: _AccountIDFromProtobuf(pb.GetCryptoDelete().GetTransferAccountID()),
 		deleteAccountID:   _AccountIDFromProtobuf(pb.GetCryptoDelete().GetDeleteAccountID()),
 	}
-	resultTx.e = resultTx
 	return resultTx
 }
 
@@ -54,7 +53,6 @@ func NewAccountDeleteTransaction() *AccountDeleteTransaction {
 		Transaction: _NewTransaction(),
 	}
 
-	tx.e = &tx
 	tx._SetDefaultMaxTransactionFee(NewHbar(2))
 
 	return &tx
@@ -108,7 +106,7 @@ func (tx *AccountDeleteTransaction) SignWithOperator(
 ) (*AccountDeleteTransaction, error) {
 	// If the transaction is not signed by the _Operator, we need
 	// to sign the transaction with the _Operator
-	_, err := tx.Transaction.SignWithOperator(client)
+	_, err := tx.Transaction.signWithOperator(client, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -138,12 +136,11 @@ func (tx *AccountDeleteTransaction) SetGrpcDeadline(deadline *time.Duration) *Ac
 }
 
 func (tx *AccountDeleteTransaction) Freeze() (*AccountDeleteTransaction, error) {
-	_, err := tx.Transaction.Freeze()
-	return tx, err
+	return tx.FreezeWith(nil)
 }
 
 func (tx *AccountDeleteTransaction) FreezeWith(client *Client) (*AccountDeleteTransaction, error) {
-	_, err := tx.Transaction.FreezeWith(client)
+	_, err := tx.Transaction.freezeWith(client, tx)
 	return tx, err
 }
 
@@ -213,7 +210,15 @@ func (tx *AccountDeleteTransaction) SetLogLevel(level LogLevel) *AccountDeleteTr
 	return tx
 }
 
-// ----------- overriden functions ----------------
+func (tx *AccountDeleteTransaction) Execute(client *Client) (TransactionResponse, error) {
+	return tx.Transaction.execute(client, tx)
+}
+
+func (tx *AccountDeleteTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	return tx.Transaction.schedule(tx)
+}
+
+// ----------- Overridden functions ----------------
 
 func (tx *AccountDeleteTransaction) getName() string {
 	return "AccountDeleteTransaction"

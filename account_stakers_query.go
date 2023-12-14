@@ -44,7 +44,6 @@ func NewAccountStakersQuery() *AccountStakersQuery {
 		Query: _NewQuery(true, &header),
 	}
 
-	result.e = &result
 	return &result
 }
 
@@ -69,8 +68,13 @@ func (q *AccountStakersQuery) GetAccountID() AccountID {
 	return *q.accountID
 }
 
+func (q *AccountStakersQuery) GetCost(client *Client) (Hbar, error) {
+	return q.Query.getCost(client, q)
+}
+
+// Execute executes the QueryInterface with the provided client
 func (q *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) {
-	resp, err := q.Query.execute(client)
+	resp, err := q.Query.execute(client, q)
 
 	if err != nil {
 		return []Transfer{}, err

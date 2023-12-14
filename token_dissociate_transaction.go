@@ -67,7 +67,6 @@ func NewTokenDissociateTransaction() *TokenDissociateTransaction {
 		Transaction: _NewTransaction(),
 	}
 
-	tx.e = &tx
 	tx._SetDefaultMaxTransactionFee(NewHbar(5))
 
 	return &tx
@@ -86,7 +85,6 @@ func _TokenDissociateTransactionFromProtobuf(tx Transaction, pb *services.Transa
 		accountID:   _AccountIDFromProtobuf(pb.GetTokenDissociate().GetAccount()),
 		tokens:      tokens,
 	}
-	resultTx.e = resultTx
 	return resultTx
 }
 
@@ -144,7 +142,7 @@ func (tx *TokenDissociateTransaction) Sign(privateKey PrivateKey) *TokenDissocia
 
 // SignWithOperator signs the transaction with client's operator privateKey.
 func (tx *TokenDissociateTransaction) SignWithOperator(client *Client) (*TokenDissociateTransaction, error) {
-	_, err := tx.Transaction.SignWithOperator(client)
+	_, err := tx.Transaction.signWithOperator(client, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -178,7 +176,7 @@ func (tx *TokenDissociateTransaction) Freeze() (*TokenDissociateTransaction, err
 }
 
 func (tx *TokenDissociateTransaction) FreezeWith(client *Client) (*TokenDissociateTransaction, error) {
-	_, err := tx.Transaction.FreezeWith(client)
+	_, err := tx.Transaction.freezeWith(client, tx)
 	return tx, err
 }
 
@@ -242,7 +240,15 @@ func (tx *TokenDissociateTransaction) SetLogLevel(level LogLevel) *TokenDissocia
 	return tx
 }
 
-// ----------- overriden functions ----------------
+func (tx *TokenDissociateTransaction) Execute(client *Client) (TransactionResponse, error) {
+	return tx.Transaction.execute(client, tx)
+}
+
+func (tx *TokenDissociateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	return tx.Transaction.schedule(tx)
+}
+
+// ----------- Overridden functions ----------------
 
 func (tx *TokenDissociateTransaction) getName() string {
 	return "TokenDissociateTransaction"

@@ -43,13 +43,16 @@ func NewAccountInfoQuery() *AccountInfoQuery {
 		Query: _NewQuery(true, &header),
 	}
 
-	result.e = &result
 	return &result
+}
+
+func (q *AccountInfoQuery) GetCost(client *Client) (Hbar, error) {
+	return q.Query.getCost(client, q)
 }
 
 // Execute executes the QueryInterface with the provided client
 func (q *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
-	resp, err := q.execute(client)
+	resp, err := q.execute(client, q)
 
 	if err != nil {
 		return AccountInfo{}, err

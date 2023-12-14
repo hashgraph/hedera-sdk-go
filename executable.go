@@ -57,12 +57,12 @@ type Executable interface {
 	GetNodeAccountIDs() []AccountID
 	GetLogLevel() *LogLevel
 
-	shouldRetry(interface{}) _ExecutionState
+	shouldRetry(Executable, interface{}) _ExecutionState
 	makeRequest() interface{}
 	advanceRequest()
 	getNodeAccountID() AccountID
 	getMethod(*_Channel) _Method
-	mapStatusError(interface{}) error
+	mapStatusError(Executable, interface{}) error
 	mapResponse(interface{}, AccountID, interface{}) (interface{}, error)
 	getName() string
 	validateNetworkOnIDs(client *Client) error
@@ -72,7 +72,6 @@ type Executable interface {
 }
 
 type executable struct {
-	e              Executable
 	transactionIDs *_LockableSlice
 	nodeAccountIDs *_LockableSlice
 	maxBackoff     *time.Duration
@@ -304,6 +303,8 @@ func _Execute(client *Client, e Executable) (interface{}, error) {
 
 		node._DecreaseBackoff()
 
+		statusError := e.mapStatusError(e, resp)
+
 		txLogger.Trace(
 			msg,
 			"requestID", e.getName(),
@@ -311,13 +312,13 @@ func _Execute(client *Client, e Executable) (interface{}, error) {
 			"nodeAddress", node.address._String(),
 			"nodeIsHealthy", strconv.FormatBool(node._IsHealthy()),
 			"network", client.GetLedgerID().String(),
-			"status", e.mapStatusError(resp).Error(),
+			"status", statusError.Error(),
 			"txID", txID,
 		)
 
-		switch e.shouldRetry(resp) {
+		switch e.shouldRetry(e, resp) {
 		case executionStateRetry:
-			errPersistent = e.mapStatusError(resp)
+			errPersistent = statusError
 			_DelayForAttempt(e.getName(), backOff.NextBackOff(), attempt, txLogger)
 			continue
 		case executionStateExpired:
@@ -327,17 +328,17 @@ func _Execute(client *Client, e Executable) (interface{}, error) {
 					txLogger.Trace("received `TRANSACTION_EXPIRED` with transaction ID regeneration enabled; regenerating", "requestId", e.getName())
 					continue
 				} else {
-					return TransactionResponse{}, e.mapStatusError(resp)
+					return TransactionResponse{}, statusError
 				}
 			} else {
-				return &services.Response{}, e.mapStatusError(resp)
+				return &services.Response{}, statusError
 			}
 		case executionStateError:
 			if e.isTransaction() {
-				return TransactionResponse{}, e.mapStatusError(resp)
+				return TransactionResponse{}, statusError
 			}
 
-			return &services.Response{}, e.mapStatusError(resp)
+			return &services.Response{}, statusError
 		case executionStateFinished:
 			txLogger.Trace("finished", "Response Proto", hex.EncodeToString(marshaledResponse))
 			return e.mapResponse(resp, node.accountID, protoRequest)

@@ -64,7 +64,6 @@ func NewTransferTransaction() *TransferTransaction {
 		nftTransfers:   make(map[TokenID][]*TokenNftTransfer),
 	}
 
-	tx.e = &tx
 	tx._SetDefaultMaxTransactionFee(NewHbar(1))
 
 	return &tx
@@ -97,7 +96,6 @@ func _TransferTransactionFromProtobuf(tx Transaction, pb *services.TransactionBo
 		tokenTransfers: tokenTransfers,
 		nftTransfers:   nftTransfers,
 	}
-	resultTx.e = resultTx
 	return resultTx
 }
 
@@ -456,7 +454,7 @@ func (tx *TransferTransaction) Sign(privateKey PrivateKey) *TransferTransaction 
 
 // SignWithOperator signs the transaction with client's operator privateKey.
 func (tx *TransferTransaction) SignWithOperator(client *Client) (*TransferTransaction, error) {
-	_, err := tx.Transaction.SignWithOperator(client)
+	_, err := tx.Transaction.signWithOperator(client, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -490,7 +488,7 @@ func (tx *TransferTransaction) Freeze() (*TransferTransaction, error) {
 }
 
 func (tx *TransferTransaction) FreezeWith(client *Client) (*TransferTransaction, error) {
-	_, err := tx.Transaction.FreezeWith(client)
+	_, err := tx.Transaction.freezeWith(client, tx)
 	return tx, err
 }
 
@@ -554,7 +552,15 @@ func (tx *TransferTransaction) SetLogLevel(level LogLevel) *TransferTransaction 
 	return tx
 }
 
-// ----------- overriden functions ----------------
+func (tx *TransferTransaction) Execute(client *Client) (TransactionResponse, error) {
+	return tx.Transaction.execute(client, tx)
+}
+
+func (tx *TransferTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	return tx.Transaction.schedule(tx)
+}
+
+// ----------- Overridden functions ----------------
 
 func (tx *TransferTransaction) getName() string {
 	return "TransferTransaction"

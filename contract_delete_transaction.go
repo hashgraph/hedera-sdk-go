@@ -43,7 +43,6 @@ func NewContractDeleteTransaction() *ContractDeleteTransaction {
 		Transaction: _NewTransaction(),
 	}
 	tx._SetDefaultMaxTransactionFee(NewHbar(2))
-	tx.e = &tx
 
 	return &tx
 }
@@ -56,7 +55,6 @@ func _ContractDeleteTransactionFromProtobuf(tx Transaction, pb *services.Transac
 		transferAccountID: _AccountIDFromProtobuf(pb.GetContractDeleteInstance().GetTransferAccountID()),
 		permanentRemoval:  pb.GetContractDeleteInstance().GetPermanentRemoval(),
 	}
-	resultTx.e = resultTx
 	return resultTx
 }
 
@@ -144,7 +142,7 @@ func (tx *ContractDeleteTransaction) SignWithOperator(
 ) (*ContractDeleteTransaction, error) {
 	// If the transaction is not signed by the _Operator, we need
 	// to sign the transaction with the _Operator
-	_, err := tx.Transaction.SignWithOperator(client)
+	_, err := tx.Transaction.signWithOperator(client, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -173,12 +171,11 @@ func (tx *ContractDeleteTransaction) SetGrpcDeadline(deadline *time.Duration) *C
 }
 
 func (tx *ContractDeleteTransaction) Freeze() (*ContractDeleteTransaction, error) {
-	_, err := tx.Transaction.Freeze()
-	return tx, err
+	return tx.FreezeWith(nil)
 }
 
 func (tx *ContractDeleteTransaction) FreezeWith(client *Client) (*ContractDeleteTransaction, error) {
-	_, err := tx.Transaction.FreezeWith(client)
+	_, err := tx.Transaction.freezeWith(client, tx)
 	return tx, err
 }
 
@@ -249,7 +246,15 @@ func (tx *ContractDeleteTransaction) SetLogLevel(level LogLevel) *ContractDelete
 	return tx
 }
 
-// ----------- overriden functions ----------------
+func (tx *ContractDeleteTransaction) Execute(client *Client) (TransactionResponse, error) {
+	return tx.Transaction.execute(client, tx)
+}
+
+func (tx *ContractDeleteTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	return tx.Transaction.schedule(tx)
+}
+
+// ----------- Overridden functions ----------------
 
 func (tx *ContractDeleteTransaction) getName() string {
 	return "ContractDeleteTransaction"

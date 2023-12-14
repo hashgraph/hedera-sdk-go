@@ -52,7 +52,6 @@ func NewTokenPauseTransaction() *TokenPauseTransaction {
 		Transaction: _NewTransaction(),
 	}
 
-	tx.e = &tx
 	tx._SetDefaultMaxTransactionFee(NewHbar(30))
 
 	return &tx
@@ -63,7 +62,6 @@ func _TokenPauseTransactionFromProtobuf(tx Transaction, pb *services.Transaction
 		Transaction: tx,
 		tokenID:     _TokenIDFromProtobuf(pb.GetTokenDeletion().GetToken()),
 	}
-	resultTx.e = resultTx
 	return resultTx
 }
 
@@ -93,7 +91,7 @@ func (tx *TokenPauseTransaction) Sign(privateKey PrivateKey) *TokenPauseTransact
 
 // SignWithOperator signs the transaction with client's operator privateKey.
 func (tx *TokenPauseTransaction) SignWithOperator(client *Client) (*TokenPauseTransaction, error) {
-	_, err := tx.Transaction.SignWithOperator(client)
+	_, err := tx.Transaction.signWithOperator(client, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -127,7 +125,7 @@ func (tx *TokenPauseTransaction) Freeze() (*TokenPauseTransaction, error) {
 }
 
 func (tx *TokenPauseTransaction) FreezeWith(client *Client) (*TokenPauseTransaction, error) {
-	_, err := tx.Transaction.FreezeWith(client)
+	_, err := tx.Transaction.freezeWith(client, tx)
 	return tx, err
 }
 
@@ -191,7 +189,15 @@ func (tx *TokenPauseTransaction) SetLogLevel(level LogLevel) *TokenPauseTransact
 	return tx
 }
 
-// ----------- overriden functions ----------------
+func (tx *TokenPauseTransaction) Execute(client *Client) (TransactionResponse, error) {
+	return tx.Transaction.execute(client, tx)
+}
+
+func (tx *TokenPauseTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	return tx.Transaction.schedule(tx)
+}
+
+// ----------- Overridden functions ----------------
 
 func (tx *TokenPauseTransaction) getName() string {
 	return "TokenPauseTransaction"
@@ -239,7 +245,6 @@ func (tx *TokenPauseTransaction) buildProtoBody() *services.TokenPauseTransactio
 		body.Token = tx.tokenID._ToProtobuf()
 	}
 	return body
-
 }
 
 func (tx *TokenPauseTransaction) getMethod(channel *_Channel) _Method {

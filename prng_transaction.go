@@ -40,7 +40,6 @@ func NewPrngTransaction() *PrngTransaction {
 	}
 
 	tx._SetDefaultMaxTransactionFee(NewHbar(5))
-	tx.e = &tx
 
 	return &tx
 }
@@ -50,7 +49,6 @@ func _PrngTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) 
 		Transaction: tx,
 		rang:        uint32(pb.GetUtilPrng().GetRange()),
 	}
-	resultTx.e = resultTx
 	return resultTx
 }
 
@@ -79,7 +77,7 @@ func (tx *PrngTransaction) Sign(privateKey PrivateKey) *PrngTransaction {
 
 // SignWithOperator signs the transaction with client's operator privateKey.
 func (tx *PrngTransaction) SignWithOperator(client *Client) (*PrngTransaction, error) {
-	_, err := tx.Transaction.SignWithOperator(client)
+	_, err := tx.Transaction.signWithOperator(client, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +111,7 @@ func (tx *PrngTransaction) Freeze() (*PrngTransaction, error) {
 }
 
 func (tx *PrngTransaction) FreezeWith(client *Client) (*PrngTransaction, error) {
-	_, err := tx.Transaction.FreezeWith(client)
+	_, err := tx.Transaction.freezeWith(client, tx)
 	return tx, err
 }
 
@@ -177,7 +175,15 @@ func (tx *PrngTransaction) SetLogLevel(level LogLevel) *PrngTransaction {
 	return tx
 }
 
-// ----------- overriden functions ----------------
+func (tx *PrngTransaction) Execute(client *Client) (TransactionResponse, error) {
+	return tx.Transaction.execute(client, tx)
+}
+
+func (tx *PrngTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	return tx.Transaction.schedule(tx)
+}
+
+// ----------- Overridden functions ----------------
 
 func (tx *PrngTransaction) getName() string {
 	return "PrngTransaction"

@@ -54,7 +54,6 @@ func NewScheduleSignTransaction() *ScheduleSignTransaction {
 		Transaction: _NewTransaction(),
 	}
 	tx._SetDefaultMaxTransactionFee(NewHbar(5))
-	tx.e = &tx
 
 	return &tx
 }
@@ -64,7 +63,6 @@ func _ScheduleSignTransactionFromProtobuf(tx Transaction, pb *services.Transacti
 		Transaction: tx,
 		scheduleID:  _ScheduleIDFromProtobuf(pb.GetScheduleSign().GetScheduleID()),
 	}
-	resultTx.e = resultTx
 	return resultTx
 }
 
@@ -94,7 +92,7 @@ func (tx *ScheduleSignTransaction) Sign(privateKey PrivateKey) *ScheduleSignTran
 
 // SignWithOperator signs the transaction with client's operator privateKey.
 func (tx *ScheduleSignTransaction) SignWithOperator(client *Client) (*ScheduleSignTransaction, error) {
-	_, err := tx.Transaction.SignWithOperator(client)
+	_, err := tx.Transaction.signWithOperator(client, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -128,7 +126,7 @@ func (tx *ScheduleSignTransaction) Freeze() (*ScheduleSignTransaction, error) {
 }
 
 func (tx *ScheduleSignTransaction) FreezeWith(client *Client) (*ScheduleSignTransaction, error) {
-	_, err := tx.Transaction.FreezeWith(client)
+	_, err := tx.Transaction.freezeWith(client, tx)
 	return tx, err
 }
 
@@ -192,7 +190,15 @@ func (tx *ScheduleSignTransaction) SetLogLevel(level LogLevel) *ScheduleSignTran
 	return tx
 }
 
-// ----------- overriden functions ----------------
+func (tx *ScheduleSignTransaction) Execute(client *Client) (TransactionResponse, error) {
+	return tx.Transaction.execute(client, tx)
+}
+
+func (tx *ScheduleSignTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	return tx.Transaction.schedule(tx)
+}
+
+// ----------- Overridden functions ----------------
 
 func (tx *ScheduleSignTransaction) getName() string {
 	return "ScheduleSignTransaction"

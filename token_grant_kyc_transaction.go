@@ -57,7 +57,6 @@ func NewTokenGrantKycTransaction() *TokenGrantKycTransaction {
 		Transaction: _NewTransaction(),
 	}
 
-	tx.e = &tx
 	tx._SetDefaultMaxTransactionFee(NewHbar(30))
 
 	return &tx
@@ -69,7 +68,6 @@ func _TokenGrantKycTransactionFromProtobuf(tx Transaction, pb *services.Transact
 		tokenID:     _TokenIDFromProtobuf(pb.GetTokenGrantKyc().GetToken()),
 		accountID:   _AccountIDFromProtobuf(pb.GetTokenGrantKyc().GetAccount()),
 	}
-	resultTx.e = resultTx
 	return resultTx
 }
 
@@ -116,7 +114,7 @@ func (tx *TokenGrantKycTransaction) Sign(privateKey PrivateKey) *TokenGrantKycTr
 
 // SignWithOperator signs the transaction with client's operator privateKey.
 func (tx *TokenGrantKycTransaction) SignWithOperator(client *Client) (*TokenGrantKycTransaction, error) {
-	_, err := tx.Transaction.SignWithOperator(client)
+	_, err := tx.Transaction.signWithOperator(client, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -150,7 +148,7 @@ func (tx *TokenGrantKycTransaction) Freeze() (*TokenGrantKycTransaction, error) 
 }
 
 func (tx *TokenGrantKycTransaction) FreezeWith(client *Client) (*TokenGrantKycTransaction, error) {
-	_, err := tx.Transaction.FreezeWith(client)
+	_, err := tx.Transaction.freezeWith(client, tx)
 	return tx, err
 }
 
@@ -214,7 +212,15 @@ func (tx *TokenGrantKycTransaction) SetLogLevel(level LogLevel) *TokenGrantKycTr
 	return tx
 }
 
-// ----------- overriden functions ----------------
+func (tx *TokenGrantKycTransaction) Execute(client *Client) (TransactionResponse, error) {
+	return tx.Transaction.execute(client, tx)
+}
+
+func (tx *TokenGrantKycTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	return tx.Transaction.schedule(tx)
+}
+
+// ----------- Overridden functions ----------------
 
 func (tx *TokenGrantKycTransaction) getName() string {
 	return "TokenGrantKycTransaction"

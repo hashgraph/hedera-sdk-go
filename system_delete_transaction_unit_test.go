@@ -81,6 +81,7 @@ func TestUnitSystemDeleteTrxBuild(t *testing.T) {
 }
 
 func TestUnitSystemDeleteTrxExecute(t *testing.T) {
+	t.Parallel()
 	client, err := _NewMockClient()
 	client.SetLedgerID(*NewLedgerIDTestnet())
 	require.NoError(t, err)

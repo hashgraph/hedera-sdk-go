@@ -41,7 +41,6 @@ type Query struct {
 	paymentTransactions []*services.Transaction
 
 	isPaymentRequired bool
-	timestamp         time.Time
 }
 
 type queryResponse interface {
@@ -51,7 +50,6 @@ type queryResponse interface {
 type QueryInterface interface {
 	Executable
 
-	execute(client *Client) (*services.Response, error)
 	buildQuery() *services.Query
 	getQueryResponse(response *services.Response) queryResponse
 }
@@ -69,7 +67,6 @@ func _NewQuery(isPaymentRequired bool, header *services.QueryHeader) Query {
 		isPaymentRequired:     isPaymentRequired,
 		maxQueryPayment:       NewHbar(0),
 		queryPayment:          NewHbar(0),
-		timestamp:             time.Now(),
 		executable: executable{
 			nodeAccountIDs: _NewLockableSlice(),
 			maxBackoff:     &maxBackoff,
@@ -102,7 +99,7 @@ func (q *Query) GetQueryPayment() Hbar {
 }
 
 // GetCost returns the fee that would be charged to get the requested information (if a cost was requested).
-func (q *Query) GetCost(client *Client) (Hbar, error) {
+func (q *Query) getCost(client *Client, e QueryInterface) (Hbar, error) {
 	if client == nil || client.operator == nil {
 		return Hbar{}, errNoClientProvided
 	}
@@ -113,7 +110,7 @@ func (q *Query) GetCost(client *Client) (Hbar, error) {
 		q.paymentTransactionIDs._Clear()._Push(TransactionIDGenerate(client.operator.accountID))
 	}
 
-	err = q.e.validateNetworkOnIDs(client)
+	err = e.validateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
@@ -127,20 +124,17 @@ func (q *Query) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, err
 	}
 
-	q.pb = q.e.(QueryInterface).buildQuery()
+	q.pb = e.buildQuery()
 
 	q.pbHeader.ResponseType = services.ResponseType_COST_ANSWER
 	q.paymentTransactionIDs._Advance()
-	resp, err := _Execute(
-		client,
-		q.e,
-	)
+	resp, err := _Execute(client, e)
 
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	queryResp := q.e.(QueryInterface).getQueryResponse(resp.(*services.Response))
+	queryResp := e.getQueryResponse(resp.(*services.Response))
 	cost := int64(queryResp.GetHeader().Cost)
 
 	return HbarFromTinybar(cost), nil
@@ -210,14 +204,14 @@ func (q *Query) SetPaymentTransactionID(transactionID TransactionID) *Query {
 	return q
 }
 
-func (q *Query) execute(client *Client) (*services.Response, error) {
+func (q *Query) execute(client *Client, e QueryInterface) (*services.Response, error) {
 	if client == nil || client.operator == nil {
 		return nil, errNoClientProvided
 	}
 
 	var err error
 
-	err = q.e.validateNetworkOnIDs(client)
+	err = e.validateNetworkOnIDs(client)
 	if err != nil {
 		return nil, err
 	}
@@ -236,7 +230,7 @@ func (q *Query) execute(client *Client) (*services.Response, error) {
 			cost = q.maxQueryPayment
 		}
 
-		actualCost, err := q.GetCost(client)
+		actualCost, err := q.getCost(client, e)
 		if err != nil {
 			return nil, err
 		}
@@ -245,7 +239,7 @@ func (q *Query) execute(client *Client) (*services.Response, error) {
 			return nil, ErrMaxQueryPaymentExceeded{
 				QueryCost:       actualCost,
 				MaxQueryPayment: cost,
-				query:           q.e.getName(),
+				query:           e.getName(),
 			}
 		}
 
@@ -266,14 +260,14 @@ func (q *Query) execute(client *Client) (*services.Response, error) {
 		}
 	}
 
-	q.pb = q.e.(QueryInterface).buildQuery()
+	q.pb = e.buildQuery()
 	q.pbHeader.ResponseType = services.ResponseType_ANSWER_ONLY
 
 	if q.isPaymentRequired && len(q.paymentTransactions) > 0 {
 		q.paymentTransactionIDs._Advance()
 	}
 
-	resp, err := _Execute(client, q.e)
+	resp, err := _Execute(client, e)
 	if err != nil {
 		return nil, err
 	}
@@ -281,8 +275,8 @@ func (q *Query) execute(client *Client) (*services.Response, error) {
 	return resp.(*services.Response), nil
 }
 
-func (q *Query) shouldRetry(response interface{}) _ExecutionState {
-	queryResp := q.e.(QueryInterface).getQueryResponse(response.(*services.Response))
+func (q *Query) shouldRetry(e Executable, response interface{}) _ExecutionState {
+	queryResp := e.(QueryInterface).getQueryResponse(response.(*services.Response))
 	status := Status(queryResp.GetHeader().NodeTransactionPrecheckCode)
 	switch status {
 	case StatusPlatformTransactionNotCreated, StatusPlatformNotActive, StatusBusy:
@@ -332,8 +326,8 @@ func (q *Query) isTransaction() bool {
 	return false
 }
 
-func (q *Query) mapStatusError(response interface{}) error {
-	queryResp := q.e.(QueryInterface).getQueryResponse(response.(*services.Response))
+func (q *Query) mapStatusError(e Executable, response interface{}) error {
+	queryResp := e.(QueryInterface).getQueryResponse(response.(*services.Response))
 	return ErrHederaPreCheckStatus{
 		Status: Status(queryResp.GetHeader().NodeTransactionPrecheckCode),
 	}
@@ -354,11 +348,12 @@ func (q *Query) getName() string {
 	return "QueryInterface"
 }
 
-// NOTE: Should be implemented in every inheritor.
+//lint:ignore U1000
 func (q *Query) buildQuery() *services.Query {
 	return nil
 }
 
+//lint:ignore U1000
 func (q *Query) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return nil, errors.New("Not implemented")
 }

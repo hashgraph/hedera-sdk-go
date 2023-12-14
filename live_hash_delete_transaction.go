@@ -43,7 +43,6 @@ func NewLiveHashDeleteTransaction() *LiveHashDeleteTransaction {
 		Transaction: _NewTransaction(),
 	}
 	tx._SetDefaultMaxTransactionFee(NewHbar(2))
-	tx.e = &tx
 
 	return &tx
 }
@@ -54,7 +53,6 @@ func _LiveHashDeleteTransactionFromProtobuf(tx Transaction, pb *services.Transac
 		accountID:   _AccountIDFromProtobuf(pb.GetCryptoDeleteLiveHash().GetAccountOfLiveHash()),
 		hash:        pb.GetCryptoDeleteLiveHash().LiveHashToDelete,
 	}
-	resultTx.e = resultTx
 	return resultTx
 }
 
@@ -96,7 +94,7 @@ func (tx *LiveHashDeleteTransaction) Sign(privateKey PrivateKey) *LiveHashDelete
 
 // SignWithOperator signs the transaction with client's operator privateKey.
 func (tx *LiveHashDeleteTransaction) SignWithOperator(client *Client) (*LiveHashDeleteTransaction, error) {
-	_, err := tx.Transaction.SignWithOperator(client)
+	_, err := tx.Transaction.signWithOperator(client, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -130,7 +128,7 @@ func (tx *LiveHashDeleteTransaction) Freeze() (*LiveHashDeleteTransaction, error
 }
 
 func (tx *LiveHashDeleteTransaction) FreezeWith(client *Client) (*LiveHashDeleteTransaction, error) {
-	_, err := tx.Transaction.FreezeWith(client)
+	_, err := tx.Transaction.freezeWith(client, tx)
 	return tx, err
 }
 
@@ -194,7 +192,15 @@ func (tx *LiveHashDeleteTransaction) SetLogLevel(level LogLevel) *LiveHashDelete
 	return tx
 }
 
-// ----------- overriden functions ----------------
+func (tx *LiveHashDeleteTransaction) Execute(client *Client) (TransactionResponse, error) {
+	return tx.Transaction.execute(client, tx)
+}
+
+func (tx *LiveHashDeleteTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	return tx.Transaction.schedule(tx)
+}
+
+// ----------- Overridden functions ----------------
 
 func (tx *LiveHashDeleteTransaction) getName() string {
 	return "LiveHashDeleteTransaction"

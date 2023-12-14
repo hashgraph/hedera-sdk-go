@@ -72,7 +72,6 @@ func NewTokenAssociateTransaction() *TokenAssociateTransaction {
 		Transaction: _NewTransaction(),
 	}
 
-	tx.e = &tx
 	tx._SetDefaultMaxTransactionFee(NewHbar(5))
 
 	return &tx
@@ -91,7 +90,6 @@ func _TokenAssociateTransactionFromProtobuf(tx Transaction, pb *services.Transac
 		accountID:   _AccountIDFromProtobuf(pb.GetTokenAssociate().GetAccount()),
 		tokens:      tokens,
 	}
-	resultTx.e = resultTx
 	return resultTx
 }
 
@@ -150,7 +148,7 @@ func (tx *TokenAssociateTransaction) Sign(privateKey PrivateKey) *TokenAssociate
 
 // SignWithOperator signs the transaction with client's operator privateKey.
 func (tx *TokenAssociateTransaction) SignWithOperator(client *Client) (*TokenAssociateTransaction, error) {
-	_, err := tx.Transaction.SignWithOperator(client)
+	_, err := tx.Transaction.signWithOperator(client, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -184,7 +182,7 @@ func (tx *TokenAssociateTransaction) Freeze() (*TokenAssociateTransaction, error
 }
 
 func (tx *TokenAssociateTransaction) FreezeWith(client *Client) (*TokenAssociateTransaction, error) {
-	_, err := tx.Transaction.FreezeWith(client)
+	_, err := tx.Transaction.freezeWith(client, tx)
 	return tx, err
 }
 
@@ -248,7 +246,15 @@ func (tx *TokenAssociateTransaction) SetLogLevel(level LogLevel) *TokenAssociate
 	return tx
 }
 
-// ----------- overriden functions ----------------
+func (tx *TokenAssociateTransaction) Execute(client *Client) (TransactionResponse, error) {
+	return tx.Transaction.execute(client, tx)
+}
+
+func (tx *TokenAssociateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	return tx.Transaction.schedule(tx)
+}
+
+// ----------- Overridden functions ----------------
 
 func (tx *TokenAssociateTransaction) getName() string {
 	return "TokenAssociateTransaction"

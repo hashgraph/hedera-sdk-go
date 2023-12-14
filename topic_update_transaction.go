@@ -48,7 +48,6 @@ func NewTopicUpdateTransaction() *TopicUpdateTransaction {
 		Transaction: _NewTransaction(),
 	}
 
-	tx.e = &tx
 	tx.SetAutoRenewPeriod(7890000 * time.Second)
 	tx._SetDefaultMaxTransactionFee(NewHbar(2))
 
@@ -71,7 +70,6 @@ func _TopicUpdateTransactionFromProtobuf(tx Transaction, pb *services.Transactio
 		autoRenewPeriod:    &autoRenew,
 		expirationTime:     &expirationTime,
 	}
-	resultTx.e = resultTx
 	return resultTx
 }
 
@@ -218,7 +216,7 @@ func (tx *TopicUpdateTransaction) Sign(privateKey PrivateKey) *TopicUpdateTransa
 
 // SignWithOperator signs the transaction with client's operator privateKey.
 func (tx *TopicUpdateTransaction) SignWithOperator(client *Client) (*TopicUpdateTransaction, error) {
-	_, err := tx.Transaction.SignWithOperator(client)
+	_, err := tx.Transaction.signWithOperator(client, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -252,7 +250,7 @@ func (tx *TopicUpdateTransaction) Freeze() (*TopicUpdateTransaction, error) {
 }
 
 func (tx *TopicUpdateTransaction) FreezeWith(client *Client) (*TopicUpdateTransaction, error) {
-	_, err := tx.Transaction.FreezeWith(client)
+	_, err := tx.Transaction.freezeWith(client, tx)
 	return tx, err
 }
 
@@ -316,7 +314,15 @@ func (tx *TopicUpdateTransaction) SetLogLevel(level LogLevel) *TopicUpdateTransa
 	return tx
 }
 
-// ----------- overriden functions ----------------
+func (tx *TopicUpdateTransaction) Execute(client *Client) (TransactionResponse, error) {
+	return tx.Transaction.execute(client, tx)
+}
+
+func (tx *TopicUpdateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	return tx.Transaction.schedule(tx)
+}
+
+// ----------- Overridden functions ----------------
 
 func (tx *TopicUpdateTransaction) getName() string {
 	return "TopicUpdateTransaction"

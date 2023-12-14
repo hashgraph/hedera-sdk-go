@@ -54,7 +54,6 @@ func NewTokenBurnTransaction() *TokenBurnTransaction {
 		Transaction: _NewTransaction(),
 	}
 
-	tx.e = &tx
 	tx._SetDefaultMaxTransactionFee(NewHbar(2))
 
 	return &tx
@@ -67,7 +66,6 @@ func _TokenBurnTransactionFromProtobuf(tx Transaction, pb *services.TransactionB
 		amount:      pb.GetTokenBurn().GetAmount(),
 		serial:      pb.GetTokenBurn().GetSerialNumbers(),
 	}
-	resultTx.e = resultTx
 	return resultTx
 }
 
@@ -140,7 +138,7 @@ func (tx *TokenBurnTransaction) Sign(privateKey PrivateKey) *TokenBurnTransactio
 
 // SignWithOperator signs the transaction with client's operator privateKey.
 func (tx *TokenBurnTransaction) SignWithOperator(client *Client) (*TokenBurnTransaction, error) {
-	_, err := tx.Transaction.SignWithOperator(client)
+	_, err := tx.Transaction.signWithOperator(client, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -174,7 +172,7 @@ func (tx *TokenBurnTransaction) Freeze() (*TokenBurnTransaction, error) {
 }
 
 func (tx *TokenBurnTransaction) FreezeWith(client *Client) (*TokenBurnTransaction, error) {
-	_, err := tx.Transaction.FreezeWith(client)
+	_, err := tx.Transaction.freezeWith(client, tx)
 	return tx, err
 }
 
@@ -238,7 +236,15 @@ func (tx *TokenBurnTransaction) SetLogLevel(level LogLevel) *TokenBurnTransactio
 	return tx
 }
 
-// ----------- overriden functions ----------------
+func (tx *TokenBurnTransaction) Execute(client *Client) (TransactionResponse, error) {
+	return tx.Transaction.execute(client, tx)
+}
+
+func (tx *TokenBurnTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	return tx.Transaction.schedule(tx)
+}
+
+// ----------- Overridden functions ----------------
 
 func (tx *TokenBurnTransaction) getName() string {
 	return "TokenBurnTransaction"

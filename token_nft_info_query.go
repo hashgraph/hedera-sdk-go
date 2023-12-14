@@ -44,7 +44,6 @@ func NewTokenNftInfoQuery() *TokenNftInfoQuery {
 		nftID: nil,
 	}
 
-	result.e = &result
 	return &result
 }
 
@@ -125,9 +124,13 @@ func (q *TokenNftInfoQuery) ByAccountID(id AccountID) *TokenNftInfoQuery {
 	return q
 }
 
+func (q *TokenNftInfoQuery) GetCost(client *Client) (Hbar, error) {
+	return q.Query.getCost(client, q)
+}
+
 // Execute executes the QueryInterface with the provided client
 func (q *TokenNftInfoQuery) Execute(client *Client) ([]TokenNftInfo, error) {
-	resp, err := q.Query.execute(client)
+	resp, err := q.Query.execute(client, q)
 
 	if err != nil {
 		return []TokenNftInfo{}, err

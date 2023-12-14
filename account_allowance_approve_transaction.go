@@ -56,7 +56,6 @@ func NewAccountAllowanceApproveTransaction() *AccountAllowanceApproveTransaction
 	tx := AccountAllowanceApproveTransaction{
 		Transaction: _NewTransaction(),
 	}
-	tx.e = &tx
 	tx._SetDefaultMaxTransactionFee(NewHbar(2))
 
 	return &tx
@@ -88,7 +87,6 @@ func _AccountAllowanceApproveTransactionFromProtobuf(tx Transaction, pb *service
 		tokenAllowances: tokenApproval,
 		nftAllowances:   nftApproval,
 	}
-	resultTx.e = resultTx
 	return resultTx
 }
 
@@ -271,7 +269,7 @@ func (tx *AccountAllowanceApproveTransaction) Sign(
 func (tx *AccountAllowanceApproveTransaction) SignWithOperator(
 	client *Client,
 ) (*AccountAllowanceApproveTransaction, error) {
-	_, err := tx.Transaction.SignWithOperator(client)
+	_, err := tx.Transaction.signWithOperator(client, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -301,12 +299,11 @@ func (tx *AccountAllowanceApproveTransaction) SetGrpcDeadline(deadline *time.Dur
 }
 
 func (tx *AccountAllowanceApproveTransaction) Freeze() (*AccountAllowanceApproveTransaction, error) {
-	_, err := tx.Transaction.Freeze()
-	return tx, err
+	return tx.FreezeWith(nil)
 }
 
 func (tx *AccountAllowanceApproveTransaction) FreezeWith(client *Client) (*AccountAllowanceApproveTransaction, error) {
-	_, err := tx.Transaction.FreezeWith(client)
+	_, err := tx.Transaction.freezeWith(client, tx)
 	return tx, err
 }
 
@@ -373,7 +370,15 @@ func (tx *AccountAllowanceApproveTransaction) SetMinBackoff(min time.Duration) *
 	return tx
 }
 
-// ----------- overridden functions ----------------
+func (tx *AccountAllowanceApproveTransaction) Execute(client *Client) (TransactionResponse, error) {
+	return tx.Transaction.execute(client, tx)
+}
+
+func (tx *AccountAllowanceApproveTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	return tx.Transaction.schedule(tx)
+}
+
+// ----------- Overridden functions ----------------
 
 func (tx *AccountAllowanceApproveTransaction) getName() string {
 	return "AccountAllowanceApproveTransaction"

@@ -55,7 +55,6 @@ func NewTransactionRecordQuery() *TransactionRecordQuery {
 		Query: _NewQuery(true, &header),
 	}
 
-	result.e = &result
 	return &result
 }
 
@@ -102,9 +101,13 @@ func (q *TransactionRecordQuery) GetIncludeDuplicates() bool {
 	return false
 }
 
+func (q *TransactionRecordQuery) GetCost(client *Client) (Hbar, error) {
+	return q.Query.getCost(client, q)
+}
+
 // Execute executes the QueryInterface with the provided client
 func (q *TransactionRecordQuery) Execute(client *Client) (TransactionRecord, error) {
-	resp, err := q.Query.execute(client)
+	resp, err := q.Query.execute(client, q)
 
 	if err != nil {
 		if precheckErr, ok := err.(ErrHederaPreCheckStatus); ok {
@@ -187,7 +190,7 @@ func (q *TransactionRecordQuery) getMethod(channel *_Channel) _Method {
 	}
 }
 
-func (q *TransactionRecordQuery) mapStatusError(response interface{}) error {
+func (q *TransactionRecordQuery) mapStatusError(_ Executable, response interface{}) error {
 	query := response.(*services.Response)
 	switch Status(query.GetTransactionGetRecord().GetHeader().GetNodeTransactionPrecheckCode()) {
 	case StatusPlatformTransactionNotCreated, StatusBusy, StatusUnknown, StatusReceiptNotFound, StatusRecordNotFound, StatusOk:
@@ -245,7 +248,7 @@ func (q *TransactionRecordQuery) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (q *TransactionRecordQuery) shouldRetry(response interface{}) _ExecutionState {
+func (q *TransactionRecordQuery) shouldRetry(_ Executable, response interface{}) _ExecutionState {
 	status := Status(response.(*services.Response).GetTransactionGetRecord().GetHeader().GetNodeTransactionPrecheckCode())
 
 	switch status {

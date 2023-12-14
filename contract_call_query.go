@@ -53,7 +53,6 @@ func NewContractCallQuery() *ContractCallQuery {
 		Query: query,
 	}
 
-	result.e = &result
 	return &result
 }
 
@@ -134,9 +133,13 @@ func (q *ContractCallQuery) GetFunctionParameters() []byte {
 	return q.functionParameters
 }
 
+func (q *ContractCallQuery) GetCost(client *Client) (Hbar, error) {
+	return q.Query.getCost(client, q)
+}
+
 // Execute executes the QueryInterface with the provided client
 func (q *ContractCallQuery) Execute(client *Client) (ContractFunctionResult, error) {
-	resp, err := q.Query.execute(client)
+	resp, err := q.Query.execute(client, q)
 
 	if err != nil {
 		return ContractFunctionResult{}, err

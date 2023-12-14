@@ -39,7 +39,6 @@ func NewScheduleInfoQuery() *ScheduleInfoQuery {
 		Query: _NewQuery(true, &header),
 	}
 
-	result.e = &result
 	return &result
 }
 
@@ -64,9 +63,13 @@ func (q *ScheduleInfoQuery) GetScheduleID() ScheduleID {
 	return *q.scheduleID
 }
 
+func (q *ScheduleInfoQuery) GetCost(client *Client) (Hbar, error) {
+	return q.Query.getCost(client, q)
+}
+
 // Execute executes the QueryInterface with the provided client
 func (q *ScheduleInfoQuery) Execute(client *Client) (ScheduleInfo, error) {
-	resp, err := q.Query.execute(client)
+	resp, err := q.Query.execute(client, q)
 
 	if err != nil {
 		return ScheduleInfo{}, err

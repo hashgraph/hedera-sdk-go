@@ -43,7 +43,6 @@ func NewContractInfoQuery() *ContractInfoQuery {
 		Query: query,
 	}
 
-	result.e = &result
 	return &result
 }
 
@@ -67,9 +66,13 @@ func (q *ContractInfoQuery) GetContractID() ContractID {
 	return *q.contractID
 }
 
+func (q *ContractInfoQuery) GetCost(client *Client) (Hbar, error) {
+	return q.Query.getCost(client, q)
+}
+
 // Execute executes the QueryInterface with the provided client
 func (q *ContractInfoQuery) Execute(client *Client) (ContractInfo, error) {
-	resp, err := q.Query.execute(client)
+	resp, err := q.Query.execute(client, q)
 
 	if err != nil {
 		return ContractInfo{}, err

@@ -43,7 +43,6 @@ func NewTopicCreateTransaction() *TopicCreateTransaction {
 		Transaction: _NewTransaction(),
 	}
 
-	tx.e = &tx
 	tx.SetAutoRenewPeriod(7890000 * time.Second)
 	tx._SetDefaultMaxTransactionFee(NewHbar(2))
 
@@ -69,7 +68,6 @@ func _TopicCreateTransactionFromProtobuf(tx Transaction, pb *services.Transactio
 		memo:               pb.GetConsensusCreateTopic().GetMemo(),
 		autoRenewPeriod:    &autoRenew,
 	}
-	resultTx.e = resultTx
 	return resultTx
 }
 
@@ -159,7 +157,7 @@ func (tx *TopicCreateTransaction) Sign(privateKey PrivateKey) *TopicCreateTransa
 
 // SignWithOperator signs the transaction with client's operator privateKey.
 func (tx *TopicCreateTransaction) SignWithOperator(client *Client) (*TopicCreateTransaction, error) {
-	_, err := tx.Transaction.SignWithOperator(client)
+	_, err := tx.Transaction.signWithOperator(client, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -193,7 +191,7 @@ func (tx *TopicCreateTransaction) Freeze() (*TopicCreateTransaction, error) {
 }
 
 func (tx *TopicCreateTransaction) FreezeWith(client *Client) (*TopicCreateTransaction, error) {
-	_, err := tx.Transaction.FreezeWith(client)
+	_, err := tx.Transaction.freezeWith(client, tx)
 	return tx, err
 }
 
@@ -257,7 +255,15 @@ func (tx *TopicCreateTransaction) SetLogLevel(level LogLevel) *TopicCreateTransa
 	return tx
 }
 
-// ----------- overriden functions ----------------
+func (tx *TopicCreateTransaction) Execute(client *Client) (TransactionResponse, error) {
+	return tx.Transaction.execute(client, tx)
+}
+
+func (tx *TopicCreateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	return tx.Transaction.schedule(tx)
+}
+
+// ----------- Overridden functions ----------------
 
 func (tx *TopicCreateTransaction) getName() string {
 	return "TopicCreateTransaction"

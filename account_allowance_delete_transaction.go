@@ -47,7 +47,6 @@ func NewAccountAllowanceDeleteTransaction() *AccountAllowanceDeleteTransaction {
 	tx := AccountAllowanceDeleteTransaction{
 		Transaction: _NewTransaction(),
 	}
-	tx.e = &tx
 	tx._SetDefaultMaxTransactionFee(NewHbar(2))
 
 	return &tx
@@ -65,7 +64,6 @@ func _AccountAllowanceDeleteTransactionFromProtobuf(transaction Transaction, pb 
 		Transaction: transaction,
 		nftWipe:     nftWipe,
 	}
-	resultTx.e = resultTx
 	return resultTx
 }
 
@@ -154,7 +152,7 @@ func (tx *AccountAllowanceDeleteTransaction) SignWithOperator(
 ) (*AccountAllowanceDeleteTransaction, error) {
 	// If the transaction is not signed by the _Operator, we need
 	// to sign the transaction with the _Operator
-	_, err := tx.Transaction.SignWithOperator(client)
+	_, err := tx.Transaction.signWithOperator(client, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -184,12 +182,11 @@ func (tx *AccountAllowanceDeleteTransaction) SetGrpcDeadline(deadline *time.Dura
 }
 
 func (tx *AccountAllowanceDeleteTransaction) Freeze() (*AccountAllowanceDeleteTransaction, error) {
-	_, err := tx.Transaction.Freeze()
-	return tx, err
+	return tx.FreezeWith(nil)
 }
 
 func (tx *AccountAllowanceDeleteTransaction) FreezeWith(client *Client) (*AccountAllowanceDeleteTransaction, error) {
-	_, err := tx.Transaction.FreezeWith(client)
+	_, err := tx.Transaction.freezeWith(client, tx)
 	return tx, err
 }
 
@@ -253,7 +250,16 @@ func (tx *AccountAllowanceDeleteTransaction) SetMinBackoff(min time.Duration) *A
 	return tx
 }
 
-// ----------- overridden functions ----------------
+func (tx *AccountAllowanceDeleteTransaction) Execute(client *Client) (TransactionResponse, error) {
+	return tx.Transaction.execute(client, tx)
+}
+
+func (tx *AccountAllowanceDeleteTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	return tx.Transaction.schedule(tx)
+}
+
+// ----------- Overridden functions ----------------
+
 func (tx *AccountAllowanceDeleteTransaction) getName() string {
 	return "AccountAllowanceDeleteTransaction"
 }

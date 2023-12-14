@@ -32,7 +32,6 @@ type AccountBalanceQuery struct {
 	Query
 	accountID  *AccountID
 	contractID *ContractID
-	timestamp  time.Time
 }
 
 // NewAccountBalanceQuery creates an AccountBalanceQuery Query which can be used to construct and execute
@@ -44,7 +43,6 @@ func NewAccountBalanceQuery() *AccountBalanceQuery {
 	result := AccountBalanceQuery{
 		Query: _NewQuery(false, &header),
 	}
-	result.e = &result
 
 	return &result
 }
@@ -91,6 +89,10 @@ func (q *AccountBalanceQuery) GetContractID() ContractID {
 	return *q.contractID
 }
 
+func (q *AccountBalanceQuery) GetCost(client *Client) (Hbar, error) {
+	return q.Query.getCost(client, q)
+}
+
 // Execute executes the QueryInterface with the provided client
 func (q *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error) {
 	if client == nil {
@@ -104,14 +106,10 @@ func (q *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error) {
 		return AccountBalance{}, err
 	}
 
-	q.timestamp = time.Now()
 	q.paymentTransactions = make([]*services.Transaction, 0)
 	q.pb = q.buildQuery()
 
-	resp, err := _Execute(
-		client,
-		q.e,
-	)
+	resp, err := _Execute(client, q)
 
 	if err != nil {
 		return AccountBalance{}, err

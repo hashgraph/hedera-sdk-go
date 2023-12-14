@@ -39,7 +39,6 @@ func NewTokenInfoQuery() *TokenInfoQuery {
 		Query: _NewQuery(true, &header),
 	}
 
-	result.e = &result
 	return &result
 }
 
@@ -64,9 +63,13 @@ func (q *TokenInfoQuery) GetTokenID() TokenID {
 	return *q.tokenID
 }
 
+func (q *TokenInfoQuery) GetCost(client *Client) (Hbar, error) {
+	return q.Query.getCost(client, q)
+}
+
 // Execute executes the TopicInfoQuery using the provided client
 func (q *TokenInfoQuery) Execute(client *Client) (TokenInfo, error) {
-	resp, err := q.Query.execute(client)
+	resp, err := q.Query.execute(client, q)
 
 	if err != nil {
 		return TokenInfo{}, err
