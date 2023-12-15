@@ -315,7 +315,7 @@ func TestUnitTopicMessageSubmitTransactionSerialization(t *testing.T) {
 	txParsed, err := TransactionFromBytes(txBytes)
 	require.NoError(t, err)
 
-	result, ok := txParsed.(*TopicMessageSubmitTransaction)
+	result, ok := txParsed.(TopicMessageSubmitTransaction)
 	require.True(t, ok)
 
 	require.Equal(t, transactionID.AccountID, result.GetTransactionID().AccountID)
