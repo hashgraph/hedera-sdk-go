@@ -44,7 +44,6 @@ func TestUnitAccountAllowanceDeleteTransactionCoverage(t *testing.T) {
 		SetRegenerateTransactionID(false).
 		Freeze()
 	require.NoError(t, err)
-
 	transaction.validateNetworkOnIDs(client)
 
 	_, err = transaction.Schedule()

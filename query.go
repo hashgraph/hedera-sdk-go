@@ -21,6 +21,7 @@ package hedera
  */
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -37,6 +38,7 @@ type Query struct {
 	paymentTransactionIDs *_LockableSlice
 	maxQueryPayment       Hbar
 	queryPayment          Hbar
+	timestamp             time.Time
 
 	paymentTransactions []*services.Transaction
 
@@ -346,6 +348,14 @@ func (q *Query) getMethod(*_Channel) _Method {
 
 func (q *Query) getName() string {
 	return "QueryInterface"
+}
+
+func (q *Query) getLogID(queryInterface Executable) string {
+	timestamp := q.timestamp.UnixNano()
+	if q.paymentTransactionIDs._Length() > 0 && q.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart != nil {
+		timestamp = q.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart.UnixNano()
+	}
+	return fmt.Sprintf("%s:%d", queryInterface.getName(), timestamp)
 }
 
 //lint:ignore U1000

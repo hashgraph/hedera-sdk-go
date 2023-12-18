@@ -4739,6 +4739,11 @@ func (tx *Transaction) getName() string {
 	return "transaction"
 }
 
+func (tx *Transaction) getLogID(transactionInterface Executable) string {
+	timestamp := tx.transactionIDs._GetCurrent().(TransactionID).ValidStart
+	return fmt.Sprintf("%s:%d", transactionInterface.getName(), timestamp.UnixNano())
+}
+
 // Building empty object as "default" implementation. All inhertents must implement their own implementation.
 func (tx *Transaction) validateNetworkOnIDs(client *Client) error {
 	return errors.New("Function not implemented")

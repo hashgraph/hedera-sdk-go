@@ -69,6 +69,7 @@ type Executable interface {
 	isTransaction() bool
 	getLogger(Logger) Logger
 	getTransactionIDAndMessage() (string, string)
+	getLogID(Executable) string // This returns transaction creation timestamp + transaction name
 }
 
 type executable struct {
@@ -237,15 +238,15 @@ func _Execute(client *Client, e Executable) (interface{}, error) {
 
 		node._InUse()
 
-		txLogger.Trace("executing", "requestId", e.getName(), "nodeAccountID", node.accountID.String(), "nodeIPAddress", node.address._String(), "Request Proto", hex.EncodeToString(marshaledRequest))
+		txLogger.Trace("executing", "requestId", e.getLogID(e), "nodeAccountID", node.accountID.String(), "nodeIPAddress", node.address._String(), "Request Proto", hex.EncodeToString(marshaledRequest))
 
 		if !node._IsHealthy() {
-			txLogger.Trace("node is unhealthy, waiting before continuing", "requestId", e.getName(), "delay", node._Wait().String())
-			_DelayForAttempt(e.getName(), backOff.NextBackOff(), attempt, txLogger)
+			txLogger.Trace("node is unhealthy, waiting before continuing", "requestId", e.getLogID(e), "delay", node._Wait().String())
+			_DelayForAttempt(e.getLogID(e), backOff.NextBackOff(), attempt, txLogger)
 			continue
 		}
 
-		txLogger.Trace("updating node account ID index", "requestId", e.getName())
+		txLogger.Trace("updating node account ID index", "requestId", e.getLogID(e))
 		channel, err := node._GetChannel(txLogger)
 		if err != nil {
 			client.network._IncreaseBackoff(node)
@@ -266,7 +267,7 @@ func _Execute(client *Client, e Executable) (interface{}, error) {
 			ctx, cancel = context.WithDeadline(ctx, grpcDeadline)
 		}
 
-		txLogger.Trace("executing gRPC call", "requestId", e.getName())
+		txLogger.Trace("executing gRPC call", "requestId", e.getLogID(e))
 
 		var marshaledResponse []byte
 		if method.query != nil {
@@ -286,7 +287,7 @@ func _Execute(client *Client, e Executable) (interface{}, error) {
 		}
 		if err != nil {
 			errPersistent = err
-			if _ExecutableDefaultRetryHandler(e.getName(), err, txLogger) {
+			if _ExecutableDefaultRetryHandler(e.getLogID(e), err, txLogger) {
 				client.network._IncreaseBackoff(node)
 				continue
 			}
@@ -307,7 +308,7 @@ func _Execute(client *Client, e Executable) (interface{}, error) {
 
 		txLogger.Trace(
 			msg,
-			"requestID", e.getName(),
+			"requestID", e.getLogID(e),
 			"nodeID", node.accountID.String(),
 			"nodeAddress", node.address._String(),
 			"nodeIsHealthy", strconv.FormatBool(node._IsHealthy()),
@@ -319,13 +320,13 @@ func _Execute(client *Client, e Executable) (interface{}, error) {
 		switch e.shouldRetry(e, resp) {
 		case executionStateRetry:
 			errPersistent = statusError
-			_DelayForAttempt(e.getName(), backOff.NextBackOff(), attempt, txLogger)
+			_DelayForAttempt(e.getLogID(e), backOff.NextBackOff(), attempt, txLogger)
 			continue
 		case executionStateExpired:
 			if e.isTransaction() {
 				transaction := e.(TransactionInterface)
 				if transaction.regenerateID(client) {
-					txLogger.Trace("received `TRANSACTION_EXPIRED` with transaction ID regeneration enabled; regenerating", "requestId", e.getName())
+					txLogger.Trace("received `TRANSACTION_EXPIRED` with transaction ID regeneration enabled; regenerating", "requestId", e.getLogID(e))
 					continue
 				} else {
 					return TransactionResponse{}, statusError
