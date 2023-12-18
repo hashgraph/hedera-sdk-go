@@ -187,33 +187,8 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 			nodeAccountID = *_AccountIDFromProtobuf(body.GetNodeAccountID())
 		}
 
-		found := false
-
-		for _, value := range tx.transactionIDs.slice {
-			id := value.(TransactionID)
-			if id.AccountID != nil && transactionID.AccountID != nil &&
-				id.AccountID._Equals(*transactionID.AccountID) &&
-				id.ValidStart != nil && transactionID.ValidStart != nil &&
-				id.ValidStart.Equal(*transactionID.ValidStart) {
-				found = true
-				break
-			}
-		}
-
-		if !found {
-			tx.transactionIDs = tx.transactionIDs._Push(transactionID)
-		}
-
-		for _, id := range tx.GetNodeAccountIDs() {
-			if id._Equals(nodeAccountID) {
-				found = true
-				break
-			}
-		}
-
-		if !found {
-			tx.nodeAccountIDs = tx.nodeAccountIDs._Push(nodeAccountID)
-		}
+		tx.transactionIDs = tx.transactionIDs._Push(transactionID)
+		tx.nodeAccountIDs = tx.nodeAccountIDs._Push(nodeAccountID)
 
 		if i == 0 {
 			tx.memo = body.Memo
