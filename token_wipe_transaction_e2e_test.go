@@ -595,7 +595,7 @@ func TestIntegrationTokenWipeTransactionNotZeroTokensAtDelete(t *testing.T) {
 		}
 	}
 
-	assert.Equal(t, uint64(100), value)
+	assert.Equal(t, value, uint64(100))
 
 	resp, err = NewTokenWipeTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
@@ -620,7 +620,7 @@ func TestIntegrationTokenWipeTransactionNotZeroTokensAtDelete(t *testing.T) {
 		}
 	}
 
-	assert.Equal(t, uint64(90), value)
+	assert.Equal(t, value, uint64(90))
 
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).

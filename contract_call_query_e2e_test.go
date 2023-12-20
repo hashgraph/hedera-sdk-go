@@ -374,7 +374,7 @@ func TestIntegrationContractCallQueryInsufficientFee(t *testing.T) {
 	resp, err = NewContractCreateTransaction().
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetGas(100000).
+		SetGas(200000).
 		SetConstructorParameters(NewContractFunctionParameters().AddString("Hello from Hedera.")).
 		SetBytecodeFileID(fileID).
 		SetContractMemo("[e2e::ContractCreateTransaction]").
@@ -394,7 +394,7 @@ func TestIntegrationContractCallQueryInsufficientFee(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetContractID(contractID).
 		SetMaxQueryPayment(NewHbar(1)).
-		SetGas(100000).
+		SetGas(200000).
 		SetFunction("getMessage", nil)
 
 	_, err = callQuery.GetCost(env.Client)
