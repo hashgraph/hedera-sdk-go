@@ -54,7 +54,7 @@ func TestIntegrationContractExecuteTransactionCanExecute(t *testing.T) {
 
 	resp, err = NewContractCreateTransaction().
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetGas(100000).
+		SetGas(200000).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetConstructorParameters(NewContractFunctionParameters().AddString("hello from hedera")).
 		SetBytecodeFileID(fileID).
@@ -71,7 +71,7 @@ func TestIntegrationContractExecuteTransactionCanExecute(t *testing.T) {
 	resp, err = NewContractExecuteTransaction().
 		SetContractID(contractID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetGas(100000).
+		SetGas(200000).
 		SetFunction("setMessage", NewContractFunctionParameters().AddString("new message")).
 		Execute(env.Client)
 	require.NoError(t, err)

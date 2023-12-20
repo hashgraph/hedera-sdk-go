@@ -39,7 +39,7 @@ func TestIntegrationContractCreateFlowCanExecute(t *testing.T) {
 	resp, err := NewContractCreateFlow().
 		SetBytecode(testContractByteCode).
 		SetAdminKey(env.OperatorKey).
-		SetGas(100000).
+		SetGas(200000).
 		SetConstructorParameters(NewContractFunctionParameters().AddString("hello from hedera")).
 		SetContractMemo("[e2e::ContractCreateFlow]").
 		Execute(env.Client)
@@ -54,7 +54,7 @@ func TestIntegrationContractCreateFlowCanExecute(t *testing.T) {
 	resp, err = NewContractExecuteTransaction().
 		SetContractID(contractID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetGas(100000).
+		SetGas(200000).
 		SetFunction("setMessage", NewContractFunctionParameters().AddString("new message")).
 		Execute(env.Client)
 	require.NoError(t, err)
