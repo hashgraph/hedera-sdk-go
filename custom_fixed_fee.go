@@ -29,7 +29,7 @@ import (
 
 type Fee interface {
 	_ToProtobuf() *services.CustomFee
-	_ValidateNetworkOnIDs(client *Client) error
+	validateNetworkOnIDs(client *Client) error
 }
 
 // A fixed fee transfers a specified amount of the token, to the specified collection account(s),
@@ -60,7 +60,7 @@ func _CustomFixedFeeFromProtobuf(fixedFee *services.FixedFee, customFee CustomFe
 	}
 }
 
-func (fee CustomFixedFee) _ValidateNetworkOnIDs(client *Client) error {
+func (fee CustomFixedFee) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -168,7 +168,7 @@ func (fee *CustomFixedFee) SetAllCollectorsAreExempt(exempt bool) *CustomFixedFe
 }
 
 // ToBytes returns the byte representation of the CustomFixedFee
-func (fee CustomFixedFee) ToBytes() []byte {
+func (fee *CustomFixedFee) ToBytes() []byte {
 	data, err := protobuf.Marshal(fee._ToProtobuf())
 	if err != nil {
 		return make([]byte, 0)
@@ -178,7 +178,7 @@ func (fee CustomFixedFee) ToBytes() []byte {
 }
 
 // String returns a string representation of the CustomFixedFee
-func (fee CustomFixedFee) String() string {
+func (fee *CustomFixedFee) String() string {
 	if fee.DenominationTokenID != nil {
 		return fmt.Sprintf("feeCollectorAccountID: %s, amount: %d, denominatingTokenID: %s", fee.FeeCollectorAccountID.String(), fee.Amount, fee.DenominationTokenID.String())
 	}

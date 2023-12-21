@@ -52,7 +52,7 @@ func TestUnitTokenUpdateTransactionValidate(t *testing.T) {
 		SetAutoRenewAccount(accountID).
 		SetTreasuryAccountID(accountID)
 
-	err = tokenUpdate._ValidateNetworkOnIDs(client)
+	err = tokenUpdate.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 }
 
@@ -73,7 +73,7 @@ func TestUnitTokenUpdateTransactionValidateWrong(t *testing.T) {
 		SetAutoRenewAccount(accountID).
 		SetTreasuryAccountID(accountID)
 
-	err = tokenUpdate._ValidateNetworkOnIDs(client)
+	err = tokenUpdate.validateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
@@ -133,7 +133,7 @@ func TestUnitTokenUpdateTransactionGet(t *testing.T) {
 	_, err = transaction.GetTransactionHash()
 	require.NoError(t, err)
 
-	err = transaction._ValidateNetworkOnIDs(client)
+	err = transaction.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 	_, err = transaction.Schedule()
 	require.NoError(t, err)
@@ -161,7 +161,7 @@ func TestUnitTokenUpdateTransactionGet(t *testing.T) {
 	require.NoError(t, err)
 	sig, err := newKey.SignTransaction(&transaction.Transaction)
 	require.NoError(t, err)
-	transaction._GetLogID()
+	transaction.getName()
 	transaction.GetMaxRetry()
 	transaction.GetMaxBackoff()
 	transaction.GetMinBackoff()
@@ -207,7 +207,7 @@ func TestUnitTokenUpdateTransactionNothingSet(t *testing.T) {
 	transaction.GetRegenerateTransactionID()
 	transaction.GetMaxTransactionFee()
 	transaction.GetRegenerateTransactionID()
-	proto := transaction._Build().GetTokenUpdate()
+	proto := transaction.build().GetTokenUpdate()
 	require.Nil(t, proto.Token)
 	require.Nil(t, proto.AutoRenewAccount)
 	require.Nil(t, proto.AdminKey)
@@ -251,7 +251,7 @@ func TestUnitTokenUpdateTransactionKeyCheck(t *testing.T) {
 	transaction.GetTransactionID()
 	transaction.GetNodeAccountIDs()
 
-	proto := transaction._Build().GetTokenUpdate()
+	proto := transaction.build().GetTokenUpdate()
 	require.Equal(t, proto.AdminKey.String(), keys[0]._ToProtoKey().String())
 	require.Equal(t, proto.FreezeKey.String(), keys[1]._ToProtoKey().String())
 	require.Equal(t, proto.WipeKey.String(), keys[2]._ToProtoKey().String())

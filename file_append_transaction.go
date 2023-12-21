@@ -21,7 +21,6 @@ package hedera
  */
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -43,20 +42,20 @@ type FileAppendTransaction struct {
 // NewFileAppendTransaction creates a FileAppendTransaction transaction which can be
 // used to construct and execute a File Append Transaction.
 func NewFileAppendTransaction() *FileAppendTransaction {
-	transaction := FileAppendTransaction{
+	tx := FileAppendTransaction{
 		Transaction: _NewTransaction(),
 		maxChunks:   20,
 		contents:    make([]byte, 0),
 		chunkSize:   2048,
 	}
-	transaction._SetDefaultMaxTransactionFee(NewHbar(5))
+	tx._SetDefaultMaxTransactionFee(NewHbar(5))
 
-	return &transaction
+	return &tx
 }
 
-func _FileAppendTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) *FileAppendTransaction {
+func _FileAppendTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *FileAppendTransaction {
 	return &FileAppendTransaction{
-		Transaction: transaction,
+		Transaction: tx,
 		maxChunks:   20,
 		contents:    pb.GetFileAppend().GetContents(),
 		chunkSize:   2048,
@@ -64,208 +63,278 @@ func _FileAppendTransactionFromProtobuf(transaction Transaction, pb *services.Tr
 	}
 }
 
-// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (transaction *FileAppendTransaction) SetGrpcDeadline(deadline *time.Duration) *FileAppendTransaction {
-	transaction.Transaction.SetGrpcDeadline(deadline)
-	return transaction
-}
-
 // SetFileID sets the FileID of the file to which the bytes are appended to.
-func (transaction *FileAppendTransaction) SetFileID(fileID FileID) *FileAppendTransaction {
-	transaction._RequireNotFrozen()
-	transaction.fileID = &fileID
-	return transaction
+func (tx *FileAppendTransaction) SetFileID(fileID FileID) *FileAppendTransaction {
+	tx._RequireNotFrozen()
+	tx.fileID = &fileID
+	return tx
 }
 
 // GetFileID returns the FileID of the file to which the bytes are appended to.
-func (transaction *FileAppendTransaction) GetFileID() FileID {
-	if transaction.fileID == nil {
+func (tx *FileAppendTransaction) GetFileID() FileID {
+	if tx.fileID == nil {
 		return FileID{}
 	}
 
-	return *transaction.fileID
+	return *tx.fileID
 }
 
 // SetMaxChunkSize Sets maximum amount of chunks append function can create
-func (transaction *FileAppendTransaction) SetMaxChunkSize(size int) *FileAppendTransaction {
-	transaction._RequireNotFrozen()
-	transaction.chunkSize = size
-	return transaction
+func (tx *FileAppendTransaction) SetMaxChunkSize(size int) *FileAppendTransaction {
+	tx._RequireNotFrozen()
+	tx.chunkSize = size
+	return tx
 }
 
 // GetMaxChunkSize returns maximum amount of chunks append function can create
-func (transaction *FileAppendTransaction) GetMaxChunkSize() int {
-	return transaction.chunkSize
+func (tx *FileAppendTransaction) GetMaxChunkSize() int {
+	return tx.chunkSize
 }
 
 // SetMaxChunks sets the maximum number of chunks that can be created
-func (transaction *FileAppendTransaction) SetMaxChunks(size uint64) *FileAppendTransaction {
-	transaction._RequireNotFrozen()
-	transaction.maxChunks = size
-	return transaction
+func (tx *FileAppendTransaction) SetMaxChunks(size uint64) *FileAppendTransaction {
+	tx._RequireNotFrozen()
+	tx.maxChunks = size
+	return tx
 }
 
 // GetMaxChunks returns the maximum number of chunks that can be created
-func (transaction *FileAppendTransaction) GetMaxChunks() uint64 {
-	return transaction.maxChunks
+func (tx *FileAppendTransaction) GetMaxChunks() uint64 {
+	return tx.maxChunks
 }
 
 // SetContents sets the bytes to append to the contents of the file.
-func (transaction *FileAppendTransaction) SetContents(contents []byte) *FileAppendTransaction {
-	transaction._RequireNotFrozen()
-	transaction.contents = contents
-	return transaction
+func (tx *FileAppendTransaction) SetContents(contents []byte) *FileAppendTransaction {
+	tx._RequireNotFrozen()
+	tx.contents = contents
+	return tx
 }
 
 // GetContents returns the bytes to append to the contents of the file.
-func (transaction *FileAppendTransaction) GetContents() []byte {
-	return transaction.contents
+func (tx *FileAppendTransaction) GetContents() []byte {
+	return tx.contents
 }
 
-func (transaction *FileAppendTransaction) _ValidateNetworkOnIDs(client *Client) error {
-	if client == nil || !client.autoValidateChecksums {
-		return nil
-	}
-
-	if transaction.fileID != nil {
-		if err := transaction.fileID.ValidateChecksum(client); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (transaction *FileAppendTransaction) _Build() *services.TransactionBody {
-	body := &services.FileAppendTransactionBody{}
-	if transaction.fileID != nil {
-		body.FileID = transaction.fileID._ToProtobuf()
-	}
-
-	return &services.TransactionBody{
-		TransactionFee:           transaction.transactionFee,
-		Memo:                     transaction.Transaction.memo,
-		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
-		TransactionID:            transaction.transactionID._ToProtobuf(),
-		Data: &services.TransactionBody_FileAppend{
-			FileAppend: body,
-		},
-	}
-}
-
-func (transaction *FileAppendTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	transaction._RequireNotFrozen()
-
-	chunks := uint64((len(transaction.contents) + (transaction.chunkSize - 1)) / transaction.chunkSize)
-	if chunks > 1 {
-		return &ScheduleCreateTransaction{}, ErrMaxChunksExceeded{
-			Chunks:    chunks,
-			MaxChunks: 1,
-		}
-	}
-
-	scheduled, err := transaction._ConstructScheduleProtobuf()
-	if err != nil {
-		return nil, err
-	}
-
-	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
-}
-
-func (transaction *FileAppendTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
-	body := &services.FileAppendTransactionBody{
-		Contents: transaction.contents,
-	}
-
-	if transaction.fileID != nil {
-		body.FileID = transaction.fileID._ToProtobuf()
-	}
-
-	return &services.SchedulableTransactionBody{
-		TransactionFee: transaction.transactionFee,
-		Memo:           transaction.Transaction.memo,
-		Data: &services.SchedulableTransactionBody_FileAppend{
-			FileAppend: body,
-		},
-	}, nil
-}
-
-func _FileAppendTransactionGetMethod(request interface{}, channel *_Channel) _Method {
-	return _Method{
-		transaction: channel._GetFile().AppendContent,
-	}
-}
-
-func (transaction *FileAppendTransaction) IsFrozen() bool {
-	return transaction._IsFrozen()
-}
+// ---- Required Interfaces ---- //
 
 // Sign uses the provided privateKey to sign the transaction.
-func (transaction *FileAppendTransaction) Sign(
+func (tx *FileAppendTransaction) Sign(
 	privateKey PrivateKey,
 ) *FileAppendTransaction {
-	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
+	tx.Transaction.Sign(privateKey)
+	return tx
 }
 
 // SignWithOperator signs the transaction with client's operator privateKey.
-func (transaction *FileAppendTransaction) SignWithOperator(
+func (tx *FileAppendTransaction) SignWithOperator(
 	client *Client,
 ) (*FileAppendTransaction, error) {
 	// If the transaction is not signed by the _Operator, we need
 	// to sign the transaction with the _Operator
-
-	if client == nil {
-		return nil, errNoClientProvided
-	} else if client.operator == nil {
-		return nil, errClientOperatorSigning
+	_, err := tx.Transaction.signWithOperator(client, tx)
+	if err != nil {
+		return nil, err
 	}
-
-	if !transaction.IsFrozen() {
-		_, err := transaction.FreezeWith(client)
-		if err != nil {
-			return transaction, err
-		}
-	}
-	return transaction.SignWith(client.operator.publicKey, client.operator.signer), nil
+	return tx, nil
 }
 
 // SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
 // with the publicKey as the map key.
-func (transaction *FileAppendTransaction) SignWith(
+func (tx *FileAppendTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *FileAppendTransaction {
-	if !transaction._KeyAlreadySigned(publicKey) {
-		transaction._SignWith(publicKey, signer)
+	tx.Transaction.SignWith(publicKey, signer)
+	return tx
+}
+
+// AddSignature adds a signature to the transaction.
+func (tx *FileAppendTransaction) AddSignature(publicKey PublicKey, signature []byte) *FileAppendTransaction {
+	tx.Transaction.AddSignature(publicKey, signature)
+	return tx
+}
+
+// When execution is attempted, a single attempt will timeout when tx deadline is reached. (The SDK may subsequently retry the execution.)
+func (tx *FileAppendTransaction) SetGrpcDeadline(deadline *time.Duration) *FileAppendTransaction {
+	tx.Transaction.SetGrpcDeadline(deadline)
+	return tx
+}
+
+func (tx *FileAppendTransaction) Freeze() (*FileAppendTransaction, error) {
+	return tx.FreezeWith(nil)
+}
+
+func (tx *FileAppendTransaction) FreezeWith(client *Client) (*FileAppendTransaction, error) {
+	if tx.IsFrozen() {
+		return tx, nil
 	}
 
-	return transaction
+	if tx.nodeAccountIDs._Length() == 0 {
+		if client == nil {
+			return tx, errNoClientOrTransactionIDOrNodeId
+		}
+
+		tx.SetNodeAccountIDs(client.network._GetNodeAccountIDsForExecute())
+	}
+
+	tx._InitFee(client)
+	err := tx.validateNetworkOnIDs(client)
+	if err != nil {
+		return &FileAppendTransaction{}, err
+	}
+	if err := tx._InitTransactionID(client); err != nil {
+		return tx, err
+	}
+	body := tx.build()
+
+	chunks := uint64((len(tx.contents) + (tx.chunkSize - 1)) / tx.chunkSize)
+	if chunks > tx.maxChunks {
+		return tx, ErrMaxChunksExceeded{
+			Chunks:    chunks,
+			MaxChunks: tx.maxChunks,
+		}
+	}
+
+	nextTransactionID := tx.transactionIDs._GetCurrent().(TransactionID)
+
+	tx.transactionIDs = _NewLockableSlice()
+	tx.transactions = _NewLockableSlice()
+	tx.signedTransactions = _NewLockableSlice()
+
+	if b, ok := body.Data.(*services.TransactionBody_FileAppend); ok {
+		for i := 0; uint64(i) < chunks; i++ {
+			start := i * tx.chunkSize
+			end := start + tx.chunkSize
+
+			if end > len(tx.contents) {
+				end = len(tx.contents)
+			}
+
+			tx.transactionIDs._Push(_TransactionIDFromProtobuf(nextTransactionID._ToProtobuf()))
+			if err != nil {
+				panic(err)
+			}
+			b.FileAppend.Contents = tx.contents[start:end]
+
+			body.TransactionID = nextTransactionID._ToProtobuf()
+			body.Data = &services.TransactionBody_FileAppend{
+				FileAppend: b.FileAppend,
+			}
+
+			for _, nodeAccountID := range tx.GetNodeAccountIDs() {
+				body.NodeAccountID = nodeAccountID._ToProtobuf()
+
+				bodyBytes, err := protobuf.Marshal(body)
+				if err != nil {
+					return tx, errors.Wrap(err, "error serializing body for file append")
+				}
+
+				tx.signedTransactions._Push(&services.SignedTransaction{
+					BodyBytes: bodyBytes,
+					SigMap:    &services.SignatureMap{},
+				})
+			}
+
+			validStart := *nextTransactionID.ValidStart
+
+			*nextTransactionID.ValidStart = validStart.Add(1 * time.Nanosecond)
+		}
+	}
+
+	return tx, nil
+}
+
+// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
+func (tx *FileAppendTransaction) SetMaxTransactionFee(fee Hbar) *FileAppendTransaction {
+	tx._RequireNotFrozen()
+	tx.Transaction.SetMaxTransactionFee(fee)
+	return tx
+}
+
+// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
+func (tx *FileAppendTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *FileAppendTransaction {
+	tx._RequireNotFrozen()
+	tx.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	return tx
+}
+
+// SetTransactionMemo sets the memo for this FileAppendTransaction.
+func (tx *FileAppendTransaction) SetTransactionMemo(memo string) *FileAppendTransaction {
+	tx._RequireNotFrozen()
+	tx.Transaction.SetTransactionMemo(memo)
+	return tx
+}
+
+// SetTransactionValidDuration sets the valid duration for this FileAppendTransaction.
+func (tx *FileAppendTransaction) SetTransactionValidDuration(duration time.Duration) *FileAppendTransaction {
+	tx._RequireNotFrozen()
+	tx.Transaction.SetTransactionValidDuration(duration)
+	return tx
+}
+
+// SetTransactionID sets the TransactionID for this FileAppendTransaction.
+func (tx *FileAppendTransaction) SetTransactionID(transactionID TransactionID) *FileAppendTransaction {
+	tx._RequireNotFrozen()
+
+	tx.Transaction.SetTransactionID(transactionID)
+	return tx
+}
+
+// SetNodeAccountID sets the _Node AccountID for this FileAppendTransaction.
+func (tx *FileAppendTransaction) SetNodeAccountIDs(nodeAccountIDs []AccountID) *FileAppendTransaction {
+	tx._RequireNotFrozen()
+	tx.Transaction.SetNodeAccountIDs(nodeAccountIDs)
+	return tx
+}
+
+// SetMaxRetry sets the max number of errors before execution will fail.
+func (tx *FileAppendTransaction) SetMaxRetry(count int) *FileAppendTransaction {
+	tx.Transaction.SetMaxRetry(count)
+	return tx
+}
+
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
+func (tx *FileAppendTransaction) SetMaxBackoff(max time.Duration) *FileAppendTransaction {
+	tx.Transaction.SetMaxBackoff(max)
+	return tx
+}
+
+// SetMinBackoff sets the minimum amount of time to wait between retries.
+func (tx *FileAppendTransaction) SetMinBackoff(min time.Duration) *FileAppendTransaction {
+	tx.Transaction.SetMinBackoff(min)
+	return tx
+}
+
+func (tx *FileAppendTransaction) SetLogLevel(level LogLevel) *FileAppendTransaction {
+	tx.Transaction.SetLogLevel(level)
+	return tx
 }
 
 // Execute executes the Transaction with the provided client
-func (transaction *FileAppendTransaction) Execute(
+func (tx *FileAppendTransaction) Execute(
 	client *Client,
 ) (TransactionResponse, error) {
 	if client == nil {
 		return TransactionResponse{}, errNoClientProvided
 	}
 
-	if transaction.freezeError != nil {
-		return TransactionResponse{}, transaction.freezeError
+	if tx.freezeError != nil {
+		return TransactionResponse{}, tx.freezeError
 	}
 
-	list, err := transaction.ExecuteAll(client)
+	list, err := tx.ExecuteAll(client)
 
 	if err != nil {
 		if len(list) > 0 {
 			return TransactionResponse{
-				TransactionID: transaction.GetTransactionID(),
+				TransactionID: tx.GetTransactionID(),
 				NodeID:        list[0].NodeID,
 				Hash:          make([]byte, 0),
 			}, err
 		}
 		return TransactionResponse{
-			TransactionID: transaction.GetTransactionID(),
+			TransactionID: tx.GetTransactionID(),
 			Hash:          make([]byte, 0),
 		}, err
 	}
@@ -274,54 +343,39 @@ func (transaction *FileAppendTransaction) Execute(
 }
 
 // ExecuteAll executes the all the Transactions with the provided client
-func (transaction *FileAppendTransaction) ExecuteAll(
+func (tx *FileAppendTransaction) ExecuteAll(
 	client *Client,
 ) ([]TransactionResponse, error) {
 	if client == nil || client.operator == nil {
 		return []TransactionResponse{}, errNoClientProvided
 	}
 
-	if !transaction.IsFrozen() {
-		_, err := transaction.FreezeWith(client)
+	if !tx.IsFrozen() {
+		_, err := tx.FreezeWith(client)
 		if err != nil {
 			return []TransactionResponse{}, err
 		}
 	}
 
 	var transactionID TransactionID
-	if transaction.transactionIDs._Length() > 0 {
-		transactionID = transaction.GetTransactionID()
+	if tx.transactionIDs._Length() > 0 {
+		transactionID = tx.GetTransactionID()
 	} else {
 		return []TransactionResponse{}, errors.New("transactionID list is empty")
 	}
 
 	if !client.GetOperatorAccountID()._IsZero() && client.GetOperatorAccountID()._Equals(*transactionID.AccountID) {
-		transaction.SignWith(
+		tx.SignWith(
 			client.GetOperatorPublicKey(),
 			client.operator.signer,
 		)
 	}
 
-	size := transaction.signedTransactions._Length() / transaction.nodeAccountIDs._Length()
+	size := tx.signedTransactions._Length() / tx.nodeAccountIDs._Length()
 	list := make([]TransactionResponse, size)
 
 	for i := 0; i < size; i++ {
-		resp, err := _Execute(
-			client,
-			&transaction.Transaction,
-			_TransactionShouldRetry,
-			_TransactionMakeRequest,
-			_TransactionAdvanceRequest,
-			_TransactionGetNodeAccountID,
-			_FileAppendTransactionGetMethod,
-			_TransactionMapStatusError,
-			_TransactionMapResponse,
-			transaction._GetLogID(),
-			transaction.grpcDeadline,
-			transaction.maxBackoff,
-			transaction.minBackoff,
-			transaction.maxRetry,
-		)
+		resp, err := _Execute(client, tx)
 
 		if err != nil {
 			return list, err
@@ -341,244 +395,76 @@ func (transaction *FileAppendTransaction) ExecuteAll(
 	return list, nil
 }
 
-func (transaction *FileAppendTransaction) Freeze() (*FileAppendTransaction, error) {
-	return transaction.FreezeWith(nil)
-}
-
-func (transaction *FileAppendTransaction) FreezeWith(client *Client) (*FileAppendTransaction, error) {
-	if transaction.IsFrozen() {
-		return transaction, nil
-	}
-
-	if transaction.nodeAccountIDs._Length() == 0 {
-		if client == nil {
-			return transaction, errNoClientOrTransactionIDOrNodeId
-		}
-
-		transaction.SetNodeAccountIDs(client.network._GetNodeAccountIDsForExecute())
-	}
-
-	transaction._InitFee(client)
-	err := transaction._ValidateNetworkOnIDs(client)
-	if err != nil {
-		return &FileAppendTransaction{}, err
-	}
-	if err := transaction._InitTransactionID(client); err != nil {
-		return transaction, err
-	}
-	body := transaction._Build()
-
-	chunks := uint64((len(transaction.contents) + (transaction.chunkSize - 1)) / transaction.chunkSize)
-	if chunks > transaction.maxChunks {
-		return transaction, ErrMaxChunksExceeded{
+func (tx *FileAppendTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	chunks := uint64((len(tx.contents) + (tx.chunkSize - 1)) / tx.chunkSize)
+	if chunks > 1 {
+		return &ScheduleCreateTransaction{}, ErrMaxChunksExceeded{
 			Chunks:    chunks,
-			MaxChunks: transaction.maxChunks,
+			MaxChunks: 1,
 		}
 	}
 
-	nextTransactionID := transaction.transactionIDs._GetCurrent().(TransactionID)
+	return tx.Transaction.schedule(tx)
+}
 
-	transaction.transactionIDs = _NewLockableSlice()
-	transaction.transactions = _NewLockableSlice()
-	transaction.signedTransactions = _NewLockableSlice()
+// ----------- Overridden functions ----------------
 
-	if b, ok := body.Data.(*services.TransactionBody_FileAppend); ok {
-		for i := 0; uint64(i) < chunks; i++ {
-			start := i * transaction.chunkSize
-			end := start + transaction.chunkSize
+func (tx *FileAppendTransaction) getName() string {
+	return "FileAppendTransaction"
+}
+func (tx *FileAppendTransaction) validateNetworkOnIDs(client *Client) error {
+	if client == nil || !client.autoValidateChecksums {
+		return nil
+	}
 
-			if end > len(transaction.contents) {
-				end = len(transaction.contents)
-			}
-
-			transaction.transactionIDs._Push(_TransactionIDFromProtobuf(nextTransactionID._ToProtobuf()))
-			if err != nil {
-				panic(err)
-			}
-			b.FileAppend.Contents = transaction.contents[start:end]
-
-			body.TransactionID = nextTransactionID._ToProtobuf()
-			body.Data = &services.TransactionBody_FileAppend{
-				FileAppend: b.FileAppend,
-			}
-
-			for _, nodeAccountID := range transaction.GetNodeAccountIDs() {
-				body.NodeAccountID = nodeAccountID._ToProtobuf()
-
-				bodyBytes, err := protobuf.Marshal(body)
-				if err != nil {
-					return transaction, errors.Wrap(err, "error serializing body for file append")
-				}
-
-				transaction.signedTransactions._Push(&services.SignedTransaction{
-					BodyBytes: bodyBytes,
-					SigMap:    &services.SignatureMap{},
-				})
-			}
-
-			validStart := *nextTransactionID.ValidStart
-
-			*nextTransactionID.ValidStart = validStart.Add(1 * time.Nanosecond)
+	if tx.fileID != nil {
+		if err := tx.fileID.ValidateChecksum(client); err != nil {
+			return err
 		}
 	}
 
-	return transaction, nil
+	return nil
 }
 
-// GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
-func (transaction *FileAppendTransaction) GetMaxTransactionFee() Hbar {
-	return transaction.Transaction.GetMaxTransactionFee()
+func (tx *FileAppendTransaction) build() *services.TransactionBody {
+	return &services.TransactionBody{
+		TransactionFee:           tx.transactionFee,
+		Memo:                     tx.Transaction.memo,
+		TransactionValidDuration: _DurationToProtobuf(tx.GetTransactionValidDuration()),
+		TransactionID:            tx.transactionID._ToProtobuf(),
+		Data: &services.TransactionBody_FileAppend{
+			FileAppend: tx.buildProtoBody(),
+		},
+	}
 }
 
-// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
-func (transaction *FileAppendTransaction) SetMaxTransactionFee(fee Hbar) *FileAppendTransaction {
-	transaction._RequireNotFrozen()
-	transaction.Transaction.SetMaxTransactionFee(fee)
-	return transaction
+func (tx *FileAppendTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+	return &services.SchedulableTransactionBody{
+		TransactionFee: tx.transactionFee,
+		Memo:           tx.Transaction.memo,
+		Data: &services.SchedulableTransactionBody_FileAppend{
+			FileAppend: tx.buildProtoBody(),
+		},
+	}, nil
 }
-
-// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
-func (transaction *FileAppendTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *FileAppendTransaction {
-	transaction._RequireNotFrozen()
-	transaction.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
-	return transaction
-}
-
-// GetRegenerateTransactionID returns true if transaction ID regeneration is enabled.
-func (transaction *FileAppendTransaction) GetRegenerateTransactionID() bool {
-	return transaction.Transaction.GetRegenerateTransactionID()
-}
-
-// GetTransactionMemo returns the memo for this FileAppendTransaction.
-func (transaction *FileAppendTransaction) GetTransactionMemo() string {
-	return transaction.Transaction.GetTransactionMemo()
-}
-
-// SetTransactionMemo sets the memo for this FileAppendTransaction.
-func (transaction *FileAppendTransaction) SetTransactionMemo(memo string) *FileAppendTransaction {
-	transaction._RequireNotFrozen()
-	transaction.Transaction.SetTransactionMemo(memo)
-	return transaction
-}
-
-// GetTransactionValidDuration returns the duration that this transaction is valid for.
-func (transaction *FileAppendTransaction) GetTransactionValidDuration() time.Duration {
-	return transaction.Transaction.GetTransactionValidDuration()
-}
-
-// SetTransactionValidDuration sets the valid duration for this FileAppendTransaction.
-func (transaction *FileAppendTransaction) SetTransactionValidDuration(duration time.Duration) *FileAppendTransaction {
-	transaction._RequireNotFrozen()
-	transaction.Transaction.SetTransactionValidDuration(duration)
-	return transaction
-}
-
-// GetTransactionID gets the TransactionID for this	FileAppendTransaction.
-func (transaction *FileAppendTransaction) GetTransactionID() TransactionID {
-	return transaction.Transaction.GetTransactionID()
-}
-
-// SetTransactionID sets the TransactionID for this FileAppendTransaction.
-func (transaction *FileAppendTransaction) SetTransactionID(transactionID TransactionID) *FileAppendTransaction {
-	transaction._RequireNotFrozen()
-
-	transaction.Transaction.SetTransactionID(transactionID)
-	return transaction
-}
-
-// SetNodeAccountID sets the _Node AccountID for this FileAppendTransaction.
-func (transaction *FileAppendTransaction) SetNodeAccountIDs(nodeAccountIDs []AccountID) *FileAppendTransaction {
-	transaction._RequireNotFrozen()
-	transaction.Transaction.SetNodeAccountIDs(nodeAccountIDs)
-	return transaction
-}
-
-// SetMaxRetry sets the max number of errors before execution will fail.
-func (transaction *FileAppendTransaction) SetMaxRetry(count int) *FileAppendTransaction {
-	transaction.Transaction.SetMaxRetry(count)
-	return transaction
-}
-
-// AddSignature adds a signature to the Transaction.
-func (transaction *FileAppendTransaction) AddSignature(publicKey PublicKey, signature []byte) *FileAppendTransaction {
-	transaction._RequireOneNodeAccountID()
-
-	if transaction._KeyAlreadySigned(publicKey) {
-		return transaction
+func (tx *FileAppendTransaction) buildProtoBody() *services.FileAppendTransactionBody {
+	body := &services.FileAppendTransactionBody{
+		Contents: tx.contents,
 	}
 
-	if transaction.signedTransactions._Length() == 0 {
-		return transaction
+	if tx.fileID != nil {
+		body.FileID = tx.fileID._ToProtobuf()
 	}
 
-	transaction.transactions = _NewLockableSlice()
-	transaction.publicKeys = append(transaction.publicKeys, publicKey)
-	transaction.transactionSigners = append(transaction.transactionSigners, nil)
-	transaction.transactionIDs.locked = true
+	return body
+}
 
-	for index := 0; index < transaction.signedTransactions._Length(); index++ {
-		var temp *services.SignedTransaction
-		switch t := transaction.signedTransactions._Get(index).(type) { //nolint
-		case *services.SignedTransaction:
-			temp = t
-		}
-		temp.SigMap.SigPair = append(
-			temp.SigMap.SigPair,
-			publicKey._ToSignaturePairProtobuf(signature),
-		)
-		transaction.signedTransactions._Set(index, temp)
+func (tx *FileAppendTransaction) getMethod(channel *_Channel) _Method {
+	return _Method{
+		transaction: channel._GetFile().AppendContent,
 	}
-
-	return transaction
 }
 
-// SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (transaction *FileAppendTransaction) SetMaxBackoff(max time.Duration) *FileAppendTransaction {
-	if max.Nanoseconds() < 0 {
-		panic("maxBackoff must be a positive duration")
-	} else if max.Nanoseconds() < transaction.minBackoff.Nanoseconds() {
-		panic("maxBackoff must be greater than or equal to minBackoff")
-	}
-	transaction.maxBackoff = &max
-	return transaction
-}
-
-// GetMaxBackoff returns the maximum amount of time to wait between retries.
-func (transaction *FileAppendTransaction) GetMaxBackoff() time.Duration {
-	if transaction.maxBackoff != nil {
-		return *transaction.maxBackoff
-	}
-
-	return 8 * time.Second
-}
-
-// SetMinBackoff sets the minimum amount of time to wait between retries.
-func (transaction *FileAppendTransaction) SetMinBackoff(min time.Duration) *FileAppendTransaction {
-	if min.Nanoseconds() < 0 {
-		panic("minBackoff must be a positive duration")
-	} else if transaction.maxBackoff.Nanoseconds() < min.Nanoseconds() {
-		panic("minBackoff must be less than or equal to maxBackoff")
-	}
-	transaction.minBackoff = &min
-	return transaction
-}
-
-// GetMinBackoff returns the minimum amount of time to wait between retries.
-func (transaction *FileAppendTransaction) GetMinBackoff() time.Duration {
-	if transaction.minBackoff != nil {
-		return *transaction.minBackoff
-	}
-
-	return 250 * time.Millisecond
-}
-
-func (transaction *FileAppendTransaction) _GetLogID() string {
-	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
-	return fmt.Sprintf("FileAppendTransaction:%d", timestamp.UnixNano())
-}
-
-func (transaction *FileAppendTransaction) SetLogLevel(level LogLevel) *FileAppendTransaction {
-	transaction.Transaction.SetLogLevel(level)
-	return transaction
+func (tx *FileAppendTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	return tx.buildScheduled()
 }

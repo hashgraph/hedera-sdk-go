@@ -48,7 +48,7 @@ func TestUnitLiveHashAddTransactionValidate(t *testing.T) {
 	addLiveHash := NewLiveHashAddTransaction().
 		SetAccountID(accountID)
 
-	err = addLiveHash._ValidateNetworkOnIDs(client)
+	err = addLiveHash.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 }
 
@@ -65,7 +65,7 @@ func TestUnitLiveHashAddTransactionValidateWrong(t *testing.T) {
 	addLiveHash := NewLiveHashAddTransaction().
 		SetAccountID(accountID)
 
-	err = addLiveHash._ValidateNetworkOnIDs(client)
+	err = addLiveHash.validateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
@@ -194,7 +194,7 @@ func TestUnitLiveHashAddTransactionCoverage(t *testing.T) {
 		Freeze()
 	require.NoError(t, err)
 
-	transaction._ValidateNetworkOnIDs(client)
+	transaction.validateNetworkOnIDs(client)
 
 	transaction.GetTransactionID()
 	transaction.GetNodeAccountIDs()
@@ -222,7 +222,7 @@ func TestUnitLiveHashAddTransactionCoverage(t *testing.T) {
 	transaction.GetDuration()
 	_, err = transaction.GetSignatures()
 	require.NoError(t, err)
-	transaction._GetLogID()
+	transaction.getName()
 	switch b := txFromBytes.(type) {
 	case LiveHashAddTransaction:
 		b.AddSignature(newKey.PublicKey(), sig)

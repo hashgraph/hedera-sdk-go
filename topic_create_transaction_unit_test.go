@@ -48,7 +48,7 @@ func TestUnitTopicCreateTransactionValidate(t *testing.T) {
 	topicCreate := NewTopicCreateTransaction().
 		SetAutoRenewAccountID(accountID)
 
-	err = topicCreate._ValidateNetworkOnIDs(client)
+	err = topicCreate.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 }
 
@@ -65,7 +65,7 @@ func TestUnitTopicCreateTransactionValidateWrong(t *testing.T) {
 	topicCreate := NewTopicCreateTransaction().
 		SetAutoRenewAccountID(accountID)
 
-	err = topicCreate._ValidateNetworkOnIDs(client)
+	err = topicCreate.validateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
@@ -178,7 +178,7 @@ func TestUnitTopicCreateTransactionProtoCheck(t *testing.T) {
 	transaction.GetTransactionID()
 	transaction.GetNodeAccountIDs()
 
-	proto := transaction._Build().GetConsensusCreateTopic()
+	proto := transaction.build().GetConsensusCreateTopic()
 	require.Equal(t, proto.AdminKey.String(), newKey._ToProtoKey().String())
 	require.Equal(t, proto.SubmitKey.String(), newKey2._ToProtoKey().String())
 	require.Equal(t, proto.Memo, "memo")
@@ -222,7 +222,7 @@ func TestUnitTopicCreateTransactionCoverage(t *testing.T) {
 		Freeze()
 	require.NoError(t, err)
 
-	err = transaction._ValidateNetworkOnIDs(client)
+	err = transaction.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 	_, err = transaction.Schedule()
 	require.NoError(t, err)
@@ -252,7 +252,7 @@ func TestUnitTopicCreateTransactionCoverage(t *testing.T) {
 	transaction.GetAutoRenewPeriod()
 	_, err = transaction.GetSignatures()
 	require.NoError(t, err)
-	transaction._GetLogID()
+	transaction.getName()
 	switch b := txFromBytes.(type) {
 	case TopicCreateTransaction:
 		b.AddSignature(newKey.PublicKey(), sig)

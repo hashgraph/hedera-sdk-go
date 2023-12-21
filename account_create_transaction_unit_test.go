@@ -50,7 +50,7 @@ func TestUnitAccountCreateTransactionValidate(t *testing.T) {
 	createAccount := NewAccountCreateTransaction().
 		SetProxyAccountID(accountID)
 
-	err = createAccount._ValidateNetworkOnIDs(client)
+	err = createAccount.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 }
 
@@ -67,7 +67,7 @@ func TestUnitAccountCreateTransactionValidateWrong(t *testing.T) {
 	createAccount := NewAccountCreateTransaction().
 		SetProxyAccountID(accountID)
 
-	err = createAccount._ValidateNetworkOnIDs(client)
+	err = createAccount.validateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
@@ -263,7 +263,7 @@ func TestUnitAccountCreateTransactionProtoCheck(t *testing.T) {
 	transaction.GetTransactionID()
 	transaction.GetNodeAccountIDs()
 
-	proto := transaction._Build().GetCryptoCreateAccount()
+	proto := transaction.build().GetCryptoCreateAccount()
 	require.Equal(t, proto.Key.String(), key._ToProtoKey().String())
 	require.Equal(t, proto.InitialBalance, uint64(NewHbar(3).AsTinybar()))
 	require.Equal(t, proto.Memo, "ty")
@@ -294,7 +294,7 @@ func TestUnitAccountCreateTransactionCoverage(t *testing.T) {
 	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 
-	transaction, err := NewAccountCreateTransaction().
+	trx, err := NewAccountCreateTransaction().
 		SetTransactionID(transactionID).
 		SetNodeAccountIDs(nodeAccountID).
 		SetKey(key).
@@ -319,36 +319,35 @@ func TestUnitAccountCreateTransactionCoverage(t *testing.T) {
 		Freeze()
 	require.NoError(t, err)
 
-	transaction._ValidateNetworkOnIDs(client)
-
-	_, err = transaction.Schedule()
+	trx.validateNetworkOnIDs(client)
+	_, err = trx.Schedule()
 	require.NoError(t, err)
-	transaction.GetTransactionID()
-	transaction.GetNodeAccountIDs()
-	transaction.GetMaxRetry()
-	transaction.GetMaxTransactionFee()
-	transaction.GetMaxBackoff()
-	transaction.GetMinBackoff()
-	transaction.GetRegenerateTransactionID()
-	byt, err := transaction.ToBytes()
+	trx.GetTransactionID()
+	trx.GetNodeAccountIDs()
+	trx.GetMaxRetry()
+	trx.GetMaxTransactionFee()
+	trx.GetMaxBackoff()
+	trx.GetMinBackoff()
+	trx.GetRegenerateTransactionID()
+	byt, err := trx.ToBytes()
 	require.NoError(t, err)
 	txFromBytes, err := TransactionFromBytes(byt)
 	require.NoError(t, err)
-	sig, err := key.SignTransaction(&transaction.Transaction)
+	sig, err := key.SignTransaction(&trx.Transaction)
 	require.NoError(t, err)
 
-	_, err = transaction.GetTransactionHash()
+	_, err = trx.GetTransactionHash()
 	require.NoError(t, err)
-	transaction.GetMaxTransactionFee()
-	transaction.GetTransactionMemo()
-	transaction.GetRegenerateTransactionID()
-	transaction.GetStakedAccountID()
-	transaction.GetStakedNodeID()
-	transaction.GetDeclineStakingReward()
-	transaction.GetAlias()
-	_, err = transaction.GetSignatures()
+	trx.GetMaxTransactionFee()
+	trx.GetTransactionMemo()
+	trx.GetRegenerateTransactionID()
+	trx.GetStakedAccountID()
+	trx.GetStakedNodeID()
+	trx.GetDeclineStakingReward()
+	trx.GetAlias()
+	_, err = trx.GetSignatures()
 	require.NoError(t, err)
-	transaction._GetLogID()
+	trx.getName()
 	switch b := txFromBytes.(type) {
 	case AccountCreateTransaction:
 		b.AddSignature(key.PublicKey(), sig)

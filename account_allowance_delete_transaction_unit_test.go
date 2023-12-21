@@ -3,40 +3,19 @@
 
 package hedera
 
-/*-
- *
- * Hedera Go SDK
- *
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- */
-
 import (
-	"testing"
-	"time"
-
 	"github.com/hashgraph/hedera-protobufs-go/services"
 	"github.com/stretchr/testify/require"
 	protobuf "google.golang.org/protobuf/proto"
+	"testing"
+	"time"
 )
 
-func TestUnitLiveHashDeleteTransactionCoverage(t *testing.T) {
+func TestUnitAccountAllowanceDeleteTransactionCoverage(t *testing.T) {
 	t.Parallel()
 
 	checksum := "dmqui"
-	grpc := time.Second * 30
+	token := TokenID{Token: 3, checksum: &checksum}
 	account := AccountID{Account: 3, checksum: &checksum}
 	nodeAccountID := []AccountID{{Account: 10}}
 	transactionID := TransactionIDGenerate(AccountID{Account: 324})
@@ -49,14 +28,15 @@ func TestUnitLiveHashDeleteTransactionCoverage(t *testing.T) {
 	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 
-	transaction, err := NewLiveHashDeleteTransaction().
+	transaction, err := NewAccountAllowanceDeleteTransaction().
 		SetTransactionID(transactionID).
 		SetNodeAccountIDs(nodeAccountID).
-		SetHash([]byte{1}).
-		SetAccountID(account).
-		SetGrpcDeadline(&grpc).
+		DeleteAllTokenNftAllowances(token.Nft(4), &account).
+		DeleteAllTokenNftAllowances(token.Nft(5), &account).
 		SetMaxTransactionFee(NewHbar(3)).
 		SetMaxRetry(3).
+		DeleteAllHbarAllowances(&account).
+		DeleteAllTokenAllowances(token, &account).
 		SetMaxBackoff(time.Second * 30).
 		SetMinBackoff(time.Second * 10).
 		SetTransactionMemo("no").
@@ -64,9 +44,10 @@ func TestUnitLiveHashDeleteTransactionCoverage(t *testing.T) {
 		SetRegenerateTransactionID(false).
 		Freeze()
 	require.NoError(t, err)
-
 	transaction.validateNetworkOnIDs(client)
 
+	_, err = transaction.Schedule()
+	require.NoError(t, err)
 	transaction.GetTransactionID()
 	transaction.GetNodeAccountIDs()
 	transaction.GetMaxRetry()
@@ -76,32 +57,33 @@ func TestUnitLiveHashDeleteTransactionCoverage(t *testing.T) {
 	transaction.GetRegenerateTransactionID()
 	byt, err := transaction.ToBytes()
 	require.NoError(t, err)
-	txFromBytes, err := TransactionFromBytes(byt)
-	require.NoError(t, err)
+	txFromBytesI, err := TransactionFromBytes(byt)
+	txFromBytes, ok := txFromBytesI.(AccountAllowanceDeleteTransaction)
+	require.True(t, ok)
 	sig, err := newKey.SignTransaction(&transaction.Transaction)
 	require.NoError(t, err)
 
 	_, err = transaction.GetTransactionHash()
 	require.NoError(t, err)
+	transaction.GetAllTokenNftDeleteAllowances()
 	transaction.GetMaxTransactionFee()
 	transaction.GetTransactionMemo()
 	transaction.GetRegenerateTransactionID()
-	transaction.GetAccountID()
-	transaction.GetHash()
 	_, err = transaction.GetSignatures()
 	require.NoError(t, err)
+	transaction.GetAllHbarDeleteAllowances()
+	transaction.GetAllTokenDeleteAllowances()
 	transaction.getName()
-	switch b := txFromBytes.(type) {
-	case LiveHashDeleteTransaction:
-		b.AddSignature(newKey.PublicKey(), sig)
-	}
+	txFromBytes.AddSignature(newKey.PublicKey(), sig)
 }
 
-func TestUnitLiveHashDeleteTransactionMock(t *testing.T) {
+func TestUnitAccountAllowanceDeleteTransactionMock(t *testing.T) {
 	t.Parallel()
 
-	newKey, err := PrivateKeyFromStringEd25519("302e020100300506032b657004220420a869f4c6191b9c8c99933e7f6b6611711737e4b1a1a5a4cb5370e719a1f6df98")
-	require.NoError(t, err)
+	checksum := "dmqui"
+	token := TokenID{Token: 3, checksum: &checksum}
+	nodeAccountID := []AccountID{{Account: 3}}
+	transactionID := TransactionIDGenerate(AccountID{Account: 3})
 
 	call := func(request *services.Transaction) *services.TransactionResponse {
 		require.NotEmpty(t, request.SignedTransactionBytes)
@@ -130,13 +112,37 @@ func TestUnitLiveHashDeleteTransactionMock(t *testing.T) {
 	client, server := NewMockClientAndServer(responses)
 	defer server.Close()
 
-	freez, err := NewLiveHashDeleteTransaction().
-		SetNodeAccountIDs([]AccountID{{Account: 3}}).
-		SetAccountID(AccountID{Account: 3}).
-		SetHash([]byte{123}).
-		FreezeWith(client)
+	_, err := NewAccountAllowanceDeleteTransaction().
+		SetTransactionID(transactionID).
+		SetNodeAccountIDs(nodeAccountID).
+		DeleteAllTokenNftAllowances(token.Nft(4), &AccountID{Account: 3}).
+		Execute(client)
+	require.NoError(t, err)
+}
+
+func TestUnitAccountAllowanceDeleteTransactionSetNothing(t *testing.T) {
+	t.Parallel()
+
+	token := TokenID{Token: 3}
+	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
+	transactionID := TransactionIDGenerate(AccountID{Account: 324})
+
+	transaction, err := NewAccountAllowanceDeleteTransaction().
+		SetTransactionID(transactionID).
+		SetNodeAccountIDs(nodeAccountID).
+		DeleteAllTokenNftAllowances(token.Nft(4), &AccountID{Account: 3}).
+		Freeze()
 	require.NoError(t, err)
 
-	_, err = freez.Sign(newKey).Execute(client)
+	transaction.GetTransactionID()
+	transaction.GetNodeAccountIDs()
+
+	_, err = transaction.GetTransactionHash()
+	require.NoError(t, err)
+	transaction.GetAllTokenNftDeleteAllowances()
+	transaction.GetMaxTransactionFee()
+	transaction.GetTransactionMemo()
+	transaction.GetRegenerateTransactionID()
+	_, err = transaction.GetSignatures()
 	require.NoError(t, err)
 }

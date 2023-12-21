@@ -257,7 +257,7 @@ func TestUnitTopicMessageSubmitTransactionCoverage(t *testing.T) {
 		Freeze()
 	require.NoError(t, err)
 
-	err = transaction._ValidateNetworkOnIDs(client)
+	err = transaction.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 	_, err = transaction.Schedule()
 	require.NoError(t, err)
@@ -285,7 +285,7 @@ func TestUnitTopicMessageSubmitTransactionCoverage(t *testing.T) {
 	transaction.GetMaxChunks()
 	_, err = transaction.GetSignatures()
 	require.NoError(t, err)
-	transaction._GetLogID()
+	transaction.getName()
 	switch b := txFromBytes.(type) {
 	case TopicMessageSubmitTransaction:
 		b.AddSignature(newKey.PublicKey(), sig)

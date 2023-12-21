@@ -192,7 +192,7 @@ func TestUnitFileCreateTransactionProtoCheck(t *testing.T) {
 	transaction.GetTransactionID()
 	transaction.GetNodeAccountIDs()
 
-	proto := transaction._Build().GetFileCreate()
+	proto := transaction.build().GetFileCreate()
 	require.Equal(t, proto.Keys.Keys[0].String(), newKey._ToProtoKey().String())
 	require.Equal(t, proto.Contents, []byte{5, 6})
 	require.Equal(t, proto.ExpirationTime.String(), _TimeToProtobuf(time.Unix(4, 56)).String())
@@ -259,7 +259,7 @@ func TestUnitFileCreateTransactionCoverage(t *testing.T) {
 	transaction.GetContents()
 	_, err = transaction.GetSignatures()
 	require.NoError(t, err)
-	transaction._GetLogID()
+	transaction.getName()
 	switch b := txFromBytes.(type) {
 	case FileCreateTransaction:
 		b.AddSignature(newKey.PublicKey(), sig)

@@ -25,7 +25,6 @@ package hedera
 
 import (
 	"encoding/base64"
-	"fmt"
 	"testing"
 	"time"
 
@@ -49,7 +48,7 @@ func TestUnitTokenInfoQueryValidate(t *testing.T) {
 	tokenInfo := NewTokenInfoQuery().
 		SetTokenID(tokenID)
 
-	err = tokenInfo._ValidateNetworkOnIDs(client)
+	err = tokenInfo.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 }
 
@@ -66,7 +65,7 @@ func TestUnitTokenInfoQueryValidateWrong(t *testing.T) {
 	tokenInfo := NewTokenInfoQuery().
 		SetTokenID(tokenID)
 
-	err = tokenInfo._ValidateNetworkOnIDs(client)
+	err = tokenInfo.validateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
@@ -160,7 +159,7 @@ func TestUnitTokenInfoQueryCoverage(t *testing.T) {
 		SetQueryPayment(NewHbar(3)).
 		SetGrpcDeadline(&deadline)
 
-	err = query._ValidateNetworkOnIDs(client)
+	err = query.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 
 	require.Equal(t, nodeAccountID, query.GetNodeAccountIDs())
@@ -170,7 +169,6 @@ func TestUnitTokenInfoQueryCoverage(t *testing.T) {
 	require.Equal(t, NewHbar(3), query.GetQueryPayment())
 	require.Equal(t, NewHbar(23), query.GetMaxQueryPayment())
 	require.Equal(t, &deadline, query.GetGrpcDeadline())
-	require.Equal(t, fmt.Sprintf("TokenInfoQuery:%v", transactionID.ValidStart.UnixNano()), query._GetLogID())
 }
 
 func TestUnitTokenInfoQueryMock(t *testing.T) {

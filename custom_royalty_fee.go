@@ -117,12 +117,12 @@ func _CustomRoyaltyFeeFromProtobuf(royalty *services.RoyaltyFee, fee CustomFee) 
 	}
 }
 
-func (fee CustomRoyaltyFee) _ValidateNetworkOnIDs(client *Client) error {
+func (fee CustomRoyaltyFee) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums || fee.FallbackFee == nil {
 		return nil
 	}
 
-	return fee.FallbackFee._ValidateNetworkOnIDs(client)
+	return fee.FallbackFee.validateNetworkOnIDs(client)
 }
 
 func (fee CustomRoyaltyFee) _ToProtobuf() *services.CustomFee {

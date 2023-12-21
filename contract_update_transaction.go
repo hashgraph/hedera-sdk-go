@@ -21,7 +21,6 @@ package hedera
  */
 
 import (
-	"fmt"
 	"time"
 
 	"google.golang.org/protobuf/types/known/wrapperspb"
@@ -74,15 +73,15 @@ type ContractUpdateTransaction struct {
 // this is optional. If the smart contract is created without an admin key, then such a key can never be added, and its
 // bytecode will be immutable.
 func NewContractUpdateTransaction() *ContractUpdateTransaction {
-	transaction := ContractUpdateTransaction{
+	tx := ContractUpdateTransaction{
 		Transaction: _NewTransaction(),
 	}
-	transaction._SetDefaultMaxTransactionFee(NewHbar(2))
+	tx._SetDefaultMaxTransactionFee(NewHbar(2))
 
-	return &transaction
+	return &tx
 }
 
-func _ContractUpdateTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) *ContractUpdateTransaction {
+func _ContractUpdateTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *ContractUpdateTransaction {
 	key, _ := _KeyFromProtobuf(pb.GetContractUpdateInstance().AdminKey)
 	autoRenew := _DurationFromProtobuf(pb.GetContractUpdateInstance().GetAutoRenewPeriod())
 	expiration := _TimeFromProtobuf(pb.GetContractUpdateInstance().GetExpirationTime())
@@ -108,7 +107,7 @@ func _ContractUpdateTransactionFromProtobuf(transaction Transaction, pb *service
 	}
 
 	return &ContractUpdateTransaction{
-		Transaction:                   transaction,
+		Transaction:                   tx,
 		contractID:                    _ContractIDFromProtobuf(pb.GetContractUpdateInstance().GetContractID()),
 		adminKey:                      key,
 		autoRenewPeriod:               &autoRenew,
@@ -122,53 +121,47 @@ func _ContractUpdateTransactionFromProtobuf(transaction Transaction, pb *service
 	}
 }
 
-// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (transaction *ContractUpdateTransaction) SetGrpcDeadline(deadline *time.Duration) *ContractUpdateTransaction {
-	transaction.Transaction.SetGrpcDeadline(deadline)
-	return transaction
-}
-
 // SetContractID sets The Contract ID instance to update (this can't be changed on the contract)
-func (transaction *ContractUpdateTransaction) SetContractID(contractID ContractID) *ContractUpdateTransaction {
-	transaction.contractID = &contractID
-	return transaction
+func (tx *ContractUpdateTransaction) SetContractID(contractID ContractID) *ContractUpdateTransaction {
+	tx.contractID = &contractID
+	return tx
 }
 
-func (transaction *ContractUpdateTransaction) GetContractID() ContractID {
-	if transaction.contractID == nil {
+func (tx *ContractUpdateTransaction) GetContractID() ContractID {
+	if tx.contractID == nil {
 		return ContractID{}
 	}
 
-	return *transaction.contractID
+	return *tx.contractID
 }
 
 // Deprecated
-func (transaction *ContractUpdateTransaction) SetBytecodeFileID(bytecodeFileID FileID) *ContractUpdateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.bytecodeFileID = &bytecodeFileID
-	return transaction
+func (tx *ContractUpdateTransaction) SetBytecodeFileID(bytecodeFileID FileID) *ContractUpdateTransaction {
+	tx._RequireNotFrozen()
+	tx.bytecodeFileID = &bytecodeFileID
+	return tx
 }
 
 // Deprecated
-func (transaction *ContractUpdateTransaction) GetBytecodeFileID() FileID {
-	if transaction.bytecodeFileID == nil {
+func (tx *ContractUpdateTransaction) GetBytecodeFileID() FileID {
+	if tx.bytecodeFileID == nil {
 		return FileID{}
 	}
 
-	return *transaction.bytecodeFileID
+	return *tx.bytecodeFileID
 }
 
 // SetAdminKey sets the key which can be used to arbitrarily modify the state of the instance by signing a
 // ContractUpdateTransaction to modify it. If the admin key was never set then such modifications are not possible,
 // and there is no administrator that can overrIDe the normal operation of the smart contract instance.
-func (transaction *ContractUpdateTransaction) SetAdminKey(publicKey PublicKey) *ContractUpdateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.adminKey = publicKey
-	return transaction
+func (tx *ContractUpdateTransaction) SetAdminKey(publicKey PublicKey) *ContractUpdateTransaction {
+	tx._RequireNotFrozen()
+	tx.adminKey = publicKey
+	return tx
 }
 
-func (transaction *ContractUpdateTransaction) GetAdminKey() (Key, error) {
-	return transaction.adminKey, nil
+func (tx *ContractUpdateTransaction) GetAdminKey() (Key, error) {
+	return tx.adminKey, nil
 }
 
 // Deprecated
@@ -176,32 +169,32 @@ func (transaction *ContractUpdateTransaction) GetAdminKey() (Key, error) {
 // is an invalID account, or is an account that isn't a _Node, then this contract is automatically proxy staked to a _Node
 // chosen by the _Network, but without earning payments. If the proxyAccountID account refuses to accept proxy staking,
 // or if it is not currently running a _Node, then it will behave as if proxyAccountID was never set.
-func (transaction *ContractUpdateTransaction) SetProxyAccountID(proxyAccountID AccountID) *ContractUpdateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.proxyAccountID = &proxyAccountID
-	return transaction
+func (tx *ContractUpdateTransaction) SetProxyAccountID(proxyAccountID AccountID) *ContractUpdateTransaction {
+	tx._RequireNotFrozen()
+	tx.proxyAccountID = &proxyAccountID
+	return tx
 }
 
 // Deprecated
-func (transaction *ContractUpdateTransaction) GetProxyAccountID() AccountID {
-	if transaction.proxyAccountID == nil {
+func (tx *ContractUpdateTransaction) GetProxyAccountID() AccountID {
+	if tx.proxyAccountID == nil {
 		return AccountID{}
 	}
 
-	return *transaction.proxyAccountID
+	return *tx.proxyAccountID
 }
 
 // SetAutoRenewPeriod sets the duration for which the contract instance will automatically charge its account to
 // renew for.
-func (transaction *ContractUpdateTransaction) SetAutoRenewPeriod(autoRenewPeriod time.Duration) *ContractUpdateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.autoRenewPeriod = &autoRenewPeriod
-	return transaction
+func (tx *ContractUpdateTransaction) SetAutoRenewPeriod(autoRenewPeriod time.Duration) *ContractUpdateTransaction {
+	tx._RequireNotFrozen()
+	tx.autoRenewPeriod = &autoRenewPeriod
+	return tx
 }
 
-func (transaction *ContractUpdateTransaction) GetAutoRenewPeriod() time.Duration {
-	if transaction.autoRenewPeriod != nil {
-		return *transaction.autoRenewPeriod
+func (tx *ContractUpdateTransaction) GetAutoRenewPeriod() time.Duration {
+	if tx.autoRenewPeriod != nil {
+		return *tx.autoRenewPeriod
 	}
 
 	return time.Duration(0)
@@ -209,24 +202,24 @@ func (transaction *ContractUpdateTransaction) GetAutoRenewPeriod() time.Duration
 
 // SetExpirationTime extends the expiration of the instance and its account to the provIDed time. If the time provIDed
 // is the current or past time, then there will be no effect.
-func (transaction *ContractUpdateTransaction) SetExpirationTime(expiration time.Time) *ContractUpdateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.expirationTime = &expiration
-	return transaction
+func (tx *ContractUpdateTransaction) SetExpirationTime(expiration time.Time) *ContractUpdateTransaction {
+	tx._RequireNotFrozen()
+	tx.expirationTime = &expiration
+	return tx
 }
 
-func (transaction *ContractUpdateTransaction) GetExpirationTime() time.Time {
-	if transaction.expirationTime != nil {
-		return *transaction.expirationTime
+func (tx *ContractUpdateTransaction) GetExpirationTime() time.Time {
+	if tx.expirationTime != nil {
+		return *tx.expirationTime
 	}
 
 	return time.Time{}
 }
 
 // SetContractMemo sets the memo associated with the contract (max 100 bytes)
-func (transaction *ContractUpdateTransaction) SetContractMemo(memo string) *ContractUpdateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.memo = memo
+func (tx *ContractUpdateTransaction) SetContractMemo(memo string) *ContractUpdateTransaction {
+	tx._RequireNotFrozen()
+	tx.memo = memo
 	// if transaction.pb.GetMemoWrapper() != nil {
 	//	transaction.pb.GetMemoWrapper().Value = memo
 	// } else {
@@ -235,107 +228,242 @@ func (transaction *ContractUpdateTransaction) SetContractMemo(memo string) *Cont
 	//	}
 	// }
 
-	return transaction
+	return tx
 }
 
 // SetAutoRenewAccountID
 // An account to charge for auto-renewal of this contract. If not set, or set to an
 // account with zero hbar balance, the contract's own hbar balance will be used to
 // cover auto-renewal fees.
-func (transaction *ContractUpdateTransaction) SetAutoRenewAccountID(id AccountID) *ContractUpdateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.autoRenewAccountID = &id
-	return transaction
+func (tx *ContractUpdateTransaction) SetAutoRenewAccountID(id AccountID) *ContractUpdateTransaction {
+	tx._RequireNotFrozen()
+	tx.autoRenewAccountID = &id
+	return tx
 }
 
-func (transaction *ContractUpdateTransaction) GetAutoRenewAccountID() AccountID {
-	if transaction.autoRenewAccountID == nil {
+func (tx *ContractUpdateTransaction) GetAutoRenewAccountID() AccountID {
+	if tx.autoRenewAccountID == nil {
 		return AccountID{}
 	}
 
-	return *transaction.autoRenewAccountID
+	return *tx.autoRenewAccountID
 }
 
 // SetMaxAutomaticTokenAssociations
 // The maximum number of tokens that this contract can be automatically associated
 // with (i.e., receive air-drops from).
-func (transaction *ContractUpdateTransaction) SetMaxAutomaticTokenAssociations(max int32) *ContractUpdateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.maxAutomaticTokenAssociations = max
-	return transaction
+func (tx *ContractUpdateTransaction) SetMaxAutomaticTokenAssociations(max int32) *ContractUpdateTransaction {
+	tx._RequireNotFrozen()
+	tx.maxAutomaticTokenAssociations = max
+	return tx
 }
 
-func (transaction *ContractUpdateTransaction) GetMaxAutomaticTokenAssociations() int32 {
-	return transaction.maxAutomaticTokenAssociations
+func (tx *ContractUpdateTransaction) GetMaxAutomaticTokenAssociations() int32 {
+	return tx.maxAutomaticTokenAssociations
 }
 
-func (transaction *ContractUpdateTransaction) GetContractMemo() string {
-	return transaction.memo
+func (tx *ContractUpdateTransaction) GetContractMemo() string {
+	return tx.memo
 }
 
-func (transaction *ContractUpdateTransaction) SetStakedAccountID(id AccountID) *ContractUpdateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.stakedAccountID = &id
-	return transaction
+func (tx *ContractUpdateTransaction) SetStakedAccountID(id AccountID) *ContractUpdateTransaction {
+	tx._RequireNotFrozen()
+	tx.stakedAccountID = &id
+	return tx
 }
 
-func (transaction *ContractUpdateTransaction) GetStakedAccountID() AccountID {
-	if transaction.stakedAccountID != nil {
-		return *transaction.stakedAccountID
+func (tx *ContractUpdateTransaction) GetStakedAccountID() AccountID {
+	if tx.stakedAccountID != nil {
+		return *tx.stakedAccountID
 	}
 
 	return AccountID{}
 }
 
-func (transaction *ContractUpdateTransaction) SetStakedNodeID(id int64) *ContractUpdateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.stakedNodeID = &id
-	return transaction
+func (tx *ContractUpdateTransaction) SetStakedNodeID(id int64) *ContractUpdateTransaction {
+	tx._RequireNotFrozen()
+	tx.stakedNodeID = &id
+	return tx
 }
 
-func (transaction *ContractUpdateTransaction) GetStakedNodeID() int64 {
-	if transaction.stakedNodeID != nil {
-		return *transaction.stakedNodeID
+func (tx *ContractUpdateTransaction) GetStakedNodeID() int64 {
+	if tx.stakedNodeID != nil {
+		return *tx.stakedNodeID
 	}
 
 	return 0
 }
 
-func (transaction *ContractUpdateTransaction) SetDeclineStakingReward(decline bool) *ContractUpdateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.declineReward = decline
-	return transaction
+func (tx *ContractUpdateTransaction) SetDeclineStakingReward(decline bool) *ContractUpdateTransaction {
+	tx._RequireNotFrozen()
+	tx.declineReward = decline
+	return tx
 }
 
-func (transaction *ContractUpdateTransaction) GetDeclineStakingReward() bool {
-	return transaction.declineReward
+func (tx *ContractUpdateTransaction) GetDeclineStakingReward() bool {
+	return tx.declineReward
 }
 
-func (transaction *ContractUpdateTransaction) ClearStakedAccountID() *ContractUpdateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.stakedAccountID = &AccountID{Account: 0}
-	return transaction
+func (tx *ContractUpdateTransaction) ClearStakedAccountID() *ContractUpdateTransaction {
+	tx._RequireNotFrozen()
+	tx.stakedAccountID = &AccountID{Account: 0}
+	return tx
 }
 
-func (transaction *ContractUpdateTransaction) ClearStakedNodeID() *ContractUpdateTransaction {
-	transaction._RequireNotFrozen()
-	*transaction.stakedNodeID = -1
-	return transaction
+func (tx *ContractUpdateTransaction) ClearStakedNodeID() *ContractUpdateTransaction {
+	tx._RequireNotFrozen()
+	*tx.stakedNodeID = -1
+	return tx
 }
 
-func (transaction *ContractUpdateTransaction) _ValidateNetworkOnIDs(client *Client) error {
+// ---- Required Interfaces ---- //
+
+// Sign uses the provided privateKey to sign the transaction.
+func (tx *ContractUpdateTransaction) Sign(
+	privateKey PrivateKey,
+) *ContractUpdateTransaction {
+	tx.Transaction.Sign(privateKey)
+	return tx
+}
+
+// SignWithOperator signs the transaction with client's operator privateKey.
+func (tx *ContractUpdateTransaction) SignWithOperator(
+	client *Client,
+) (*ContractUpdateTransaction, error) {
+	// If the transaction is not signed by the _Operator, we need
+	// to sign the transaction with the _Operator
+	_, err := tx.Transaction.signWithOperator(client, tx)
+	if err != nil {
+		return nil, err
+	}
+	return tx, nil
+}
+
+// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
+// with the publicKey as the map key.
+func (tx *ContractUpdateTransaction) SignWith(
+	publicKey PublicKey,
+	signer TransactionSigner,
+) *ContractUpdateTransaction {
+	tx.Transaction.SignWith(publicKey, signer)
+	return tx
+}
+
+// AddSignature adds a signature to the transaction.
+func (tx *ContractUpdateTransaction) AddSignature(publicKey PublicKey, signature []byte) *ContractUpdateTransaction {
+	tx.Transaction.AddSignature(publicKey, signature)
+	return tx
+}
+
+// When execution is attempted, a single attempt will timeout when tx deadline is reached. (The SDK may subsequently retry the execution.)
+func (tx *ContractUpdateTransaction) SetGrpcDeadline(deadline *time.Duration) *ContractUpdateTransaction {
+	tx.Transaction.SetGrpcDeadline(deadline)
+	return tx
+}
+
+func (tx *ContractUpdateTransaction) Freeze() (*ContractUpdateTransaction, error) {
+	return tx.FreezeWith(nil)
+}
+
+func (tx *ContractUpdateTransaction) FreezeWith(client *Client) (*ContractUpdateTransaction, error) {
+	_, err := tx.Transaction.freezeWith(client, tx)
+	return tx, err
+}
+
+// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
+func (tx *ContractUpdateTransaction) SetMaxTransactionFee(fee Hbar) *ContractUpdateTransaction {
+	tx._RequireNotFrozen()
+	tx.Transaction.SetMaxTransactionFee(fee)
+	return tx
+}
+
+// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
+func (tx *ContractUpdateTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *ContractUpdateTransaction {
+	tx._RequireNotFrozen()
+	tx.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	return tx
+}
+
+// SetTransactionMemo sets the memo for this ContractUpdateTransaction.
+func (tx *ContractUpdateTransaction) SetTransactionMemo(memo string) *ContractUpdateTransaction {
+	tx._RequireNotFrozen()
+	tx.Transaction.SetTransactionMemo(memo)
+	return tx
+}
+
+// SetTransactionValidDuration sets the valid duration for this ContractUpdateTransaction.
+func (tx *ContractUpdateTransaction) SetTransactionValidDuration(duration time.Duration) *ContractUpdateTransaction {
+	tx._RequireNotFrozen()
+	tx.Transaction.SetTransactionValidDuration(duration)
+	return tx
+}
+
+// SetTransactionID sets the TransactionID for this ContractUpdateTransaction.
+func (tx *ContractUpdateTransaction) SetTransactionID(transactionID TransactionID) *ContractUpdateTransaction {
+	tx._RequireNotFrozen()
+
+	tx.Transaction.SetTransactionID(transactionID)
+	return tx
+}
+
+// SetNodeAccountID sets the _Node AccountID for this ContractUpdateTransaction.
+func (tx *ContractUpdateTransaction) SetNodeAccountIDs(nodeID []AccountID) *ContractUpdateTransaction {
+	tx._RequireNotFrozen()
+	tx.Transaction.SetNodeAccountIDs(nodeID)
+	return tx
+}
+
+// SetMaxRetry sets the max number of errors before execution will fail.
+func (tx *ContractUpdateTransaction) SetMaxRetry(count int) *ContractUpdateTransaction {
+	tx.Transaction.SetMaxRetry(count)
+	return tx
+}
+
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
+func (tx *ContractUpdateTransaction) SetMaxBackoff(max time.Duration) *ContractUpdateTransaction {
+	tx.Transaction.SetMaxBackoff(max)
+	return tx
+}
+
+// SetMinBackoff sets the minimum amount of time to wait between retries.
+func (tx *ContractUpdateTransaction) SetMinBackoff(min time.Duration) *ContractUpdateTransaction {
+	tx.Transaction.SetMinBackoff(min)
+	return tx
+}
+
+func (tx *ContractUpdateTransaction) SetLogLevel(level LogLevel) *ContractUpdateTransaction {
+	tx.Transaction.SetLogLevel(level)
+	return tx
+}
+
+func (tx *ContractUpdateTransaction) Execute(client *Client) (TransactionResponse, error) {
+	return tx.Transaction.execute(client, tx)
+}
+
+func (tx *ContractUpdateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	return tx.Transaction.schedule(tx)
+}
+
+// ----------- Overridden functions ----------------
+
+func (tx *ContractUpdateTransaction) getName() string {
+	return "ContractUpdateTransaction"
+}
+
+func (tx *ContractUpdateTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
 
-	if transaction.contractID != nil {
-		if err := transaction.contractID.ValidateChecksum(client); err != nil {
+	if tx.contractID != nil {
+		if err := tx.contractID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}
 
-	if transaction.proxyAccountID != nil {
-		if err := transaction.proxyAccountID.ValidateChecksum(client); err != nil {
+	if tx.proxyAccountID != nil {
+		if err := tx.proxyAccountID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}
@@ -343,419 +471,87 @@ func (transaction *ContractUpdateTransaction) _ValidateNetworkOnIDs(client *Clie
 	return nil
 }
 
-func (transaction *ContractUpdateTransaction) _Build() *services.TransactionBody {
-	body := &services.ContractUpdateTransactionBody{
-		DeclineReward: &wrapperspb.BoolValue{Value: transaction.declineReward},
-	}
-
-	if transaction.maxAutomaticTokenAssociations != 0 {
-		body.MaxAutomaticTokenAssociations = &wrapperspb.Int32Value{Value: transaction.maxAutomaticTokenAssociations}
-	}
-
-	if transaction.expirationTime != nil {
-		body.ExpirationTime = _TimeToProtobuf(*transaction.expirationTime)
-	}
-
-	if transaction.autoRenewPeriod != nil {
-		body.AutoRenewPeriod = _DurationToProtobuf(*transaction.autoRenewPeriod)
-	}
-
-	if transaction.adminKey != nil {
-		body.AdminKey = transaction.adminKey._ToProtoKey()
-	}
-
-	if transaction.contractID != nil {
-		body.ContractID = transaction.contractID._ToProtobuf()
-	}
-
-	if transaction.autoRenewAccountID != nil {
-		body.AutoRenewAccountId = transaction.autoRenewAccountID._ToProtobuf()
-	}
-
-	if body.GetMemoWrapper() != nil {
-		body.GetMemoWrapper().Value = transaction.memo
-	} else {
-		body.MemoField = &services.ContractUpdateTransactionBody_MemoWrapper{
-			MemoWrapper: &wrapperspb.StringValue{Value: transaction.memo},
-		}
-	}
-
-	if transaction.stakedAccountID != nil {
-		body.StakedId = &services.ContractUpdateTransactionBody_StakedAccountId{StakedAccountId: transaction.stakedAccountID._ToProtobuf()}
-	} else if transaction.stakedNodeID != nil {
-		body.StakedId = &services.ContractUpdateTransactionBody_StakedNodeId{StakedNodeId: *transaction.stakedNodeID}
-	}
-
+func (tx *ContractUpdateTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
-		TransactionFee:           transaction.transactionFee,
-		Memo:                     transaction.Transaction.memo,
-		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
-		TransactionID:            transaction.transactionID._ToProtobuf(),
+		TransactionFee:           tx.transactionFee,
+		Memo:                     tx.Transaction.memo,
+		TransactionValidDuration: _DurationToProtobuf(tx.GetTransactionValidDuration()),
+		TransactionID:            tx.transactionID._ToProtobuf(),
 		Data: &services.TransactionBody_ContractUpdateInstance{
-			ContractUpdateInstance: body,
+			ContractUpdateInstance: tx.buildProtoBody(),
 		},
 	}
 }
 
-func (transaction *ContractUpdateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	transaction._RequireNotFrozen()
-
-	scheduled, err := transaction._ConstructScheduleProtobuf()
-	if err != nil {
-		return nil, err
-	}
-
-	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
-}
-
-func (transaction *ContractUpdateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
-	body := &services.ContractUpdateTransactionBody{
-		DeclineReward: &wrapperspb.BoolValue{Value: transaction.declineReward},
-	}
-
-	if transaction.maxAutomaticTokenAssociations != 0 {
-		body.MaxAutomaticTokenAssociations = &wrapperspb.Int32Value{Value: transaction.maxAutomaticTokenAssociations}
-	}
-
-	if transaction.expirationTime != nil {
-		body.ExpirationTime = _TimeToProtobuf(*transaction.expirationTime)
-	}
-
-	if transaction.autoRenewPeriod != nil {
-		body.AutoRenewPeriod = _DurationToProtobuf(*transaction.autoRenewPeriod)
-	}
-
-	if transaction.adminKey != nil {
-		body.AdminKey = transaction.adminKey._ToProtoKey()
-	}
-
-	if transaction.contractID != nil {
-		body.ContractID = transaction.contractID._ToProtobuf()
-	}
-
-	if transaction.autoRenewAccountID != nil {
-		body.AutoRenewAccountId = transaction.autoRenewAccountID._ToProtobuf()
-	}
-
-	if body.GetMemoWrapper() != nil {
-		body.GetMemoWrapper().Value = transaction.memo
-	} else {
-		body.MemoField = &services.ContractUpdateTransactionBody_MemoWrapper{
-			MemoWrapper: &wrapperspb.StringValue{Value: transaction.memo},
-		}
-	}
-
-	if transaction.adminKey != nil {
-		body.AdminKey = transaction.adminKey._ToProtoKey()
-	}
-
-	if transaction.contractID != nil {
-		body.ContractID = transaction.contractID._ToProtobuf()
-	}
-
-	if transaction.stakedAccountID != nil {
-		body.StakedId = &services.ContractUpdateTransactionBody_StakedAccountId{StakedAccountId: transaction.stakedAccountID._ToProtobuf()}
-	} else if transaction.stakedNodeID != nil {
-		body.StakedId = &services.ContractUpdateTransactionBody_StakedNodeId{StakedNodeId: *transaction.stakedNodeID}
-	}
-
+func (tx *ContractUpdateTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
-		TransactionFee: transaction.transactionFee,
-		Memo:           transaction.Transaction.memo,
+		TransactionFee: tx.transactionFee,
+		Memo:           tx.Transaction.memo,
 		Data: &services.SchedulableTransactionBody_ContractUpdateInstance{
-			ContractUpdateInstance: body,
+			ContractUpdateInstance: tx.buildProtoBody(),
 		},
 	}, nil
 }
 
-func _ContractUpdateTransactionGetMethod(request interface{}, channel *_Channel) _Method {
+func (tx *ContractUpdateTransaction) buildProtoBody() *services.ContractUpdateTransactionBody {
+	body := &services.ContractUpdateTransactionBody{
+		DeclineReward: &wrapperspb.BoolValue{Value: tx.declineReward},
+	}
+
+	if tx.maxAutomaticTokenAssociations != 0 {
+		body.MaxAutomaticTokenAssociations = &wrapperspb.Int32Value{Value: tx.maxAutomaticTokenAssociations}
+	}
+
+	if tx.expirationTime != nil {
+		body.ExpirationTime = _TimeToProtobuf(*tx.expirationTime)
+	}
+
+	if tx.autoRenewPeriod != nil {
+		body.AutoRenewPeriod = _DurationToProtobuf(*tx.autoRenewPeriod)
+	}
+
+	if tx.adminKey != nil {
+		body.AdminKey = tx.adminKey._ToProtoKey()
+	}
+
+	if tx.contractID != nil {
+		body.ContractID = tx.contractID._ToProtobuf()
+	}
+
+	if tx.autoRenewAccountID != nil {
+		body.AutoRenewAccountId = tx.autoRenewAccountID._ToProtobuf()
+	}
+
+	if body.GetMemoWrapper() != nil {
+		body.GetMemoWrapper().Value = tx.memo
+	} else {
+		body.MemoField = &services.ContractUpdateTransactionBody_MemoWrapper{
+			MemoWrapper: &wrapperspb.StringValue{Value: tx.memo},
+		}
+	}
+
+	if tx.adminKey != nil {
+		body.AdminKey = tx.adminKey._ToProtoKey()
+	}
+
+	if tx.contractID != nil {
+		body.ContractID = tx.contractID._ToProtobuf()
+	}
+
+	if tx.stakedAccountID != nil {
+		body.StakedId = &services.ContractUpdateTransactionBody_StakedAccountId{StakedAccountId: tx.stakedAccountID._ToProtobuf()}
+	} else if tx.stakedNodeID != nil {
+		body.StakedId = &services.ContractUpdateTransactionBody_StakedNodeId{StakedNodeId: *tx.stakedNodeID}
+	}
+
+	return body
+}
+
+func (tx *ContractUpdateTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetContract().UpdateContract,
 	}
 }
-
-func (transaction *ContractUpdateTransaction) IsFrozen() bool {
-	return transaction._IsFrozen()
-}
-
-// Sign uses the provided privateKey to sign the transaction.
-func (transaction *ContractUpdateTransaction) Sign(
-	privateKey PrivateKey,
-) *ContractUpdateTransaction {
-	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
-}
-
-// SignWithOperator signs the transaction with client's operator privateKey.
-func (transaction *ContractUpdateTransaction) SignWithOperator(
-	client *Client,
-) (*ContractUpdateTransaction, error) {
-	// If the transaction is not signed by the _Operator, we need
-	// to sign the transaction with the _Operator
-
-	if client == nil {
-		return nil, errNoClientProvided
-	} else if client.operator == nil {
-		return nil, errClientOperatorSigning
-	}
-
-	if !transaction.IsFrozen() {
-		_, err := transaction.FreezeWith(client)
-		if err != nil {
-			return transaction, err
-		}
-	}
-	return transaction.SignWith(client.operator.publicKey, client.operator.signer), nil
-}
-
-// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
-// with the publicKey as the map key.
-func (transaction *ContractUpdateTransaction) SignWith(
-	publicKey PublicKey,
-	signer TransactionSigner,
-) *ContractUpdateTransaction {
-	if !transaction._KeyAlreadySigned(publicKey) {
-		transaction._SignWith(publicKey, signer)
-	}
-
-	return transaction
-}
-
-// Execute executes the Transaction with the provided client
-func (transaction *ContractUpdateTransaction) Execute(
-	client *Client,
-) (TransactionResponse, error) {
-	if client == nil {
-		return TransactionResponse{}, errNoClientProvided
-	}
-
-	if transaction.freezeError != nil {
-		return TransactionResponse{}, transaction.freezeError
-	}
-
-	if !transaction.IsFrozen() {
-		_, err := transaction.FreezeWith(client)
-		if err != nil {
-			return TransactionResponse{}, err
-		}
-	}
-
-	transactionID := transaction.transactionIDs._GetCurrent().(TransactionID)
-
-	if !client.GetOperatorAccountID()._IsZero() && client.GetOperatorAccountID()._Equals(*transactionID.AccountID) {
-		transaction.SignWith(
-			client.GetOperatorPublicKey(),
-			client.operator.signer,
-		)
-	}
-
-	resp, err := _Execute(
-		client,
-		&transaction.Transaction,
-		_TransactionShouldRetry,
-		_TransactionMakeRequest,
-		_TransactionAdvanceRequest,
-		_TransactionGetNodeAccountID,
-		_ContractUpdateTransactionGetMethod,
-		_TransactionMapStatusError,
-		_TransactionMapResponse,
-		transaction._GetLogID(),
-		transaction.grpcDeadline,
-		transaction.maxBackoff,
-		transaction.minBackoff,
-		transaction.maxRetry,
-	)
-
-	if err != nil {
-		return TransactionResponse{
-			TransactionID:  transaction.GetTransactionID(),
-			NodeID:         resp.(TransactionResponse).NodeID,
-			ValidateStatus: true,
-		}, err
-	}
-
-	return TransactionResponse{
-		TransactionID:  transaction.GetTransactionID(),
-		NodeID:         resp.(TransactionResponse).NodeID,
-		Hash:           resp.(TransactionResponse).Hash,
-		ValidateStatus: true,
-	}, nil
-}
-
-func (transaction *ContractUpdateTransaction) Freeze() (*ContractUpdateTransaction, error) {
-	return transaction.FreezeWith(nil)
-}
-
-func (transaction *ContractUpdateTransaction) FreezeWith(client *Client) (*ContractUpdateTransaction, error) {
-	if transaction.IsFrozen() {
-		return transaction, nil
-	}
-	transaction._InitFee(client)
-	err := transaction._ValidateNetworkOnIDs(client)
-	if err != nil {
-		return &ContractUpdateTransaction{}, err
-	}
-	if err := transaction._InitTransactionID(client); err != nil {
-		return transaction, err
-	}
-	body := transaction._Build()
-
-	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
-}
-
-// GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
-func (transaction *ContractUpdateTransaction) GetMaxTransactionFee() Hbar {
-	return transaction.Transaction.GetMaxTransactionFee()
-}
-
-// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
-func (transaction *ContractUpdateTransaction) SetMaxTransactionFee(fee Hbar) *ContractUpdateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.Transaction.SetMaxTransactionFee(fee)
-	return transaction
-}
-
-// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
-func (transaction *ContractUpdateTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *ContractUpdateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
-	return transaction
-}
-
-// GetRegenerateTransactionID returns true if transaction ID regeneration is enabled.
-func (transaction *ContractUpdateTransaction) GetRegenerateTransactionID() bool {
-	return transaction.Transaction.GetRegenerateTransactionID()
-}
-
-// GetTransactionMemo returns the memo for this ContractUpdateTransaction.
-func (transaction *ContractUpdateTransaction) GetTransactionMemo() string {
-	return transaction.Transaction.GetTransactionMemo()
-}
-
-// SetTransactionMemo sets the memo for this ContractUpdateTransaction.
-func (transaction *ContractUpdateTransaction) SetTransactionMemo(memo string) *ContractUpdateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.Transaction.SetTransactionMemo(memo)
-	return transaction
-}
-
-// GetTransactionValidDuration returns the duration that this transaction is valid for.
-func (transaction *ContractUpdateTransaction) GetTransactionValidDuration() time.Duration {
-	return transaction.Transaction.GetTransactionValidDuration()
-}
-
-// SetTransactionValidDuration sets the valid duration for this ContractUpdateTransaction.
-func (transaction *ContractUpdateTransaction) SetTransactionValidDuration(duration time.Duration) *ContractUpdateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.Transaction.SetTransactionValidDuration(duration)
-	return transaction
-}
-
-// GetTransactionID gets the TransactionID for this	ContractUpdateTransaction.
-func (transaction *ContractUpdateTransaction) GetTransactionID() TransactionID {
-	return transaction.Transaction.GetTransactionID()
-}
-
-// SetTransactionID sets the TransactionID for this ContractUpdateTransaction.
-func (transaction *ContractUpdateTransaction) SetTransactionID(transactionID TransactionID) *ContractUpdateTransaction {
-	transaction._RequireNotFrozen()
-
-	transaction.Transaction.SetTransactionID(transactionID)
-	return transaction
-}
-
-// SetNodeAccountID sets the _Node AccountID for this ContractUpdateTransaction.
-func (transaction *ContractUpdateTransaction) SetNodeAccountIDs(nodeID []AccountID) *ContractUpdateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.Transaction.SetNodeAccountIDs(nodeID)
-	return transaction
-}
-
-// SetMaxRetry sets the max number of errors before execution will fail.
-func (transaction *ContractUpdateTransaction) SetMaxRetry(count int) *ContractUpdateTransaction {
-	transaction.Transaction.SetMaxRetry(count)
-	return transaction
-}
-
-// AddSignature adds a signature to the Transaction.
-func (transaction *ContractUpdateTransaction) AddSignature(publicKey PublicKey, signature []byte) *ContractUpdateTransaction {
-	transaction._RequireOneNodeAccountID()
-
-	if transaction._KeyAlreadySigned(publicKey) {
-		return transaction
-	}
-
-	if transaction.signedTransactions._Length() == 0 {
-		return transaction
-	}
-
-	transaction.transactions = _NewLockableSlice()
-	transaction.publicKeys = append(transaction.publicKeys, publicKey)
-	transaction.transactionSigners = append(transaction.transactionSigners, nil)
-	transaction.transactionIDs.locked = true
-
-	for index := 0; index < transaction.signedTransactions._Length(); index++ {
-		var temp *services.SignedTransaction
-		switch t := transaction.signedTransactions._Get(index).(type) { //nolint
-		case *services.SignedTransaction:
-			temp = t
-		}
-		temp.SigMap.SigPair = append(
-			temp.SigMap.SigPair,
-			publicKey._ToSignaturePairProtobuf(signature),
-		)
-		transaction.signedTransactions._Set(index, temp)
-	}
-
-	return transaction
-}
-
-// SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (transaction *ContractUpdateTransaction) SetMaxBackoff(max time.Duration) *ContractUpdateTransaction {
-	if max.Nanoseconds() < 0 {
-		panic("maxBackoff must be a positive duration")
-	} else if max.Nanoseconds() < transaction.minBackoff.Nanoseconds() {
-		panic("maxBackoff must be greater than or equal to minBackoff")
-	}
-	transaction.maxBackoff = &max
-	return transaction
-}
-
-// GetMaxBackoff returns the maximum amount of time to wait between retries.
-func (transaction *ContractUpdateTransaction) GetMaxBackoff() time.Duration {
-	if transaction.maxBackoff != nil {
-		return *transaction.maxBackoff
-	}
-
-	return 8 * time.Second
-}
-
-// SetMinBackoff sets the minimum amount of time to wait between retries.
-func (transaction *ContractUpdateTransaction) SetMinBackoff(min time.Duration) *ContractUpdateTransaction {
-	if min.Nanoseconds() < 0 {
-		panic("minBackoff must be a positive duration")
-	} else if transaction.maxBackoff.Nanoseconds() < min.Nanoseconds() {
-		panic("minBackoff must be less than or equal to maxBackoff")
-	}
-	transaction.minBackoff = &min
-	return transaction
-}
-
-// GetMinBackoff returns the minimum amount of time to wait between retries.
-func (transaction *ContractUpdateTransaction) GetMinBackoff() time.Duration {
-	if transaction.minBackoff != nil {
-		return *transaction.minBackoff
-	}
-
-	return 250 * time.Millisecond
-}
-
-func (transaction *ContractUpdateTransaction) _GetLogID() string {
-	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
-	return fmt.Sprintf("ContractUpdateTransaction:%d", timestamp.UnixNano())
-}
-
-func (transaction *ContractUpdateTransaction) SetLogLevel(level LogLevel) *ContractUpdateTransaction {
-	transaction.Transaction.SetLogLevel(level)
-	return transaction
+func (tx *ContractUpdateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	return tx.buildScheduled()
 }

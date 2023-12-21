@@ -24,7 +24,6 @@ package hedera
  */
 
 import (
-	"fmt"
 	"testing"
 	"time"
 
@@ -36,7 +35,6 @@ var testContractId = ContractID{Contract: 5}
 var testExpirationTime = time.Now().Add(24 * time.Hour)
 var testFileId = FileID{File: 3}
 var testTrxValidDuration = 24 * time.Hour
-
 
 func TestUnitSystemDeleteTransactionFromProtobuf(t *testing.T) {
 	t.Parallel()
@@ -66,7 +64,7 @@ func TestUnitSystemDeleteTrxValidateNetworkOnIDs(t *testing.T) {
 	client.SetLedgerID(*NewLedgerIDTestnet())
 	require.NoError(t, err)
 
-	error := deleteTrx._ValidateNetworkOnIDs(client)
+	error := deleteTrx.validateNetworkOnIDs(client)
 	require.NoError(t, error)
 }
 
@@ -74,9 +72,8 @@ func TestUnitSystemDeleteTrxBuild(t *testing.T) {
 	t.Parallel()
 	deleteTrx := _SetupSystemDeleteTrx()
 
-	trxBody := deleteTrx._Build()
+	trxBody := deleteTrx.build()
 
-	fmt.Println(trxBody)
 	require.NotNil(t, trxBody)
 	require.Equal(t, "memo", trxBody.Memo)
 	require.Equal(t, uint64(0), trxBody.TransactionFee)
@@ -84,6 +81,7 @@ func TestUnitSystemDeleteTrxBuild(t *testing.T) {
 }
 
 func TestUnitSystemDeleteTrxExecute(t *testing.T) {
+	t.Parallel()
 	client, err := _NewMockClient()
 	client.SetLedgerID(*NewLedgerIDTestnet())
 	require.NoError(t, err)
@@ -98,7 +96,6 @@ func TestUnitSystemDeleteTrxExecute(t *testing.T) {
 	deleteTrx.SetFileID(fileId)
 
 	_, err = deleteTrx.FreezeWith(client)
-	fmt.Println(err)
 
 	deleteTrx.Sign(*client.operator.privateKey)
 	response, _ := deleteTrx.Execute(client)
@@ -110,7 +107,7 @@ func TestUnitSystemConstructNewScheduleDeleteTransactionProtobuf(t *testing.T) {
 	t.Parallel()
 	deleteTrx := _SetupSystemUndeleteTrx()
 
-	protoBody, err := deleteTrx._ConstructScheduleProtobuf()
+	protoBody, err := deleteTrx.buildScheduled()
 	require.NoError(t, err)
 	require.NotNil(t, protoBody)
 	require.Equal(t, "memo", protoBody.Memo)

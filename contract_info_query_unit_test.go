@@ -24,7 +24,6 @@ package hedera
  */
 
 import (
-	"fmt"
 	"testing"
 	"time"
 
@@ -47,7 +46,7 @@ func TestUnitContractInfoQueryValidate(t *testing.T) {
 	contractInfoQuery := NewContractInfoQuery().
 		SetContractID(contractID)
 
-	err = contractInfoQuery._ValidateNetworkOnIDs(client)
+	err = contractInfoQuery.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 }
 
@@ -64,7 +63,7 @@ func TestUnitContractInfoQueryValidateWrong(t *testing.T) {
 	contractInfoQuery := NewContractInfoQuery().
 		SetContractID(contractID)
 
-	err = contractInfoQuery._ValidateNetworkOnIDs(client)
+	err = contractInfoQuery.validateNetworkOnIDs(client)
 	require.Error(t, err)
 	if err != nil {
 		require.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
@@ -241,13 +240,12 @@ func TestUnitContractInfoQueryCoverage(t *testing.T) {
 		SetQueryPayment(NewHbar(3)).
 		SetGrpcDeadline(&deadline)
 
-	err = query._ValidateNetworkOnIDs(client)
+	err = query.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 
 	require.Equal(t, nodeAccountID, query.GetNodeAccountIDs())
 	require.Equal(t, time.Second*30, query.GetMaxBackoff())
 	require.Equal(t, time.Second*10, query.GetMinBackoff())
-	require.Equal(t, fmt.Sprintf("ContractInfoQuery:%v", transactionID.ValidStart.UnixNano()), query._GetLogID())
 	require.Equal(t, contract, query.GetContractID())
 	require.Equal(t, &deadline, query.GetGrpcDeadline())
 }

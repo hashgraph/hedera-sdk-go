@@ -50,7 +50,7 @@ func TestUnitFileUpdateTransactionValidate(t *testing.T) {
 	fileUpdate := NewFileUpdateTransaction().
 		SetFileID(fileID)
 
-	err = fileUpdate._ValidateNetworkOnIDs(client)
+	err = fileUpdate.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 }
 
@@ -67,7 +67,7 @@ func TestUnitFileUpdateTransactionValidateWrong(t *testing.T) {
 	fileUpdate := NewFileUpdateTransaction().
 		SetFileID(fileID)
 
-	err = fileUpdate._ValidateNetworkOnIDs(client)
+	err = fileUpdate.validateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
@@ -247,7 +247,7 @@ func TestUnitFileUpdateTransactionProtoCheck(t *testing.T) {
 	transaction.GetTransactionID()
 	transaction.GetNodeAccountIDs()
 
-	proto := transaction._Build().GetFileUpdate()
+	proto := transaction.build().GetFileUpdate()
 	require.Equal(t, proto.Keys.Keys[0].String(), newKey._ToProtoKey().String())
 	require.Equal(t, proto.Contents, []byte{5, 6})
 	require.Equal(t, proto.FileID.String(), fileID._ToProtobuf().String())
@@ -289,7 +289,7 @@ func TestUnitFileUpdateTransactionCoverage(t *testing.T) {
 		Freeze()
 	require.NoError(t, err)
 
-	transaction._ValidateNetworkOnIDs(client)
+	transaction.validateNetworkOnIDs(client)
 
 	_, err = transaction.Schedule()
 	require.NoError(t, err)
@@ -320,7 +320,7 @@ func TestUnitFileUpdateTransactionCoverage(t *testing.T) {
 	transaction.GetFileID()
 	_, err = transaction.GetSignatures()
 	require.NoError(t, err)
-	transaction._GetLogID()
+	transaction.getName()
 	switch b := txFromBytes.(type) {
 	case FileUpdateTransaction:
 		b.AddSignature(newKey.PublicKey(), sig)

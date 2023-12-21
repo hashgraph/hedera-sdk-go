@@ -52,7 +52,7 @@ func TestUnitTokenAssociateTransactionValidate(t *testing.T) {
 		SetAccountID(accountID).
 		SetTokenIDs(tokenID)
 
-	err = tokenAssociate._ValidateNetworkOnIDs(client)
+	err = tokenAssociate.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 }
 
@@ -72,7 +72,7 @@ func TestUnitTokenAssociateTransactionValidateWrong(t *testing.T) {
 		SetAccountID(accountID).
 		SetTokenIDs(tokenID)
 
-	err = tokenAssociate._ValidateNetworkOnIDs(client)
+	err = tokenAssociate.validateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
@@ -241,7 +241,7 @@ func TestUnitTokenAssociateTransactionProtoCheck(t *testing.T) {
 	transaction.GetTransactionID()
 	transaction.GetNodeAccountIDs()
 
-	proto := transaction._Build().GetTokenAssociate()
+	proto := transaction.build().GetTokenAssociate()
 	require.Equal(t, proto.Tokens[0].String(), tokenID._ToProtobuf().String())
 	require.Equal(t, proto.Tokens[1].String(), tokenID2._ToProtobuf().String())
 	require.Equal(t, proto.Tokens[2].String(), tokenID3._ToProtobuf().String())
@@ -283,7 +283,7 @@ func TestUnitTokenAssociateTransactionCoverage(t *testing.T) {
 		Freeze()
 	require.NoError(t, err)
 
-	err = transaction._ValidateNetworkOnIDs(client)
+	err = transaction.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 	_, err = transaction.Schedule()
 	require.NoError(t, err)
@@ -310,7 +310,7 @@ func TestUnitTokenAssociateTransactionCoverage(t *testing.T) {
 	transaction.GetAccountID()
 	_, err = transaction.GetSignatures()
 	require.NoError(t, err)
-	transaction._GetLogID()
+	transaction.getName()
 	switch b := txFromBytes.(type) {
 	case TokenAssociateTransaction:
 		b.AddSignature(newKey.PublicKey(), sig)

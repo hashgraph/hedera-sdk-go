@@ -45,7 +45,7 @@ func TestUnitTopicMessageQueryValidate(t *testing.T) {
 	topicInfo := NewTopicMessageQuery().
 		SetTopicID(topicID)
 
-	err = topicInfo._ValidateNetworkOnIDs(client)
+	err = topicInfo.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 }
 
@@ -62,7 +62,7 @@ func TestUnitTopicMessageQueryValidateWrong(t *testing.T) {
 	topicInfo := NewTopicMessageQuery().
 		SetTopicID(topicID)
 
-	err = topicInfo._ValidateNetworkOnIDs(client)
+	err = topicInfo.validateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())

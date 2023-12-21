@@ -55,7 +55,7 @@ func TestUnitContractUpdateTransactionValidate(t *testing.T) {
 		SetProxyAccountID(accountID).
 		SetBytecodeFileID(fileID)
 
-	err = contractInfoQuery._ValidateNetworkOnIDs(client)
+	err = contractInfoQuery.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 }
 
@@ -78,7 +78,7 @@ func TestUnitContractUpdateTransactionValidateWrong(t *testing.T) {
 		SetProxyAccountID(accountID).
 		SetBytecodeFileID(fileID)
 
-	err = contractInfoQuery._ValidateNetworkOnIDs(client)
+	err = contractInfoQuery.validateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
@@ -256,7 +256,7 @@ func TestUnitContractUpdateTransactionProtoCheck(t *testing.T) {
 	transaction.GetTransactionID()
 	transaction.GetNodeAccountIDs()
 
-	proto := transaction._Build().GetContractUpdateInstance()
+	proto := transaction.build().GetContractUpdateInstance()
 	require.Equal(t, proto.AdminKey.String(), newKey._ToProtoKey().String())
 	require.Equal(t, proto.ContractID.String(), contractID._ToProtobuf().String())
 	require.Equal(t, proto.MemoField.(*services.ContractUpdateTransactionBody_MemoWrapper).MemoWrapper.Value, "yes")
@@ -311,7 +311,7 @@ func TestUnitContractUpdateTransactionCoverage(t *testing.T) {
 		Freeze()
 	require.NoError(t, err)
 
-	transaction._ValidateNetworkOnIDs(client)
+	transaction.validateNetworkOnIDs(client)
 
 	_, err = transaction.Schedule()
 	require.NoError(t, err)
@@ -346,7 +346,7 @@ func TestUnitContractUpdateTransactionCoverage(t *testing.T) {
 	transaction.ClearStakedNodeID()
 	_, err = transaction.GetSignatures()
 	require.NoError(t, err)
-	transaction._GetLogID()
+	transaction.getName()
 	switch b := txFromBytes.(type) {
 	case ContractUpdateTransaction:
 		b.AddSignature(newKey.PublicKey(), sig)

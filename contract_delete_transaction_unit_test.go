@@ -52,7 +52,7 @@ func TestUnitContractDeleteTransactionValidate(t *testing.T) {
 		SetContractID(contractID).
 		SetTransferContractID(contractID)
 
-	err = contractDelete._ValidateNetworkOnIDs(client)
+	err = contractDelete.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 }
 
@@ -73,7 +73,7 @@ func TestUnitContractDeleteTransactionValidateWrong(t *testing.T) {
 		SetContractID(contractID).
 		SetTransferContractID(contractID)
 
-	err = contractDelete._ValidateNetworkOnIDs(client)
+	err = contractDelete.validateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
@@ -175,7 +175,7 @@ func TestUnitContractDeleteTransactionProtoCheck(t *testing.T) {
 	transaction.GetTransactionID()
 	transaction.GetNodeAccountIDs()
 
-	proto := transaction._Build().GetContractDeleteInstance()
+	proto := transaction.build().GetContractDeleteInstance()
 	require.Equal(t, proto.ContractID.String(), contractID._ToProtobuf().String())
 	require.Equal(t, proto.Obtainers.(*services.ContractDeleteTransactionBody_TransferAccountID).TransferAccountID.String(),
 		spenderAccountID1._ToProtobuf().String())
@@ -218,7 +218,7 @@ func TestUnitContractDeleteTransactionCoverage(t *testing.T) {
 		Freeze()
 	require.NoError(t, err)
 
-	transaction._ValidateNetworkOnIDs(client)
+	transaction.validateNetworkOnIDs(client)
 
 	_, err = transaction.Schedule()
 	require.NoError(t, err)
@@ -245,7 +245,7 @@ func TestUnitContractDeleteTransactionCoverage(t *testing.T) {
 	transaction.GetTransferAccountID()
 	_, err = transaction.GetSignatures()
 	require.NoError(t, err)
-	transaction._GetLogID()
+	transaction.getName()
 	switch b := txFromBytes.(type) {
 	case ContractDeleteTransaction:
 		b.AddSignature(newKey.PublicKey(), sig)

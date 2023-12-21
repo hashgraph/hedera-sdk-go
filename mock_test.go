@@ -41,6 +41,7 @@ import (
 )
 
 func TestUnitMockQuery(t *testing.T) {
+	t.Parallel()
 	responses := [][]interface{}{
 		{
 			&services.Response{
@@ -89,6 +90,17 @@ func TestUnitMockQuery(t *testing.T) {
 				Response: &services.Response_CryptogetAccountBalance{
 					CryptogetAccountBalance: &services.CryptoGetAccountBalanceResponse{
 						Header: &services.ResponseHeader{NodeTransactionPrecheckCode: services.ResponseCodeEnum_BUSY, ResponseType: services.ResponseType_ANSWER_ONLY},
+					},
+				},
+			},
+			&services.Response{
+				Response: &services.Response_CryptogetAccountBalance{
+					CryptogetAccountBalance: &services.CryptoGetAccountBalanceResponse{
+						Header: &services.ResponseHeader{NodeTransactionPrecheckCode: services.ResponseCodeEnum_OK, ResponseType: services.ResponseType_COST_ANSWER, Cost: 0},
+						AccountID: &services.AccountID{ShardNum: 0, RealmNum: 0, Account: &services.AccountID_AccountNum{
+							AccountNum: 1800,
+						}},
+						Balance: 2000,
 					},
 				},
 			},
@@ -169,6 +181,7 @@ func DisabledTestUnitMockBackoff(t *testing.T) {
 }
 
 func TestUnitMockAddressBookQuery(t *testing.T) {
+	t.Parallel()
 	responses := [][]interface{}{{
 		&services.NodeAddress{
 			RSA_PubKey: "",
@@ -235,6 +248,7 @@ func TestUnitMockAddressBookQuery(t *testing.T) {
 }
 
 func TestUnitMockGenerateTransactionIDsPerExecution(t *testing.T) {
+	t.Parallel()
 	count := 0
 	transactionIds := make(map[string]bool)
 
@@ -303,6 +317,7 @@ func TestUnitMockGenerateTransactionIDsPerExecution(t *testing.T) {
 }
 
 func TestUnitMockSingleTransactionIDForExecutions(t *testing.T) {
+	t.Parallel()
 	count := 0
 	tran := TransactionIDGenerate(AccountID{Account: 1800})
 	transactionIds := make(map[string]bool)
@@ -373,6 +388,7 @@ func TestUnitMockSingleTransactionIDForExecutions(t *testing.T) {
 }
 
 func TestUnitMockSingleTransactionIDForExecutionsWithTimeout(t *testing.T) {
+	t.Parallel()
 	count := 0
 	tran := TransactionIDGenerate(AccountID{Account: 1800})
 	transactionIds := make(map[string]bool)

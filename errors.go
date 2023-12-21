@@ -74,14 +74,6 @@ type ErrMaxQueryPaymentExceeded struct {
 	query string
 }
 
-// func _NewErrorMaxQueryPaymentExceeded(transaction *QueryBuilder, queryCost Hbar, maxQueryPayment Hbar) ErrMaxQueryPaymentExceeded {
-// 	return ErrMaxQueryPaymentExceeded{
-// 		QueryCost:       queryCost,
-// 		MaxQueryPayment: maxQueryPayment,
-// 		query:           reflect.TypeOf(*transaction).Name(),
-// 	}
-// }
-
 // Error() implements the Error interface
 func (e ErrMaxQueryPaymentExceeded) Error() string {
 	return fmt.Sprintf("cost of %s (%s) without explicit payment is greater than the max query payment of %s",

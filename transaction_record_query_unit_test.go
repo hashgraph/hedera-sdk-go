@@ -25,7 +25,6 @@ package hedera
 
 import (
 	"encoding/hex"
-	"fmt"
 	"testing"
 	"time"
 
@@ -47,7 +46,7 @@ func TestUnitTransactionRecordQueryValidate(t *testing.T) {
 	recordQuery := NewTransactionRecordQuery().
 		SetTransactionID(transactionID)
 
-	err = recordQuery._ValidateNetworkOnIDs(client)
+	err = recordQuery.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 }
 
@@ -65,7 +64,7 @@ func TestUnitTransactionRecordQueryValidateWrong(t *testing.T) {
 	recordQuery := NewTransactionRecordQuery().
 		SetTransactionID(transactionID)
 
-	err = recordQuery._ValidateNetworkOnIDs(client)
+	err = recordQuery.validateNetworkOnIDs(client)
 	require.Error(t, err)
 	if err != nil {
 		require.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
@@ -105,7 +104,6 @@ func TestUnitTransactionRecordQueryGet(t *testing.T) {
 	require.Equal(t, HbarFromTinybar(25), query.GetQueryPayment())
 	require.Equal(t, NewHbar(500), query.GetMaxQueryPayment())
 	require.Equal(t, &deadline, query.GetGrpcDeadline())
-	require.Equal(t, fmt.Sprintf("TransactionRecordQuery:%v", transactionID.ValidStart.UnixNano()), query._GetLogID())
 }
 
 func TestUnitTransactionRecordQueryNothingSet(t *testing.T) {

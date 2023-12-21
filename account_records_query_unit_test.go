@@ -47,7 +47,7 @@ func TestUnitAccountRecordQueryValidate(t *testing.T) {
 	recordQuery := NewAccountRecordsQuery().
 		SetAccountID(accountID)
 
-	err = recordQuery._ValidateNetworkOnIDs(client)
+	err = recordQuery.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 }
 
@@ -64,7 +64,7 @@ func TestUnitAccountRecordQueryValidateWrong(t *testing.T) {
 	recordQuery := NewAccountRecordsQuery().
 		SetAccountID(accountID)
 
-	err = recordQuery._ValidateNetworkOnIDs(client)
+	err = recordQuery.validateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
@@ -193,12 +193,12 @@ func TestUnitAccountRecordsQueryCoverage(t *testing.T) {
 		SetQueryPayment(NewHbar(3)).
 		SetGrpcDeadline(&grpc)
 
-	err = query._ValidateNetworkOnIDs(client)
+	err = query.validateNetworkOnIDs(client)
 
 	require.NoError(t, err)
 	query.GetNodeAccountIDs()
 	query.GetMaxBackoff()
 	query.GetMinBackoff()
-	query._GetLogID()
+	query.getName()
 	query.GetAccountID()
 }

@@ -7,7 +7,7 @@ package hedera
  * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
+ * you may not use q file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
@@ -21,6 +21,7 @@ package hedera
  */
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -30,25 +31,32 @@ import (
 
 // Query is the struct used to build queries.
 type Query struct {
+	executable
 	pb       *services.Query
 	pbHeader *services.QueryHeader //nolint
 
 	paymentTransactionIDs *_LockableSlice
-	nodeAccountIDs        *_LockableSlice
 	maxQueryPayment       Hbar
 	queryPayment          Hbar
-	maxRetry              int
+	timestamp             time.Time
 
 	paymentTransactions []*services.Transaction
 
 	isPaymentRequired bool
-
-	maxBackoff   *time.Duration
-	minBackoff   *time.Duration
-	grpcDeadline *time.Duration
-	timestamp    time.Time
-	logLevel     *LogLevel
 }
+
+type queryResponse interface {
+	GetHeader() *services.ResponseHeader
+}
+
+type QueryInterface interface {
+	Executable
+
+	buildQuery() *services.Query
+	getQueryResponse(response *services.Response) queryResponse
+}
+
+// -------- Executable functions ----------
 
 func _NewQuery(isPaymentRequired bool, header *services.QueryHeader) Query {
 	minBackoff := 250 * time.Millisecond
@@ -57,150 +65,81 @@ func _NewQuery(isPaymentRequired bool, header *services.QueryHeader) Query {
 		pb:                    &services.Query{},
 		pbHeader:              header,
 		paymentTransactionIDs: _NewLockableSlice(),
-		maxRetry:              10,
-		nodeAccountIDs:        _NewLockableSlice(),
 		paymentTransactions:   make([]*services.Transaction, 0),
 		isPaymentRequired:     isPaymentRequired,
 		maxQueryPayment:       NewHbar(0),
 		queryPayment:          NewHbar(0),
-		timestamp:             time.Now(),
-		maxBackoff:            &maxBackoff,
-		minBackoff:            &minBackoff,
+		executable: executable{
+			nodeAccountIDs: _NewLockableSlice(),
+			maxBackoff:     &maxBackoff,
+			minBackoff:     &minBackoff,
+			maxRetry:       10,
+		},
 	}
 }
 
-// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (this *Query) SetGrpcDeadline(deadline *time.Duration) *Query {
-	this.grpcDeadline = deadline
-	return this
+// SetMaxQueryPayment sets the maximum payment allowed for this query.
+func (q *Query) SetMaxQueryPayment(maxPayment Hbar) *Query {
+	q.maxQueryPayment = maxPayment
+	return q
 }
 
-// GetGrpcDeadline returns the grpc deadline.
-func (this *Query) GetGrpcDeadline() *time.Duration {
-	return this.grpcDeadline
+// SetQueryPayment sets the payment amount for this query.
+func (q *Query) SetQueryPayment(paymentAmount Hbar) *Query {
+	q.queryPayment = paymentAmount
+	return q
 }
 
-// SetNodeAccountID sets the node account ID for this Query.
-func (this *Query) SetNodeAccountIDs(nodeAccountIDs []AccountID) *Query {
-	for _, nodeAccountID := range nodeAccountIDs {
-		this.nodeAccountIDs._Push(nodeAccountID)
-	}
-	this.nodeAccountIDs._SetLocked(true)
-	return this
+// GetMaxQueryPayment returns the maximum payment allowed for this query.
+func (q *Query) GetMaxQueryPayment() Hbar {
+	return q.maxQueryPayment
 }
 
-// GetNodeAccountID returns the node account ID for this Query.
-func (this *Query) GetNodeAccountIDs() (nodeAccountIDs []AccountID) {
-	nodeAccountIDs = []AccountID{}
-
-	for _, value := range this.nodeAccountIDs.slice {
-		nodeAccountIDs = append(nodeAccountIDs, value.(AccountID))
-	}
-
-	return nodeAccountIDs
+// GetQueryPayment returns the payment amount for this query.
+func (q *Query) GetQueryPayment() Hbar {
+	return q.queryPayment
 }
 
-func _QueryGetNodeAccountID(request interface{}) AccountID {
-	return request.(*Query).nodeAccountIDs._GetCurrent().(AccountID)
-}
-
-// SetMaxQueryPayment sets the maximum payment allowed for this Query.
-func (this *Query) SetMaxQueryPayment(maxPayment Hbar) *Query {
-	this.maxQueryPayment = maxPayment
-	return this
-}
-
-// SetQueryPayment sets the payment amount for this Query.
-func (this *Query) SetQueryPayment(paymentAmount Hbar) *Query {
-	this.queryPayment = paymentAmount
-	return this
-}
-
-// GetMaxQueryPayment returns the maximum payment allowed for this Query.
-func (this *Query) GetMaxQueryPayment() Hbar {
-	return this.maxQueryPayment
-}
-
-// GetQueryPayment returns the payment amount for this Query.
-func (this *Query) GetQueryPayment() Hbar {
-	return this.queryPayment
-}
-
-// GetMaxRetryCount returns the max number of errors before execution will fail.
-func (this *Query) GetMaxRetryCount() int {
-	return this.maxRetry
-}
-
-// SetMaxRetry sets the max number of errors before execution will fail.
-func (this *Query) SetMaxRetry(count int) *Query {
-	this.maxRetry = count
-	return this
-}
-
-func _QueryShouldRetry(status Status) _ExecutionState {
-	switch status {
-	case StatusPlatformTransactionNotCreated, StatusPlatformNotActive, StatusBusy:
-		return executionStateRetry
-	case StatusOk:
-		return executionStateFinished
+// GetCost returns the fee that would be charged to get the requested information (if a cost was requested).
+func (q *Query) getCost(client *Client, e QueryInterface) (Hbar, error) {
+	if client == nil || client.operator == nil {
+		return Hbar{}, errNoClientProvided
 	}
 
-	return executionStateError
-}
+	var err error
 
-func _QueryMakeRequest(request interface{}) interface{} {
-	query := request.(*Query)
-	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
-		query.pbHeader.Payment = query.paymentTransactions[query.paymentTransactionIDs.index]
-	}
-	query.pbHeader.ResponseType = services.ResponseType_ANSWER_ONLY
-
-	return query.pb
-}
-
-func _CostQueryMakeRequest(request interface{}) interface{} {
-	query := request.(*Query)
-	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
-		query.pbHeader.Payment = query.paymentTransactions[query.paymentTransactionIDs.index]
-	}
-	query.pbHeader.ResponseType = services.ResponseType_COST_ANSWER
-	return query.pb
-}
-
-func _QueryAdvanceRequest(request interface{}) {
-	query := request.(*Query)
-	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
-		query.paymentTransactionIDs._Advance()
-	}
-	query.nodeAccountIDs._Advance()
-}
-
-func _CostQueryAdvanceRequest(request interface{}) {
-	query := request.(*Query)
-	query.paymentTransactionIDs._Advance()
-	query.nodeAccountIDs._Advance()
-}
-
-func _QueryMapResponse(request interface{}, response interface{}, _ AccountID, protoRequest interface{}) (interface{}, error) {
-	return response.(*services.Response), nil
-}
-
-func _QueryGeneratePayments(query *Query, client *Client, cost Hbar) error {
-	for _, nodeID := range query.nodeAccountIDs.slice {
-		transaction, err := _QueryMakePaymentTransaction(
-			query.paymentTransactionIDs._GetCurrent().(TransactionID),
-			nodeID.(AccountID),
-			client.operator,
-			cost,
-		)
-		if err != nil {
-			return err
-		}
-
-		query.paymentTransactions = append(query.paymentTransactions, transaction)
+	if !q.paymentTransactionIDs.locked {
+		q.paymentTransactionIDs._Clear()._Push(TransactionIDGenerate(client.operator.accountID))
 	}
 
-	return nil
+	err = e.validateNetworkOnIDs(client)
+	if err != nil {
+		return Hbar{}, err
+	}
+
+	if !q.nodeAccountIDs.locked {
+		q.SetNodeAccountIDs([]AccountID{client.network._GetNode().accountID})
+	}
+
+	err = q.generatePayments(client, Hbar{})
+	if err != nil {
+		return Hbar{}, err
+	}
+
+	q.pb = e.buildQuery()
+
+	q.pbHeader.ResponseType = services.ResponseType_COST_ANSWER
+	q.paymentTransactionIDs._Advance()
+	resp, err := _Execute(client, e)
+
+	if err != nil {
+		return Hbar{}, err
+	}
+
+	queryResp := e.getQueryResponse(resp.(*services.Response))
+	cost := int64(queryResp.GetHeader().Cost)
+
+	return HbarFromTinybar(cost), nil
 }
 
 func _QueryMakePaymentTransaction(transactionID TransactionID, nodeAccountID AccountID, operator *_Operator, cost Hbar) (*services.Transaction, error) {
@@ -232,7 +171,7 @@ func _QueryMakePaymentTransaction(transactionID TransactionID, nodeAccountID Acc
 
 	bodyBytes, err := protobuf.Marshal(&body)
 	if err != nil {
-		return nil, errors.Wrap(err, "error serializing query body")
+		return nil, errors.Wrap(err, "error serializing Query body")
 	}
 
 	signature := operator.signer(bodyBytes)
@@ -248,25 +187,196 @@ func _QueryMakePaymentTransaction(transactionID TransactionID, nodeAccountID Acc
 }
 
 // GetPaymentTransactionID returns the payment transaction id.
-func (this *Query) GetPaymentTransactionID() TransactionID {
-	if !this.paymentTransactionIDs._IsEmpty() {
-		return this.paymentTransactionIDs._GetCurrent().(TransactionID)
+func (q *Query) GetPaymentTransactionID() TransactionID {
+	if !q.paymentTransactionIDs._IsEmpty() {
+		return q.paymentTransactionIDs._GetCurrent().(TransactionID)
 	}
 
 	return TransactionID{}
 }
 
+// GetMaxRetryCount returns the max number of errors before execution will fail.
+func (q *Query) GetMaxRetryCount() int {
+	return q.GetMaxRetry()
+}
+
 // SetPaymentTransactionID assigns the payment transaction id.
-func (this *Query) SetPaymentTransactionID(transactionID TransactionID) *Query {
-	this.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
-	return this
+func (q *Query) SetPaymentTransactionID(transactionID TransactionID) *Query {
+	q.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
+	return q
 }
 
-func (query *Query) SetLogLevel(level LogLevel) *Query {
-	query.logLevel = &level
-	return query
+func (q *Query) execute(client *Client, e QueryInterface) (*services.Response, error) {
+	if client == nil || client.operator == nil {
+		return nil, errNoClientProvided
+	}
+
+	var err error
+
+	err = e.validateNetworkOnIDs(client)
+	if err != nil {
+		return nil, err
+	}
+
+	if !q.paymentTransactionIDs.locked {
+		q.paymentTransactionIDs._Clear()._Push(TransactionIDGenerate(client.operator.accountID))
+	}
+
+	var cost Hbar
+	if q.queryPayment.tinybar != 0 {
+		cost = q.queryPayment
+	} else {
+		if q.maxQueryPayment.tinybar == 0 {
+			cost = client.GetDefaultMaxQueryPayment()
+		} else {
+			cost = q.maxQueryPayment
+		}
+
+		actualCost, err := q.getCost(client, e)
+		if err != nil {
+			return nil, err
+		}
+
+		if cost.tinybar < actualCost.tinybar {
+			return nil, ErrMaxQueryPaymentExceeded{
+				QueryCost:       actualCost,
+				MaxQueryPayment: cost,
+				query:           e.getName(),
+			}
+		}
+
+		cost = actualCost
+	}
+
+	q.paymentTransactions = make([]*services.Transaction, 0)
+
+	if !q.nodeAccountIDs.locked {
+		q.SetNodeAccountIDs([]AccountID{client.network._GetNode().accountID})
+	}
+
+	if cost.tinybar > 0 {
+		err = q.generatePayments(client, cost)
+
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	q.pb = e.buildQuery()
+	q.pbHeader.ResponseType = services.ResponseType_ANSWER_ONLY
+
+	if q.isPaymentRequired && len(q.paymentTransactions) > 0 {
+		q.paymentTransactionIDs._Advance()
+	}
+
+	resp, err := _Execute(client, e)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.(*services.Response), nil
 }
 
-func (query *Query) GetLogLevel() *LogLevel {
-	return query.logLevel
+func (q *Query) shouldRetry(e Executable, response interface{}) _ExecutionState {
+	queryResp := e.(QueryInterface).getQueryResponse(response.(*services.Response))
+	status := Status(queryResp.GetHeader().NodeTransactionPrecheckCode)
+	switch status {
+	case StatusPlatformTransactionNotCreated, StatusPlatformNotActive, StatusBusy:
+		return executionStateRetry
+	case StatusOk:
+		return executionStateFinished
+	}
+
+	return executionStateError
+}
+
+func (q *Query) generatePayments(client *Client, cost Hbar) error {
+	for _, nodeID := range q.nodeAccountIDs.slice {
+		tx, err := _QueryMakePaymentTransaction(
+			q.paymentTransactionIDs._GetCurrent().(TransactionID),
+			nodeID.(AccountID),
+			client.operator,
+			cost,
+		)
+		if err != nil {
+			return err
+		}
+
+		q.paymentTransactions = append(q.paymentTransactions, tx)
+	}
+
+	return nil
+}
+
+func (q *Query) advanceRequest() {
+	q.nodeAccountIDs._Advance()
+}
+
+func (q *Query) makeRequest() interface{} {
+	if q.isPaymentRequired && len(q.paymentTransactions) > 0 {
+		q.pbHeader.Payment = q.paymentTransactions[q.paymentTransactionIDs.index]
+	}
+
+	return q.pb
+}
+
+func (q *Query) mapResponse(response interface{}, _ AccountID, _ interface{}) (interface{}, error) { // nolint
+	return response.(*services.Response), nil
+}
+
+func (q *Query) isTransaction() bool {
+	return false
+}
+
+func (q *Query) mapStatusError(e Executable, response interface{}) error {
+	queryResp := e.(QueryInterface).getQueryResponse(response.(*services.Response))
+	return ErrHederaPreCheckStatus{
+		Status: Status(queryResp.GetHeader().NodeTransactionPrecheckCode),
+	}
+}
+
+// ----------- Next methods should be overridden in each subclass ---------------
+
+// NOTE: Should be implemented in every inheritor. Example:
+//
+//	return ErrHederaPreCheckStatus{
+//		Status: Status(response.(*services.Response).GetNetworkGetVersionInfo().Header.NodeTransactionPrecheckCode),
+//	}
+func (q *Query) getMethod(*_Channel) _Method {
+	return _Method{}
+}
+
+func (q *Query) getName() string {
+	return "QueryInterface"
+}
+
+func (q *Query) getLogID(queryInterface Executable) string {
+	timestamp := q.timestamp.UnixNano()
+	if q.paymentTransactionIDs._Length() > 0 && q.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart != nil {
+		timestamp = q.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart.UnixNano()
+	}
+	return fmt.Sprintf("%s:%d", queryInterface.getName(), timestamp)
+}
+
+//lint:ignore U1000
+func (q *Query) buildQuery() *services.Query {
+	return nil
+}
+
+//lint:ignore U1000
+func (q *Query) buildScheduled() (*services.SchedulableTransactionBody, error) {
+	return nil, errors.New("Not implemented")
+}
+
+// NOTE: Should be implemented in every inheritor.
+func (q *Query) validateNetworkOnIDs(*Client) error {
+	return errors.New("Not implemented")
+}
+
+func (q *Query) getTransactionIDAndMessage() (string, string) {
+	txID := q.GetPaymentTransactionID().String()
+	if txID == "" {
+		txID = "None"
+	}
+	return txID, "QueryInterface status received"
 }

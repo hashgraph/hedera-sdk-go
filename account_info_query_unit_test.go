@@ -44,7 +44,7 @@ func TestUnitAccountInfoQueryValidate(t *testing.T) {
 	infoQuery := NewAccountInfoQuery().
 		SetAccountID(accountID)
 
-	err = infoQuery._ValidateNetworkOnIDs(client)
+	err = infoQuery.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 }
 func TestAccountInfoQuery_Get(t *testing.T) {
@@ -68,7 +68,7 @@ func TestAccountInfoQuery_Get(t *testing.T) {
 	client.SetLedgerID(*NewLedgerIDTestnet())
 	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
-	err = query._ValidateNetworkOnIDs(client)
+	err = query.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 	require.Equal(t, accountId, query.GetAccountID())
 	require.Equal(t, NewHbar(2), query.GetQueryPayment())
@@ -94,7 +94,7 @@ func TestUnitAccountInfoQueryValidateWrong(t *testing.T) {
 	infoQuery := NewAccountInfoQuery().
 		SetAccountID(accountID)
 
-	err = infoQuery._ValidateNetworkOnIDs(client)
+	err = infoQuery.validateNetworkOnIDs(client)
 	require.Error(t, err)
 	if err != nil {
 		require.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
@@ -130,7 +130,8 @@ func Test_AccountInfoQueryMapStatusError(t *testing.T) {
 		},
 	}
 
-	actualError := _AccountInfoQueryMapStatusError(nil, &response)
+	query := NewAccountInfoQuery()
+	actualError := query.mapStatusError(query, &response)
 
 	expectedError := ErrHederaPreCheckStatus{
 		Status: StatusInvalidAccountID,

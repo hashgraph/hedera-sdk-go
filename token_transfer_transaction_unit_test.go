@@ -62,7 +62,7 @@ func TestUnitTokenTransferTransactionTransfers(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{{Account: 3}}).
 		AddNftTransfer(nftID1, accountID1, accountID2).
 		AddNftTransfer(nftID2, accountID2, accountID1).
-		_Build()
+		build()
 
 	require.Equal(t, tokenTransfer.GetCryptoTransfer().Transfers.AccountAmounts, []*services.AccountAmount{
 		{
@@ -141,7 +141,7 @@ func TestUnitTokenTransferTransactionValidate(t *testing.T) {
 		AddTokenTransfer(tokenID, accountID, 1).
 		AddNftTransfer(nftID, accountID, accountID)
 
-	err = tokenTransfer._ValidateNetworkOnIDs(client)
+	err = tokenTransfer.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 }
 
@@ -163,7 +163,7 @@ func TestUnitTokenTransferTransactionValidateWrong(t *testing.T) {
 		AddTokenTransfer(tokenID, accountID, 1).
 		AddNftTransfer(nftID, accountID, accountID)
 
-	err = tokenTransfer._ValidateNetworkOnIDs(client)
+	err = tokenTransfer.validateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())

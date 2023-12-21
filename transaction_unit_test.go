@@ -130,10 +130,10 @@ func TestUnitTransactionValidateBodiesEqual(t *testing.T) {
 	deserializedTX, err := TransactionFromBytes(list)
 	require.NoError(t, err)
 
-	var deserializedTXTyped *AccountCreateTransaction
+	var deserializedTXTyped AccountCreateTransaction
 	switch tx := deserializedTX.(type) {
 	case AccountCreateTransaction:
-		deserializedTXTyped = &tx
+		deserializedTXTyped = tx
 	default:
 		panic("Transaction was not AccountCreateTransaction")
 	}
@@ -397,14 +397,14 @@ func TestUnitQueryRegression(t *testing.T) {
 		SetMaxQueryPayment(NewHbar(1)).
 		SetQueryPayment(HbarFromTinybar(25))
 
-	body := query._Build()
-	err = _QueryGeneratePayments(&query.Query, client, HbarFromTinybar(20))
+	body := query.buildQuery()
+	err = query.generatePayments(client, HbarFromTinybar(20))
 	require.NoError(t, err)
 
 	var paymentTx services.TransactionBody
 	_ = protobuf.Unmarshal(query.Query.paymentTransactions[0].BodyBytes, &paymentTx)
 
-	require.Equal(t, body.CryptoGetInfo.AccountID.String(), accountID._ToProtobuf().String())
+	require.Equal(t, body.GetCryptoGetInfo().AccountID.String(), accountID._ToProtobuf().String())
 	require.Equal(t, paymentTx.NodeAccountID.String(), node[0]._ToProtobuf().String())
 	require.Equal(t, paymentTx.TransactionFee, uint64(NewHbar(1).tinybar))
 	require.Equal(t, paymentTx.TransactionValidDuration, &services.Duration{Seconds: 120})
@@ -481,7 +481,7 @@ func TestUnitTransactionSignSwitchCases(t *testing.T) {
 
 	newKey, client, nodeAccountId := signSwitchCaseaSetup(t)
 
-	txs := []interface{}{
+	txs := []Executable{
 		NewAccountCreateTransaction(),
 		NewAccountDeleteTransaction(),
 		NewAccountUpdateTransaction(),
@@ -514,6 +514,7 @@ func TestUnitTransactionSignSwitchCases(t *testing.T) {
 	for _, tx := range txs {
 
 		txVal, signature, transferTxBytes := signSwitchCaseaHelper(t, tx, newKey, client)
+
 		signTests := signTestsForTransaction(txVal, newKey, signature, client)
 
 		for _, tt := range signTests {
@@ -837,14 +838,14 @@ func signSwitchCaseaSetup(t *testing.T) (PrivateKey, *Client, AccountID) {
 }
 
 func signSwitchCaseaHelper(t *testing.T, tx interface{}, newKey PrivateKey, client *Client) (txVal reflect.Value, signature []byte, transferTxBytes []byte) {
-	// Get the reflect.Value of the pointer to the Transaction
+	// Get the reflect.Value of the pointer to the transaction
 	txPtr := reflect.ValueOf(tx)
 	txPtr.MethodByName("FreezeWith").Call([]reflect.Value{reflect.ValueOf(client)})
 
-	// Get the reflect.Value of the Transaction
+	// Get the reflect.Value of the transaction
 	txVal = txPtr.Elem()
 
-	// Get the Transaction field by name
+	// Get the transaction field by name
 	txField := txVal.FieldByName("Transaction")
 
 	// Get the value of the Transaction field

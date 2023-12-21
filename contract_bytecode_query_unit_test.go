@@ -48,7 +48,7 @@ func TestUnitContractBytecodeQueryValidate(t *testing.T) {
 	contractBytecode := NewContractBytecodeQuery().
 		SetContractID(contractID)
 
-	err = contractBytecode._ValidateNetworkOnIDs(client)
+	err = contractBytecode.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 }
 
@@ -65,7 +65,7 @@ func TestUnitContractBytecodeQueryValidateWrong(t *testing.T) {
 	contractBytecode := NewContractBytecodeQuery().
 		SetContractID(contractID)
 
-	err = contractBytecode._ValidateNetworkOnIDs(client)
+	err = contractBytecode.validateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
@@ -178,11 +178,11 @@ func TestUnitContractBytecodeQueryCoverage(t *testing.T) {
 		SetQueryPayment(NewHbar(3)).
 		SetGrpcDeadline(&grpc)
 
-	err = query._ValidateNetworkOnIDs(client)
+	err = query.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 	query.GetNodeAccountIDs()
 	query.GetMaxBackoff()
 	query.GetMinBackoff()
-	query._GetLogID()
+	query.getName()
 	query.GetContractID()
 }

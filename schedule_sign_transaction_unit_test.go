@@ -66,7 +66,7 @@ func TestUnitScheduleSignTransactionCoverage(t *testing.T) {
 
 	transaction.Sign(newKey)
 
-	transaction._ValidateNetworkOnIDs(client)
+	transaction.validateNetworkOnIDs(client)
 
 	transaction.GetTransactionID()
 	transaction.GetNodeAccountIDs()
@@ -90,7 +90,7 @@ func TestUnitScheduleSignTransactionCoverage(t *testing.T) {
 	transaction.GetScheduleID()
 	_, err = transaction.GetSignatures()
 	require.NoError(t, err)
-	transaction._GetLogID()
+	transaction.getName()
 	//switch b := txFromBytes.(type) {
 	//case ScheduleSignTransaction:
 	//	b.AddSignature(newKey.PublicKey(), sig)

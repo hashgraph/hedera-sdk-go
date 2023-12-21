@@ -24,7 +24,6 @@ package hedera
  */
 
 import (
-	"fmt"
 	"testing"
 	"time"
 
@@ -47,7 +46,7 @@ func TestUnitTopicInfoQueryValidate(t *testing.T) {
 	topicInfo := NewTopicInfoQuery().
 		SetTopicID(topicID)
 
-	err = topicInfo._ValidateNetworkOnIDs(client)
+	err = topicInfo.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 }
 
@@ -65,7 +64,7 @@ func TestUnitTopicInfoQueryValidateWrong(t *testing.T) {
 	topicInfo := NewTopicInfoQuery().
 		SetTopicID(topicID)
 
-	err = topicInfo._ValidateNetworkOnIDs(client)
+	err = topicInfo.validateNetworkOnIDs(client)
 	require.Error(t, err)
 	if err != nil {
 		require.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
@@ -96,7 +95,7 @@ func TestUnitTopicInfoQueryGet(t *testing.T) {
 	client.SetLedgerID(*NewLedgerIDTestnet())
 	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
-	err = query._ValidateNetworkOnIDs(client)
+	err = query.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 	require.Equal(t, topicID, query.GetTopicID())
 	require.Equal(t, []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}, query.GetNodeAccountIDs())
@@ -107,7 +106,6 @@ func TestUnitTopicInfoQueryGet(t *testing.T) {
 	require.Equal(t, HbarFromTinybar(25), query.GetQueryPayment())
 	require.Equal(t, NewHbar(500), query.GetMaxQueryPayment())
 	require.Equal(t, &deadline, query.GetGrpcDeadline())
-	require.Equal(t, fmt.Sprintf("TopicInfoQuery:%v", transactionID.ValidStart.UnixNano()), query._GetLogID())
 }
 
 func TestUnitTopicInfoQueryNothingSet(t *testing.T) {

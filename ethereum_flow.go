@@ -33,13 +33,13 @@ type EthereumFlow struct {
 
 // Execute an Ethereum transaction on Hedera
 func NewEthereumFlow() *EthereumFlow {
-	transaction := EthereumFlow{
+	tx := EthereumFlow{
 		Transaction: _NewTransaction(),
 	}
 
-	transaction._SetDefaultMaxTransactionFee(NewHbar(20))
+	tx._SetDefaultMaxTransactionFee(NewHbar(20))
 
-	return &transaction
+	return &tx
 }
 
 // SetEthereumData sets the raw Ethereum transaction.

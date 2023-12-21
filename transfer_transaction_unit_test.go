@@ -58,7 +58,7 @@ func TestUnitTransferTransactionValidate(t *testing.T) {
 	transfer := NewTransferTransaction().
 		AddHbarTransfer(accountID, HbarFromTinybar(1))
 
-	err = transfer._ValidateNetworkOnIDs(client)
+	err = transfer.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 }
 
@@ -75,7 +75,7 @@ func TestUnitTransferTransactionValidateWrong(t *testing.T) {
 	transfer := NewTransferTransaction().
 		AddHbarTransfer(accountID, HbarFromTinybar(1))
 
-	err = transfer._ValidateNetworkOnIDs(client)
+	err = transfer.validateNetworkOnIDs(client)
 	require.Error(t, err)
 }
 
@@ -154,7 +154,7 @@ func TestUnitTransferTransactionOrdered(t *testing.T) {
 		SetTransactionID(NewTransactionIDWithValidStart(accountID3, time.Unix(4, 4))).
 		SetNodeAccountIDs([]AccountID{accountID4})
 
-	data := transferTransaction._Build()
+	data := transferTransaction.build()
 
 	switch d := data.Data.(type) {
 	case *services.TransactionBody_CryptoTransfer:

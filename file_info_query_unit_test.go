@@ -24,7 +24,6 @@ package hedera
  */
 
 import (
-	"fmt"
 	"testing"
 	"time"
 
@@ -48,7 +47,7 @@ func TestUnitFileInfoQueryValidate(t *testing.T) {
 	fileInfo := NewFileInfoQuery().
 		SetFileID(fileID)
 
-	err = fileInfo._ValidateNetworkOnIDs(client)
+	err = fileInfo.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 }
 
@@ -65,7 +64,7 @@ func TestUnitFileInfoQueryValidateWrong(t *testing.T) {
 	fileInfo := NewFileInfoQuery().
 		SetFileID(fileID)
 
-	err = fileInfo._ValidateNetworkOnIDs(client)
+	err = fileInfo.validateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
@@ -165,7 +164,7 @@ func TestUnitFileInfoQueryGet(t *testing.T) {
 	client.SetLedgerID(*NewLedgerIDTestnet())
 	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
-	err = query._ValidateNetworkOnIDs(client)
+	err = query.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 	require.Equal(t, fileID, query.GetFileID())
 	require.Equal(t, []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}, query.GetNodeAccountIDs())
@@ -176,7 +175,6 @@ func TestUnitFileInfoQueryGet(t *testing.T) {
 	require.Equal(t, HbarFromTinybar(25), query.GetQueryPayment())
 	require.Equal(t, NewHbar(500), query.GetMaxQueryPayment())
 	require.Equal(t, &deadline, query.GetGrpcDeadline())
-	require.Equal(t, fmt.Sprintf("FileInfoQuery:%v", transactionID.ValidStart.UnixNano()), query._GetLogID())
 }
 
 func TestUnitFileInfoQuerySetNothing(t *testing.T) {

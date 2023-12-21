@@ -49,7 +49,7 @@ func TestUnitTokenPause(t *testing.T) {
 		Freeze()
 	require.NoError(t, err)
 
-	pb := tx._Build()
+	pb := tx.build()
 	require.Equal(t, pb.GetTokenPause().GetToken().String(), tokenID._ToProtobuf().String())
 }
 
@@ -68,7 +68,7 @@ func TestUnitTokenUnpause(t *testing.T) {
 		Freeze()
 	require.NoError(t, err)
 
-	pb := tx._Build()
+	pb := tx.build()
 	require.Equal(t, pb.GetTokenUnpause().GetToken().String(), tokenID._ToProtobuf().String())
 }
 func TestUnitTokenPauseSchedule(t *testing.T) {
@@ -250,7 +250,7 @@ func TestUnitTokenUnpauseTransactionCoverage(t *testing.T) {
 		Freeze()
 	require.NoError(t, err)
 
-	err = transaction._ValidateNetworkOnIDs(client)
+	err = transaction.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 	_, err = transaction.Schedule()
 	require.NoError(t, err)
@@ -276,7 +276,7 @@ func TestUnitTokenUnpauseTransactionCoverage(t *testing.T) {
 	transaction.GetTokenID()
 	_, err = transaction.GetSignatures()
 	require.NoError(t, err)
-	transaction._GetLogID()
+	transaction.getName()
 	switch b := txFromBytes.(type) {
 	case TokenUnpauseTransaction:
 		b.AddSignature(newKey.PublicKey(), sig)

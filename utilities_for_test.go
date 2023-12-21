@@ -133,6 +133,9 @@ func NewIntegrationTestEnv(t *testing.T) IntegrationTestEnv {
 		}
 
 		network[key] = value
+		if os.Getenv("HEDERA_NETWORK") == "testnet" {
+			env.NodeAccountIDs = []AccountID{value}
+		}
 		break
 	}
 
@@ -142,26 +145,31 @@ func NewIntegrationTestEnv(t *testing.T) IntegrationTestEnv {
 		panic("failed to construct network; each node returned an error")
 	}
 
-	resp, err := NewAccountCreateTransaction().
-		SetKey(newKey.PublicKey()).
-		SetInitialBalance(NewHbar(150)).
-		SetAutoRenewPeriod(time.Hour*24*81 + time.Minute*26 + time.Second*39).
-		Execute(env.Client)
-	if err != nil {
-		panic(err)
-	}
-
-	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
-	if err != nil {
-		panic(err)
-	}
-
 	env.OriginalOperatorID = env.Client.GetOperatorAccountID()
 	env.OriginalOperatorKey = env.Client.GetOperatorPublicKey()
-	env.OperatorID = *receipt.AccountID
-	env.OperatorKey = newKey
-	env.NodeAccountIDs = []AccountID{resp.NodeID}
-	env.Client.SetOperator(env.OperatorID, env.OperatorKey)
+	//TODO: Revert after testnet is stable
+	if os.Getenv("HEDERA_NETWORK") != "testnet" {
+		resp, err := NewAccountCreateTransaction().
+			SetKey(newKey.PublicKey()).
+			SetInitialBalance(NewHbar(150)).
+			SetAutoRenewPeriod(time.Hour*24*81 + time.Minute*26 + time.Second*39).
+			Execute(env.Client)
+		if err != nil {
+			panic(err)
+		}
+
+		receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
+		if err != nil {
+			panic(err)
+		}
+
+		env.OriginalOperatorID = env.Client.GetOperatorAccountID()
+		env.OriginalOperatorKey = env.Client.GetOperatorPublicKey()
+		env.OperatorID = *receipt.AccountID
+		env.OperatorKey = newKey
+		env.NodeAccountIDs = []AccountID{resp.NodeID}
+		env.Client.SetOperator(env.OperatorID, env.OperatorKey)
+	}
 
 	return env
 }
@@ -206,18 +214,20 @@ func CloseIntegrationTestEnv(env IntegrationTestEnv, token *TokenID) error {
 			return err
 		}
 	}
-	resp, err = NewAccountDeleteTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetAccountID(env.OperatorID).
-		SetTransferAccountID(env.OriginalOperatorID).
-		Execute(env.Client)
-	if err != nil {
-		return err
-	}
+	if os.Getenv("HEDERA_NETWORK") != "testnet" {
+		resp, err = NewAccountDeleteTransaction().
+			SetNodeAccountIDs(env.NodeAccountIDs).
+			SetAccountID(env.OperatorID).
+			SetTransferAccountID(env.OriginalOperatorID).
+			Execute(env.Client)
+		if err != nil {
+			return err
+		}
 
-	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
-	if err != nil {
-		return err
+		_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+		if err != nil {
+			return err
+		}
 	}
 
 	return env.Client.Close()

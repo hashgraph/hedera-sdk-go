@@ -35,15 +35,24 @@ import (
 	protobuf "google.golang.org/protobuf/proto"
 )
 
-// Transaction contains the protobuf of a prepared transaction which can be signed and executed.
+// transaction contains the protobuf of a prepared transaction which can be signed and executed.
 
 type ITransaction interface {
 	_ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error)
 }
 
+type TransactionInterface interface {
+	Executable
+
+	build() *services.TransactionBody
+	buildScheduled() (*services.SchedulableTransactionBody, error)
+	preFreezeWith(*Client)
+	regenerateID(*Client) bool
+}
+
 // Transaction is base struct for all transactions that may be built and submitted to Hedera.
 type Transaction struct {
-	maxRetry int
+	executable
 
 	transactionFee           uint64
 	defaultMaxTransactionFee uint64
@@ -51,21 +60,15 @@ type Transaction struct {
 	transactionValidDuration *time.Duration
 	transactionID            TransactionID
 
-	transactionIDs     *_LockableSlice
 	transactions       *_LockableSlice
 	signedTransactions *_LockableSlice
-	nodeAccountIDs     *_LockableSlice
 
 	publicKeys         []PublicKey
 	transactionSigners []TransactionSigner
 
 	freezeError error
 
-	maxBackoff              *time.Duration
-	minBackoff              *time.Duration
 	regenerateTransactionID bool
-	grpcDeadline            *time.Duration
-	logLevel                *LogLevel
 }
 
 func _NewTransaction() Transaction {
@@ -73,31 +76,33 @@ func _NewTransaction() Transaction {
 	minBackoff := 250 * time.Millisecond
 	maxBackoff := 8 * time.Second
 	return Transaction{
-		maxRetry:                 10,
 		transactionValidDuration: &duration,
-		transactionIDs:           _NewLockableSlice(),
 		transactions:             _NewLockableSlice(),
 		signedTransactions:       _NewLockableSlice(),
-		nodeAccountIDs:           _NewLockableSlice(),
 		freezeError:              nil,
 		regenerateTransactionID:  true,
-		minBackoff:               &minBackoff,
-		maxBackoff:               &maxBackoff,
+		executable: executable{
+			transactionIDs: _NewLockableSlice(),
+			nodeAccountIDs: _NewLockableSlice(),
+			minBackoff:     &minBackoff,
+			maxBackoff:     &maxBackoff,
+			maxRetry:       10,
+		},
 	}
 }
 
-func (this *Transaction) GetSignedTransactionBodyBytes(transactionIndex int) []byte {
-	return this.signedTransactions._Get(transactionIndex).(*services.SignedTransaction).GetBodyBytes()
+func (tx *Transaction) GetSignedTransactionBodyBytes(transactionIndex int) []byte {
+	return tx.signedTransactions._Get(transactionIndex).(*services.SignedTransaction).GetBodyBytes()
 }
 
-// TransactionFromBytes converts Transaction bytes to a related *Transaction.
+// TransactionFromBytes converts transaction bytes to a related *transaction.
 func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 	list := sdk.TransactionList{}
 	minBackoff := 250 * time.Millisecond
 	maxBackoff := 8 * time.Second
 	err := protobuf.Unmarshal(data, &list)
 	if err != nil {
-		return Transaction{}, errors.Wrap(err, "error deserializing from bytes to Transaction List")
+		return Transaction{}, errors.Wrap(err, "error deserializing from bytes to transaction List")
 	}
 	if err != nil {
 		return Transaction{}, err
@@ -109,17 +114,19 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 	}
 
 	tx := Transaction{
-		maxRetry:                10,
-		transactionIDs:          _NewLockableSlice(),
 		transactions:            transactions,
 		signedTransactions:      _NewLockableSlice(),
-		nodeAccountIDs:          _NewLockableSlice(),
 		publicKeys:              make([]PublicKey, 0),
 		transactionSigners:      make([]TransactionSigner, 0),
 		freezeError:             nil,
 		regenerateTransactionID: true,
-		minBackoff:              &minBackoff,
-		maxBackoff:              &maxBackoff,
+		executable: executable{
+			transactionIDs: _NewLockableSlice(),
+			nodeAccountIDs: _NewLockableSlice(),
+			minBackoff:     &minBackoff,
+			maxBackoff:     &maxBackoff,
+			maxRetry:       10,
+		},
 	}
 
 	comp, err := _TransactionCompare(&list)
@@ -133,9 +140,9 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 
 	var first *services.TransactionBody = nil
 
-	for i, transaction := range list.TransactionList {
+	for i, transactionFromList := range list.TransactionList {
 		var signedTransaction services.SignedTransaction
-		if err := protobuf.Unmarshal(transaction.SignedTransactionBytes, &signedTransaction); err != nil {
+		if err := protobuf.Unmarshal(transactionFromList.SignedTransactionBytes, &signedTransaction); err != nil {
 			return Transaction{}, errors.Wrap(err, "error deserializing SignedTransactionBytes in TransactionFromBytes")
 		}
 
@@ -180,33 +187,8 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 			nodeAccountID = *_AccountIDFromProtobuf(body.GetNodeAccountID())
 		}
 
-		found := false
-
-		for _, value := range tx.transactionIDs.slice {
-			id := value.(TransactionID)
-			if id.AccountID != nil && transactionID.AccountID != nil &&
-				id.AccountID._Equals(*transactionID.AccountID) &&
-				id.ValidStart != nil && transactionID.ValidStart != nil &&
-				id.ValidStart.Equal(*transactionID.ValidStart) {
-				found = true
-				break
-			}
-		}
-
-		if !found {
-			tx.transactionIDs = tx.transactionIDs._Push(transactionID)
-		}
-
-		for _, id := range tx.GetNodeAccountIDs() {
-			if id._Equals(nodeAccountID) {
-				found = true
-				break
-			}
-		}
-
-		if !found {
-			tx.nodeAccountIDs = tx.nodeAccountIDs._Push(nodeAccountID)
-		}
+		tx.transactionIDs = tx.transactionIDs._Push(transactionID)
+		tx.nodeAccountIDs = tx.nodeAccountIDs._Push(nodeAccountID)
 
 		if i == 0 {
 			tx.memo = body.Memo
@@ -351,18 +333,18 @@ func _TransactionCompare(list *sdk.TransactionList) (bool, error) {
 	return true, nil
 }
 
-// GetSignatures Gets all of the signatures stored in the Transaction
-func (this *Transaction) GetSignatures() (map[AccountID]map[*PublicKey][]byte, error) {
-	returnMap := make(map[AccountID]map[*PublicKey][]byte, this.nodeAccountIDs._Length())
+// GetSignatures Gets all of the signatures stored in the transaction
+func (tx *Transaction) GetSignatures() (map[AccountID]map[*PublicKey][]byte, error) {
+	returnMap := make(map[AccountID]map[*PublicKey][]byte, tx.nodeAccountIDs._Length())
 
-	if this.signedTransactions._Length() == 0 {
+	if tx.signedTransactions._Length() == 0 {
 		return returnMap, nil
 	}
 
-	for i, nodeID := range this.nodeAccountIDs.slice {
+	for i, nodeID := range tx.nodeAccountIDs.slice {
 		var sigMap *services.SignatureMap
 		var tempID AccountID
-		switch k := this.signedTransactions._Get(i).(type) { //nolint
+		switch k := tx.signedTransactions._Get(i).(type) { //nolint
 		case *services.SignedTransaction:
 			sigMap = k.SigMap
 		}
@@ -392,13 +374,13 @@ func (this *Transaction) GetSignatures() (map[AccountID]map[*PublicKey][]byte, e
 
 		returnMap[tempID] = inner
 	}
-	this.transactionIDs.locked = true
+	tx.transactionIDs.locked = true
 
 	return returnMap, nil
 }
 
-func (this *Transaction) GetTransactionHash() ([]byte, error) {
-	current, err := this._BuildTransaction(0)
+func (tx *Transaction) GetTransactionHash() ([]byte, error) {
+	current, err := tx._BuildTransaction(0)
 	if err != nil {
 		return nil, err
 	}
@@ -411,19 +393,19 @@ func (this *Transaction) GetTransactionHash() ([]byte, error) {
 	return hash.Sum(nil), nil
 }
 
-func (this *Transaction) GetTransactionHashPerNode() (map[AccountID][]byte, error) {
+func (tx *Transaction) GetTransactionHashPerNode() (map[AccountID][]byte, error) {
 	transactionHash := make(map[AccountID][]byte)
-	if !this._IsFrozen() {
+	if !tx.IsFrozen() {
 		return transactionHash, errTransactionIsNotFrozen
 	}
 
-	allTx, err := this._BuildAllTransactions()
+	allTx, err := tx._BuildAllTransactions()
 	if err != nil {
 		return transactionHash, err
 	}
-	this.transactionIDs.locked = true
+	tx.transactionIDs.locked = true
 
-	for i, node := range this.nodeAccountIDs.slice {
+	for i, node := range tx.nodeAccountIDs.slice {
 		switch n := node.(type) { //nolint
 		case AccountID:
 			hash := sha512.New384()
@@ -441,37 +423,26 @@ func (this *Transaction) GetTransactionHashPerNode() (map[AccountID][]byte, erro
 	return transactionHash, nil
 }
 
-// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (this *Transaction) SetGrpcDeadline(deadline *time.Duration) *Transaction {
-	this.grpcDeadline = deadline
-	return this
-}
-
-// GetGrpcDeadline returns the grpc deadline
-func (this *Transaction) GetGrpcDeadline() *time.Duration {
-	return this.grpcDeadline
-}
-
 // Sets the maxTransaction fee based on priority:
-// 1. Explicitly set for this transaction
+// 1. Explicitly set for this Transaction
 // 2. Client has a default value set for all transactions
-// 3. The default for this type of transaction, which is set during creation
-func (this *Transaction) _InitFee(client *Client) {
-	if this.transactionFee == 0 {
+// 3. The default for this type of Transaction, which is set during creation
+func (tx *Transaction) _InitFee(client *Client) {
+	if tx.transactionFee == 0 {
 		if client != nil && client.GetDefaultMaxTransactionFee().AsTinybar() != 0 {
-			this.SetMaxTransactionFee(client.GetDefaultMaxTransactionFee())
+			tx.SetMaxTransactionFee(client.GetDefaultMaxTransactionFee())
 		} else {
-			this.SetMaxTransactionFee(this.GetDefaultMaxTransactionFee())
+			tx.SetMaxTransactionFee(tx.GetDefaultMaxTransactionFee())
 		}
 	}
 }
 
-func (this *Transaction) _InitTransactionID(client *Client) error {
-	if this.transactionIDs._Length() == 0 {
+func (tx *Transaction) _InitTransactionID(client *Client) error {
+	if tx.transactionIDs._Length() == 0 {
 		if client != nil {
 			if client.operator != nil {
-				this.transactionIDs = _NewLockableSlice()
-				this.transactionIDs = this.transactionIDs._Push(TransactionIDGenerate(client.operator.accountID))
+				tx.transactionIDs = _NewLockableSlice()
+				tx.transactionIDs = tx.transactionIDs._Push(TransactionIDGenerate(client.operator.accountID))
 			} else {
 				return errNoClientOrTransactionID
 			}
@@ -480,23 +451,23 @@ func (this *Transaction) _InitTransactionID(client *Client) error {
 		}
 	}
 
-	this.transactionID = this.transactionIDs._GetCurrent().(TransactionID)
+	tx.transactionID = tx.transactionIDs._GetCurrent().(TransactionID)
 	return nil
 }
 
-func (this *Transaction) _IsFrozen() bool {
-	return this.signedTransactions._Length() > 0
+func (tx *Transaction) IsFrozen() bool {
+	return tx.signedTransactions._Length() > 0
 }
 
-func (this *Transaction) _RequireNotFrozen() {
-	if this._IsFrozen() {
-		this.freezeError = errTransactionIsFrozen
+func (tx *Transaction) _RequireNotFrozen() {
+	if tx.IsFrozen() {
+		tx.freezeError = errTransactionIsFrozen
 	}
 }
 
-func (this *Transaction) _RequireOneNodeAccountID() {
-	if this.nodeAccountIDs._Length() != 1 {
-		panic("Transaction has more than one _Node ID set")
+func (tx *Transaction) _RequireOneNodeAccountID() {
+	if tx.nodeAccountIDs._Length() != 1 {
+		panic("transaction has more than one _Node ID set")
 	}
 }
 
@@ -524,6 +495,7 @@ func _TransactionFreezeWith(
 	for _, nodeAccountID := range transaction.nodeAccountIDs.slice {
 		body.NodeAccountID = nodeAccountID.(AccountID)._ToProtobuf()
 		bodyBytes, err := protobuf.Marshal(body)
+
 		if err != nil {
 			// This should be unreachable
 			// From the documentation this appears to only be possible if there are missing proto types
@@ -540,19 +512,19 @@ func _TransactionFreezeWith(
 	return nil
 }
 
-func (this *Transaction) _SignWith(
+func (tx *Transaction) _SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) {
-	this.transactions = _NewLockableSlice()
-	this.publicKeys = append(this.publicKeys, publicKey)
-	this.transactionSigners = append(this.transactionSigners, signer)
+	tx.transactions = _NewLockableSlice()
+	tx.publicKeys = append(tx.publicKeys, publicKey)
+	tx.transactionSigners = append(tx.transactionSigners, signer)
 }
 
-func (this *Transaction) _KeyAlreadySigned(
+func (tx *Transaction) _KeyAlreadySigned(
 	pk PublicKey,
 ) bool {
-	for _, key := range this.publicKeys {
+	for _, key := range tx.publicKeys {
 		if key.String() == pk.String() {
 			return true
 		}
@@ -561,65 +533,9 @@ func (this *Transaction) _KeyAlreadySigned(
 	return false
 }
 
-func _TransactionShouldRetry(_ interface{}, response interface{}) _ExecutionState {
-	status := Status(response.(*services.TransactionResponse).NodeTransactionPrecheckCode)
-	switch status {
-	case StatusPlatformTransactionNotCreated, StatusPlatformNotActive, StatusBusy:
-		return executionStateRetry
-	case StatusTransactionExpired:
-		return executionStateExpired
-	case StatusOk:
-		return executionStateFinished
-	}
-
-	return executionStateError
-}
-
-func _TransactionMakeRequest(request interface{}) interface{} {
-	transaction := request.(*Transaction)
-	index := transaction.nodeAccountIDs._Length()*transaction.transactionIDs.index + transaction.nodeAccountIDs.index
-	tx, _ := transaction._BuildTransaction(index)
-
-	return tx
-}
-
-func _TransactionAdvanceRequest(request interface{}) {
-	request.(*Transaction).nodeAccountIDs._Advance()
-	request.(*Transaction).signedTransactions._Advance()
-}
-
-func _TransactionGetNodeAccountID(request interface{}) AccountID {
-	return request.(*Transaction).nodeAccountIDs._GetCurrent().(AccountID)
-}
-
-func _TransactionMapStatusError(
-	request interface{},
-	response interface{},
-) error {
-	return ErrHederaPreCheckStatus{
-		Status: Status(response.(*services.TransactionResponse).NodeTransactionPrecheckCode),
-		//NodeID: request.transaction.nodeAccountIDs,
-		TxID: request.(*Transaction).GetTransactionID(),
-	}
-}
-
-func _TransactionMapResponse(request interface{}, _ interface{}, nodeID AccountID, protoRequest interface{}) (interface{}, error) {
-	hash := sha512.New384()
-	_, err := hash.Write(protoRequest.(*services.Transaction).SignedTransactionBytes)
-	if err != nil {
-		return nil, err
-	}
-
-	return TransactionResponse{
-		NodeID:        nodeID,
-		TransactionID: request.(*Transaction).transactionIDs._GetNext().(TransactionID),
-		Hash:          hash.Sum(nil),
-	}, nil
-}
-
-// String returns a string representation of the Transaction
-func (this *Transaction) String() string {
-	switch sig := this.signedTransactions._Get(0).(type) { //nolint
+// String returns a string representation of the transaction
+func (tx *Transaction) String() string {
+	switch sig := tx.signedTransactions._Get(0).(type) { //nolint
 	case *services.SignedTransaction:
 		return fmt.Sprintf("%+v", sig)
 	}
@@ -628,43 +544,43 @@ func (this *Transaction) String() string {
 }
 
 // ToBytes Builds then converts the current transaction to []byte
-// Requires Transaction to be frozen
-func (this *Transaction) ToBytes() ([]byte, error) {
-	if !this._IsFrozen() {
+// Requires transaction to be frozen
+func (tx *Transaction) ToBytes() ([]byte, error) {
+	if !tx.IsFrozen() {
 		return make([]byte, 0), errTransactionIsNotFrozen
 	}
 
-	allTx, err := this._BuildAllTransactions()
+	allTx, err := tx._BuildAllTransactions()
 	if err != nil {
 		return make([]byte, 0), err
 	}
-	this.transactionIDs.locked = true
+	tx.transactionIDs.locked = true
 
 	pbTransactionList, lastError := protobuf.Marshal(&sdk.TransactionList{
 		TransactionList: allTx,
 	})
 
 	if lastError != nil {
-		return make([]byte, 0), errors.Wrap(err, "error serializing this list")
+		return make([]byte, 0), errors.Wrap(err, "error serializing tx list")
 	}
 
 	return pbTransactionList, nil
 }
 
-func (this *Transaction) _SignTransaction(index int) {
-	initialTx := this.signedTransactions._Get(index).(*services.SignedTransaction)
+func (tx *Transaction) _SignTransaction(index int) {
+	initialTx := tx.signedTransactions._Get(index).(*services.SignedTransaction)
 	bodyBytes := initialTx.GetBodyBytes()
 	if len(initialTx.SigMap.SigPair) != 0 {
-		for i, key := range this.publicKeys {
-			if this.transactionSigners[i] != nil {
+		for i, key := range tx.publicKeys {
+			if tx.transactionSigners[i] != nil {
 				if key.ed25519PublicKey != nil {
 					if bytes.Equal(initialTx.SigMap.SigPair[0].PubKeyPrefix, key.ed25519PublicKey.keyData) {
-						if !this.regenerateTransactionID {
+						if !tx.regenerateTransactionID {
 							return
 						}
 						switch t := initialTx.SigMap.SigPair[0].Signature.(type) { //nolint
 						case *services.SignaturePair_Ed25519:
-							if bytes.Equal(t.Ed25519, this.transactionSigners[0](bodyBytes)) && len(t.Ed25519) > 0 {
+							if bytes.Equal(t.Ed25519, tx.transactionSigners[0](bodyBytes)) && len(t.Ed25519) > 0 {
 								return
 							}
 						}
@@ -672,12 +588,12 @@ func (this *Transaction) _SignTransaction(index int) {
 				}
 				if key.ecdsaPublicKey != nil {
 					if bytes.Equal(initialTx.SigMap.SigPair[0].PubKeyPrefix, key.ecdsaPublicKey._BytesRaw()) {
-						if !this.regenerateTransactionID {
+						if !tx.regenerateTransactionID {
 							return
 						}
 						switch t := initialTx.SigMap.SigPair[0].Signature.(type) { //nolint
 						case *services.SignaturePair_ECDSASecp256K1:
-							if bytes.Equal(t.ECDSASecp256K1, this.transactionSigners[0](bodyBytes)) && len(t.ECDSASecp256K1) > 0 {
+							if bytes.Equal(t.ECDSASecp256K1, tx.transactionSigners[0](bodyBytes)) && len(t.ECDSASecp256K1) > 0 {
 								return
 							}
 						}
@@ -687,72 +603,72 @@ func (this *Transaction) _SignTransaction(index int) {
 		}
 	}
 
-	if this.regenerateTransactionID && !this.transactionIDs.locked {
-		modifiedTx := this.signedTransactions._Get(index).(*services.SignedTransaction)
+	if tx.regenerateTransactionID && !tx.transactionIDs.locked {
+		modifiedTx := tx.signedTransactions._Get(index).(*services.SignedTransaction)
 		modifiedTx.SigMap.SigPair = make([]*services.SignaturePair, 0)
-		this.signedTransactions._Set(index, modifiedTx)
+		tx.signedTransactions._Set(index, modifiedTx)
 	}
 
-	for i := 0; i < len(this.publicKeys); i++ {
-		publicKey := this.publicKeys[i]
-		signer := this.transactionSigners[i]
+	for i := 0; i < len(tx.publicKeys); i++ {
+		publicKey := tx.publicKeys[i]
+		signer := tx.transactionSigners[i]
 
 		if signer == nil {
 			continue
 		}
 
-		modifiedTx := this.signedTransactions._Get(index).(*services.SignedTransaction)
+		modifiedTx := tx.signedTransactions._Get(index).(*services.SignedTransaction)
 		modifiedTx.SigMap.SigPair = append(modifiedTx.SigMap.SigPair, publicKey._ToSignaturePairProtobuf(signer(bodyBytes)))
-		this.signedTransactions._Set(index, modifiedTx)
+		tx.signedTransactions._Set(index, modifiedTx)
 	}
 }
 
-func (this *Transaction) _BuildAllTransactions() ([]*services.Transaction, error) {
+func (tx *Transaction) _BuildAllTransactions() ([]*services.Transaction, error) {
 	allTx := make([]*services.Transaction, 0)
-	for i := 0; i < this.signedTransactions._Length(); i++ {
-		tx, err := this._BuildTransaction(i)
-		this.transactionIDs._Advance()
+	for i := 0; i < tx.signedTransactions._Length(); i++ {
+		curr, err := tx._BuildTransaction(i)
+		tx.transactionIDs._Advance()
 		if err != nil {
 			return []*services.Transaction{}, err
 		}
-		allTx = append(allTx, tx)
+		allTx = append(allTx, curr)
 	}
 
 	return allTx, nil
 }
 
-func (this *Transaction) _BuildTransaction(index int) (*services.Transaction, error) {
-	signedTx := this.signedTransactions._Get(index).(*services.SignedTransaction)
+func (tx *Transaction) _BuildTransaction(index int) (*services.Transaction, error) {
+	signedTx := tx.signedTransactions._Get(index).(*services.SignedTransaction)
 
-	txID := this.transactionIDs._GetCurrent().(TransactionID)
+	txID := tx.transactionIDs._GetCurrent().(TransactionID)
 	originalBody := services.TransactionBody{}
 	_ = protobuf.Unmarshal(signedTx.BodyBytes, &originalBody)
 
 	if originalBody.NodeAccountID == nil {
-		originalBody.NodeAccountID = this.nodeAccountIDs._GetCurrent().(AccountID)._ToProtobuf()
+		originalBody.NodeAccountID = tx.nodeAccountIDs._GetCurrent().(AccountID)._ToProtobuf()
 	}
 
 	if originalBody.TransactionID.String() != txID._ToProtobuf().String() {
 		originalBody.TransactionID = txID._ToProtobuf()
 	}
 
-	originalBody.Memo = this.memo
-	if this.transactionFee != 0 {
-		originalBody.TransactionFee = this.transactionFee
+	originalBody.Memo = tx.memo
+	if tx.transactionFee != 0 {
+		originalBody.TransactionFee = tx.transactionFee
 	} else {
-		originalBody.TransactionFee = this.defaultMaxTransactionFee
+		originalBody.TransactionFee = tx.defaultMaxTransactionFee
 	}
 
 	updatedBody, err := protobuf.Marshal(&originalBody)
 	if err != nil {
-		return &services.Transaction{}, errors.Wrap(err, "failed to update this ID")
+		return &services.Transaction{}, errors.Wrap(err, "failed to update tx ID")
 	}
 
 	// Bellow are checks whether we need to sign the transaction or we already have the same signed
 	if bytes.Equal(signedTx.BodyBytes, updatedBody) {
 		sigPairLen := len(signedTx.SigMap.GetSigPair())
 		// For cases where we need more than 1 signature
-		if sigPairLen > 0 && sigPairLen == len(this.publicKeys) {
+		if sigPairLen > 0 && sigPairLen == len(tx.publicKeys) {
 			data, err := protobuf.Marshal(signedTx)
 			if err != nil {
 				return &services.Transaction{}, errors.Wrap(err, "failed to serialize transactions for building")
@@ -766,11 +682,11 @@ func (this *Transaction) _BuildTransaction(index int) (*services.Transaction, er
 	}
 
 	signedTx.BodyBytes = updatedBody
-	this.signedTransactions._Set(index, signedTx)
-	this._SignTransaction(index)
+	tx.signedTransactions._Set(index, signedTx)
+	tx._SignTransaction(index)
 
-	tx := this.signedTransactions._Get(index).(*services.SignedTransaction)
-	data, err := protobuf.Marshal(tx)
+	signed := tx.signedTransactions._Get(index).(*services.SignedTransaction)
+	data, err := protobuf.Marshal(signed)
 	if err != nil {
 		return &services.Transaction{}, errors.Wrap(err, "failed to serialize transactions for building")
 	}
@@ -787,107 +703,158 @@ func (this *Transaction) _BuildTransaction(index int) (*services.Transaction, er
 //
 
 // GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
-func (this *Transaction) GetMaxTransactionFee() Hbar {
-	return HbarFromTinybar(int64(this.transactionFee))
+func (tx *Transaction) GetMaxTransactionFee() Hbar {
+	return HbarFromTinybar(int64(tx.transactionFee))
 }
 
 // SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
-func (this *Transaction) SetMaxTransactionFee(fee Hbar) *Transaction {
-	this.transactionFee = uint64(fee.AsTinybar())
-	return this
+func (tx *Transaction) SetMaxTransactionFee(fee Hbar) *Transaction {
+	tx.transactionFee = uint64(fee.AsTinybar())
+	return tx
 }
-func (this *Transaction) GetDefaultMaxTransactionFee() Hbar {
-	return HbarFromTinybar(int64(this.defaultMaxTransactionFee))
+func (tx *Transaction) GetDefaultMaxTransactionFee() Hbar {
+	return HbarFromTinybar(int64(tx.defaultMaxTransactionFee))
 }
 
-// SetMaxTransactionFee sets the max transaction fee for this Transaction.
-func (this *Transaction) _SetDefaultMaxTransactionFee(fee Hbar) {
-	this.defaultMaxTransactionFee = uint64(fee.AsTinybar())
+// SetMaxTransactionFee sets the max Transaction fee for this Transaction.
+func (tx *Transaction) _SetDefaultMaxTransactionFee(fee Hbar) {
+	tx.defaultMaxTransactionFee = uint64(fee.AsTinybar())
 }
 
 // GetRegenerateTransactionID returns true if transaction ID regeneration is enabled
-func (this *Transaction) GetRegenerateTransactionID() bool {
-	return this.regenerateTransactionID
+func (tx *Transaction) GetRegenerateTransactionID() bool {
+	return tx.regenerateTransactionID
 }
 
 // SetRegenerateTransactionID sets if transaction IDs should be regenerated when \`TRANSACTION_EXPIRED\` is received
-func (this *Transaction) SetRegenerateTransactionID(regenerateTransactionID bool) *Transaction {
-	this.regenerateTransactionID = regenerateTransactionID
-	return this
+func (tx *Transaction) SetRegenerateTransactionID(regenerateTransactionID bool) *Transaction {
+	tx.regenerateTransactionID = regenerateTransactionID
+	return tx
 }
 
-// GetTransactionMemo returns the memo for this	Transaction.
-func (this *Transaction) GetTransactionMemo() string {
-	return this.memo
+// GetTransactionMemo returns the memo for this	transaction.
+func (tx *Transaction) GetTransactionMemo() string {
+	return tx.memo
 }
 
-// SetTransactionMemo sets the memo for this Transaction.
-func (this *Transaction) SetTransactionMemo(memo string) *Transaction {
-	this.memo = memo
-	return this
+// SetTransactionMemo sets the memo for this transaction.
+func (tx *Transaction) SetTransactionMemo(memo string) *Transaction {
+	tx.memo = memo
+	return tx
 }
 
 // GetTransactionValidDuration returns the duration that this transaction is valid for.
-func (this *Transaction) GetTransactionValidDuration() time.Duration {
-	if this.transactionValidDuration != nil {
-		return *this.transactionValidDuration
+func (tx *Transaction) GetTransactionValidDuration() time.Duration {
+	if tx.transactionValidDuration != nil {
+		return *tx.transactionValidDuration
 	}
 
 	return 0
 }
 
-// SetTransactionValidDuration sets the valid duration for this Transaction.
-func (this *Transaction) SetTransactionValidDuration(duration time.Duration) *Transaction {
-	this.transactionValidDuration = &duration
-	return this
+// SetTransactionValidDuration sets the valid duration for this transaction.
+func (tx *Transaction) SetTransactionValidDuration(duration time.Duration) *Transaction {
+	tx.transactionValidDuration = &duration
+	return tx
 }
 
-// GetTransactionID gets the TransactionID for this	Transaction.
-func (this *Transaction) GetTransactionID() TransactionID {
-	if this.transactionIDs._Length() > 0 {
-		t := this.transactionIDs._GetCurrent().(TransactionID)
+// GetTransactionID gets the TransactionID for this	transaction.
+func (tx *Transaction) GetTransactionID() TransactionID {
+	if tx.transactionIDs._Length() > 0 {
+		t := tx.transactionIDs._GetCurrent().(TransactionID)
 		return t
 	}
 
 	return TransactionID{}
 }
 
-// SetTransactionID sets the TransactionID for this Transaction.
-func (this *Transaction) SetTransactionID(transactionID TransactionID) *Transaction {
-	this.transactionIDs._Clear()._Push(transactionID)._SetLocked(true)
-	return this
+// SetTransactionID sets the TransactionID for this transaction.
+func (tx *Transaction) SetTransactionID(transactionID TransactionID) *Transaction {
+	tx.transactionIDs._Clear()._Push(transactionID)._SetLocked(true)
+	return tx
 }
 
-// GetNodeAccountID returns the node AccountID for this Transaction.
-func (this *Transaction) GetNodeAccountIDs() (nodeAccountIDs []AccountID) {
-	nodeAccountIDs = []AccountID{}
-
-	for _, value := range this.nodeAccountIDs.slice {
-		nodeAccountIDs = append(nodeAccountIDs, value.(AccountID))
-	}
-
-	return nodeAccountIDs
-}
-
-// SetNodeAccountIDs sets the node AccountID for this Transaction.
-func (this *Transaction) SetNodeAccountIDs(nodeAccountIDs []AccountID) *Transaction {
+// SetNodeAccountIDs sets the node AccountID for this transaction.
+func (tx *Transaction) SetNodeAccountIDs(nodeAccountIDs []AccountID) *Transaction {
 	for _, nodeAccountID := range nodeAccountIDs {
-		this.nodeAccountIDs._Push(nodeAccountID)
+		tx.nodeAccountIDs._Push(nodeAccountID)
 	}
-	this.nodeAccountIDs._SetLocked(true)
-	return this
+	tx.nodeAccountIDs._SetLocked(true)
+	return tx
 }
 
-// GetMaxRetry returns the max number of errors before execution will fail.
-func (this *Transaction) GetMaxRetry() int {
-	return this.maxRetry
+// ------------ Transaction methdos ---------------
+func (tx *Transaction) Sign(privateKey PrivateKey) TransactionInterface {
+	return tx.SignWith(privateKey.PublicKey(), privateKey.Sign)
+}
+func (tx *Transaction) signWithOperator(client *Client, e TransactionInterface) (TransactionInterface, error) { // nolint
+	// If the transaction is not signed by the _Operator, we need
+	// to sign the transaction with the _Operator
+
+	if client == nil {
+		return nil, errNoClientProvided
+	} else if client.operator == nil {
+		return nil, errClientOperatorSigning
+	}
+
+	if !tx.IsFrozen() {
+		_, err := tx.freezeWith(client, e)
+		if err != nil {
+			return tx, err
+		}
+	}
+	return tx.SignWith(client.operator.publicKey, client.operator.signer), nil
+}
+func (tx *Transaction) SignWith(publicKey PublicKey, signer TransactionSigner) TransactionInterface {
+	if !tx._KeyAlreadySigned(publicKey) {
+		tx._SignWith(publicKey, signer)
+	}
+
+	return tx
+}
+func (tx *Transaction) AddSignature(publicKey PublicKey, signature []byte) TransactionInterface {
+	tx._RequireOneNodeAccountID()
+
+	if tx._KeyAlreadySigned(publicKey) {
+		return tx
+	}
+
+	if tx.signedTransactions._Length() == 0 {
+		return tx
+	}
+
+	tx.transactions = _NewLockableSlice()
+	tx.publicKeys = append(tx.publicKeys, publicKey)
+	tx.transactionSigners = append(tx.transactionSigners, nil)
+	tx.transactionIDs.locked = true
+
+	for index := 0; index < tx.signedTransactions._Length(); index++ {
+		var temp *services.SignedTransaction
+		switch t := tx.signedTransactions._Get(index).(type) { //nolint
+		case *services.SignedTransaction:
+			temp = t
+		}
+		temp.SigMap.SigPair = append(
+			temp.SigMap.SigPair,
+			publicKey._ToSignaturePairProtobuf(signature),
+		)
+		tx.signedTransactions._Set(index, temp)
+	}
+
+	return tx
 }
 
-// SetMaxRetry sets the max number of errors before execution will fail.
-func (this *Transaction) SetMaxRetry(count int) *Transaction {
-	this.maxRetry = count
-	return this
+// Building empty object as "default" implementation. All inhertents must implement their own implementation.
+func (tx *Transaction) build() *services.TransactionBody {
+	return &services.TransactionBody{}
 }
+
+// Building empty object as "default" implementation. All inhertents must implement their own implementation.
+func (tx *Transaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+	return &services.SchedulableTransactionBody{}, nil
+}
+
+// -------------------------------------
 
 func TransactionSign(transaction interface{}, privateKey PrivateKey) (interface{}, error) { // nolint
 	switch i := transaction.(type) {
@@ -4705,11 +4672,178 @@ func TransactionExecute(transaction interface{}, client *Client) (TransactionRes
 	}
 }
 
-func (transaction *Transaction) SetLogLevel(level LogLevel) *Transaction {
-	transaction.logLevel = &level
-	return transaction
+// ------------ Executable Functions ------------
+
+func (tx *Transaction) shouldRetry(_ Executable, response interface{}) _ExecutionState {
+	status := Status(response.(*services.TransactionResponse).NodeTransactionPrecheckCode)
+	switch status {
+	case StatusPlatformTransactionNotCreated, StatusPlatformNotActive, StatusBusy:
+		return executionStateRetry
+	case StatusTransactionExpired:
+		return executionStateExpired
+	case StatusOk:
+		return executionStateFinished
+	}
+
+	return executionStateError
 }
 
-func (transaction *Transaction) GetLogLevel() *LogLevel {
-	return transaction.logLevel
+func (tx *Transaction) makeRequest() interface{} {
+	index := tx.nodeAccountIDs._Length()*tx.transactionIDs.index + tx.nodeAccountIDs.index
+	built, _ := tx._BuildTransaction(index)
+
+	return built
+}
+
+func (tx *Transaction) advanceRequest() {
+	tx.nodeAccountIDs._Advance()
+	tx.signedTransactions._Advance()
+}
+
+func (tx *Transaction) getNodeAccountID() AccountID {
+	return tx.nodeAccountIDs._GetCurrent().(AccountID)
+}
+
+func (tx *Transaction) mapStatusError(
+	_ Executable,
+	response interface{},
+) error {
+	return ErrHederaPreCheckStatus{
+		Status: Status(response.(*services.TransactionResponse).NodeTransactionPrecheckCode),
+		//NodeID: request.transaction.nodeAccountIDs,
+		TxID: tx.GetTransactionID(),
+	}
+}
+
+func (tx *Transaction) mapResponse(_ interface{}, nodeID AccountID, protoRequest interface{}) (interface{}, error) {
+	hash := sha512.New384()
+	_, err := hash.Write(protoRequest.(*services.Transaction).SignedTransactionBytes)
+	if err != nil {
+		return nil, err
+	}
+
+	return TransactionResponse{
+		NodeID:        nodeID,
+		TransactionID: tx.transactionIDs._GetNext().(TransactionID),
+		Hash:          hash.Sum(nil),
+	}, nil
+}
+
+// Building empty object as "default" implementation. All inhertents must implement their own implementation.
+func (tx *Transaction) getMethod(ch *_Channel) _Method {
+	return _Method{}
+}
+
+// Building empty object as "default" implementation. All inhertents must implement their own implementation.
+func (tx *Transaction) getName() string {
+	return "transaction"
+}
+
+func (tx *Transaction) getLogID(transactionInterface Executable) string {
+	timestamp := tx.transactionIDs._GetCurrent().(TransactionID).ValidStart
+	return fmt.Sprintf("%s:%d", transactionInterface.getName(), timestamp.UnixNano())
+}
+
+// Building empty object as "default" implementation. All inhertents must implement their own implementation.
+func (tx *Transaction) validateNetworkOnIDs(client *Client) error {
+	return errors.New("Function not implemented")
+}
+
+func (tx *Transaction) preFreezeWith(*Client) {
+	// NO-OP
+}
+
+func (tx *Transaction) isTransaction() bool {
+	return true
+}
+
+func (tx *Transaction) getTransactionIDAndMessage() (string, string) {
+	return tx.GetTransactionID().String(), "transaction status received"
+}
+
+func (tx *Transaction) regenerateID(client *Client) bool {
+	if !client.GetOperatorAccountID()._IsZero() && tx.regenerateTransactionID && !tx.transactionIDs.locked {
+		tx.transactionIDs._Set(tx.transactionIDs.index, TransactionIDGenerate(client.GetOperatorAccountID()))
+		return true
+	}
+	return false
+}
+
+func (tx *Transaction) execute(client *Client, e TransactionInterface) (TransactionResponse, error) {
+	if client == nil {
+		return TransactionResponse{}, errNoClientProvided
+	}
+
+	if tx.freezeError != nil {
+		return TransactionResponse{}, tx.freezeError
+	}
+
+	if !tx.IsFrozen() {
+		_, err := tx.freezeWith(client, e)
+		if err != nil {
+			return TransactionResponse{}, err
+		}
+	}
+
+	transactionID := tx.transactionIDs._GetCurrent().(TransactionID)
+
+	if !client.GetOperatorAccountID()._IsZero() && client.GetOperatorAccountID()._Equals(*transactionID.AccountID) {
+		tx.SignWith(
+			client.GetOperatorPublicKey(),
+			client.operator.signer,
+		)
+	}
+
+	if tx.grpcDeadline == nil {
+		tx.grpcDeadline = client.requestTimeout
+	}
+
+	resp, err := _Execute(client, e)
+
+	if err != nil {
+		return TransactionResponse{
+			TransactionID:  tx.GetTransactionID(),
+			NodeID:         resp.(TransactionResponse).NodeID,
+			ValidateStatus: true,
+		}, err
+	}
+
+	return TransactionResponse{
+		TransactionID:  tx.GetTransactionID(),
+		NodeID:         resp.(TransactionResponse).NodeID,
+		Hash:           resp.(TransactionResponse).Hash,
+		ValidateStatus: true,
+	}, nil
+}
+
+func (tx *Transaction) freezeWith(client *Client, e TransactionInterface) (TransactionInterface, error) { //nolint
+	if tx.IsFrozen() {
+		return tx, nil
+	}
+
+	e.preFreezeWith(client)
+
+	tx._InitFee(client)
+	if err := tx._InitTransactionID(client); err != nil {
+		return tx, err
+	}
+
+	err := e.validateNetworkOnIDs(client)
+	if err != nil {
+		return &Transaction{}, err
+	}
+	body := e.build()
+
+	return tx, _TransactionFreezeWith(tx, client, body)
+}
+
+func (tx *Transaction) schedule(e TransactionInterface) (*ScheduleCreateTransaction, error) {
+	tx._RequireNotFrozen()
+
+	scheduled, err := e.buildScheduled()
+	if err != nil {
+		return nil, err
+	}
+
+	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }

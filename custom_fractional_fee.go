@@ -132,7 +132,7 @@ func _CustomFractionalFeeFromProtobuf(fractionalFee *services.FractionalFee, fee
 	}
 }
 
-func (fee CustomFractionalFee) _ValidateNetworkOnIDs(client *Client) error {
+func (fee CustomFractionalFee) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}

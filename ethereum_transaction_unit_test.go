@@ -118,7 +118,7 @@ func TestUnitEthereumTransactionCoverage(t *testing.T) {
 		Freeze()
 	require.NoError(t, err)
 
-	transaction._ValidateNetworkOnIDs(client)
+	transaction.validateNetworkOnIDs(client)
 
 	require.NoError(t, err)
 	transaction.GetTransactionID()
@@ -145,7 +145,7 @@ func TestUnitEthereumTransactionCoverage(t *testing.T) {
 	transaction.GetMaxGasAllowed()
 	_, err = transaction.GetSignatures()
 	require.NoError(t, err)
-	transaction._GetLogID()
+	transaction.getName()
 	switch b := txFromBytes.(type) {
 	case EthereumTransaction:
 		b.AddSignature(newKey.PublicKey(), sig)

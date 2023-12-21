@@ -21,8 +21,6 @@ package hedera
  */
 
 import (
-	"fmt"
-
 	"github.com/hashgraph/hedera-protobufs-go/services"
 
 	"time"
@@ -38,16 +36,16 @@ type FreezeTransaction struct {
 }
 
 func NewFreezeTransaction() *FreezeTransaction {
-	transaction := FreezeTransaction{
+	tx := FreezeTransaction{
 		Transaction: _NewTransaction(),
 	}
 
-	transaction._SetDefaultMaxTransactionFee(NewHbar(2))
+	tx._SetDefaultMaxTransactionFee(NewHbar(2))
 
-	return &transaction
+	return &tx
 }
 
-func _FreezeTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) *FreezeTransaction {
+func _FreezeTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *FreezeTransaction {
 	startTime := time.Date(
 		time.Now().Year(), time.Now().Month(), time.Now().Day(),
 		int(pb.GetFreeze().GetStartHour()), int(pb.GetFreeze().GetStartMin()), // nolint
@@ -61,7 +59,7 @@ func _FreezeTransactionFromProtobuf(transaction Transaction, pb *services.Transa
 	)
 
 	return &FreezeTransaction{
-		Transaction: transaction,
+		Transaction: tx,
 		startTime:   startTime,
 		endTime:     endTime,
 		fileID:      _FileIDFromProtobuf(pb.GetFreeze().GetUpdateFile()),
@@ -69,394 +67,229 @@ func _FreezeTransactionFromProtobuf(transaction Transaction, pb *services.Transa
 	}
 }
 
-func (transaction *FreezeTransaction) SetStartTime(startTime time.Time) *FreezeTransaction {
-	transaction._RequireNotFrozen()
-	transaction.startTime = startTime
-	return transaction
+func (tx *FreezeTransaction) SetStartTime(startTime time.Time) *FreezeTransaction {
+	tx._RequireNotFrozen()
+	tx.startTime = startTime
+	return tx
 }
 
-func (transaction *FreezeTransaction) GetStartTime() time.Time {
-	return transaction.startTime
-}
-
-// Deprecated
-func (transaction *FreezeTransaction) SetEndTime(endTime time.Time) *FreezeTransaction {
-	transaction._RequireNotFrozen()
-	transaction.endTime = endTime
-	return transaction
+func (tx *FreezeTransaction) GetStartTime() time.Time {
+	return tx.startTime
 }
 
 // Deprecated
-func (transaction *FreezeTransaction) GetEndTime() time.Time {
-	return transaction.endTime
+func (tx *FreezeTransaction) SetEndTime(endTime time.Time) *FreezeTransaction {
+	tx._RequireNotFrozen()
+	tx.endTime = endTime
+	return tx
 }
 
-func (transaction *FreezeTransaction) SetFileID(id FileID) *FreezeTransaction {
-	transaction._RequireNotFrozen()
-	transaction.fileID = &id
-	return transaction
+// Deprecated
+func (tx *FreezeTransaction) GetEndTime() time.Time {
+	return tx.endTime
 }
 
-func (transaction *FreezeTransaction) GetFileID() *FileID {
-	return transaction.fileID
+func (tx *FreezeTransaction) SetFileID(id FileID) *FreezeTransaction {
+	tx._RequireNotFrozen()
+	tx.fileID = &id
+	return tx
 }
 
-func (transaction *FreezeTransaction) SetFreezeType(freezeType FreezeType) *FreezeTransaction {
-	transaction._RequireNotFrozen()
-	transaction.freezeType = freezeType
-	return transaction
+func (tx *FreezeTransaction) GetFileID() *FileID {
+	return tx.fileID
 }
 
-func (transaction *FreezeTransaction) GetFreezeType() FreezeType {
-	return transaction.freezeType
+func (tx *FreezeTransaction) SetFreezeType(freezeType FreezeType) *FreezeTransaction {
+	tx._RequireNotFrozen()
+	tx.freezeType = freezeType
+	return tx
 }
 
-func (transaction *FreezeTransaction) SetFileHash(hash []byte) *FreezeTransaction {
-	transaction._RequireNotFrozen()
-	transaction.fileHash = hash
-	return transaction
+func (tx *FreezeTransaction) GetFreezeType() FreezeType {
+	return tx.freezeType
 }
 
-func (transaction *FreezeTransaction) GetFileHash() []byte {
-	return transaction.fileHash
+func (tx *FreezeTransaction) SetFileHash(hash []byte) *FreezeTransaction {
+	tx._RequireNotFrozen()
+	tx.fileHash = hash
+	return tx
 }
 
-func (transaction *FreezeTransaction) _Build() *services.TransactionBody {
-	body := &services.FreezeTransactionBody{
-		FileHash:   transaction.fileHash,
-		StartTime:  _TimeToProtobuf(transaction.startTime),
-		FreezeType: services.FreezeType(transaction.freezeType),
-	}
-
-	if transaction.fileID != nil {
-		body.UpdateFile = transaction.fileID._ToProtobuf()
-	}
-
-	return &services.TransactionBody{
-		TransactionFee:           transaction.transactionFee,
-		Memo:                     transaction.Transaction.memo,
-		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
-		TransactionID:            transaction.transactionID._ToProtobuf(),
-		Data: &services.TransactionBody_Freeze{
-			Freeze: body,
-		},
-	}
+func (tx *FreezeTransaction) GetFileHash() []byte {
+	return tx.fileHash
 }
 
-func (transaction *FreezeTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	transaction._RequireNotFrozen()
-
-	scheduled, err := transaction._ConstructScheduleProtobuf()
-	if err != nil {
-		return nil, err
-	}
-
-	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
-}
-
-func (transaction *FreezeTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
-	body := &services.FreezeTransactionBody{
-		FileHash:   transaction.fileHash,
-		StartTime:  _TimeToProtobuf(transaction.startTime),
-		FreezeType: services.FreezeType(transaction.freezeType),
-	}
-
-	if transaction.fileID != nil {
-		body.UpdateFile = transaction.fileID._ToProtobuf()
-	}
-	return &services.SchedulableTransactionBody{
-		TransactionFee: transaction.transactionFee,
-		Memo:           transaction.Transaction.memo,
-		Data: &services.SchedulableTransactionBody_Freeze{
-			Freeze: body,
-		},
-	}, nil
-}
-
-func _FreezeTransactionGetMethod(request interface{}, channel *_Channel) _Method {
-	return _Method{
-		transaction: channel._GetFreeze().Freeze,
-	}
-}
-
-func (transaction *FreezeTransaction) IsFrozen() bool {
-	return transaction._IsFrozen()
-}
+// ---- Required Interfaces ---- //
 
 // Sign uses the provided privateKey to sign the transaction.
-func (transaction *FreezeTransaction) Sign(
+func (tx *FreezeTransaction) Sign(
 	privateKey PrivateKey,
 ) *FreezeTransaction {
-	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
+	tx.Transaction.Sign(privateKey)
+	return tx
 }
 
 // SignWithOperator signs the transaction with client's operator privateKey.
-func (transaction *FreezeTransaction) SignWithOperator(
+func (tx *FreezeTransaction) SignWithOperator(
 	client *Client,
 ) (*FreezeTransaction, error) {
 	// If the transaction is not signed by the _Operator, we need
 	// to sign the transaction with the _Operator
-
-	if client == nil {
-		return nil, errNoClientProvided
-	} else if client.operator == nil {
-		return nil, errClientOperatorSigning
+	_, err := tx.Transaction.signWithOperator(client, tx)
+	if err != nil {
+		return nil, err
 	}
-
-	if !transaction.IsFrozen() {
-		_, err := transaction.FreezeWith(client)
-		if err != nil {
-			return transaction, err
-		}
-	}
-	return transaction.SignWith(client.operator.publicKey, client.operator.signer), nil
+	return tx, nil
 }
 
 // SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
 // with the publicKey as the map key.
-func (transaction *FreezeTransaction) SignWith(
+func (tx *FreezeTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *FreezeTransaction {
-	if !transaction._KeyAlreadySigned(publicKey) {
-		transaction._SignWith(publicKey, signer)
-	}
-
-	return transaction
+	tx.Transaction.SignWith(publicKey, signer)
+	return tx
 }
 
-// Execute executes the Transaction with the provided client
-func (transaction *FreezeTransaction) Execute(
-	client *Client,
-) (TransactionResponse, error) {
-	if client == nil {
-		return TransactionResponse{}, errNoClientProvided
-	}
-
-	if !transaction.IsFrozen() {
-		_, err := transaction.FreezeWith(client)
-		if err != nil {
-			return TransactionResponse{}, err
-		}
-	}
-
-	if transaction.freezeError != nil {
-		return TransactionResponse{}, transaction.freezeError
-	}
-
-	transactionID := transaction.transactionIDs._GetCurrent().(TransactionID)
-
-	if !client.GetOperatorAccountID()._IsZero() && client.GetOperatorAccountID()._Equals(*transactionID.AccountID) {
-		transaction.SignWith(
-			client.GetOperatorPublicKey(),
-			client.operator.signer,
-		)
-	}
-
-	resp, err := _Execute(
-		client,
-		&transaction.Transaction,
-		_TransactionShouldRetry,
-		_TransactionMakeRequest,
-		_TransactionAdvanceRequest,
-		_TransactionGetNodeAccountID,
-		_FreezeTransactionGetMethod,
-		_TransactionMapStatusError,
-		_TransactionMapResponse,
-		transaction._GetLogID(),
-		transaction.grpcDeadline,
-		transaction.maxBackoff,
-		transaction.minBackoff,
-		transaction.maxRetry,
-	)
-
-	if err != nil {
-		return TransactionResponse{
-			TransactionID:  transaction.GetTransactionID(),
-			NodeID:         resp.(TransactionResponse).NodeID,
-			ValidateStatus: true,
-		}, err
-	}
-
-	return TransactionResponse{
-		TransactionID:  transaction.GetTransactionID(),
-		NodeID:         resp.(TransactionResponse).NodeID,
-		Hash:           resp.(TransactionResponse).Hash,
-		ValidateStatus: true,
-	}, nil
+// AddSignature adds a signature to the transaction.
+func (tx *FreezeTransaction) AddSignature(publicKey PublicKey, signature []byte) *FreezeTransaction {
+	tx.Transaction.AddSignature(publicKey, signature)
+	return tx
 }
 
-func (transaction *FreezeTransaction) Freeze() (*FreezeTransaction, error) {
-	return transaction.FreezeWith(nil)
+func (tx *FreezeTransaction) Freeze() (*FreezeTransaction, error) {
+	return tx.FreezeWith(nil)
 }
 
-func (transaction *FreezeTransaction) FreezeWith(client *Client) (*FreezeTransaction, error) {
-	if transaction.IsFrozen() {
-		return transaction, nil
-	}
-	transaction._InitFee(client)
-	if err := transaction._InitTransactionID(client); err != nil {
-		return transaction, err
-	}
-	body := transaction._Build()
-
-	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
+func (tx *FreezeTransaction) FreezeWith(client *Client) (*FreezeTransaction, error) {
+	_, err := tx.Transaction.freezeWith(client, tx)
+	return tx, err
 }
 
 // GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
-func (transaction *FreezeTransaction) GetMaxTransactionFee() Hbar {
-	return transaction.Transaction.GetMaxTransactionFee()
+func (tx *FreezeTransaction) GetMaxTransactionFee() Hbar {
+	return tx.Transaction.GetMaxTransactionFee()
 }
 
 // SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
-func (transaction *FreezeTransaction) SetMaxTransactionFee(fee Hbar) *FreezeTransaction {
-	transaction._RequireNotFrozen()
-	transaction.Transaction.SetMaxTransactionFee(fee)
-	return transaction
+func (tx *FreezeTransaction) SetMaxTransactionFee(fee Hbar) *FreezeTransaction {
+	tx._RequireNotFrozen()
+	tx.Transaction.SetMaxTransactionFee(fee)
+	return tx
 }
 
 // SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
-func (transaction *FreezeTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *FreezeTransaction {
-	transaction._RequireNotFrozen()
-	transaction.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
-	return transaction
-}
-
-// GetRegenerateTransactionID returns true if transaction ID regeneration is enabled.
-func (transaction *FreezeTransaction) GetRegenerateTransactionID() bool {
-	return transaction.Transaction.GetRegenerateTransactionID()
-}
-
-// GetTransactionMemo returns the memo for this FreezeTransaction.
-func (transaction *FreezeTransaction) GetTransactionMemo() string {
-	return transaction.Transaction.GetTransactionMemo()
+func (tx *FreezeTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *FreezeTransaction {
+	tx._RequireNotFrozen()
+	tx.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	return tx
 }
 
 // SetTransactionMemo sets the memo for this FreezeTransaction.
-func (transaction *FreezeTransaction) SetTransactionMemo(memo string) *FreezeTransaction {
-	transaction._RequireNotFrozen()
-	transaction.Transaction.SetTransactionMemo(memo)
-	return transaction
-}
-
-// GetTransactionValidDuration returns the duration that this transaction is valid for.
-func (transaction *FreezeTransaction) GetTransactionValidDuration() time.Duration {
-	return transaction.Transaction.GetTransactionValidDuration()
+func (tx *FreezeTransaction) SetTransactionMemo(memo string) *FreezeTransaction {
+	tx._RequireNotFrozen()
+	tx.Transaction.SetTransactionMemo(memo)
+	return tx
 }
 
 // SetTransactionValidDuration sets the valid duration for this FreezeTransaction.
-func (transaction *FreezeTransaction) SetTransactionValidDuration(duration time.Duration) *FreezeTransaction {
-	transaction._RequireNotFrozen()
-	transaction.Transaction.SetTransactionValidDuration(duration)
-	return transaction
-}
-
-// GetTransactionID gets the TransactionID for this	FreezeTransaction.
-func (transaction *FreezeTransaction) GetTransactionID() TransactionID {
-	return transaction.Transaction.GetTransactionID()
+func (tx *FreezeTransaction) SetTransactionValidDuration(duration time.Duration) *FreezeTransaction {
+	tx._RequireNotFrozen()
+	tx.Transaction.SetTransactionValidDuration(duration)
+	return tx
 }
 
 // SetTransactionID sets the TransactionID for this FreezeTransaction.
-func (transaction *FreezeTransaction) SetTransactionID(transactionID TransactionID) *FreezeTransaction {
-	transaction._RequireNotFrozen()
+func (tx *FreezeTransaction) SetTransactionID(transactionID TransactionID) *FreezeTransaction {
+	tx._RequireNotFrozen()
 
-	transaction.Transaction.SetTransactionID(transactionID)
-	return transaction
+	tx.Transaction.SetTransactionID(transactionID)
+	return tx
 }
 
 // SetNodeAccountID sets the _Node AccountID for this FreezeTransaction.
-func (transaction *FreezeTransaction) SetNodeAccountIDs(nodeID []AccountID) *FreezeTransaction {
-	transaction._RequireNotFrozen()
-	transaction.Transaction.SetNodeAccountIDs(nodeID)
-	return transaction
+func (tx *FreezeTransaction) SetNodeAccountIDs(nodeID []AccountID) *FreezeTransaction {
+	tx._RequireNotFrozen()
+	tx.Transaction.SetNodeAccountIDs(nodeID)
+	return tx
 }
 
 // SetMaxRetry sets the max number of errors before execution will fail.
-func (transaction *FreezeTransaction) SetMaxRetry(count int) *FreezeTransaction {
-	transaction.Transaction.SetMaxRetry(count)
-	return transaction
-}
-
-// AddSignature adds a signature to the Transaction.
-func (transaction *FreezeTransaction) AddSignature(publicKey PublicKey, signature []byte) *FreezeTransaction {
-	transaction._RequireOneNodeAccountID()
-
-	if transaction._KeyAlreadySigned(publicKey) {
-		return transaction
-	}
-
-	if transaction.signedTransactions._Length() == 0 {
-		return transaction
-	}
-
-	transaction.transactions = _NewLockableSlice()
-	transaction.publicKeys = append(transaction.publicKeys, publicKey)
-	transaction.transactionSigners = append(transaction.transactionSigners, nil)
-	transaction.transactionIDs.locked = true
-
-	for index := 0; index < transaction.signedTransactions._Length(); index++ {
-		var temp *services.SignedTransaction
-		switch t := transaction.signedTransactions._Get(index).(type) { //nolint
-		case *services.SignedTransaction:
-			temp = t
-		}
-		temp.SigMap.SigPair = append(
-			temp.SigMap.SigPair,
-			publicKey._ToSignaturePairProtobuf(signature),
-		)
-		transaction.signedTransactions._Set(index, temp)
-	}
-
-	return transaction
+func (tx *FreezeTransaction) SetMaxRetry(count int) *FreezeTransaction {
+	tx.Transaction.SetMaxRetry(count)
+	return tx
 }
 
 // SetMaxBackoff The maximum amount of time to wait between retries.
 // Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (transaction *FreezeTransaction) SetMaxBackoff(max time.Duration) *FreezeTransaction {
-	if max.Nanoseconds() < 0 {
-		panic("maxBackoff must be a positive duration")
-	} else if max.Nanoseconds() < transaction.minBackoff.Nanoseconds() {
-		panic("maxBackoff must be greater than or equal to minBackoff")
-	}
-	transaction.maxBackoff = &max
-	return transaction
-}
-
-// GetMaxBackoff returns the maximum amount of time to wait between retries.
-func (transaction *FreezeTransaction) GetMaxBackoff() time.Duration {
-	if transaction.maxBackoff != nil {
-		return *transaction.maxBackoff
-	}
-
-	return 8 * time.Second
+func (tx *FreezeTransaction) SetMaxBackoff(max time.Duration) *FreezeTransaction {
+	tx.Transaction.SetMaxBackoff(max)
+	return tx
 }
 
 // SetMinBackoff sets the minimum amount of time to wait between retries.
-func (transaction *FreezeTransaction) SetMinBackoff(min time.Duration) *FreezeTransaction {
-	if min.Nanoseconds() < 0 {
-		panic("minBackoff must be a positive duration")
-	} else if transaction.maxBackoff.Nanoseconds() < min.Nanoseconds() {
-		panic("minBackoff must be less than or equal to maxBackoff")
+func (tx *FreezeTransaction) SetMinBackoff(min time.Duration) *FreezeTransaction {
+	tx.Transaction.SetMinBackoff(min)
+	return tx
+}
+
+func (tx *FreezeTransaction) SetLogLevel(level LogLevel) *FreezeTransaction {
+	tx.Transaction.SetLogLevel(level)
+	return tx
+}
+
+func (tx *FreezeTransaction) Execute(client *Client) (TransactionResponse, error) {
+	return tx.Transaction.execute(client, tx)
+}
+
+func (tx *FreezeTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	return tx.Transaction.schedule(tx)
+}
+
+// ----------- Overridden functions ----------------
+
+func (tx *FreezeTransaction) getName() string {
+	return "FreezeTransaction"
+}
+func (tx *FreezeTransaction) build() *services.TransactionBody {
+	return &services.TransactionBody{
+		TransactionFee:           tx.transactionFee,
+		Memo:                     tx.Transaction.memo,
+		TransactionValidDuration: _DurationToProtobuf(tx.GetTransactionValidDuration()),
+		TransactionID:            tx.transactionID._ToProtobuf(),
+		Data: &services.TransactionBody_Freeze{
+			Freeze: tx.buildProtoBody(),
+		},
 	}
-	transaction.minBackoff = &min
-	return transaction
 }
-
-// GetMinBackoff returns the minimum amount of time to wait between retries.
-func (transaction *FreezeTransaction) GetMinBackoff() time.Duration {
-	if transaction.minBackoff != nil {
-		return *transaction.minBackoff
+func (tx *FreezeTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+	return &services.SchedulableTransactionBody{
+		TransactionFee: tx.transactionFee,
+		Memo:           tx.Transaction.memo,
+		Data: &services.SchedulableTransactionBody_Freeze{
+			Freeze: tx.buildProtoBody(),
+		},
+	}, nil
+}
+func (tx *FreezeTransaction) buildProtoBody() *services.FreezeTransactionBody {
+	body := &services.FreezeTransactionBody{
+		FileHash:   tx.fileHash,
+		StartTime:  _TimeToProtobuf(tx.startTime),
+		FreezeType: services.FreezeType(tx.freezeType),
 	}
 
-	return 250 * time.Millisecond
-}
+	if tx.fileID != nil {
+		body.UpdateFile = tx.fileID._ToProtobuf()
+	}
 
-func (transaction *FreezeTransaction) _GetLogID() string {
-	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
-	return fmt.Sprintf("FreezeTransaction:%d", timestamp.UnixNano())
+	return body
 }
-
-func (transaction *FreezeTransaction) SetLogLevel(level LogLevel) *FreezeTransaction {
-	transaction.Transaction.SetLogLevel(level)
-	return transaction
+func (tx *FreezeTransaction) getMethod(channel *_Channel) _Method {
+	return _Method{
+		transaction: channel._GetFreeze().Freeze,
+	}
+}
+func (tx *FreezeTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	return tx.buildScheduled()
 }

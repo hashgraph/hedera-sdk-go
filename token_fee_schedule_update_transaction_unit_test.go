@@ -52,7 +52,7 @@ func TestUnitTokenFeeScheduleUpdateTransactionValidate(t *testing.T) {
 		SetCustomFees([]Fee{fee}).
 		SetTokenID(tokenID)
 
-	err = tokenFeeUpdate._ValidateNetworkOnIDs(client)
+	err = tokenFeeUpdate.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 }
 
@@ -73,7 +73,7 @@ func TestUnitTokenFeeScheduleUpdateTransactionValidateWrong(t *testing.T) {
 		SetCustomFees([]Fee{fee}).
 		SetTokenID(tokenID)
 
-	err = tokenFeeUpdate._ValidateNetworkOnIDs(client)
+	err = tokenFeeUpdate.validateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
@@ -174,7 +174,7 @@ func TestUnitTokenFeeScheduleUpdateTransactionProtoCheck(t *testing.T) {
 	_, err = transaction.GetTransactionHash()
 	require.NoError(t, err)
 
-	proto := transaction._Build().GetTokenFeeScheduleUpdate()
+	proto := transaction.build().GetTokenFeeScheduleUpdate()
 	require.Equal(t, proto.TokenId.String(), tokenID._ToProtobuf().String())
 	require.Equal(t, proto.CustomFees[0].Fee.(*services.CustomFee_FixedFee).FixedFee.String(),
 		NewCustomFixedFee().SetHbarAmount(NewHbar(4))._ToProtobuf().Fee.(*services.CustomFee_FixedFee).FixedFee.String())
@@ -213,7 +213,7 @@ func TestUnitTokenFeeScheduleUpdateTransactionCoverage(t *testing.T) {
 		Freeze()
 	require.NoError(t, err)
 
-	err = transaction._ValidateNetworkOnIDs(client)
+	err = transaction.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 	transaction.GetTransactionID()
 	transaction.GetNodeAccountIDs()
@@ -238,7 +238,7 @@ func TestUnitTokenFeeScheduleUpdateTransactionCoverage(t *testing.T) {
 	transaction.GetCustomFees()
 	_, err = transaction.GetSignatures()
 	require.NoError(t, err)
-	transaction._GetLogID()
+	transaction.getName()
 	switch b := txFromBytes.(type) {
 	case TokenFeeScheduleUpdateTransaction:
 		b.AddSignature(newKey.PublicKey(), sig)

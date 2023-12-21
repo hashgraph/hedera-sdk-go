@@ -47,7 +47,7 @@ func TestUnitLiveHashQueryValidate(t *testing.T) {
 	liveHashQuery := NewLiveHashQuery().
 		SetAccountID(accountID)
 
-	err = liveHashQuery._ValidateNetworkOnIDs(client)
+	err = liveHashQuery.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 }
 
@@ -64,7 +64,7 @@ func TestUnitLiveHashQueryValidateWrong(t *testing.T) {
 	liveHashQuery := NewLiveHashQuery().
 		SetAccountID(accountID)
 
-	err = liveHashQuery._ValidateNetworkOnIDs(client)
+	err = liveHashQuery.validateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
@@ -137,12 +137,12 @@ func TestUnitLiveHashQueryCoverage(t *testing.T) {
 		SetQueryPayment(NewHbar(3)).
 		SetGrpcDeadline(&grpc)
 
-	err = query._ValidateNetworkOnIDs(client)
+	err = query.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 	query.GetNodeAccountIDs()
 	query.GetMaxBackoff()
 	query.GetMinBackoff()
-	query._GetLogID()
+	query.getName()
 	query.GetAccountID()
 	query.GetGetHash()
 	query.GetQueryPayment()

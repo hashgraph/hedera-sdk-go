@@ -48,7 +48,7 @@ func TestUnitTokenDeleteTransactionValidate(t *testing.T) {
 	tokenDelete := NewTokenDeleteTransaction().
 		SetTokenID(tokenID)
 
-	err = tokenDelete._ValidateNetworkOnIDs(client)
+	err = tokenDelete.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 }
 
@@ -65,7 +65,7 @@ func TestUnitTokenDeleteTransactionValidateWrong(t *testing.T) {
 	tokenDelete := NewTokenDeleteTransaction().
 		SetTokenID(tokenID)
 
-	err = tokenDelete._ValidateNetworkOnIDs(client)
+	err = tokenDelete.validateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
@@ -169,7 +169,7 @@ func TestUnitTokenDeleteTransactionCoverage(t *testing.T) {
 		Freeze()
 	require.NoError(t, err)
 
-	err = transaction._ValidateNetworkOnIDs(client)
+	err = transaction.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 	_, err = transaction.Schedule()
 	require.NoError(t, err)
@@ -195,7 +195,7 @@ func TestUnitTokenDeleteTransactionCoverage(t *testing.T) {
 	transaction.GetTokenID()
 	_, err = transaction.GetSignatures()
 	require.NoError(t, err)
-	transaction._GetLogID()
+	transaction.getName()
 	switch b := txFromBytes.(type) {
 	case TokenDeleteTransaction:
 		b.AddSignature(newKey.PublicKey(), sig)

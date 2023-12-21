@@ -48,7 +48,7 @@ func TestUnitTransactionReceiptQueryValidate(t *testing.T) {
 	receiptQuery := NewTransactionReceiptQuery().
 		SetTransactionID(transactionID)
 
-	err = receiptQuery._ValidateNetworkOnIDs(client)
+	err = receiptQuery.validateNetworkOnIDs(client)
 	require.NoError(t, err)
 }
 
@@ -66,7 +66,7 @@ func TestUnitTransactionReceiptQueryValidateWrong(t *testing.T) {
 	receiptQuery := NewTransactionReceiptQuery().
 		SetTransactionID(transactionID)
 
-	err = receiptQuery._ValidateNetworkOnIDs(client)
+	err = receiptQuery.validateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())

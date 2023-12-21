@@ -53,7 +53,7 @@ func TestIntegrationContractBytecodeQueryCanExecute(t *testing.T) {
 	contractResponse, err := NewContractCreateTransaction().
 		SetAdminKey(env.OperatorKey).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetGas(100000).
+		SetGas(200000).
 		SetConstructorParameters(NewContractFunctionParameters().AddString("Hello from Hedera.")).
 		SetBytecodeFileID(fileID).
 		SetContractMemo("[e2e::ContractCreateTransaction]").
@@ -124,7 +124,7 @@ func TestIntegrationContractBytecodeQueryGetCostExecute(t *testing.T) {
 	contractResponse, err := NewContractCreateTransaction().
 		SetAdminKey(env.OperatorKey).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetGas(100000).
+		SetGas(200000).
 		SetConstructorParameters(NewContractFunctionParameters().AddString("Hello from Hedera.")).
 		SetBytecodeFileID(fileID).
 		SetContractMemo("[e2e::ContractCreateTransaction]").
@@ -198,7 +198,7 @@ func TestIntegrationContractBytecodeQuerySetBigMaxPayment(t *testing.T) {
 	contractResponse, err := NewContractCreateTransaction().
 		SetAdminKey(env.OperatorKey).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetGas(100000).
+		SetGas(200000).
 		SetConstructorParameters(NewContractFunctionParameters().AddString("Hello from Hedera.")).
 		SetBytecodeFileID(fileID).
 		SetContractMemo("[e2e::ContractCreateTransaction]").
@@ -216,7 +216,7 @@ func TestIntegrationContractBytecodeQuerySetBigMaxPayment(t *testing.T) {
 
 	bytecodeQuery := NewContractBytecodeQuery().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetMaxQueryPayment(NewHbar(100000)).
+		SetMaxQueryPayment(NewHbar(200000)).
 		SetContractID(contractID)
 
 	cost, err := bytecodeQuery.GetCost(env.Client)
@@ -272,7 +272,7 @@ func TestIntegrationContractBytecodeQuerySetSmallMaxPayment(t *testing.T) {
 	contractResponse, err := NewContractCreateTransaction().
 		SetAdminKey(env.OperatorKey).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetGas(100000).
+		SetGas(200000).
 		SetConstructorParameters(NewContractFunctionParameters().AddString("Hello from Hedera.")).
 		SetBytecodeFileID(fileID).
 		SetContractMemo("[e2e::ContractCreateTransaction]").
@@ -347,7 +347,7 @@ func TestIntegrationContractBytecodeQueryInsufficientFee(t *testing.T) {
 	contractResponse, err := NewContractCreateTransaction().
 		SetAdminKey(env.OperatorKey).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetGas(100000).
+		SetGas(200000).
 		SetConstructorParameters(NewContractFunctionParameters().AddString("Hello from Hedera.")).
 		SetBytecodeFileID(fileID).
 		SetContractMemo("[e2e::ContractCreateTransaction]").
@@ -422,7 +422,7 @@ func TestIntegrationContractBytecodeQueryNoContractID(t *testing.T) {
 	contractResponse, err := NewContractCreateTransaction().
 		SetAdminKey(env.OperatorKey).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetGas(100000).
+		SetGas(200000).
 		SetConstructorParameters(NewContractFunctionParameters().AddString("Hello from Hedera.")).
 		SetBytecodeFileID(fileID).
 		SetContractMemo("[e2e::ContractCreateTransaction]").
