@@ -1,8 +1,8 @@
-## v2.33.0
+## v2.34.0
 
 ### Fixed
 
-* Invalid fallback for mirror node insecure port
+* Refactored structures `executable`, `transaction` & `query` to define common methods in one place and reduce the code repetition
 
 ## v2.32.0
 
@@ -78,7 +78,7 @@
 ### Added
 
 * Option to create a client from config file without mirror network
-* Finished LegderID implementation 
+* Finished LegderID implementation
 
 ## v2.24.3
 
@@ -90,7 +90,7 @@
 
 ### Added
 
-* Comments on `client` and all `query` and `transaction` types 
+* Comments on `client` and all `query` and `transaction` types
 
 ## v2.24.1
 
