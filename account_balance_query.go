@@ -113,7 +113,82 @@ func (q *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error) {
 		return AccountBalance{}, err
 	}
 
-	return _AccountBalanceFromProtobuf(resp.(*services.Response).GetCryptogetAccountBalance()), nil
+	// Query account_balance_query for given network/account;
+
+	result := _AccountBalanceFromProtobuf(resp.(*services.Response).GetCryptogetAccountBalance())
+	// Processed the result filling AccountBalance struct
+	// 	- convert balance, which is in tinybars to Hbar
+	//  - for each of the tokens query `/api/v1/tokens/{tokenId}` to obtain it's decimals
+	ledger := client.network.ledgerID
+	if ledger != nil {
+		switch {
+		case ledger.IsMainnet():
+			if q.accountID != nil {
+				_, err := queryBalanceFromMirrorNode("mainnet", q.accountID.String(), &result)
+				if err != nil {
+					return AccountBalance{}, err
+				}
+			} else {
+				_, err := queryBalanceFromMirrorNode("mainnet", q.contractID.String(), &result)
+				if err != nil {
+					return AccountBalance{}, err
+				}
+			}
+		case ledger.IsPreviewnet():
+			if q.accountID != nil {
+				_, err := queryBalanceFromMirrorNode("previewnet", q.accountID.String(), &result)
+				if err != nil {
+					return AccountBalance{}, err
+				}
+			} else {
+				_, err := queryBalanceFromMirrorNode("previewnet", q.contractID.String(), &result)
+				if err != nil {
+					return AccountBalance{}, err
+				}
+			}
+		case ledger.IsTestnet():
+			if q.accountID != nil {
+				_, err := queryBalanceFromMirrorNode("testnet", q.accountID.String(), &result)
+				if err != nil {
+					return AccountBalance{}, err
+				}
+			} else {
+				_, err := queryBalanceFromMirrorNode("testnet", q.contractID.String(), &result)
+				if err != nil {
+					return AccountBalance{}, err
+				}
+			}
+		default:
+			_, err := queryBalanceFromMirrorNode("localhost", q.contractID.String(), &result)
+			if err != nil {
+				return AccountBalance{}, err
+			}
+		}
+
+	}
+
+	return result, nil
+}
+
+// Helper function, which quey the mirror node and if the balance has tokens, it iterate over them to obtain
+// decimals for each token
+func queryBalanceFromMirrorNode(network string, id string, result *AccountBalance) (*AccountBalance, error) {
+	response, err := accountBalanceQuery(network, id)
+	if err != nil {
+		return result, err
+	}
+	// If user has tokens
+	result.Tokens.balances = make(map[string]uint64)
+	if tokens, ok := response["tokens"].([]map[string]interface{}); ok {
+
+		for _, token := range tokens {
+			for key, value := range token {
+				result.Tokens.balances[key] = value.(uint64)
+			}
+		}
+	}
+
+	return result, nil
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this query.
