@@ -25,15 +25,9 @@ import (
  * limitations under the License.
  *
  */
+const httpPrefix = "https://"
+const apiPathVersion = "/api/v1/"
 
-const apiVersion = "v1/"
-
-var restUrls = map[string]string{
-	"mainnet":    "https://mainnet-public.mirrornode.hedera.com/api/" + apiVersion,
-	"testnet":    "https://testnet.mirrornode.hedera.com/api/" + apiVersion,
-	"previewnet": "https://previewnet.mirrornode.hedera.com/api/" + apiVersion,
-	"localhost":  "localhost:5551/api" + apiVersion,
-}
 var queryTypes = map[string]string{
 	"account":  "accounts/",
 	"contract": "contracts/",
@@ -48,21 +42,14 @@ func accountBalanceQuery(network string, accountId string) (map[string]interface
 
 // Function to obtain account info for given account ID. Return the pure JSON response as mapping
 func accountInfoQuery(network string, accountId string) (map[string]interface{}, error) {
-	accountInfoUrl := restUrls[network] + queryTypes["account"] + accountId
+	accountInfoUrl := fmt.Sprintf("%s%s%s%s%s", httpPrefix, network, apiPathVersion, queryTypes["account"], accountId)
 	return makeGetRequest(accountInfoUrl)
 }
 
 // Function to obtain balance of tokens for given contract ID. Return the pure JSON response as mapping
 func contractInfoQuery(network string, contractId string) (map[string]interface{}, error) {
-	contractInfoUrl := restUrls[network] + queryTypes["contract"] + contractId
+	contractInfoUrl := fmt.Sprintf("%s%s%s%s%s", httpPrefix, network, apiPathVersion, queryTypes["contract"], contractId)
 	return makeGetRequest(contractInfoUrl)
-}
-
-// A function to get details about given token ID. Currently we need it to obtain token decimals, when querying account balance
-// 'Decimals' field is depricated in `AccountBalance`,  so this should disappear soon
-func tokenQuery(network string, tokenId string) (map[string]interface{}, error) {
-	tokenInfoUrl := restUrls[network] + queryTypes["token"] + tokenId
-	return makeGetRequest(tokenInfoUrl)
 }
 
 // Make a GET HTTP request to provided URL and map it's json response to a generic `interface` map and return it

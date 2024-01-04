@@ -21,6 +21,7 @@ package hedera
  */
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -96,7 +97,6 @@ func (q *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error) {
 	if client == nil {
 		return AccountBalance{}, errNoClientProvided
 	}
-
 	var err error
 
 	err = q.validateNetworkOnIDs(client)
@@ -113,58 +113,29 @@ func (q *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error) {
 		return AccountBalance{}, err
 	}
 
+	result := _AccountBalanceFromProtobuf(resp.(*services.Response).GetCryptogetAccountBalance())
 	// Query account_balance_query for given network/account;
 
-	result := _AccountBalanceFromProtobuf(resp.(*services.Response).GetCryptogetAccountBalance())
-	// Processed the result filling AccountBalance struct
-	// 	- convert balance, which is in tinybars to Hbar
-	//  - for each of the tokens query `/api/v1/tokens/{tokenId}` to obtain it's decimals
-	ledger := client.network.ledgerID
-	if ledger != nil {
-		switch {
-		case ledger.IsMainnet():
-			if q.accountID != nil {
-				_, err := queryBalanceFromMirrorNode("mainnet", q.accountID.String(), &result)
-				if err != nil {
-					return AccountBalance{}, err
-				}
-			} else {
-				_, err := queryBalanceFromMirrorNode("mainnet", q.contractID.String(), &result)
-				if err != nil {
-					return AccountBalance{}, err
-				}
-			}
-		case ledger.IsPreviewnet():
-			if q.accountID != nil {
-				_, err := queryBalanceFromMirrorNode("previewnet", q.accountID.String(), &result)
-				if err != nil {
-					return AccountBalance{}, err
-				}
-			} else {
-				_, err := queryBalanceFromMirrorNode("previewnet", q.contractID.String(), &result)
-				if err != nil {
-					return AccountBalance{}, err
-				}
-			}
-		case ledger.IsTestnet():
-			if q.accountID != nil {
-				_, err := queryBalanceFromMirrorNode("testnet", q.accountID.String(), &result)
-				if err != nil {
-					return AccountBalance{}, err
-				}
-			} else {
-				_, err := queryBalanceFromMirrorNode("testnet", q.contractID.String(), &result)
-				if err != nil {
-					return AccountBalance{}, err
-				}
-			}
-		default:
-			_, err := queryBalanceFromMirrorNode("localhost", q.contractID.String(), &result)
-			if err != nil {
-				return AccountBalance{}, err
-			}
+	fmt.Println(client.GetMirrorNetwork()[0])
+	const localNetwork = "127.0.0.1"
+	if client.GetMirrorNetwork()[0] == localNetwork+":5600" || client.GetMirrorNetwork()[0] == localNetwork+":443" {
+		if q.accountID != nil {
+			_, err = queryBalanceFromMirrorNode(localNetwork+"5551", q.accountID.String(), &result)
+		} else {
+			_, err = queryBalanceFromMirrorNode(localNetwork+"5551", q.contractID.String(), &result)
 		}
-
+		if err != nil {
+			return AccountBalance{}, err
+		}
+	} else {
+		if q.accountID != nil {
+			_, err = queryBalanceFromMirrorNode(client.GetMirrorNetwork()[0], q.accountID.String(), &result)
+		} else {
+			_, err = queryBalanceFromMirrorNode(client.GetMirrorNetwork()[0], q.contractID.String(), &result)
+		}
+		if err != nil {
+			return AccountBalance{}, err
+		}
 	}
 
 	return result, nil
