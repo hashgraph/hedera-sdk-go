@@ -28,14 +28,18 @@ import (
  * limitations under the License.
  *
  */
+const mainnetMirrorNodeUrl = "mainnet-public.mirrornode.hedera.com"
+const testnetMirrorNodeUrl = "testnet.mirrornode.hedera.com"
+const previewnetMirrorNodeUrl = "previewnet.mirrornode.hedera.com"
+
 func TestAccountInfoTestnet(t *testing.T) {
-	testAccountInfoQuery(t, "testnet")
+	testAccountInfoQuery(t, testnetMirrorNodeUrl)
 }
 func TestAccountInfoMainnet(t *testing.T) {
-	testAccountInfoQuery(t, "mainnet")
+	testAccountInfoQuery(t, mainnetMirrorNodeUrl)
 }
 func TestAccountInfoPreviewnet(t *testing.T) {
-	testAccountInfoQuery(t, "previewnet")
+	testAccountInfoQuery(t, previewnetMirrorNodeUrl)
 }
 func testAccountInfoQuery(t *testing.T, network string) {
 	t.Parallel()
@@ -46,13 +50,13 @@ func testAccountInfoQuery(t *testing.T, network string) {
 }
 
 func TestAccountBalanceTestnet(t *testing.T) {
-	testAccountBalanceQuery(t, "testnet")
+	testAccountBalanceQuery(t, testnetMirrorNodeUrl)
 }
 func TestAccountBalanceMainnet(t *testing.T) {
-	testAccountBalanceQuery(t, "mainnet")
+	testAccountBalanceQuery(t, mainnetMirrorNodeUrl)
 }
 func TestAccountBalancePreviewnet(t *testing.T) {
-	testAccountBalanceQuery(t, "previewnet")
+	testAccountBalanceQuery(t, previewnetMirrorNodeUrl)
 }
 func testAccountBalanceQuery(t *testing.T, network string) {
 	t.Parallel()
@@ -71,15 +75,22 @@ func testAccountBalanceQuery(t *testing.T, network string) {
 func TestContractInfoPreviewnetContractNotFound(t *testing.T) {
 	t.Parallel()
 
-	result, e := contractInfoQuery("previewnet", "1")
+	result, e := contractInfoQuery(previewnetMirrorNodeUrl, "1")
 	require.Error(t, e)
 	assert.True(t, result == nil)
 }
 func TestContractInfoTestnet(t *testing.T) {
 	t.Parallel()
 
-	result, e := contractInfoQuery("testnet", "0.0.7376843")
+	result, e := contractInfoQuery(testnetMirrorNodeUrl, "0.0.7376843")
 	require.NoError(t, e)
 	_, exist := result["bytecode"]
 	require.True(t, exist)
+}
+
+func TestBuildUrlReturnCorrectUrl(t *testing.T) {
+	url := "https://testnet.mirrornode.hedera.com/api/v1/accounts/0.0.7477022/tokens"
+
+	result := buildUrl("testnet.mirrornode.hedera.com", "accounts", "0.0.7477022", "tokens")
+	assert.Equal(t, url, result)
 }

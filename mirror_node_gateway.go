@@ -25,13 +25,13 @@ import (
  * limitations under the License.
  *
  */
-const httpPrefix = "https://"
-const apiPathVersion = "/api/v1/"
+const httpsPrefix = "https://"
+const apiPathVersion = "/api/v1"
 
 var queryTypes = map[string]string{
-	"account":  "accounts/",
-	"contract": "contracts/",
-	"token":    "tokens/"}
+	"account":  "accounts",
+	"contract": "contracts",
+	"token":    "tokens"}
 
 // Function to obtain balance of tokens for given account ID. Return the pure JSON response as mapping
 func accountBalanceQuery(network string, accountId string) (map[string]interface{}, error) {
@@ -42,14 +42,19 @@ func accountBalanceQuery(network string, accountId string) (map[string]interface
 
 // Function to obtain account info for given account ID. Return the pure JSON response as mapping
 func accountInfoQuery(network string, accountId string) (map[string]interface{}, error) {
-	accountInfoUrl := fmt.Sprintf("%s%s%s%s%s", httpPrefix, network, apiPathVersion, queryTypes["account"], accountId)
+	accountInfoUrl := buildUrl(network, queryTypes["account"], accountId)
 	return makeGetRequest(accountInfoUrl)
 }
 
 // Function to obtain balance of tokens for given contract ID. Return the pure JSON response as mapping
 func contractInfoQuery(network string, contractId string) (map[string]interface{}, error) {
-	contractInfoUrl := fmt.Sprintf("%s%s%s%s%s", httpPrefix, network, apiPathVersion, queryTypes["contract"], contractId)
+	contractInfoUrl := buildUrl(network, queryTypes["contract"], contractId)
 	return makeGetRequest(contractInfoUrl)
+}
+
+func tokenReleationshipQuery(network string, id string) (map[string]interface{}, error) {
+	tokenRelationshipUrl := buildUrl(network, queryTypes["account"], id, queryTypes["token"])
+	return makeGetRequest(tokenRelationshipUrl)
 }
 
 // Make a GET HTTP request to provided URL and map it's json response to a generic `interface` map and return it
@@ -57,10 +62,9 @@ func makeGetRequest(url string) (response map[string]interface{}, e error) {
 	// Make an HTTP request
 	resp, err := http.Get(url)
 	if err != nil {
-		fmt.Println("Error making HTTP request:", err)
 		return nil, err
 	}
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode >= 400 {
 		return nil, fmt.Errorf("HTTP request failed with status code: %d", resp.StatusCode)
 	}
 	defer resp.Body.Close()
@@ -73,4 +77,21 @@ func makeGetRequest(url string) (response map[string]interface{}, e error) {
 	}
 
 	return resultMap, nil
+}
+
+func obtainUrlForMirrorNode(client *Client) string {
+	const localNetwork = "127.0.0.1"
+	if client.GetMirrorNetwork()[0] == localNetwork+":5600" || client.GetMirrorNetwork()[0] == localNetwork+":443" {
+		return localNetwork + "5551"
+	} else {
+		return client.GetMirrorNetwork()[0]
+	}
+}
+
+func buildUrl(network string, args ...string) string {
+	url := httpsPrefix + network + apiPathVersion
+	for _, arg := range args {
+		url += "/" + arg
+	}
+	return url
 }

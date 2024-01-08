@@ -21,6 +21,7 @@ package hedera
  */
 
 import (
+	"errors"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -56,7 +57,57 @@ func (q *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
 		return AccountInfo{}, err
 	}
 
-	return _AccountInfoFromProtobuf(resp.GetCryptoGetInfo().AccountInfo)
+	result, err := _AccountInfoFromProtobuf(resp.GetCryptoGetInfo().AccountInfo)
+
+	network := obtainUrlForMirrorNode(client)
+	_, err = queryTokensRelationshipFromMirrorNode(network, q.accountID.String(), &result)
+
+	if err != nil {
+		return AccountInfo{}, err
+	}
+	return result, nil
+}
+
+// Helper function, which query the mirror node about tokenRelationship of for all tokens that the account is
+// being associated with
+func queryTokensRelationshipFromMirrorNode(network string, id string, result *AccountInfo) (*AccountInfo, error) {
+	response, err := tokenReleationshipQuery(network, id)
+	if err != nil {
+		return result, err
+	}
+	tokens, ok := response["tokens"].([]interface{})
+	if !ok {
+		return result, errors.New("Ivalid tokens format")
+	}
+	result.TokenRelationships = make([]*TokenRelationship, 0, len(tokens))
+	for _, tokenObj := range tokens {
+		token, ok := tokenObj.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		tokenId, _ := TokenIDFromString(token["token_id"].(string))
+		freezeStatus := false
+		if tokenFreezeStatus, ok := token["freeze_status"].(string); ok {
+			freezeStatus = tokenFreezeStatus == "FROZEN"
+		}
+
+		kycStatus := false
+		if tokenKycStatus, ok := token["kyc_status"].(string); ok {
+			kycStatus = tokenKycStatus == "GRANTED"
+		}
+
+		tokenRelationship := TokenRelationship{
+			TokenID:              tokenId,
+			Balance:              uint64(token["balance"].(float64)),
+			KycStatus:            &kycStatus,
+			FreezeStatus:         &freezeStatus,
+			AutomaticAssociation: token["automatic_association"].(bool),
+		}
+
+		result.TokenRelationships = append(result.TokenRelationships, &tokenRelationship)
+	}
+
+	return result, nil
 }
 
 // SetGrpcDeadline When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)

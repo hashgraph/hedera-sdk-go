@@ -113,32 +113,21 @@ func (q *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error) {
 	}
 
 	result := _AccountBalanceFromProtobuf(resp.(*services.Response).GetCryptogetAccountBalance())
-	_, err = fillTokenBalancesFromMirrorNode(client, q, &result)
+
+	network := obtainUrlForMirrorNode(client)
+	if q.accountID != nil {
+		_, err = queryBalanceFromMirrorNode(network, q.accountID.String(), &result)
+	} else {
+		_, err = queryBalanceFromMirrorNode(network, q.contractID.String(), &result)
+	}
 	if err != nil {
 		return AccountBalance{}, nil
 	}
 	return result, nil
 }
 
-// Helper function, which obtain url for mirror node to query token balance for the given account
-func fillTokenBalancesFromMirrorNode(client *Client, q *AccountBalanceQuery, result *AccountBalance) (*AccountBalance, error) {
-	const localNetwork = "127.0.0.1"
-	if client.GetMirrorNetwork()[0] == localNetwork+":5600" || client.GetMirrorNetwork()[0] == localNetwork+":443" {
-		if q.accountID != nil {
-			return queryBalanceFromMirrorNode(localNetwork+"5551", q.accountID.String(), result)
-		} else {
-			return queryBalanceFromMirrorNode(localNetwork+"5551", q.contractID.String(), result)
-		}
-	} else {
-		if q.accountID != nil {
-			return queryBalanceFromMirrorNode(client.GetMirrorNetwork()[0], q.accountID.String(), result)
-		} else {
-			return queryBalanceFromMirrorNode(client.GetMirrorNetwork()[0], q.contractID.String(), result)
-		}
-	}
-}
-
-// Helper function, which query the mirror node and if the balance has tokens
+// Helper function, which query the mirror node and if the balance has tokens, it iterate over the tokens and assign them
+// inside `AccountBalance` tokens field
 func queryBalanceFromMirrorNode(network string, id string, result *AccountBalance) (*AccountBalance, error) {
 	response, err := accountBalanceQuery(network, id)
 	if err != nil {
