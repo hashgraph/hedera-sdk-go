@@ -60,7 +60,7 @@ func (q *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
 	result, err := _AccountInfoFromProtobuf(resp.GetCryptoGetInfo().AccountInfo)
 
 	network := obtainUrlForMirrorNode(client)
-	_, err = queryTokensRelationshipFromMirrorNode(network, q.accountID.String(), &result)
+	_, err = accountInfoqueryTokensRelationshipFromMirrorNode(network, q.accountID.String(), &result)
 
 	if err != nil {
 		return AccountInfo{}, err
@@ -70,7 +70,7 @@ func (q *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
 
 // Helper function, which query the mirror node about tokenRelationship of for all tokens that the account is
 // being associated with
-func queryTokensRelationshipFromMirrorNode(network string, id string, result *AccountInfo) (*AccountInfo, error) {
+func accountInfoqueryTokensRelationshipFromMirrorNode(network string, id string, result *AccountInfo) (*AccountInfo, error) {
 	response, err := tokenReleationshipQuery(network, id)
 	if err != nil {
 		return result, err
@@ -79,34 +79,11 @@ func queryTokensRelationshipFromMirrorNode(network string, id string, result *Ac
 	if !ok {
 		return result, errors.New("Ivalid tokens format")
 	}
-	result.TokenRelationships = make([]*TokenRelationship, 0, len(tokens))
-	for _, tokenObj := range tokens {
-		token, ok := tokenObj.(map[string]interface{})
-		if !ok {
-			continue
-		}
-		tokenId, _ := TokenIDFromString(token["token_id"].(string))
-		freezeStatus := false
-		if tokenFreezeStatus, ok := token["freeze_status"].(string); ok {
-			freezeStatus = tokenFreezeStatus == "FROZEN"
-		}
-
-		kycStatus := false
-		if tokenKycStatus, ok := token["kyc_status"].(string); ok {
-			kycStatus = tokenKycStatus == "GRANTED"
-		}
-
-		tokenRelationship := TokenRelationship{
-			TokenID:              tokenId,
-			Balance:              uint64(token["balance"].(float64)),
-			KycStatus:            &kycStatus,
-			FreezeStatus:         &freezeStatus,
-			AutomaticAssociation: token["automatic_association"].(bool),
-		}
-
-		result.TokenRelationships = append(result.TokenRelationships, &tokenRelationship)
+	mappedTokens, err := mapTokenRelationship(tokens)
+	if err != nil {
+		return &AccountInfo{}, err
 	}
-
+	result.TokenRelationships = mappedTokens
 	return result, nil
 }
 

@@ -21,6 +21,7 @@ package hedera
  */
 
 import (
+	"errors"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -80,8 +81,32 @@ func (q *ContractInfoQuery) Execute(client *Client) (ContractInfo, error) {
 	if err != nil {
 		return ContractInfo{}, err
 	}
+	network := obtainUrlForMirrorNode(client)
+	_, err = contractInfoqueryTokensRelationshipFromMirrorNode(network, q.contractID.String(), &info)
+	if err != nil {
+		return ContractInfo{}, err
+	}
 
 	return info, nil
+}
+
+// Helper function, which query the mirror node about tokenRelationship of for all tokens that the account is
+// being associated with
+func contractInfoqueryTokensRelationshipFromMirrorNode(network string, id string, result *ContractInfo) (*ContractInfo, error) {
+	response, err := tokenReleationshipQuery(network, id)
+	if err != nil {
+		return result, err
+	}
+	tokens, ok := response["tokens"].([]interface{})
+	if !ok {
+		return result, errors.New("Ivalid tokens format")
+	}
+	mappedTokens, err := mapTokenRelationship(tokens)
+	if err != nil {
+		return &ContractInfo{}, err
+	}
+	result.TokenRelationships = mappedTokens
+	return result, nil
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.

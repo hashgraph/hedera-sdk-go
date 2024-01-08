@@ -29,15 +29,17 @@ import (
 
 // Current information on the smart contract instance, including its balance.
 type ContractInfo struct {
-	AccountID                     AccountID
-	ContractID                    ContractID
-	ContractAccountID             string
-	AdminKey                      Key
-	ExpirationTime                time.Time
-	AutoRenewPeriod               time.Duration
-	Storage                       uint64
-	ContractMemo                  string
-	Balance                       uint64
+	AccountID         AccountID
+	ContractID        ContractID
+	ContractAccountID string
+	AdminKey          Key
+	ExpirationTime    time.Time
+	AutoRenewPeriod   time.Duration
+	Storage           uint64
+	ContractMemo      string
+	Balance           uint64
+	// Deprecated
+	TokenRelationships            []*TokenRelationship
 	LedgerID                      LedgerID
 	AutoRenewAccountID            *AccountID
 	MaxAutomaticTokenAssociations int32

@@ -2,6 +2,7 @@ package hedera
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 )
@@ -94,4 +95,42 @@ func buildUrl(network string, args ...string) string {
 		url += "/" + arg
 	}
 	return url
+}
+
+func mapTokenRelationship(tokens []interface{}) ([]*TokenRelationship, error) {
+	var tokenRelationships []*TokenRelationship
+
+	for _, tokenObj := range tokens {
+		token, ok := tokenObj.(map[string]interface{})
+		if !ok {
+			return nil, errors.New("invalid token object")
+		}
+
+		tokenId, err := TokenIDFromString(token["token_id"].(string))
+		if err != nil {
+			return nil, err
+		}
+
+		freezeStatus := false
+		if tokenFreezeStatus, ok := token["freeze_status"].(string); ok {
+			freezeStatus = tokenFreezeStatus == "FROZEN"
+		}
+
+		kycStatus := false
+		if tokenKycStatus, ok := token["kyc_status"].(string); ok {
+			kycStatus = tokenKycStatus == "GRANTED"
+		}
+
+		tokenRelationship := &TokenRelationship{
+			TokenID:              tokenId,
+			Balance:              uint64(token["balance"].(float64)),
+			KycStatus:            &kycStatus,
+			FreezeStatus:         &freezeStatus,
+			AutomaticAssociation: token["automatic_association"].(bool),
+		}
+
+		tokenRelationships = append(tokenRelationships, tokenRelationship)
+	}
+
+	return tokenRelationships, nil
 }
