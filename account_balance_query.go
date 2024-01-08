@@ -21,7 +21,6 @@ package hedera
  */
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -114,35 +113,32 @@ func (q *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error) {
 	}
 
 	result := _AccountBalanceFromProtobuf(resp.(*services.Response).GetCryptogetAccountBalance())
-	// Query account_balance_query for given network/account;
-
-	fmt.Println(client.GetMirrorNetwork()[0])
-	const localNetwork = "127.0.0.1"
-	if client.GetMirrorNetwork()[0] == localNetwork+":5600" || client.GetMirrorNetwork()[0] == localNetwork+":443" {
-		if q.accountID != nil {
-			_, err = queryBalanceFromMirrorNode(localNetwork+"5551", q.accountID.String(), &result)
-		} else {
-			_, err = queryBalanceFromMirrorNode(localNetwork+"5551", q.contractID.String(), &result)
-		}
-		if err != nil {
-			return AccountBalance{}, err
-		}
-	} else {
-		if q.accountID != nil {
-			_, err = queryBalanceFromMirrorNode(client.GetMirrorNetwork()[0], q.accountID.String(), &result)
-		} else {
-			_, err = queryBalanceFromMirrorNode(client.GetMirrorNetwork()[0], q.contractID.String(), &result)
-		}
-		if err != nil {
-			return AccountBalance{}, err
-		}
+	_, err = fillTokenBalancesFromMirrorNode(client, q, &result)
+	if err != nil {
+		return AccountBalance{}, nil
 	}
-
 	return result, nil
 }
 
-// Helper function, which quey the mirror node and if the balance has tokens, it iterate over them to obtain
-// decimals for each token
+// Helper function, which obtain url for mirror node to query token balance for the given account
+func fillTokenBalancesFromMirrorNode(client *Client, q *AccountBalanceQuery, result *AccountBalance) (*AccountBalance, error) {
+	const localNetwork = "127.0.0.1"
+	if client.GetMirrorNetwork()[0] == localNetwork+":5600" || client.GetMirrorNetwork()[0] == localNetwork+":443" {
+		if q.accountID != nil {
+			return queryBalanceFromMirrorNode(localNetwork+"5551", q.accountID.String(), result)
+		} else {
+			return queryBalanceFromMirrorNode(localNetwork+"5551", q.contractID.String(), result)
+		}
+	} else {
+		if q.accountID != nil {
+			return queryBalanceFromMirrorNode(client.GetMirrorNetwork()[0], q.accountID.String(), result)
+		} else {
+			return queryBalanceFromMirrorNode(client.GetMirrorNetwork()[0], q.contractID.String(), result)
+		}
+	}
+}
+
+// Helper function, which query the mirror node and if the balance has tokens
 func queryBalanceFromMirrorNode(network string, id string, result *AccountBalance) (*AccountBalance, error) {
 	response, err := accountBalanceQuery(network, id)
 	if err != nil {
@@ -151,7 +147,6 @@ func queryBalanceFromMirrorNode(network string, id string, result *AccountBalanc
 	// If user has tokens
 	result.Tokens.balances = make(map[string]uint64)
 	if tokens, ok := response["tokens"].([]map[string]interface{}); ok {
-
 		for _, token := range tokens {
 			for key, value := range token {
 				result.Tokens.balances[key] = value.(uint64)
