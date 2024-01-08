@@ -1,5 +1,7 @@
 package hedera
 
+import "errors"
+
 /*-
  *
  * Hedera Go SDK
@@ -31,77 +33,114 @@ type TokenRelationship struct {
 	AutomaticAssociation bool
 }
 
-// func _TokenRelationshipFromProtobuf(pb *services.TokenRelationship) TokenRelationship {
-//	if pb == nil {
-//		return TokenRelationship{}
+//	func _TokenRelationshipFromProtobuf(pb *services.TokenRelationship) TokenRelationship {
+//		if pb == nil {
+//			return TokenRelationship{}
+//		}
+//
+//		tokenID := TokenID{}
+//		if pb.TokenId != nil {
+//			tokenID = *_TokenIDFromProtobuf(pb.TokenId)
+//		}
+//
+//		return TokenRelationship{
+//			TokenID:              tokenID,
+//			Symbol:               pb.Symbol,
+//			Balance:              pb.Balance,
+//			KycStatus:            _KycStatusFromProtobuf(pb.KycStatus),
+//			FreezeStatus:         _FreezeStatusFromProtobuf(pb.FreezeStatus),
+//			Decimals:             pb.Decimals,
+//			AutomaticAssociation: pb.AutomaticAssociation,
+//		}
 //	}
 //
-//	tokenID := TokenID{}
-//	if pb.TokenId != nil {
-//		tokenID = *_TokenIDFromProtobuf(pb.TokenId)
+//	func (relationship *TokenRelationship) _ToProtobuf() *services.TokenRelationship {
+//		var freezeStatus services.TokenFreezeStatus
+//		switch *relationship.FreezeStatus {
+//		case true:
+//			freezeStatus = 1
+//		case false:
+//			freezeStatus = 2
+//		default:
+//			freezeStatus = 0
+//		}
+//
+//		var kycStatus services.TokenKycStatus
+//		switch *relationship.KycStatus {
+//		case true:
+//			kycStatus = 1
+//		case false:
+//			kycStatus = 2
+//		default:
+//			kycStatus = 0
+//		}
+//
+//		return &services.TokenRelationship{
+//			TokenId:              relationship.TokenID._ToProtobuf(),
+//			Symbol:               relationship.Symbol,
+//			Balance:              relationship.Balance,
+//			KycStatus:            kycStatus,
+//			FreezeStatus:         freezeStatus,
+//			Decimals:             relationship.Decimals,
+//			AutomaticAssociation: relationship.AutomaticAssociation,
+//		}
 //	}
 //
-//	return TokenRelationship{
-//		TokenID:              tokenID,
-//		Symbol:               pb.Symbol,
-//		Balance:              pb.Balance,
-//		KycStatus:            _KycStatusFromProtobuf(pb.KycStatus),
-//		FreezeStatus:         _FreezeStatusFromProtobuf(pb.FreezeStatus),
-//		Decimals:             pb.Decimals,
-//		AutomaticAssociation: pb.AutomaticAssociation,
-//	}
-//}
+//	func (relationship TokenRelationship) ToBytes() []byte {
+//		data, err := protobuf.Marshal(relationship._ToProtobuf())
+//		if err != nil {
+//			return make([]byte, 0)
+//		}
 //
-// func (relationship *TokenRelationship) _ToProtobuf() *services.TokenRelationship {
-//	var freezeStatus services.TokenFreezeStatus
-//	switch *relationship.FreezeStatus {
-//	case true:
-//		freezeStatus = 1
-//	case false:
-//		freezeStatus = 2
-//	default:
-//		freezeStatus = 0
+//		return data
 //	}
 //
-//	var kycStatus services.TokenKycStatus
-//	switch *relationship.KycStatus {
-//	case true:
-//		kycStatus = 1
-//	case false:
-//		kycStatus = 2
-//	default:
-//		kycStatus = 0
-//	}
+//	func TokenRelationshipFromBytes(data []byte) (TokenRelationship, error) {
+//		if data == nil {
+//			return TokenRelationship{}, errors.New("byte array can't be null")
+//		}
+//		pb := services.TokenRelationship{}
+//		err := protobuf.Unmarshal(data, &pb)
+//		if err != nil {
+//			return TokenRelationship{}, err
+//		}
 //
-//	return &services.TokenRelationship{
-//		TokenId:              relationship.TokenID._ToProtobuf(),
-//		Symbol:               relationship.Symbol,
-//		Balance:              relationship.Balance,
-//		KycStatus:            kycStatus,
-//		FreezeStatus:         freezeStatus,
-//		Decimals:             relationship.Decimals,
-//		AutomaticAssociation: relationship.AutomaticAssociation,
+//		return _TokenRelationshipFromProtobuf(&pb), nil
 //	}
-//}
-//
-// func (relationship TokenRelationship) ToBytes() []byte {
-//	data, err := protobuf.Marshal(relationship._ToProtobuf())
-//	if err != nil {
-//		return make([]byte, 0)
-//	}
-//
-//	return data
-//}
-//
-// func TokenRelationshipFromBytes(data []byte) (TokenRelationship, error) {
-//	if data == nil {
-//		return TokenRelationship{}, errors.New("byte array can't be null")
-//	}
-//	pb := services.TokenRelationship{}
-//	err := protobuf.Unmarshal(data, &pb)
-//	if err != nil {
-//		return TokenRelationship{}, err
-//	}
-//
-//	return _TokenRelationshipFromProtobuf(&pb), nil
-//}
+func mapTokenRelationship(tokens []interface{}) ([]*TokenRelationship, error) {
+	var tokenRelationships []*TokenRelationship
+
+	for _, tokenObj := range tokens {
+		token, ok := tokenObj.(map[string]interface{})
+		if !ok {
+			return nil, errors.New("invalid token object")
+		}
+
+		tokenId, err := TokenIDFromString(token["token_id"].(string))
+		if err != nil {
+			return nil, err
+		}
+
+		freezeStatus := false
+		if tokenFreezeStatus, ok := token["freeze_status"].(string); ok {
+			freezeStatus = tokenFreezeStatus == "FROZEN"
+		}
+
+		kycStatus := false
+		if tokenKycStatus, ok := token["kyc_status"].(string); ok {
+			kycStatus = tokenKycStatus == "GRANTED"
+		}
+
+		tokenRelationship := &TokenRelationship{
+			TokenID:              tokenId,
+			Balance:              uint64(token["balance"].(float64)),
+			KycStatus:            &kycStatus,
+			FreezeStatus:         &freezeStatus,
+			AutomaticAssociation: token["automatic_association"].(bool),
+		}
+
+		tokenRelationships = append(tokenRelationships, tokenRelationship)
+	}
+
+	return tokenRelationships, nil
+}
