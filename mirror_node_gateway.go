@@ -89,14 +89,6 @@ func obtainUrlForMirrorNode(client *Client) string {
 	}
 }
 
-func buildUrl(network string, args ...string) string {
-	url := httpsPrefix + network + apiPathVersion
-	for _, arg := range args {
-		url += "/" + arg
-	}
-	return url
-}
-
 func mapTokenRelationship(tokens []interface{}) ([]*TokenRelationship, error) {
 	var tokenRelationships []*TokenRelationship
 
@@ -133,4 +125,12 @@ func mapTokenRelationship(tokens []interface{}) ([]*TokenRelationship, error) {
 	}
 
 	return tokenRelationships, nil
+}
+
+func buildUrl(network string, args ...string) string {
+	url := httpsPrefix + network + apiPathVersion
+	for _, arg := range args {
+		url += "/" + arg
+	}
+	return url
 }
