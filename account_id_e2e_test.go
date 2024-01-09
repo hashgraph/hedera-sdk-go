@@ -7,7 +7,7 @@ package hedera
  *
  * Hedera Go SDK
  *
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
+ * Copyright (C) 2020 - 2024 Hedera Hashgraph, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,7 +72,7 @@ func TestIntegrationAccountIDCanPopulateAccountAliasEvmAddress(t *testing.T) {
 	require.NoError(t, err)
 	newAccountId := *receipt.Children[0].AccountID
 	time.Sleep(5 * time.Second)
-	error:= newAccountId.PopulateEvmAddress(env.Client)
+	error := newAccountId.PopulateEvmAddress(env.Client)
 	require.NoError(t, error)
 	require.Equal(t, evmAddress, hex.EncodeToString(*newAccountId.AliasEvmAddress))
 }
@@ -94,12 +94,12 @@ func TestIntegrationAccountIDCanPopulateAccountAliasEvmAddressWithMirror(t *test
 	require.NoError(t, err)
 	newAccountId := *receipt.Children[0].AccountID
 	time.Sleep(5 * time.Second)
-	error:= newAccountId.PopulateEvmAddress(env.Client)
+	error := newAccountId.PopulateEvmAddress(env.Client)
 	require.NoError(t, error)
 	require.Equal(t, evmAddress, hex.EncodeToString(*newAccountId.AliasEvmAddress))
 }
 
-func TestIntegrationAccountIDCanPopulateAccountAliasEvmAddressWithNoMirror(t *testing.T){
+func TestIntegrationAccountIDCanPopulateAccountAliasEvmAddressWithNoMirror(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 	env.Client.mirrorNetwork = nil
@@ -117,11 +117,11 @@ func TestIntegrationAccountIDCanPopulateAccountAliasEvmAddressWithNoMirror(t *te
 	newAccountId := *receipt.Children[0].AccountID
 	env.Client.mirrorNetwork = nil
 	time.Sleep(5 * time.Second)
-	error:= newAccountId.PopulateEvmAddress(env.Client)
+	error := newAccountId.PopulateEvmAddress(env.Client)
 	require.Error(t, error)
 }
 
-func TestIntegrationAccountIDCanPopulateAccountAliasEvmAddressWithMirrorAndNoEvmAddress(t *testing.T){
+func TestIntegrationAccountIDCanPopulateAccountAliasEvmAddressWithMirrorAndNoEvmAddress(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 	env.Client.mirrorNetwork = nil
@@ -139,6 +139,6 @@ func TestIntegrationAccountIDCanPopulateAccountAliasEvmAddressWithMirrorAndNoEvm
 	newAccountId := *receipt.Children[0].AccountID
 	env.Client.mirrorNetwork = nil
 	time.Sleep(5 * time.Second)
-	error:= newAccountId.PopulateAccount(env.Client)
+	error := newAccountId.PopulateAccount(env.Client)
 	require.Error(t, error)
 }

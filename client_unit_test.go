@@ -7,7 +7,7 @@ package hedera
  *
  * Hedera Go SDK
  *
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
+ * Copyright (C) 2020 - 2024 Hedera Hashgraph, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -175,7 +175,7 @@ func TestUnitClientSetNetworkExtensive(t *testing.T) {
 
 func TestUnitClientSetMirrorNetwork(t *testing.T) {
 	t.Parallel()
-	
+
 	mirrorNetworkString := "testnet.mirrornode.hedera.com:443"
 	mirrorNetwork1String := "testnet1.mirrornode.hedera.com:443"
 	defaultNetwork := make([]string, 0)
