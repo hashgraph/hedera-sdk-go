@@ -7,7 +7,7 @@ package hedera
  *
  * Hedera Go SDK
  *
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
+ * Copyright (C) 2020 - 2024 Hedera Hashgraph, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,10 +24,11 @@ package hedera
  */
 
 import (
+	"testing"
+
 	"github.com/hashgraph/hedera-protobufs-go/services"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/types/known/wrapperspb"
-	"testing"
 )
 
 var tokenID1 = TokenID{Token: 1}

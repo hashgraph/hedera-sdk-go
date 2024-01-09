@@ -7,7 +7,7 @@ package hedera
  *
  * Hedera Go SDK
  *
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
+ * Copyright (C) 2020 - 2024 Hedera Hashgraph, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ func TestIntegrationNodeForTransaction(t *testing.T) {
 	t.Parallel()
 
 	client := ClientForTestnet()
-	operatorID,err:= AccountIDFromString(os.Getenv("OPERATOR_ID"))
+	operatorID, err := AccountIDFromString(os.Getenv("OPERATOR_ID"))
 	require.NoError(t, err)
 	operatorKey, err := PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
 	require.NoError(t, err)
@@ -62,7 +62,7 @@ func TestIntegrationNodeForTransaction(t *testing.T) {
 	nodeAccountIDs := map[string]struct{}{}
 	for i := 0; i < 5; i++ {
 		_, err := NewTransferTransaction().AddHbarTransfer(operatorID, HbarFromTinybar(-1)).
-		AddHbarTransfer(AccountID{Shard: 0, Realm: 0, Account: 3}, HbarFromTinybar(1)).Execute(client)
+			AddHbarTransfer(AccountID{Shard: 0, Realm: 0, Account: 3}, HbarFromTinybar(1)).Execute(client)
 		require.NoError(t, err)
 		logOutput := buf.String()
 		sanitizedLogOutput := regexp.MustCompile(`\x1b\[[0-9;]*m`).ReplaceAllString(logOutput, "")
@@ -83,7 +83,7 @@ func TestIntegrationNodeForQuery(t *testing.T) {
 	t.Parallel()
 
 	client := ClientForTestnet()
-	operatorID,err:= AccountIDFromString(os.Getenv("OPERATOR_ID"))
+	operatorID, err := AccountIDFromString(os.Getenv("OPERATOR_ID"))
 	require.NoError(t, err)
 	operatorKey, err := PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
 	require.NoError(t, err)
@@ -128,13 +128,11 @@ func TestIntegrationNodeForTransactionSourceListUnchanged(t *testing.T) {
 	t.Parallel()
 
 	client := ClientForTestnet()
-	operatorID,err:= AccountIDFromString(os.Getenv("OPERATOR_ID"))
+	operatorID, err := AccountIDFromString(os.Getenv("OPERATOR_ID"))
 	require.NoError(t, err)
 	operatorKey, err := PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
 	require.NoError(t, err)
 	client.SetOperator(operatorID, operatorKey)
-
-	
 
 	var buf bytes.Buffer
 	writer := zerolog.ConsoleWriter{Out: &buf, TimeFormat: time.RFC3339}
@@ -150,16 +148,16 @@ func TestIntegrationNodeForTransactionSourceListUnchanged(t *testing.T) {
 	client.SetTransportSecurity(true)
 	client.SetLedgerID(*ledger)
 	client.SetMaxAttempts(3)
-	
-		_, err = NewAccountBalanceQuery().
-			SetAccountID(AccountID{Account: 3}).
-			Execute(client)
-			expectedHealthyNodes := make([]_IManagedNode, len(client.network.healthyNodes))
+
+	_, err = NewAccountBalanceQuery().
+		SetAccountID(AccountID{Account: 3}).
+		Execute(client)
+	expectedHealthyNodes := make([]_IManagedNode, len(client.network.healthyNodes))
 	copy(expectedHealthyNodes, client.network.healthyNodes)
 	resultHealthyNodes := make([]_IManagedNode, len(client.network.healthyNodes))
 	_, err = NewAccountBalanceQuery().
-			SetAccountID(AccountID{Account: 3}).
-			Execute(client)
+		SetAccountID(AccountID{Account: 3}).
+		Execute(client)
 	copy(resultHealthyNodes, client.network.healthyNodes)
 	require.Equal(t, expectedHealthyNodes, resultHealthyNodes)
 }
@@ -168,13 +166,11 @@ func TestIntegrationNodeForQuerySourceListUnchanged(t *testing.T) {
 	t.Parallel()
 
 	client := ClientForTestnet()
-	operatorID,err:= AccountIDFromString(os.Getenv("OPERATOR_ID"))
+	operatorID, err := AccountIDFromString(os.Getenv("OPERATOR_ID"))
 	require.NoError(t, err)
 	operatorKey, err := PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
 	require.NoError(t, err)
 	client.SetOperator(operatorID, operatorKey)
-
-	
 
 	var buf bytes.Buffer
 	writer := zerolog.ConsoleWriter{Out: &buf, TimeFormat: time.RFC3339}
@@ -190,16 +186,16 @@ func TestIntegrationNodeForQuerySourceListUnchanged(t *testing.T) {
 	client.SetTransportSecurity(true)
 	client.SetLedgerID(*ledger)
 	client.SetMaxAttempts(3)
-	
-		_, err = NewAccountBalanceQuery().
-			SetAccountID(AccountID{Account: 3}).
-			Execute(client)
-			expectedHealthyNodes := make([]_IManagedNode, len(client.network.healthyNodes))
+
+	_, err = NewAccountBalanceQuery().
+		SetAccountID(AccountID{Account: 3}).
+		Execute(client)
+	expectedHealthyNodes := make([]_IManagedNode, len(client.network.healthyNodes))
 	copy(expectedHealthyNodes, client.network.healthyNodes)
 	resultHealthyNodes := make([]_IManagedNode, len(client.network.healthyNodes))
 	_, err = NewAccountBalanceQuery().
-			SetAccountID(AccountID{Account: 3}).
-			Execute(client)
+		SetAccountID(AccountID{Account: 3}).
+		Execute(client)
 	copy(resultHealthyNodes, client.network.healthyNodes)
 	require.Equal(t, expectedHealthyNodes, resultHealthyNodes)
 }
