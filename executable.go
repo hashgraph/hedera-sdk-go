@@ -225,9 +225,13 @@ func _Execute(client *Client, e Executable) (interface{}, error) {
 		}
 
 		protoRequest = e.makeRequest()
-		nodeAccountID := e.getNodeAccountID()
-		if node, ok = client.network._GetNodeForAccountID(nodeAccountID); !ok {
-			return TransactionResponse{}, ErrInvalidNodeAccountIDSet{nodeAccountID}
+		if len(e.GetNodeAccountIDs()) == 0 {
+			node = client.network._GetNode()
+		} else {
+			nodeAccountID := e.getNodeAccountID()
+			if node, ok = client.network._GetNodeForAccountID(nodeAccountID); !ok {
+				return TransactionResponse{}, ErrInvalidNodeAccountIDSet{nodeAccountID}
+			}
 		}
 
 		if e.isTransaction() {
