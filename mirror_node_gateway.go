@@ -59,6 +59,7 @@ func tokenReleationshipQuery(network string, id string) (map[string]interface{},
 
 // Make a GET HTTP request to provided URL and map it's json response to a generic `interface` map and return it
 func makeGetRequest(url string) (response map[string]interface{}, e error) {
+	fmt.Println(url)
 	// Make an HTTP request
 	resp, err := http.Get(url)
 	if err != nil {

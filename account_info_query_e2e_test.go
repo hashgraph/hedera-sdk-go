@@ -24,10 +24,8 @@ package hedera
  */
 
 import (
-	"testing"
-	"time"
-
 	"github.com/stretchr/testify/assert"
+	"testing"
 
 	"github.com/stretchr/testify/require"
 )
@@ -53,7 +51,7 @@ func TestIntegrationAccountInfoQueryCanExecute(t *testing.T) {
 
 	accountID := *receipt.AccountID
 	require.NoError(t, err)
-	time.Sleep(3 * time.Second) // Wait for account to be fetched in the mirror node
+	//time.Sleep(3 * time.Second) // Wait for account to be fetched in the mirror node
 
 	info, err := NewAccountInfoQuery().
 		SetAccountID(accountID).
