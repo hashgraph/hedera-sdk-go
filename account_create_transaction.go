@@ -335,7 +335,7 @@ func (tx *AccountCreateTransaction) SetTransactionMemo(memo string) *AccountCrea
 	return tx
 }
 
-// SetTransactionMemo sets the memo for this AccountCreateTransaction.
+// ToBytes serialise the tx to bytes, no matter if it is signed (locked), or not
 func (tx *AccountCreateTransaction) ToBytes() ([]byte, error) {
 	bytes, err := tx.Transaction.toBytes(tx)
 	if err != nil {

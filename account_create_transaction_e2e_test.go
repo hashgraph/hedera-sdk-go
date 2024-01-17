@@ -575,10 +575,12 @@ func TestIntegrationSerialiseTransactionWithoutNodeAccountIdDeserialiseAndExecut
 
 	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 
-	resp, err := NewAccountCreateTransaction().
+	transactionOriginal := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
-		SetInitialBalance(newBalance).ToBytes()
+		SetInitialBalance(newBalance)
+
 	require.NoError(t, err)
+	resp, _ := transactionOriginal.ToBytes()
 
 	txFromBytes, err := TransactionFromBytes(resp)
 	require.NoError(t, err)
