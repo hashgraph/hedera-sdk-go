@@ -546,25 +546,56 @@ func (tx *Transaction) String() string {
 // ToBytes Builds then converts the current transaction to []byte
 // Requires transaction to be frozen
 func (tx *Transaction) ToBytes() ([]byte, error) {
-	if !tx.IsFrozen() {
-		return make([]byte, 0), errTransactionIsNotFrozen
-	}
+	return tx.toBytes(tx)
+}
 
-	allTx, err := tx._BuildAllTransactions()
+func (tx *Transaction) toBytes(e TransactionInterface) ([]byte, error) {
+	var pbTransactionList []byte
+	var allTx []*services.Transaction
+	var err error
+	// If transaction is frozen, build all transactions and "signedTransactions"
+	if tx.IsFrozen() {
+		allTx, err = tx._BuildAllTransactions()
+		tx.transactionIDs.locked = true
+	} else {
+		allTx, err = tx.buildAllUnsignedTransactions(e)
+	}
+	// If error has occured, when building transactions
 	if err != nil {
 		return make([]byte, 0), err
 	}
-	tx.transactionIDs.locked = true
 
-	pbTransactionList, lastError := protobuf.Marshal(&sdk.TransactionList{
+	pbTransactionList, err = protobuf.Marshal(&sdk.TransactionList{
 		TransactionList: allTx,
 	})
-
-	if lastError != nil {
+	if err != nil {
 		return make([]byte, 0), errors.Wrap(err, "error serializing tx list")
 	}
-
 	return pbTransactionList, nil
+}
+
+func (tx *Transaction) buildAllUnsignedTransactions(e TransactionInterface) ([]*services.Transaction, error) {
+	// All unsigned transactions would always be exactly 1
+	allTx := make([]*services.Transaction, 1)
+	t, err := tx.buildUnsignedTransaction(e)
+	if err != nil {
+		return allTx, err
+	}
+	tx.transactions._Push(t)
+	allTx = append(allTx, t)
+
+	return allTx, nil
+}
+
+func (tx *Transaction) buildUnsignedTransaction(e TransactionInterface) (*services.Transaction, error) {
+	body := e.build()
+	bodyBytes, err := protobuf.Marshal(body)
+	if err != nil {
+		return &services.Transaction{}, errors.Wrap(err, "failed to update tx ID")
+	}
+	fmt.Println(bodyBytes)
+
+	return &services.Transaction{BodyBytes: bodyBytes}, nil
 }
 
 func (tx *Transaction) _SignTransaction(index int) {

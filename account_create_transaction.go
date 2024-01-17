@@ -335,6 +335,15 @@ func (tx *AccountCreateTransaction) SetTransactionMemo(memo string) *AccountCrea
 	return tx
 }
 
+// SetTransactionMemo sets the memo for this AccountCreateTransaction.
+func (tx *AccountCreateTransaction) ToBytes() ([]byte, error) {
+	bytes, err := tx.Transaction.toBytes(tx)
+	if err != nil {
+		return nil, err
+	}
+	return bytes, nil
+}
+
 // SetTransactionValidDuration sets the valid duration for this AccountCreateTransaction.
 func (tx *AccountCreateTransaction) SetTransactionValidDuration(duration time.Duration) *AccountCreateTransaction {
 	tx.Transaction.SetTransactionValidDuration(duration)

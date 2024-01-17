@@ -564,3 +564,29 @@ func TestIntegrationAccountCreateTransactionWithAliasWithReceiverSigRequiredWith
 	err = CloseIntegrationTestEnv(env, nil)
 	require.NoError(t, err)
 }
+func TestIntegrationSerialiseTransactionWithoutNodeAccountIdDeserialiseAndExecute(t *testing.T) {
+	t.Parallel()
+	env := NewIntegrationTestEnv(t)
+
+	newKey, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+
+	newBalance := NewHbar(2)
+
+	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
+
+	resp, err := NewAccountCreateTransaction().
+		SetKey(newKey.PublicKey()).
+		SetInitialBalance(newBalance).ToBytes()
+	require.NoError(t, err)
+
+	txFromBytes, err := TransactionFromBytes(resp)
+	require.NoError(t, err)
+
+	transaction := txFromBytes.(AccountCreateTransaction)
+	_, err = transaction.
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		Execute(env.Client)
+
+	require.NoError(t, err)
+}
