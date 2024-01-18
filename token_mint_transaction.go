@@ -195,6 +195,15 @@ func (tx *TokenMintTransaction) SetTransactionValidDuration(duration time.Durati
 	return tx
 }
 
+// ToBytes serialise the tx to bytes, no matter if it is signed (locked), or not
+func (tx *TokenMintTransaction) ToBytes() ([]byte, error) {
+	bytes, err := tx.Transaction.toBytes(tx)
+	if err != nil {
+		return nil, err
+	}
+	return bytes, nil
+}
+
 // SetTransactionID sets the TransactionID for this TokenMintTransaction.
 func (tx *TokenMintTransaction) SetTransactionID(transactionID TransactionID) *TokenMintTransaction {
 	tx.Transaction.SetTransactionID(transactionID)

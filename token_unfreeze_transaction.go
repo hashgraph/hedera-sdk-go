@@ -177,6 +177,15 @@ func (tx *TokenUnfreezeTransaction) SetTransactionValidDuration(duration time.Du
 	return tx
 }
 
+// ToBytes serialise the tx to bytes, no matter if it is signed (locked), or not
+func (tx *TokenUnfreezeTransaction) ToBytes() ([]byte, error) {
+	bytes, err := tx.Transaction.toBytes(tx)
+	if err != nil {
+		return nil, err
+	}
+	return bytes, nil
+}
+
 // SetTransactionID sets the TransactionID for this TokenUnfreezeTransaction.
 func (tx *TokenUnfreezeTransaction) SetTransactionID(transactionID TransactionID) *TokenUnfreezeTransaction {
 	tx.Transaction.SetTransactionID(transactionID)

@@ -335,6 +335,12 @@ func (tx *AccountCreateTransaction) SetTransactionMemo(memo string) *AccountCrea
 	return tx
 }
 
+// SetTransactionValidDuration sets the valid duration for this AccountCreateTransaction.
+func (tx *AccountCreateTransaction) SetTransactionValidDuration(duration time.Duration) *AccountCreateTransaction {
+	tx.Transaction.SetTransactionValidDuration(duration)
+	return tx
+}
+
 // ToBytes serialise the tx to bytes, no matter if it is signed (locked), or not
 func (tx *AccountCreateTransaction) ToBytes() ([]byte, error) {
 	bytes, err := tx.Transaction.toBytes(tx)
@@ -342,12 +348,6 @@ func (tx *AccountCreateTransaction) ToBytes() ([]byte, error) {
 		return nil, err
 	}
 	return bytes, nil
-}
-
-// SetTransactionValidDuration sets the valid duration for this AccountCreateTransaction.
-func (tx *AccountCreateTransaction) SetTransactionValidDuration(duration time.Duration) *AccountCreateTransaction {
-	tx.Transaction.SetTransactionValidDuration(duration)
-	return tx
 }
 
 // SetTransactionID sets the TransactionID for this AccountCreateTransaction.
