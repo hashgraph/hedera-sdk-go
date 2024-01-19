@@ -152,7 +152,7 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 		// If the sig map is empty, then we should get body bytes directly from "transactionFromList"
 		if signedTransaction.GetSigMap() == nil {
 			txIsSigned = false
-			if err := protobuf.Unmarshal(transactionFromList.BodyBytes, &body); err != nil {
+			if err := protobuf.Unmarshal(transactionFromList.BodyBytes, &body); err != nil { // nolint
 				return Transaction{}, errors.Wrap(err, "error deserializing BodyBytes in TransactionFromBytes")
 			}
 		}
@@ -575,7 +575,7 @@ func (tx *Transaction) toBytes(e TransactionInterface) ([]byte, error) {
 	} else {
 		allTx, err = tx.buildAllUnsignedTransactions(e)
 	}
-	// If error has occured, when building transactions
+	// If error has occurred, when building transactions
 	if err != nil {
 		return make([]byte, 0), err
 	}
@@ -600,7 +600,7 @@ func (tx *Transaction) buildAllUnsignedTransactions(e TransactionInterface) ([]*
 		tx.transactions._Push(t)
 		allTx = append(allTx, t)
 	} else {
-		for _ = range tx.nodeAccountIDs.slice {
+		for range tx.nodeAccountIDs.slice {
 			t, err := tx.buildUnsignedTransaction(e, tx.nodeAccountIDs.index)
 			tx.nodeAccountIDs._Advance()
 			if err != nil {
