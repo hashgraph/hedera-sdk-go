@@ -40,23 +40,25 @@ func main() {
 	receipt, err := resp.GetReceipt(client)
 	newAccountId := *receipt.AccountID
 
-	bytes, err := hedera.NewTransferTransaction().AddHbarTransfer(operatorAccountID, hedera.NewHbar(1)).
-		ToBytes()
+	// Prepare and sign the tx and send it to be signed by another actor
+	fmt.Println("Creating a transfer transaction, signing it with operator and serializing it to bytes...")
+	bytes, err := hedera.NewTransferTransaction().AddHbarTransfer(operatorAccountID, hedera.NewHbar(1)).AddHbarTransfer(newAccountId, hedera.NewHbar(-1)).
+		Sign(operatorKey).ToBytes()
 
+	FromBytes, err := hedera.TransactionFromBytes(bytes)
 	if err != nil {
 		panic(err)
 	}
-
-	txFromBytes, err := hedera.TransactionFromBytes(bytes)
-
-	transaction := txFromBytes.(hedera.TransferTransaction)
-	_, err = transaction.AddHbarTransfer(newAccountId, hedera.NewHbar(-1)).SignWithOperator(client)
-
-	_, err = transaction.Execute(client)
+	txFromBytes := FromBytes.(hedera.TransferTransaction)
+	// New Account add his sign and execute the tx:
+	fmt.Println("Signing deserialized transaction with `newAccount` private key and executing it...")
+	executed, err := txFromBytes.Sign(newKey).SetMaxTransactionFee(hedera.NewHbar(2)).Execute(client)
 	if err != nil {
 		panic(err)
 	}
-	// Get the `AccountInfo` on the new account and show it is a hollow account by not having a public key
-	info, err := hedera.NewAccountInfoQuery().SetAccountID(newAccountId).Execute(client)
-	fmt.Println("Balance of new account: ", info.Balance)
+	receipt, err = executed.GetReceipt(client)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("Tx successfully executed. Here is receipt:", receipt)
 }
