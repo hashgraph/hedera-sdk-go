@@ -139,23 +139,25 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 	}
 
 	var first *services.TransactionBody = nil
-	// We introduce a boolean value to distinguish flow for signed tx vs unsigned transaction
+	// We introduce a boolean value to distinguish flow for signed tx vs unsigned transactions
 	txIsSigned := true
 
 	for i, transactionFromList := range list.TransactionList {
 		var signedTransaction services.SignedTransaction
 		var body services.TransactionBody
-		if err := protobuf.Unmarshal(transactionFromList.SignedTransactionBytes, &signedTransaction); err != nil {
-			return Transaction{}, errors.Wrap(err, "error deserializing SignedTransactionBytes in TransactionFromBytes")
-		}
 
-		// If the sig map is empty, then we should get body bytes directly from "transactionFromList"
-		if signedTransaction.GetSigMap() == nil {
+		// If the transaction is not signed/locked:
+		if len(transactionFromList.SignedTransactionBytes) == 0 {
 			txIsSigned = false
 			if err := protobuf.Unmarshal(transactionFromList.BodyBytes, &body); err != nil { // nolint
 				return Transaction{}, errors.Wrap(err, "error deserializing BodyBytes in TransactionFromBytes")
 			}
+		} else { // If the transaction is signed/locked
+			if err := protobuf.Unmarshal(transactionFromList.SignedTransactionBytes, &signedTransaction); err != nil {
+				return Transaction{}, errors.Wrap(err, "error deserializing SignedTransactionBytes in TransactionFromBytes")
+			}
 		}
+
 		if txIsSigned {
 			tx.signedTransactions = tx.signedTransactions._Push(&signedTransaction)
 
