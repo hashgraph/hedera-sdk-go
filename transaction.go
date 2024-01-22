@@ -109,6 +109,7 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 	}
 
 	transactions := _NewLockableSlice()
+
 	for _, transaction := range list.TransactionList {
 		transactions._Push(transaction)
 	}
@@ -574,7 +575,7 @@ func (tx *Transaction) toBytes(e TransactionInterface) ([]byte, error) {
 	if tx.IsFrozen() {
 		allTx, err = tx._BuildAllTransactions()
 		tx.transactionIDs.locked = true
-	} else {
+	} else { // Build only onlt "BodyBytes" for each transaction in the list
 		allTx, err = tx.buildAllUnsignedTransactions(e)
 	}
 	// If error has occurred, when building transactions
@@ -599,16 +600,14 @@ func (tx *Transaction) buildAllUnsignedTransactions(e TransactionInterface) ([]*
 		if err != nil {
 			return allTx, err
 		}
-		tx.transactions._Push(t)
 		allTx = append(allTx, t)
-	} else {
+	} else { // If we have set some node account ids, we have to make one transaction copy per node account
 		for range tx.nodeAccountIDs.slice {
 			t, err := tx.buildUnsignedTransaction(e, tx.nodeAccountIDs.index)
 			tx.nodeAccountIDs._Advance()
 			if err != nil {
 				return allTx, err
 			}
-			tx.transactions._Push(t)
 			allTx = append(allTx, t)
 		}
 	}
