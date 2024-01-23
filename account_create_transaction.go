@@ -67,11 +67,15 @@ func NewAccountCreateTransaction() *AccountCreateTransaction {
 func _AccountCreateTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *AccountCreateTransaction {
 	key, _ := _KeyFromProtobuf(pb.GetCryptoCreateAccount().GetKey())
 	renew := _DurationFromProtobuf(pb.GetCryptoCreateAccount().GetAutoRenewPeriod())
-	stakedNodeID := pb.GetCryptoCreateAccount().GetStakedNodeId()
 
-	var stakeNodeAccountID *AccountID
+	var stakedNodeID *int64
+	if pb.GetCryptoCreateAccount().GetStakedNodeId() != 0 {
+		nodeId := pb.GetCryptoCreateAccount().GetStakedNodeId()
+		stakedNodeID = &nodeId
+	}
+	var stakeAccountID *AccountID
 	if pb.GetCryptoCreateAccount().GetStakedAccountId() != nil {
-		stakeNodeAccountID = _AccountIDFromProtobuf(pb.GetCryptoCreateAccount().GetStakedAccountId())
+		stakeAccountID = _AccountIDFromProtobuf(pb.GetCryptoCreateAccount().GetStakedAccountId())
 	}
 
 	body := AccountCreateTransaction{
@@ -82,8 +86,8 @@ func _AccountCreateTransactionFromProtobuf(tx Transaction, pb *services.Transact
 		memo:                          pb.GetCryptoCreateAccount().GetMemo(),
 		receiverSignatureRequired:     pb.GetCryptoCreateAccount().ReceiverSigRequired,
 		maxAutomaticTokenAssociations: uint32(pb.GetCryptoCreateAccount().MaxAutomaticTokenAssociations),
-		stakedAccountID:               stakeNodeAccountID,
-		stakedNodeID:                  &stakedNodeID,
+		stakedAccountID:               stakeAccountID,
+		stakedNodeID:                  stakedNodeID,
 		declineReward:                 pb.GetCryptoCreateAccount().GetDeclineReward(),
 	}
 
@@ -339,6 +343,15 @@ func (tx *AccountCreateTransaction) SetTransactionMemo(memo string) *AccountCrea
 func (tx *AccountCreateTransaction) SetTransactionValidDuration(duration time.Duration) *AccountCreateTransaction {
 	tx.Transaction.SetTransactionValidDuration(duration)
 	return tx
+}
+
+// ToBytes serialise the tx to bytes, no matter if it is signed (locked), or not
+func (tx *AccountCreateTransaction) ToBytes() ([]byte, error) {
+	bytes, err := tx.Transaction.toBytes(tx)
+	if err != nil {
+		return nil, err
+	}
+	return bytes, nil
 }
 
 // SetTransactionID sets the TransactionID for this AccountCreateTransaction.

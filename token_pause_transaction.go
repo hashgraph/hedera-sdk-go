@@ -152,6 +152,15 @@ func (tx *TokenPauseTransaction) SetTransactionValidDuration(duration time.Durat
 	return tx
 }
 
+// ToBytes serialise the tx to bytes, no matter if it is signed (locked), or not
+func (tx *TokenPauseTransaction) ToBytes() ([]byte, error) {
+	bytes, err := tx.Transaction.toBytes(tx)
+	if err != nil {
+		return nil, err
+	}
+	return bytes, nil
+}
+
 // SetTransactionID sets the TransactionID for this TokenPauseTransaction.
 func (tx *TokenPauseTransaction) SetTransactionID(transactionID TransactionID) *TokenPauseTransaction {
 	tx.Transaction.SetTransactionID(transactionID)

@@ -185,6 +185,15 @@ func (tx *SystemDeleteTransaction) SetTransactionValidDuration(duration time.Dur
 	return tx
 }
 
+// ToBytes serialise the tx to bytes, no matter if it is signed (locked), or not
+func (tx *SystemDeleteTransaction) ToBytes() ([]byte, error) {
+	bytes, err := tx.Transaction.toBytes(tx)
+	if err != nil {
+		return nil, err
+	}
+	return bytes, nil
+}
+
 // SetTransactionID sets the TransactionID for this SystemDeleteTransaction.
 func (tx *SystemDeleteTransaction) SetTransactionID(transactionID TransactionID) *SystemDeleteTransaction {
 	tx.Transaction.SetTransactionID(transactionID)
