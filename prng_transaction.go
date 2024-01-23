@@ -138,6 +138,15 @@ func (tx *PrngTransaction) SetTransactionValidDuration(duration time.Duration) *
 	return tx
 }
 
+// ToBytes serialise the tx to bytes, no matter if it is signed (locked), or not
+func (tx *PrngTransaction) ToBytes() ([]byte, error) {
+	bytes, err := tx.Transaction.toBytes(tx)
+	if err != nil {
+		return nil, err
+	}
+	return bytes, nil
+}
+
 // SetTransactionID sets the TransactionID for this PrngTransaction.
 func (tx *PrngTransaction) SetTransactionID(transactionID TransactionID) *PrngTransaction {
 	tx.Transaction.SetTransactionID(transactionID)

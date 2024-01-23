@@ -242,6 +242,15 @@ func (tx *FileCreateTransaction) SetTransactionValidDuration(duration time.Durat
 	return tx
 }
 
+// ToBytes serialise the tx to bytes, no matter if it is signed (locked), or not
+func (tx *FileCreateTransaction) ToBytes() ([]byte, error) {
+	bytes, err := tx.Transaction.toBytes(tx)
+	if err != nil {
+		return nil, err
+	}
+	return bytes, nil
+}
+
 // SetTransactionID sets the TransactionID for this FileCreateTransaction.
 func (tx *FileCreateTransaction) SetTransactionID(transactionID TransactionID) *FileCreateTransaction {
 	tx._RequireNotFrozen()

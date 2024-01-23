@@ -109,6 +109,7 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 	}
 
 	transactions := _NewLockableSlice()
+
 	for _, transaction := range list.TransactionList {
 		transactions._Push(transaction)
 	}
@@ -139,33 +140,43 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 	}
 
 	var first *services.TransactionBody = nil
+	// We introduce a boolean value to distinguish flow for signed tx vs unsigned transactions
+	txIsSigned := true
 
 	for i, transactionFromList := range list.TransactionList {
 		var signedTransaction services.SignedTransaction
-		if err := protobuf.Unmarshal(transactionFromList.SignedTransactionBytes, &signedTransaction); err != nil {
-			return Transaction{}, errors.Wrap(err, "error deserializing SignedTransactionBytes in TransactionFromBytes")
-		}
+		var body services.TransactionBody
 
-		tx.signedTransactions = tx.signedTransactions._Push(&signedTransaction)
-		if err != nil {
-			return Transaction{}, err
-		}
-
-		if i == 0 {
-			for _, sigPair := range signedTransaction.GetSigMap().GetSigPair() {
-				key, err := PublicKeyFromBytes(sigPair.GetPubKeyPrefix())
-				if err != nil {
-					return Transaction{}, err
-				}
-
-				tx.publicKeys = append(tx.publicKeys, key)
-				tx.transactionSigners = append(tx.transactionSigners, nil)
+		// If the transaction is not signed/locked:
+		if len(transactionFromList.SignedTransactionBytes) == 0 {
+			txIsSigned = false
+			if err := protobuf.Unmarshal(transactionFromList.BodyBytes, &body); err != nil { // nolint
+				return Transaction{}, errors.Wrap(err, "error deserializing BodyBytes in TransactionFromBytes")
+			}
+		} else { // If the transaction is signed/locked
+			if err := protobuf.Unmarshal(transactionFromList.SignedTransactionBytes, &signedTransaction); err != nil {
+				return Transaction{}, errors.Wrap(err, "error deserializing SignedTransactionBytes in TransactionFromBytes")
 			}
 		}
 
-		var body services.TransactionBody
-		if err := protobuf.Unmarshal(signedTransaction.GetBodyBytes(), &body); err != nil {
-			return Transaction{}, errors.Wrap(err, "error deserializing BodyBytes in TransactionFromBytes")
+		if txIsSigned {
+			tx.signedTransactions = tx.signedTransactions._Push(&signedTransaction)
+
+			if i == 0 {
+				for _, sigPair := range signedTransaction.GetSigMap().GetSigPair() {
+					key, err := PublicKeyFromBytes(sigPair.GetPubKeyPrefix())
+					if err != nil {
+						return Transaction{}, err
+					}
+
+					tx.publicKeys = append(tx.publicKeys, key)
+					tx.transactionSigners = append(tx.transactionSigners, nil)
+				}
+			}
+
+			if err := protobuf.Unmarshal(signedTransaction.GetBodyBytes(), &body); err != nil {
+				return Transaction{}, errors.Wrap(err, "error deserializing BodyBytes in TransactionFromBytes")
+			}
 		}
 
 		if first == nil {
@@ -187,8 +198,13 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 			nodeAccountID = *_AccountIDFromProtobuf(body.GetNodeAccountID())
 		}
 
-		tx.transactionIDs = tx.transactionIDs._Push(transactionID)
-		tx.nodeAccountIDs = tx.nodeAccountIDs._Push(nodeAccountID)
+		// If the transaction was serialised, without setting "NodeId", or "TransactionID", we should leave them empty
+		if transactionID.AccountID.Account != 0 {
+			tx.transactionIDs = tx.transactionIDs._Push(transactionID)
+		}
+		if !nodeAccountID._IsZero() {
+			tx.nodeAccountIDs = tx.nodeAccountIDs._Push(nodeAccountID)
+		}
 
 		if i == 0 {
 			tx.memo = body.Memo
@@ -198,12 +214,14 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 		}
 	}
 
-	if tx.transactionIDs._Length() > 0 {
-		tx.transactionIDs.locked = true
-	}
+	if txIsSigned {
+		if tx.transactionIDs._Length() > 0 {
+			tx.transactionIDs.locked = true
+		}
 
-	if tx.nodeAccountIDs._Length() > 0 {
-		tx.nodeAccountIDs.locked = true
+		if tx.nodeAccountIDs._Length() > 0 {
+			tx.nodeAccountIDs.locked = true
+		}
 	}
 
 	if first == nil {
@@ -546,25 +564,68 @@ func (tx *Transaction) String() string {
 // ToBytes Builds then converts the current transaction to []byte
 // Requires transaction to be frozen
 func (tx *Transaction) ToBytes() ([]byte, error) {
-	if !tx.IsFrozen() {
-		return make([]byte, 0), errTransactionIsNotFrozen
-	}
+	return tx.toBytes(tx)
+}
 
-	allTx, err := tx._BuildAllTransactions()
+func (tx *Transaction) toBytes(e TransactionInterface) ([]byte, error) {
+	var pbTransactionList []byte
+	var allTx []*services.Transaction
+	var err error
+	// If transaction is frozen, build all transactions and "signedTransactions"
+	if tx.IsFrozen() {
+		allTx, err = tx._BuildAllTransactions()
+		tx.transactionIDs.locked = true
+	} else { // Build only onlt "BodyBytes" for each transaction in the list
+		allTx, err = tx.buildAllUnsignedTransactions(e)
+	}
+	// If error has occurred, when building transactions
 	if err != nil {
 		return make([]byte, 0), err
 	}
-	tx.transactionIDs.locked = true
 
-	pbTransactionList, lastError := protobuf.Marshal(&sdk.TransactionList{
+	pbTransactionList, err = protobuf.Marshal(&sdk.TransactionList{
 		TransactionList: allTx,
 	})
-
-	if lastError != nil {
+	if err != nil {
 		return make([]byte, 0), errors.Wrap(err, "error serializing tx list")
 	}
-
 	return pbTransactionList, nil
+}
+
+func (tx *Transaction) buildAllUnsignedTransactions(e TransactionInterface) ([]*services.Transaction, error) {
+	// All unsigned transactions would always be exactly 1
+	allTx := make([]*services.Transaction, 0)
+	if tx.nodeAccountIDs._IsEmpty() {
+		t, err := tx.buildUnsignedTransaction(e, 0)
+		if err != nil {
+			return allTx, err
+		}
+		allTx = append(allTx, t)
+	} else { // If we have set some node account ids, we have to make one transaction copy per node account
+		for range tx.nodeAccountIDs.slice {
+			t, err := tx.buildUnsignedTransaction(e, tx.nodeAccountIDs.index)
+			tx.nodeAccountIDs._Advance()
+			if err != nil {
+				return allTx, err
+			}
+			allTx = append(allTx, t)
+		}
+	}
+	return allTx, nil
+}
+
+func (tx *Transaction) buildUnsignedTransaction(e TransactionInterface, index int) (*services.Transaction, error) {
+	body := e.build()
+	if body.NodeAccountID == nil && !tx.nodeAccountIDs._IsEmpty() {
+		body.NodeAccountID = tx.nodeAccountIDs._Get(index).(AccountID)._ToProtobuf()
+	}
+
+	bodyBytes, err := protobuf.Marshal(body)
+	if err != nil {
+		return &services.Transaction{}, errors.Wrap(err, "failed to update tx ID")
+	}
+
+	return &services.Transaction{BodyBytes: bodyBytes}, nil
 }
 
 func (tx *Transaction) _SignTransaction(index int) {

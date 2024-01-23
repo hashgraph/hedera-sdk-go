@@ -277,6 +277,15 @@ func (tx *TopicUpdateTransaction) SetTransactionValidDuration(duration time.Dura
 	return tx
 }
 
+// ToBytes serialise the tx to bytes, no matter if it is signed (locked), or not
+func (tx *TopicUpdateTransaction) ToBytes() ([]byte, error) {
+	bytes, err := tx.Transaction.toBytes(tx)
+	if err != nil {
+		return nil, err
+	}
+	return bytes, nil
+}
+
 // SetTransactionID sets the TransactionID for this TopicUpdateTransaction.
 func (tx *TopicUpdateTransaction) SetTransactionID(transactionID TransactionID) *TopicUpdateTransaction {
 	tx.Transaction.SetTransactionID(transactionID)

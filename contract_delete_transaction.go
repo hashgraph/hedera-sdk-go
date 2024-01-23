@@ -204,6 +204,15 @@ func (tx *ContractDeleteTransaction) SetTransactionValidDuration(duration time.D
 	return tx
 }
 
+// ToBytes serialise the tx to bytes, no matter if it is signed (locked), or not
+func (tx *ContractDeleteTransaction) ToBytes() ([]byte, error) {
+	bytes, err := tx.Transaction.toBytes(tx)
+	if err != nil {
+		return nil, err
+	}
+	return bytes, nil
+}
+
 // SetTransactionID sets the TransactionID for this ContractDeleteTransaction.
 func (tx *ContractDeleteTransaction) SetTransactionID(transactionID TransactionID) *ContractDeleteTransaction {
 	tx._RequireNotFrozen()

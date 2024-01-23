@@ -215,6 +215,15 @@ func (tx *AccountAllowanceDeleteTransaction) SetTransactionValidDuration(duratio
 	return tx
 }
 
+// ToBytes serialise the tx to bytes, no matter if it is signed (locked), or not
+func (tx *AccountAllowanceDeleteTransaction) ToBytes() ([]byte, error) {
+	bytes, err := tx.Transaction.toBytes(tx)
+	if err != nil {
+		return nil, err
+	}
+	return bytes, nil
+}
+
 // SetTransactionID sets the TransactionID for this AccountAllowanceDeleteTransaction.
 func (tx *AccountAllowanceDeleteTransaction) SetTransactionID(transactionID TransactionID) *AccountAllowanceDeleteTransaction {
 	tx._RequireNotFrozen()

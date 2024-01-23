@@ -252,6 +252,15 @@ func (tx *ScheduleCreateTransaction) SetTransactionValidDuration(duration time.D
 	return tx
 }
 
+// ToBytes serialise the tx to bytes, no matter if it is signed (locked), or not
+func (tx *ScheduleCreateTransaction) ToBytes() ([]byte, error) {
+	bytes, err := tx.Transaction.toBytes(tx)
+	if err != nil {
+		return nil, err
+	}
+	return bytes, nil
+}
+
 // SetTransactionID sets the TransactionID for this ScheduleCreateTransaction.
 func (tx *ScheduleCreateTransaction) SetTransactionID(transactionID TransactionID) *ScheduleCreateTransaction {
 	tx.Transaction.SetTransactionID(transactionID)

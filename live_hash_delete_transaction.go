@@ -155,6 +155,15 @@ func (tx *LiveHashDeleteTransaction) SetTransactionValidDuration(duration time.D
 	return tx
 }
 
+// ToBytes serialise the tx to bytes, no matter if it is signed (locked), or not
+func (tx *LiveHashDeleteTransaction) ToBytes() ([]byte, error) {
+	bytes, err := tx.Transaction.toBytes(tx)
+	if err != nil {
+		return nil, err
+	}
+	return bytes, nil
+}
+
 // SetTransactionID sets the TransactionID for this LiveHashDeleteTransaction.
 func (tx *LiveHashDeleteTransaction) SetTransactionID(transactionID TransactionID) *LiveHashDeleteTransaction {
 	tx.Transaction.SetTransactionID(transactionID)
