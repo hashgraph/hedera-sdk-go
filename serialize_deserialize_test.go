@@ -34,6 +34,8 @@ func TestIntegrationSerializeTransactionDeserializeAndAgainSerializeHasTheSameBy
 
 	transaction := txFromBytes.(AccountCreateTransaction)
 	secondBytes, err := transaction.ToBytes()
+	fmt.Println(len(secondBytes))
+	fmt.Println(secondBytes)
 	require.NoError(t, err)
 
 	assert.Equal(t, firstBytes, secondBytes)
@@ -53,7 +55,6 @@ func TestIntegrationSerializeTransactionDeserializeAndAgainSerializeHasTheSameBy
 		SetInitialBalance(newBalance)
 	firstBytes, err := originalTransaction.ToBytes()
 	require.NoError(t, err)
-	fmt.Println("First Bytes: ", firstBytes)
 
 	txFromBytes, err := TransactionFromBytes(firstBytes)
 	require.NoError(t, err)
@@ -62,12 +63,7 @@ func TestIntegrationSerializeTransactionDeserializeAndAgainSerializeHasTheSameBy
 	secondBytes, err := transaction.ToBytes()
 	require.NoError(t, err)
 
-	fmt.Println("Second Bytes: ", secondBytes)
-
-	txFromBytes2, err := TransactionFromBytes(secondBytes)
-	transaction2 := txFromBytes2.(AccountCreateTransaction)
-
-	// assert.Equal(t, firstBytes, secondBytes)
+	assert.Equal(t, firstBytes, secondBytes)
 }
 
 func TestIntegrationSerializeTransactionWithoutNodeAccountIdDeserialiseAndExecute(t *testing.T) {
