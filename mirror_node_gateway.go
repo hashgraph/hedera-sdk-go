@@ -47,7 +47,7 @@ func accountInfoQuery(network string, accountId string) (map[string]interface{},
 }
 
 // Function to obtain balance of tokens for given contract ID. Return the pure JSON response as mapping
-func contractInfoQuery(network string, contractId string) (map[string]interface{}, error) {
+func contractInfoQuery(network string, contractId string) (map[string]interface{}, error) { // nolint
 	contractInfoUrl := buildUrl(network, queryTypes["contract"], contractId)
 	return makeGetRequest(contractInfoUrl)
 }
@@ -59,9 +59,9 @@ func tokenReleationshipQuery(network string, id string) (map[string]interface{},
 
 // Make a GET HTTP request to provided URL and map it's json response to a generic `interface` map and return it
 func makeGetRequest(url string) (response map[string]interface{}, e error) {
-	fmt.Println(url)
 	// Make an HTTP request
-	resp, err := http.Get(url)
+	resp, err := http.Get(url) //nolint
+
 	if err != nil {
 		return nil, err
 	}

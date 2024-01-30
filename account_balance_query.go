@@ -116,9 +116,9 @@ func (q *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error) {
 
 	network := obtainUrlForMirrorNode(client)
 	if q.accountID != nil {
-		_, err = queryBalanceFromMirrorNode(network, q.accountID.String(), &result)
+		err = queryBalanceFromMirrorNode(network, q.accountID.String(), &result)
 	} else {
-		_, err = queryBalanceFromMirrorNode(network, q.contractID.String(), &result)
+		err = queryBalanceFromMirrorNode(network, q.contractID.String(), &result)
 	}
 	if err != nil {
 		return AccountBalance{}, nil
@@ -128,10 +128,10 @@ func (q *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error) {
 
 // Helper function, which query the mirror node and if the balance has tokens, it iterate over the tokens and assign them
 // inside `AccountBalance` tokens field
-func queryBalanceFromMirrorNode(network string, id string, result *AccountBalance) (*AccountBalance, error) {
+func queryBalanceFromMirrorNode(network string, id string, result *AccountBalance) error {
 	response, err := accountBalanceQuery(network, id)
 	if err != nil {
-		return result, err
+		return err
 	}
 	// If user has tokens
 	result.Tokens.balances = make(map[string]uint64)
@@ -143,7 +143,7 @@ func queryBalanceFromMirrorNode(network string, id string, result *AccountBalanc
 		}
 	}
 
-	return result, nil
+	return nil
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this query.

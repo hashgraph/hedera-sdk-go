@@ -58,6 +58,9 @@ func (q *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
 	}
 
 	result, err := _AccountInfoFromProtobuf(resp.GetCryptoGetInfo().AccountInfo)
+	if err != nil {
+		return AccountInfo{}, err
+	}
 
 	network := obtainUrlForMirrorNode(client)
 	_, err = accountInfoqueryTokensRelationshipFromMirrorNode(network, q.accountID.String(), &result)
