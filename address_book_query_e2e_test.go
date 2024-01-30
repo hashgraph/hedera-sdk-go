@@ -41,7 +41,7 @@ func TestIntegrationAddressBookQueryUpdateAll(t *testing.T) {
 		Execute(client)
 	require.NoError(t, err)
 	require.Greater(t, len(previewnet.NodeAddresses), 0)
-
+	asd.erea
 	client, err = ClientFromConfig([]byte(`{"network":"testnet"}`))
 	require.NoError(t, err)
 	client.SetMirrorNetwork(testnetMirror)
