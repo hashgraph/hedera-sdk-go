@@ -287,7 +287,7 @@ func TestIntegrationTopicSubmitTransactionSerializationDeserialization(t *testin
 	require.NoError(t, err)
 
 	topicSubmitTx := fromBytes.(TopicMessageSubmitTransaction)
-	_, err := topicSubmitTx.Execute(env.Client)
+	_, err = topicSubmitTx.Execute(env.Client)
 	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
