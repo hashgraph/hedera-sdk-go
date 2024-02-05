@@ -169,7 +169,9 @@ func TestIntegrationFileAppendTransactionCanExecuteAfterSerializationDeserializa
 	afterI, err := TransactionFromBytes(bytes)
 	require.NoError(t, err)
 
-	resp, err = afterI.(*FileAppendTransaction).SetNodeAccountIDs([]AccountID{resp.NodeID}).
+	tx := afterI.(FileAppendTransaction)
+
+	resp, err = tx.SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetContents([]byte(" world!")).Execute(env.Client)
 	require.NoError(t, err)
 
