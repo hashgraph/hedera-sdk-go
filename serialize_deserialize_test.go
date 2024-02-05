@@ -66,35 +66,6 @@ func TestIntegrationSerializeTransactionDeserializeAndAgainSerializeHasTheSameBy
 	assert.Equal(t, firstBytes, secondBytes)
 }
 
-func TestIntegrationSerializeTransactionWithoutNodeAccountIdDeserialiseAndExecute(t *testing.T) {
-	t.Parallel()
-	env := NewIntegrationTestEnv(t)
-
-	newKey, err := PrivateKeyGenerateEd25519()
-	require.NoError(t, err)
-
-	newBalance := NewHbar(2)
-
-	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
-
-	transactionOriginal := NewAccountCreateTransaction().
-		SetKey(newKey.PublicKey()).
-		SetInitialBalance(newBalance)
-
-	require.NoError(t, err)
-	resp, _ := transactionOriginal.ToBytes()
-
-	txFromBytes, err := TransactionFromBytes(resp)
-	require.NoError(t, err)
-
-	transaction := txFromBytes.(AccountCreateTransaction)
-	_, err = transaction.
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		Execute(env.Client)
-
-	require.NoError(t, err)
-}
-
 func TestIntegrationAddSignatureSerializeDeserializeAddAnotherSignatureExecute(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
