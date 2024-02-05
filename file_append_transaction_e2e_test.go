@@ -141,3 +141,60 @@ func TestIntegrationFileAppendTransactionNothingSet(t *testing.T) {
 	err = CloseIntegrationTestEnv(env, nil)
 	require.NoError(t, err)
 }
+func TestIntegrationFileAppendTransactionCanExecuteAfterSerializationDeserialization(t *testing.T) {
+	t.Parallel()
+	env := NewIntegrationTestEnv(t)
+
+	resp, err := NewFileCreateTransaction().
+		SetKeys(env.Client.GetOperatorPublicKey()).
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetContents([]byte("Hello")).
+		SetTransactionMemo("go sdk e2e tests").
+		Execute(env.Client)
+
+	require.NoError(t, err)
+
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	fileID := *receipt.FileID
+	assert.NotNil(t, fileID)
+
+	before := NewFileAppendTransaction().
+		SetFileID(fileID)
+
+	bytes, err := before.ToBytes()
+	require.NoError(t, err)
+
+	afterI, err := TransactionFromBytes(bytes)
+	require.NoError(t, err)
+
+	tx := afterI.(FileAppendTransaction)
+
+	resp, err = tx.SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetContents([]byte(" world!")).Execute(env.Client)
+	require.NoError(t, err)
+
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	contents, err := NewFileContentsQuery().
+		SetFileID(fileID).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	assert.Equal(t, []byte("Hello world!"), contents)
+
+	resp, err = NewFileDeleteTransaction().
+		SetFileID(fileID).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	require.NoError(t, err)
+}
