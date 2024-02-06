@@ -1,3 +1,9 @@
+## v2.35.0
+
+### Fixed
+
+-   Implemented HIP-745 (Serialize transaction without freezing)
+
 ## v2.34.1
 
 ### Fixed
