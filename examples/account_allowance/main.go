@@ -17,7 +17,7 @@ func main() {
 		panic(fmt.Sprintf("%v : error creating client", err))
 	}
 
-	// Retrieving operator ID from environment variable OPERATOR_ID 
+	// Retrieving operator ID from environment variable OPERATOR_ID
 	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error converting string to AccountID", err))
@@ -50,6 +50,7 @@ func main() {
 		SetKey(aliceKey.PublicKey()).
 		SetInitialBalance(hedera.NewHbar(5)).
 		Execute(client)
+
 	if err != nil {
 		panic(fmt.Sprintf("%v : error creating account", err))
 	}
