@@ -66,6 +66,7 @@ type ContractFunctionResult struct {
 	Amount               Hbar
 	FunctionParameters   []byte
 	ContractNonces       []*ContractNonceInfo
+	SignerNonce          int64
 }
 
 // GetBool gets a _Solidity bool from the result at the given index
@@ -495,6 +496,7 @@ func _ContractFunctionResultFromProtobuf(pb *services.ContractFunctionResult) Co
 		Amount:             HbarFromTinybar(pb.Amount),
 		FunctionParameters: pb.FunctionParameters,
 		ContractNonces:     nonces,
+		SignerNonce:        pb.SignerNonce.Value,
 	}
 
 	if pb.ContractID != nil {
@@ -522,6 +524,7 @@ func (result ContractFunctionResult) _ToProtobuf() *services.ContractFunctionRes
 		Gas:                result.GasAvailable,
 		Amount:             result.Amount.AsTinybar(),
 		FunctionParameters: result.FunctionParameters,
+		SignerNonce:        wrapperspb.Int64(result.SignerNonce),
 	}
 }
 
