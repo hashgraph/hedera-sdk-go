@@ -19,5 +19,3 @@ vendor/
 .env
 go.work
 
-# Configuration
-client-config-with-operator.json
