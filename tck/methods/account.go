@@ -8,11 +8,15 @@ import (
 	"time"
 )
 
+// ---- Struct to hold hedera.Client implementation and to implement the methods of the specification ----
 type AccountService struct {
 	sdkService *SDKService
 	hedera.AccountID
 }
 
+// NOTE: Structs are created with uppercase, otherwise they are private and JSON serializer cannot encode/decode them.
+// That's why we set `json:"{expected field name}"`, which is lowercase.
+// ---- Different methods params objects ----
 type CreateAccountParams struct {
 	PublicKey                     string        `json:"publicKey"`
 	InitialBalance                int64         `json:"initialBalance"`
@@ -47,14 +51,12 @@ type DeleteAccountParams struct {
 	RecipientId string `json:"recipientId"`
 }
 
-// NOTE: Structs are created with uppercase, otherwise they are private and JSON serializer cannot encode/decode them.
-// That's why we set `json:"{expected field name}"`, which is lowercase.
-
 // TODO: Move this struct in dedicated file for hepler structs, or something like this. We want to use it for all methods
 type ErrorStatus struct {
 	Status string `json:"status"`
 }
 
+// ---- Structs to hold different response structures expected from jRPC client ----
 type AccountResponse struct {
 	AccountId string `json:"accountId"`
 	Status    string `json:"status"`
@@ -68,6 +70,7 @@ type AccountInfoResponse struct {
 	AutoRenewPeriod               time.Duration
 }
 
+// Variable to be set to `SetGrpcDeadline` for all transactions
 var threeSec = time.Second * 3
 
 // SetSdkService We set object, which is holding our client params. Pass it by referance, because TCK is dynamically updating it
@@ -187,18 +190,60 @@ func (a *AccountService) GetAccountInfo(_ context.Context, accountId string) (*A
 		AutoRenewPeriod:               resp.AutoRenewPeriod}, nil
 }
 
-// UpdateAccountKey updates an existing acoount id keys with provided params
-func (a *AccountService) UpdateAccountKey(_ context.Context, params UpdateAccountKeyParams) (*AccountResponse, error) {
+type UpdateAccountParams struct {
+	AccountId string `json:"accountId"`
+	// Params for updateAccountKey
+	NewPublicKey  string `json:"newPublicKey"`
+	OldPrivateKey string `json:"oldPrivateKey"`
+	NewPrivateKey string `json:"newPrivateKey"`
+	// Params for updateAccountMemo
+	Key  string `json:"key"`
+	Memo string `json:"memo"`
+}
+
+// UpdateAccount transaction to be associated with hedera.AccountUpdateTransaction and to be enough generic, so different
+// updates can be calling this func
+func (a *AccountService) UpdateAccount(_ context.Context, params UpdateAccountParams) (*AccountResponse, error) {
+	if params.NewPrivateKey != "" { // Proceed with UpdateAccountMemo
+		return a.UpdateAccountKey(params.AccountId, params.NewPublicKey, params.OldPrivateKey, params.NewPrivateKey)
+	} else if params.Memo != "" { // Proceed with UpdateAccountKey
+		return a.UpdateAccountMemo(params.AccountId, params.Key, params.Memo)
+	}
+	return nil, nil
+}
+
+// DeleteAccount deletes a provided account by signing the transaction with the key of that account
+func (a *AccountService) DeleteAccount(_ context.Context, params DeleteAccountParams) (*AccountResponse, error) {
 	accId, _ := hedera.AccountIDFromString(params.AccountId)
-	key, _ := hedera.PublicKeyFromString(params.NewPublicKey)
+	recipientId, _ := hedera.AccountIDFromString(params.RecipientId)
+	tx, err := hedera.NewAccountDeleteTransaction().SetGrpcDeadline(&threeSec).SetAccountID(accId).SetTransferAccountID(recipientId).FreezeWith(a.sdkService.Client)
+	if err != nil {
+		return nil, jrpc2.Errorf(-32603, "Internal error", ErrorStatus{Status: err.Error()})
+	}
+	signature, _ := hedera.PrivateKeyFromString(params.AccountKey)
+
+	resp, err := tx.Sign(signature).Execute(a.sdkService.Client)
+	if err != nil {
+		return nil, jrpc2.Errorf(-32603, "Internal error", ErrorStatus{Status: err.Error()})
+	}
+
+	receipt, _ := resp.GetReceipt(a.sdkService.Client)
+	return &AccountResponse{Status: receipt.Status.String()}, nil
+}
+
+// Helper methods
+// UpdateAccountKey updates an existing acoount id keys with provided params
+func (a *AccountService) UpdateAccountKey(accountId string, newPublicKey string, oldPrivateKey string, newPrivateKey string) (*AccountResponse, error) {
+	accId, _ := hedera.AccountIDFromString(accountId)
+	key, _ := hedera.PublicKeyFromString(newPublicKey)
 
 	tx, err := hedera.NewAccountUpdateTransaction().SetGrpcDeadline(&threeSec).SetAccountID(accId).SetKey(key).FreezeWith(a.sdkService.Client)
 
 	if err != nil {
 		return nil, jrpc2.Errorf(-32603, "Internal error", ErrorStatus{Status: err.Error()})
 	}
-	oldKey, _ := hedera.PrivateKeyFromString(params.OldPrivateKey)
-	newKey, _ := hedera.PrivateKeyFromString(params.NewPrivateKey)
+	oldKey, _ := hedera.PrivateKeyFromString(oldPrivateKey)
+	newKey, _ := hedera.PrivateKeyFromString(newPrivateKey)
 	tx.Sign(oldKey)
 	tx.Sign(newKey)
 
@@ -216,32 +261,13 @@ func (a *AccountService) UpdateAccountKey(_ context.Context, params UpdateAccoun
 }
 
 // UpdateAccountMemo updates account memo of an existing account ID
-func (a *AccountService) UpdateAccountMemo(_ context.Context, params UpdateAccountMemoParams) (*AccountResponse, error) {
-	accId, _ := hedera.AccountIDFromString(params.AccountId)
-	tx, err := hedera.NewAccountUpdateTransaction().SetGrpcDeadline(&threeSec).SetAccountID(accId).SetAccountMemo(params.Memo).FreezeWith(a.sdkService.Client)
+func (a *AccountService) UpdateAccountMemo(accountId string, key string, memo string) (*AccountResponse, error) {
+	accId, _ := hedera.AccountIDFromString(accountId)
+	tx, err := hedera.NewAccountUpdateTransaction().SetGrpcDeadline(&threeSec).SetAccountID(accId).SetAccountMemo(memo).FreezeWith(a.sdkService.Client)
 	if err != nil {
 		return nil, jrpc2.Errorf(-32603, "Internal error", ErrorStatus{Status: err.Error()})
 	}
-	signature, _ := hedera.PrivateKeyFromString(params.Key)
-
-	resp, err := tx.Sign(signature).Execute(a.sdkService.Client)
-	if err != nil {
-		return nil, jrpc2.Errorf(-32603, "Internal error", ErrorStatus{Status: err.Error()})
-	}
-
-	receipt, _ := resp.GetReceipt(a.sdkService.Client)
-	return &AccountResponse{Status: receipt.Status.String()}, nil
-}
-
-// DeleteAccount deletes a provided account by signing the transaction with the key of that account
-func (a *AccountService) DeleteAccount(_ context.Context, params DeleteAccountParams) (*AccountResponse, error) {
-	accId, _ := hedera.AccountIDFromString(params.AccountId)
-	recipientId, _ := hedera.AccountIDFromString(params.RecipientId)
-	tx, err := hedera.NewAccountDeleteTransaction().SetGrpcDeadline(&threeSec).SetAccountID(accId).SetTransferAccountID(recipientId).FreezeWith(a.sdkService.Client)
-	if err != nil {
-		return nil, jrpc2.Errorf(-32603, "Internal error", ErrorStatus{Status: err.Error()})
-	}
-	signature, _ := hedera.PrivateKeyFromString(params.AccountKey)
+	signature, _ := hedera.PrivateKeyFromString(key)
 
 	resp, err := tx.Sign(signature).Execute(a.sdkService.Client)
 	if err != nil {
