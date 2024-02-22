@@ -450,6 +450,13 @@ func (result ContractFunctionResult) GetResult(types string) (interface{}, error
 	return parsedResult, nil
 }
 
+func extractInt64OrZero(pb *services.ContractFunctionResult) int64 {
+	if pb.GetSignerNonce() != nil {
+		return pb.SignerNonce.Value
+	}
+	return 0
+}
+
 func _ContractFunctionResultFromProtobuf(pb *services.ContractFunctionResult) ContractFunctionResult {
 	infos := make([]ContractLogInfo, len(pb.LogInfo))
 
@@ -484,6 +491,8 @@ func _ContractFunctionResultFromProtobuf(pb *services.ContractFunctionResult) Co
 		}
 	}
 
+	fmt.Println("In _ContractFunctionResultFromProtobuf")
+
 	result := ContractFunctionResult{
 		ContractCallResult: pb.ContractCallResult,
 		ErrorMessage:       pb.ErrorMessage,
@@ -496,12 +505,14 @@ func _ContractFunctionResultFromProtobuf(pb *services.ContractFunctionResult) Co
 		Amount:             HbarFromTinybar(pb.Amount),
 		FunctionParameters: pb.FunctionParameters,
 		ContractNonces:     nonces,
-		SignerNonce:        pb.SignerNonce.Value,
+		SignerNonce:        extractInt64OrZero(pb),
 	}
 
 	if pb.ContractID != nil {
 		result.ContractID = _ContractIDFromProtobuf(pb.ContractID)
 	}
+
+	fmt.Println("In _ContractFunctionResultFromProtobuf")
 
 	return result
 }
