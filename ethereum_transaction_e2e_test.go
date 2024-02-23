@@ -162,4 +162,24 @@ func TestIntegrationEthereumTransaction(t *testing.T) {
 
 	assert.Equal(t, int64(1), record.CallResult.SignerNonce)
 
+	resp, err = NewContractDeleteTransaction().
+		SetContractID(contractID).
+		SetTransferAccountID(env.Client.GetOperatorAccountID()).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	resp, err = NewFileDeleteTransaction().
+		SetFileID(fileID).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	require.NoError(t, err)
+
 }
