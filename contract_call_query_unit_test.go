@@ -28,6 +28,7 @@ import (
 	"testing"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
+	"google.golang.org/protobuf/types/known/wrapperspb"
 
 	"github.com/stretchr/testify/assert"
 
@@ -94,6 +95,7 @@ func TestUnitMockContractCallQuery(t *testing.T) {
 						ContractID:         &services.ContractID{Contract: &services.ContractID_ContractNum{ContractNum: 123}},
 						GasUsed:            75000,
 						ContractCallResult: params._Build(&message),
+						SignerNonce:        wrapperspb.Int64(0),
 					},
 				},
 			},
