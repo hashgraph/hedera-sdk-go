@@ -491,8 +491,6 @@ func _ContractFunctionResultFromProtobuf(pb *services.ContractFunctionResult) Co
 		}
 	}
 
-	fmt.Println("In _ContractFunctionResultFromProtobuf")
-
 	result := ContractFunctionResult{
 		ContractCallResult: pb.ContractCallResult,
 		ErrorMessage:       pb.ErrorMessage,
@@ -511,8 +509,6 @@ func _ContractFunctionResultFromProtobuf(pb *services.ContractFunctionResult) Co
 	if pb.ContractID != nil {
 		result.ContractID = _ContractIDFromProtobuf(pb.ContractID)
 	}
-
-	fmt.Println("In _ContractFunctionResultFromProtobuf")
 
 	return result
 }
