@@ -2,10 +2,11 @@ package methods
 
 import (
 	"context"
-	"fmt"
-	"github.com/creachadair/jrpc2"
-	"github.com/hashgraph/hedera-sdk-go/v2"
 	"time"
+
+	"github.com/hashgraph/hedera-sdk-go/tck/param"
+	"github.com/hashgraph/hedera-sdk-go/tck/response"
+	"github.com/hashgraph/hedera-sdk-go/v2"
 )
 
 // ---- Struct to hold hedera.Client implementation and to implement the methods of the specification ----
@@ -14,80 +15,22 @@ type AccountService struct {
 	hedera.AccountID
 }
 
-// NOTE: Structs are created with uppercase, otherwise they are private and JSON serializer cannot encode/decode them.
-// That's why we set `json:"{expected field name}"`, which is lowercase.
-// ---- Different methods params objects ----
-type CreateAccountParams struct {
-	PublicKey                     string        `json:"publicKey"`
-	InitialBalance                int64         `json:"initialBalance"`
-	ReceiverSignatureRequired     bool          `json:"receiverSignatureRequired"`
-	MaxAutomaticTokenAssociations uint32        `json:"maxAutomaticTokenAssociations"`
-	StakedAccountId               string        `json:"stakedAccountId"`
-	StakedNodeId                  int64         `json:"stakedNodeId"`
-	DeclineStakingReward          bool          `json:"declineStakingReward"`
-	AccountMemo                   string        `json:"accountMemo"`
-	AutoRenewPeriod               time.Duration `json:"autoRenewPeriod"`
-	PrivateKey                    string        `json:"privateKey"`
-}
-type AccountFromAliasParams struct {
-	OperatorId     string `json:"operator_id"`
-	AliasAccountId string `json:"aliasAccountId"`
-	InitialBalance int64  `json:"initialBalance"`
-}
-type UpdateAccountKeyParams struct {
-	AccountId     string `json:"accountId"`
-	NewPublicKey  string `json:"newPublicKey"`
-	OldPrivateKey string `json:"oldPrivateKey"`
-	NewPrivateKey string `json:"newPrivateKey"`
-}
-type UpdateAccountMemoParams struct {
-	AccountId string `json:"accountId"`
-	Key       string `json:"key"`
-	Memo      string `json:"memo"`
-}
-type DeleteAccountParams struct {
-	AccountId   string `json:"accountId"`
-	AccountKey  string `json:"accountKey"`
-	RecipientId string `json:"recipientId"`
-}
-
-// TODO: Move this struct in dedicated file for hepler structs, or something like this. We want to use it for all methods
-type ErrorStatus struct {
-	Status string `json:"status"`
-}
-
-// ---- Structs to hold different response structures expected from jRPC client ----
-type AccountResponse struct {
-	AccountId string `json:"accountId"`
-	Status    string `json:"status"`
-}
-type AccountInfoResponse struct {
-	AccountID                     string
-	Balance                       string
-	Key                           string
-	AccountMemo                   string
-	MaxAutomaticTokenAssociations uint32
-	AutoRenewPeriod               time.Duration
-}
-
 // Variable to be set to `SetGrpcDeadline` for all transactions
-var threeSec = time.Second * 3
+var threeSecondsDuration = time.Second * 3
 
-// SetSdkService We set object, which is holding our client params. Pass it by referance, because TCK is dynamically updating it
+// SetSdkService We set object, which is holding our client param. Pass it by referance, because TCK is dynamically updating it
 func (a *AccountService) SetSdkService(service *SDKService) {
 	a.sdkService = service
 }
 
-// TODO Find better way to handle error. We want some wrapper, which would intercept the error and contruct the correct
-// TODO jrpc error based on that  "jrpc2.Errorf(-32603, "Internal error"/"Hedera error", ErrorStatus{Status: err.Error()})"
 // CreateAccount jRPC method for createAccount
-func (a *AccountService) CreateAccount(_ context.Context, accountParams CreateAccountParams) (*AccountResponse, error) {
-	transaction := hedera.NewAccountCreateTransaction().SetGrpcDeadline(&threeSec)
+func (a *AccountService) CreateAccount(_ context.Context, accountParams param.CreateAccountParams) (*response.AccountResponse, error) {
+	transaction := hedera.NewAccountCreateTransaction().SetGrpcDeadline(&threeSecondsDuration)
 
 	if accountParams.PublicKey != "" {
 		key, err := hedera.PublicKeyFromString(accountParams.PublicKey)
 		if err != nil {
-			return nil, jrpc2.Errorf(-32603, "Internal error", ErrorStatus{Status: err.Error()})
+			return nil, response.HederaError.WithData(err.Error())
 		}
 		transaction.SetKey(key)
 	}
@@ -103,7 +46,7 @@ func (a *AccountService) CreateAccount(_ context.Context, accountParams CreateAc
 	if accountParams.StakedAccountId != "" {
 		accountId, err := hedera.AccountIDFromString(accountParams.StakedAccountId)
 		if err != nil {
-			return nil, jrpc2.Errorf(-32603, "Internal error", ErrorStatus{Status: err.Error()})
+			return nil, response.HederaError.WithData(err.Error())
 		}
 		transaction.SetStakedAccountID(accountId)
 	}
@@ -122,67 +65,79 @@ func (a *AccountService) CreateAccount(_ context.Context, accountParams CreateAc
 	if accountParams.PrivateKey != "" {
 		key, err := hedera.PrivateKeyFromString(accountParams.PrivateKey)
 		if err != nil {
-			return nil, jrpc2.Errorf(-32603, "Internal error", ErrorStatus{Status: err.Error()})
+			return nil, response.HederaError.WithData(err.Error())
 		}
-
 		_, err = transaction.FreezeWith(a.sdkService.Client)
 		if err != nil {
-			return nil, jrpc2.Errorf(-32603, err.Error())
+			return nil, response.HederaError.WithData(err.Error())
 		}
 		transaction.Sign(key)
 	}
 
 	txResponse, err := transaction.Execute(a.sdkService.Client)
 	if err != nil {
-		fmt.Println(err)
-		return nil, jrpc2.Errorf(-32603, "Internal error").WithData(ErrorStatus{Status: err.Error()})
+		if hederaErr, ok := err.(hedera.ErrHederaPreCheckStatus); ok {
+			return nil, response.NewHederaPrecheckError(hederaErr)
+		}
+		return nil, response.InternalError
 	}
 	receipt, err := txResponse.GetReceipt(a.sdkService.Client)
+	if err != nil {
+		if hederaErr, ok := err.(hedera.ErrHederaReceiptStatus); ok {
+			return nil, response.NewHederaReceiptError(hederaErr)
+		}
+		return nil, response.InternalError
+	}
 	var accId string
 	if receipt.Status == hedera.StatusSuccess {
 		accId = receipt.AccountID.String()
 	}
 
-	return &AccountResponse{AccountId: accId, Status: receipt.Status.String()}, nil
+	return &response.AccountResponse{AccountId: accId, Status: receipt.Status.String()}, nil
 }
 
-// CreateAccountFromAlias Create an account from aliasId by transferring  some HBAR amount from given account (opperatorId)
-func (a *AccountService) CreateAccountFromAlias(_ context.Context, fromAliasParams AccountFromAliasParams) (*AccountResponse, error) {
+// CreateAccountFromAlias Create an account from aliasId by transferring some HBAR amount from given account (opperatorId)
+func (a *AccountService) CreateAccountFromAlias(_ context.Context, fromAliasParams param.AccountFromAliasParams) (*response.AccountResponse, error) {
 	operator, err := hedera.AccountIDFromString(fromAliasParams.OperatorId)
-	alias, err := hedera.AccountIDFromString(fromAliasParams.AliasAccountId)
-
 	if err != nil {
-		return nil, jrpc2.Errorf(-32603, "Internal error", ErrorStatus{Status: err.Error()})
+		return nil, response.HederaError.WithData(err.Error())
+	}
+	alias, err := hedera.AccountIDFromString(fromAliasParams.AliasAccountId)
+	if err != nil {
+		return nil, response.HederaError.WithData(err.Error())
 	}
 
-	resp, err := hedera.NewTransferTransaction().SetGrpcDeadline(&threeSec).
+	resp, err := hedera.NewTransferTransaction().SetGrpcDeadline(&threeSecondsDuration).
 		AddHbarTransfer(operator, hedera.NewHbar(float64(fromAliasParams.InitialBalance)).Negated()).
 		AddHbarTransfer(alias, hedera.NewHbar(float64(fromAliasParams.InitialBalance))).
 		Execute(a.sdkService.Client)
-
 	if err != nil {
-		fmt.Println(err)
-		return nil, jrpc2.Errorf(-32603, "Internal error").WithData(ErrorStatus{Status: err.Error()})
+		return nil, response.HederaError.WithData(err.Error())
 	}
+
 	receipt, err := resp.GetReceipt(a.sdkService.Client)
+	if err != nil {
+		return nil, response.HederaError.WithData(err.Error())
+	}
 	var accId string
 	if receipt.Status == hedera.StatusSuccess {
 		accId = receipt.AccountID.String()
 	}
-
-	return &AccountResponse{AccountId: accId, Status: receipt.Status.String()}, nil
+	return &response.AccountResponse{AccountId: accId, Status: receipt.Status.String()}, nil
 }
 
 // GetAccountInfo Get info for a given accountId and return a custom object containing aggregated information about the account
-func (a *AccountService) GetAccountInfo(_ context.Context, accountId string) (*AccountInfoResponse, error) {
-	account, _ := hedera.AccountIDFromString(accountId)
-
-	resp, err := hedera.NewAccountInfoQuery().SetAccountID(account).SetGrpcDeadline(&threeSec).Execute(a.sdkService.Client)
+func (a *AccountService) GetAccountInfo(_ context.Context, accountId string) (*response.AccountInfoResponse, error) {
+	account, err := hedera.AccountIDFromString(accountId)
 	if err != nil {
-		return nil, jrpc2.Errorf(-32603, "Internal error", ErrorStatus{Status: err.Error()})
+		return nil, response.HederaError.WithData(err.Error())
+	}
+	resp, err := hedera.NewAccountInfoQuery().SetAccountID(account).SetGrpcDeadline(&threeSecondsDuration).Execute(a.sdkService.Client)
+	if err != nil {
+		return nil, response.HederaError.WithData(err.Error())
 	}
 
-	return &AccountInfoResponse{AccountID: resp.AccountID.String(),
+	return &response.AccountInfoResponse{AccountID: resp.AccountID.String(),
 		Balance:                       resp.Balance.String(),
 		Key:                           resp.Key.String(),
 		AccountMemo:                   resp.AccountMemo,
@@ -190,90 +145,96 @@ func (a *AccountService) GetAccountInfo(_ context.Context, accountId string) (*A
 		AutoRenewPeriod:               resp.AutoRenewPeriod}, nil
 }
 
-type UpdateAccountParams struct {
-	AccountId string `json:"accountId"`
-	// Params for updateAccountKey
-	NewPublicKey  string `json:"newPublicKey"`
-	OldPrivateKey string `json:"oldPrivateKey"`
-	NewPrivateKey string `json:"newPrivateKey"`
-	// Params for updateAccountMemo
-	Key  string `json:"key"`
-	Memo string `json:"memo"`
-}
-
 // UpdateAccount transaction to be associated with hedera.AccountUpdateTransaction and to be enough generic, so different
 // updates can be calling this func
-func (a *AccountService) UpdateAccount(_ context.Context, params UpdateAccountParams) (*AccountResponse, error) {
+func (a *AccountService) UpdateAccount(_ context.Context, params param.UpdateAccountParams) (*response.AccountResponse, error) {
 	if params.NewPrivateKey != "" { // Proceed with UpdateAccountMemo
-		return a.UpdateAccountKey(params.AccountId, params.NewPublicKey, params.OldPrivateKey, params.NewPrivateKey)
+		return a.UpdateAccountKey(params)
 	} else if params.Memo != "" { // Proceed with UpdateAccountKey
-		return a.UpdateAccountMemo(params.AccountId, params.Key, params.Memo)
+		return a.UpdateAccountMemo(params)
 	}
 	return nil, nil
 }
 
 // DeleteAccount deletes a provided account by signing the transaction with the key of that account
-func (a *AccountService) DeleteAccount(_ context.Context, params DeleteAccountParams) (*AccountResponse, error) {
-	accId, _ := hedera.AccountIDFromString(params.AccountId)
-	recipientId, _ := hedera.AccountIDFromString(params.RecipientId)
-	tx, err := hedera.NewAccountDeleteTransaction().SetGrpcDeadline(&threeSec).SetAccountID(accId).SetTransferAccountID(recipientId).FreezeWith(a.sdkService.Client)
+func (a *AccountService) DeleteAccount(_ context.Context, param param.DeleteAccountParams) (*response.AccountResponse, error) {
+	accId, _ := hedera.AccountIDFromString(param.AccountId)
+	recipientId, _ := hedera.AccountIDFromString(param.RecipientId)
+	tx, err := hedera.NewAccountDeleteTransaction().SetGrpcDeadline(&threeSecondsDuration).SetAccountID(accId).SetTransferAccountID(recipientId).FreezeWith(a.sdkService.Client)
 	if err != nil {
-		return nil, jrpc2.Errorf(-32603, "Internal error", ErrorStatus{Status: err.Error()})
+		return nil, response.HederaError.WithData(err.Error())
 	}
-	signature, _ := hedera.PrivateKeyFromString(params.AccountKey)
+	signature, _ := hedera.PrivateKeyFromString(param.AccountKey)
 
 	resp, err := tx.Sign(signature).Execute(a.sdkService.Client)
 	if err != nil {
-		return nil, jrpc2.Errorf(-32603, "Internal error", ErrorStatus{Status: err.Error()})
+		return nil, response.HederaError.WithData(err.Error())
 	}
 
 	receipt, _ := resp.GetReceipt(a.sdkService.Client)
-	return &AccountResponse{Status: receipt.Status.String()}, nil
+	return &response.AccountResponse{Status: receipt.Status.String()}, nil
 }
 
-// Helper methods
 // UpdateAccountKey updates an existing acoount id keys with provided params
-func (a *AccountService) UpdateAccountKey(accountId string, newPublicKey string, oldPrivateKey string, newPrivateKey string) (*AccountResponse, error) {
-	accId, _ := hedera.AccountIDFromString(accountId)
-	key, _ := hedera.PublicKeyFromString(newPublicKey)
-
-	tx, err := hedera.NewAccountUpdateTransaction().SetGrpcDeadline(&threeSec).SetAccountID(accId).SetKey(key).FreezeWith(a.sdkService.Client)
-
+func (a *AccountService) UpdateAccountKey(params param.UpdateAccountParams) (*response.AccountResponse, error) {
+	accId, err := hedera.AccountIDFromString(params.AccountId)
 	if err != nil {
-		return nil, jrpc2.Errorf(-32603, "Internal error", ErrorStatus{Status: err.Error()})
+		return nil, response.HederaError.WithData(err.Error())
 	}
-	oldKey, _ := hedera.PrivateKeyFromString(oldPrivateKey)
-	newKey, _ := hedera.PrivateKeyFromString(newPrivateKey)
+	key, err := hedera.PublicKeyFromString(params.NewPublicKey)
+	if err != nil {
+		return nil, response.HederaError.WithData(err.Error())
+	}
+
+	tx, err := hedera.NewAccountUpdateTransaction().SetGrpcDeadline(&threeSecondsDuration).SetAccountID(accId).SetKey(key).FreezeWith(a.sdkService.Client)
+	if err != nil {
+		return nil, response.HederaError.WithData(err.Error())
+	}
+
+	oldKey, err := hedera.PrivateKeyFromString(params.OldPrivateKey)
+	if err != nil {
+		return nil, response.HederaError.WithData(err.Error())
+	}
+	newKey, err := hedera.PrivateKeyFromString(params.NewPrivateKey)
+	if err != nil {
+		return nil, response.HederaError.WithData(err.Error())
+	}
 	tx.Sign(oldKey)
 	tx.Sign(newKey)
 
 	resp, err := tx.Execute(a.sdkService.Client)
 	if err != nil {
-		return nil, jrpc2.Errorf(-32603, "Internal error", ErrorStatus{Status: err.Error()})
+		return nil, response.HederaError.WithData(err.Error())
 	}
 
 	receipt, err := resp.GetReceipt(a.sdkService.Client)
 	if err != nil {
-		return nil, jrpc2.Errorf(-32603, "Internal error", ErrorStatus{Status: err.Error()})
+		return nil, response.HederaError.WithData(err.Error())
 	}
 
-	return &AccountResponse{Status: receipt.Status.String()}, nil
+	return &response.AccountResponse{Status: receipt.Status.String()}, nil
 }
 
 // UpdateAccountMemo updates account memo of an existing account ID
-func (a *AccountService) UpdateAccountMemo(accountId string, key string, memo string) (*AccountResponse, error) {
-	accId, _ := hedera.AccountIDFromString(accountId)
-	tx, err := hedera.NewAccountUpdateTransaction().SetGrpcDeadline(&threeSec).SetAccountID(accId).SetAccountMemo(memo).FreezeWith(a.sdkService.Client)
+func (a *AccountService) UpdateAccountMemo(params param.UpdateAccountParams) (*response.AccountResponse, error) {
+	accId, err := hedera.AccountIDFromString(params.AccountId)
 	if err != nil {
-		return nil, jrpc2.Errorf(-32603, "Internal error", ErrorStatus{Status: err.Error()})
+		return nil, response.HederaError.WithData(err.Error())
 	}
-	signature, _ := hedera.PrivateKeyFromString(key)
+	tx, err := hedera.NewAccountUpdateTransaction().SetGrpcDeadline(&threeSecondsDuration).SetAccountID(accId).SetAccountMemo(params.Memo).FreezeWith(a.sdkService.Client)
+	if err != nil {
+		return nil, response.HederaError.WithData(err.Error())
+	}
+	signature, _ := hedera.PrivateKeyFromString(params.Key)
 
 	resp, err := tx.Sign(signature).Execute(a.sdkService.Client)
 	if err != nil {
-		return nil, jrpc2.Errorf(-32603, "Internal error", ErrorStatus{Status: err.Error()})
+		return nil, response.HederaError.WithData(err.Error())
 	}
 
-	receipt, _ := resp.GetReceipt(a.sdkService.Client)
-	return &AccountResponse{Status: receipt.Status.String()}, nil
+	receipt, err := resp.GetReceipt(a.sdkService.Client)
+	if err != nil {
+		return nil, response.HederaError.WithData(err.Error())
+	}
+	return &response.AccountResponse{Status: receipt.Status.String()}, nil
 }

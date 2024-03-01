@@ -1,15 +1,18 @@
 package main
 
 import (
+	"context"
 	"fmt"
-	"github.com/creachadair/jrpc2/handler"
-	"github.com/creachadair/jrpc2/jhttp"
-	"github.com/hashgraph/hedera-sdk-go/tck/methods"
-	"github.com/joho/godotenv"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
+
+	"github.com/creachadair/jrpc2/handler"
+	"github.com/creachadair/jrpc2/jhttp"
+	"github.com/hashgraph/hedera-sdk-go/tck/methods"
+	"github.com/joho/godotenv"
 )
 
 func main() {
@@ -20,7 +23,6 @@ func main() {
 	sdkService := new(methods.SDKService)
 	accountService := new(methods.AccountService)
 	accountService.SetSdkService(sdkService)
-	keyService := new(methods.KeyService)
 
 	// Create a new RPC server
 	assigner := handler.Map{
@@ -31,8 +33,8 @@ func main() {
 		"getAccountInfo":         handler.New(accountService.GetAccountInfo),
 		"updateAccount":          handler.New(accountService.UpdateAccount),
 		"deleteAccount":          handler.New(accountService.DeleteAccount),
-		"generatePublicKey":      handler.New(keyService.GeneratePublicKey),
-		"generatePrivateKey":     handler.New(keyService.GeneratePrivateKey),
+		"generatePublicKey":      handler.New(methods.GeneratePublicKey),
+		"generatePrivateKey":     handler.New(methods.GeneratePrivateKey),
 	}
 
 	bridge := jhttp.NewBridge(assigner, nil)
@@ -44,15 +46,31 @@ func main() {
 		port = "80"
 	}
 	fmt.Println("Server is listening on port: " + port)
+
+	server := &http.Server{Addr: ":" + port}
+
+	// Start the server in a separate goroutine
 	go func() {
-		http.ListenAndServe(":"+port, nil)
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			fmt.Printf("Error starting server: %s\n", err)
+		}
 	}()
 
 	signalCh := make(chan os.Signal, 1)
 	signal.Notify(signalCh, os.Interrupt, syscall.SIGTERM)
+
+	// Wait for the termination signal
 	sig := <-signalCh
 	fmt.Printf("Received signal: %v\n", sig)
 
-	// Exit the application
-	os.Exit(0)
+	// Create a context with a timeout
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	// Shutdown the server gracefully
+	if err := server.Shutdown(ctx); err != nil {
+		fmt.Printf("Error shutting down server: %s\n", err)
+	}
+
+	fmt.Println("Server shutdown complete.")
 }
