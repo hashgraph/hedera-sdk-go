@@ -30,7 +30,7 @@ func (a *AccountService) CreateAccount(_ context.Context, accountParams param.Cr
 	if accountParams.PublicKey != "" {
 		key, err := hedera.PublicKeyFromString(accountParams.PublicKey)
 		if err != nil {
-			return nil, response.HederaError.WithData(err.Error())
+			return nil, err
 		}
 		transaction.SetKey(key)
 	}
@@ -46,7 +46,7 @@ func (a *AccountService) CreateAccount(_ context.Context, accountParams param.Cr
 	if accountParams.StakedAccountId != "" {
 		accountId, err := hedera.AccountIDFromString(accountParams.StakedAccountId)
 		if err != nil {
-			return nil, response.HederaError.WithData(err.Error())
+			return nil, err
 		}
 		transaction.SetStakedAccountID(accountId)
 	}
@@ -65,28 +65,22 @@ func (a *AccountService) CreateAccount(_ context.Context, accountParams param.Cr
 	if accountParams.PrivateKey != "" {
 		key, err := hedera.PrivateKeyFromString(accountParams.PrivateKey)
 		if err != nil {
-			return nil, response.HederaError.WithData(err.Error())
+			return nil, err
 		}
 		_, err = transaction.FreezeWith(a.sdkService.Client)
 		if err != nil {
-			return nil, response.HederaError.WithData(err.Error())
+			return nil, err
 		}
 		transaction.Sign(key)
 	}
 
 	txResponse, err := transaction.Execute(a.sdkService.Client)
 	if err != nil {
-		if hederaErr, ok := err.(hedera.ErrHederaPreCheckStatus); ok {
-			return nil, response.NewHederaPrecheckError(hederaErr)
-		}
-		return nil, response.InternalError
+		return nil, err
 	}
 	receipt, err := txResponse.GetReceipt(a.sdkService.Client)
 	if err != nil {
-		if hederaErr, ok := err.(hedera.ErrHederaReceiptStatus); ok {
-			return nil, response.NewHederaReceiptError(hederaErr)
-		}
-		return nil, response.InternalError
+		return nil, err
 	}
 	var accId string
 	if receipt.Status == hedera.StatusSuccess {
@@ -100,7 +94,7 @@ func (a *AccountService) CreateAccount(_ context.Context, accountParams param.Cr
 func (a *AccountService) CreateAccountFromAlias(_ context.Context, fromAliasParams param.AccountFromAliasParams) (*response.AccountResponse, error) {
 	operator, err := hedera.AccountIDFromString(fromAliasParams.OperatorId)
 	if err != nil {
-		return nil, response.HederaError.WithData(err.Error())
+		return nil, err
 	}
 	alias, err := hedera.AccountIDFromString(fromAliasParams.AliasAccountId)
 	if err != nil {
@@ -112,12 +106,12 @@ func (a *AccountService) CreateAccountFromAlias(_ context.Context, fromAliasPara
 		AddHbarTransfer(alias, hedera.NewHbar(float64(fromAliasParams.InitialBalance))).
 		Execute(a.sdkService.Client)
 	if err != nil {
-		return nil, response.HederaError.WithData(err.Error())
+		return nil, err
 	}
 
 	receipt, err := resp.GetReceipt(a.sdkService.Client)
 	if err != nil {
-		return nil, response.HederaError.WithData(err.Error())
+		return nil, err
 	}
 	var accId string
 	if receipt.Status == hedera.StatusSuccess {
@@ -130,11 +124,11 @@ func (a *AccountService) CreateAccountFromAlias(_ context.Context, fromAliasPara
 func (a *AccountService) GetAccountInfo(_ context.Context, accountId string) (*response.AccountInfoResponse, error) {
 	account, err := hedera.AccountIDFromString(accountId)
 	if err != nil {
-		return nil, response.HederaError.WithData(err.Error())
+		return nil, err
 	}
 	resp, err := hedera.NewAccountInfoQuery().SetAccountID(account).SetGrpcDeadline(&threeSecondsDuration).Execute(a.sdkService.Client)
 	if err != nil {
-		return nil, response.HederaError.WithData(err.Error())
+		return nil, err
 	}
 
 	return &response.AccountInfoResponse{AccountID: resp.AccountID.String(),
@@ -162,13 +156,13 @@ func (a *AccountService) DeleteAccount(_ context.Context, param param.DeleteAcco
 	recipientId, _ := hedera.AccountIDFromString(param.RecipientId)
 	tx, err := hedera.NewAccountDeleteTransaction().SetGrpcDeadline(&threeSecondsDuration).SetAccountID(accId).SetTransferAccountID(recipientId).FreezeWith(a.sdkService.Client)
 	if err != nil {
-		return nil, response.HederaError.WithData(err.Error())
+		return nil, err
 	}
 	signature, _ := hedera.PrivateKeyFromString(param.AccountKey)
 
 	resp, err := tx.Sign(signature).Execute(a.sdkService.Client)
 	if err != nil {
-		return nil, response.HederaError.WithData(err.Error())
+		return nil, err
 	}
 
 	receipt, _ := resp.GetReceipt(a.sdkService.Client)
@@ -179,37 +173,37 @@ func (a *AccountService) DeleteAccount(_ context.Context, param param.DeleteAcco
 func (a *AccountService) UpdateAccountKey(params param.UpdateAccountParams) (*response.AccountResponse, error) {
 	accId, err := hedera.AccountIDFromString(params.AccountId)
 	if err != nil {
-		return nil, response.HederaError.WithData(err.Error())
+		return nil, err
 	}
 	key, err := hedera.PublicKeyFromString(params.NewPublicKey)
 	if err != nil {
-		return nil, response.HederaError.WithData(err.Error())
+		return nil, err
 	}
 
 	tx, err := hedera.NewAccountUpdateTransaction().SetGrpcDeadline(&threeSecondsDuration).SetAccountID(accId).SetKey(key).FreezeWith(a.sdkService.Client)
 	if err != nil {
-		return nil, response.HederaError.WithData(err.Error())
+		return nil, err
 	}
 
 	oldKey, err := hedera.PrivateKeyFromString(params.OldPrivateKey)
 	if err != nil {
-		return nil, response.HederaError.WithData(err.Error())
+		return nil, err
 	}
 	newKey, err := hedera.PrivateKeyFromString(params.NewPrivateKey)
 	if err != nil {
-		return nil, response.HederaError.WithData(err.Error())
+		return nil, err
 	}
 	tx.Sign(oldKey)
 	tx.Sign(newKey)
 
 	resp, err := tx.Execute(a.sdkService.Client)
 	if err != nil {
-		return nil, response.HederaError.WithData(err.Error())
+		return nil, err
 	}
 
 	receipt, err := resp.GetReceipt(a.sdkService.Client)
 	if err != nil {
-		return nil, response.HederaError.WithData(err.Error())
+		return nil, err
 	}
 
 	return &response.AccountResponse{Status: receipt.Status.String()}, nil
@@ -219,22 +213,22 @@ func (a *AccountService) UpdateAccountKey(params param.UpdateAccountParams) (*re
 func (a *AccountService) UpdateAccountMemo(params param.UpdateAccountParams) (*response.AccountResponse, error) {
 	accId, err := hedera.AccountIDFromString(params.AccountId)
 	if err != nil {
-		return nil, response.HederaError.WithData(err.Error())
+		return nil, err
 	}
 	tx, err := hedera.NewAccountUpdateTransaction().SetGrpcDeadline(&threeSecondsDuration).SetAccountID(accId).SetAccountMemo(params.Memo).FreezeWith(a.sdkService.Client)
 	if err != nil {
-		return nil, response.HederaError.WithData(err.Error())
+		return nil, err
 	}
 	signature, _ := hedera.PrivateKeyFromString(params.Key)
 
 	resp, err := tx.Sign(signature).Execute(a.sdkService.Client)
 	if err != nil {
-		return nil, response.HederaError.WithData(err.Error())
+		return nil, err
 	}
 
 	receipt, err := resp.GetReceipt(a.sdkService.Client)
 	if err != nil {
-		return nil, response.HederaError.WithData(err.Error())
+		return nil, err
 	}
 	return &response.AccountResponse{Status: receipt.Status.String()}, nil
 }

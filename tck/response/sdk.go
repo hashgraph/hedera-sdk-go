@@ -6,13 +6,11 @@ type SetupResponse struct {
 }
 
 func NewSetupReponse(message string) *SetupResponse {
-	if message != "" {
-		return &SetupResponse{
-			Message: message,
-			Status:  "SUCCESS",
-		}
-	}
-	return &SetupResponse{
+	response := &SetupResponse{
 		Status: "SUCCESS",
 	}
+	if message != "" {
+		response.Message = message
+	}
+	return response
 }

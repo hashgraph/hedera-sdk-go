@@ -9,9 +9,12 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/creachadair/jrpc2"
 	"github.com/creachadair/jrpc2/handler"
 	"github.com/creachadair/jrpc2/jhttp"
 	"github.com/hashgraph/hedera-sdk-go/tck/methods"
+	"github.com/hashgraph/hedera-sdk-go/tck/response"
+	"github.com/hashgraph/hedera-sdk-go/v2"
 	"github.com/joho/godotenv"
 )
 
@@ -26,15 +29,15 @@ func main() {
 
 	// Create a new RPC server
 	assigner := handler.Map{
-		"setup":                  handler.New(sdkService.Setup),
-		"reset":                  handler.New(sdkService.Reset),
-		"createAccount":          handler.New(accountService.CreateAccount),
-		"createAccountFromAlias": handler.New(accountService.CreateAccountFromAlias),
-		"getAccountInfo":         handler.New(accountService.GetAccountInfo),
-		"updateAccount":          handler.New(accountService.UpdateAccount),
-		"deleteAccount":          handler.New(accountService.DeleteAccount),
-		"generatePublicKey":      handler.New(methods.GeneratePublicKey),
-		"generatePrivateKey":     handler.New(methods.GeneratePrivateKey),
+		"setup":                  errorMiddleware(HandleError, handler.New(sdkService.Setup)),
+		"reset":                  errorMiddleware(HandleError, handler.New(sdkService.Reset)),
+		"createAccount":          errorMiddleware(HandleError, handler.New(accountService.CreateAccount)),
+		"createAccountFromAlias": errorMiddleware(HandleError, handler.New(accountService.CreateAccountFromAlias)),
+		"getAccountInfo":         errorMiddleware(HandleError, handler.New(accountService.GetAccountInfo)),
+		"updateAccount":          errorMiddleware(HandleError, handler.New(accountService.UpdateAccount)),
+		"deleteAccount":          errorMiddleware(HandleError, handler.New(accountService.DeleteAccount)),
+		"generatePublicKey":      errorMiddleware(HandleError, handler.New(methods.GeneratePublicKey)),
+		"generatePrivateKey":     errorMiddleware(HandleError, handler.New(methods.GeneratePrivateKey)),
 	}
 
 	bridge := jhttp.NewBridge(assigner, nil)
@@ -73,4 +76,38 @@ func main() {
 	}
 
 	fmt.Println("Server shutdown complete.")
+}
+
+// ErrorHandler is a function that handles errors reported by a method handler.
+type ErrorHandler func(context.Context, *jrpc2.Request, error) error
+
+func HandleError(_ context.Context, request *jrpc2.Request, err error) error {
+	if err != nil {
+		// jrpc generic error
+		if jrpcError, ok := err.(*jrpc2.Error); ok {
+			return jrpcError
+		}
+		// hedera specific errors
+		if hederaErr, ok := err.(hedera.ErrHederaReceiptStatus); ok {
+			return response.NewHederaReceiptError(hederaErr)
+		}
+		if hederaErr, ok := err.(hedera.ErrHederaPreCheckStatus); ok {
+			return response.NewHederaPrecheckError(hederaErr)
+		}
+		// other errors
+		return response.InternalError
+	}
+	return nil
+}
+
+func errorMiddleware(eh ErrorHandler, h jrpc2.Handler) jrpc2.Handler {
+	return func(ctx context.Context, req *jrpc2.Request) (any, error) {
+		res, err := h(ctx, req)
+		if err != nil {
+			errorMessage := fmt.Sprintf("Error occurred processing JSON-RPC request: %s, Response error: %s", req, err)
+			fmt.Println(errorMessage)
+			return nil, eh(ctx, req, err)
+		}
+		return res, nil
+	}
 }
