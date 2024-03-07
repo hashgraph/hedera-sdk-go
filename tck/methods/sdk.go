@@ -19,12 +19,12 @@ func (s *SDKService) Setup(_ context.Context, params param.SetupParams) (*respon
 	var clientType string
 	if params.NodeIp != nil && params.NodeAccountId != nil && params.MirrorNetworkIp != nil {
 		// Custom client setup
-		num, err := strconv.ParseUint(*params.NodeAccountId, 10, 64)
+		nodeAccountId, err := strconv.ParseUint(*params.NodeAccountId, 10, 64)
 		if err != nil {
 			return nil, response.InvalidParams.WithData(err.Error())
 		}
 		node := map[string]hedera.AccountID{
-			*params.NodeIp: {Account: num},
+			*params.NodeIp: {Account: nodeAccountId},
 		}
 		s.Client = hedera.ClientForNetwork(node)
 		clientType = "custom"

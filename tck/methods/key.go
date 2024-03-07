@@ -2,8 +2,8 @@ package methods
 
 import (
 	"context"
+	"strings"
 
-	"github.com/hashgraph/hedera-sdk-go/tck/response"
 	"github.com/hashgraph/hedera-sdk-go/v2"
 )
 
@@ -13,9 +13,10 @@ type KeyParams struct {
 
 // GeneratePublicKey generates public key based on provided private key
 func GeneratePublicKey(_ context.Context, params KeyParams) (string, error) {
-	key, err := hedera.PrivateKeyFromString(params.PrivateKey)
+	trimmedPk := strings.TrimSpace(params.PrivateKey)
+	key, err := hedera.PrivateKeyFromString(trimmedPk)
 	if err != nil {
-		return "", response.HederaError.WithData(err.Error())
+		return "", err
 	}
 	return key.PublicKey().String(), nil
 }
@@ -25,7 +26,7 @@ func GeneratePrivateKey(_ context.Context, empty any) (string, error) {
 	pk, err := hedera.PrivateKeyGenerateEd25519()
 
 	if err != nil {
-		return "", response.HederaError.WithData(err.Error())
+		return "", err
 	}
 	return pk.String(), nil
 }

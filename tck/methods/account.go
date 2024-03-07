@@ -2,6 +2,8 @@ package methods
 
 import (
 	"context"
+	"encoding/json"
+	"strconv"
 	"time"
 
 	"github.com/hashgraph/hedera-sdk-go/tck/param"
@@ -43,15 +45,19 @@ func (a *AccountService) CreateAccount(_ context.Context, accountParams param.Cr
 	if accountParams.MaxAutomaticTokenAssociations != 0 {
 		transaction.SetMaxAutomaticTokenAssociations(accountParams.MaxAutomaticTokenAssociations)
 	}
-	if accountParams.StakedAccountId != "" {
-		accountId, err := hedera.AccountIDFromString(accountParams.StakedAccountId)
+	if accountParams.StakedAccountId != nil {
+		accountId, err := hedera.AccountIDFromString(*accountParams.StakedAccountId)
 		if err != nil {
 			return nil, err
 		}
 		transaction.SetStakedAccountID(accountId)
 	}
-	if accountParams.StakedNodeId != 0 {
-		transaction.SetStakedNodeID(accountParams.StakedNodeId)
+	if accountParams.StakedNodeId.String() != "" {
+		stakedNodeID, err := strconv.ParseInt(accountParams.StakedNodeId.String(), 10, 64)
+		if err != nil {
+			return nil, response.InvalidParams.WithData(err.Error())
+		}
+		transaction.SetStakedNodeID(stakedNodeID)
 	}
 	if accountParams.DeclineStakingReward {
 		transaction.SetDeclineStakingReward(accountParams.DeclineStakingReward)
@@ -59,8 +65,12 @@ func (a *AccountService) CreateAccount(_ context.Context, accountParams param.Cr
 	if accountParams.AccountMemo != "" {
 		transaction.SetAccountMemo(accountParams.AccountMemo)
 	}
-	if accountParams.AutoRenewPeriod != 0 {
-		transaction.SetAutoRenewPeriod(accountParams.AutoRenewPeriod)
+	if accountParams.AutoRenewPeriod != "" {
+		autoRenewPeriod, err := strconv.ParseInt(accountParams.AutoRenewPeriod, 10, 64)
+		if err != nil {
+			return nil, response.InvalidParams.WithData(err.Error())
+		}
+		transaction.SetAutoRenewPeriod(time.Duration(autoRenewPeriod) * time.Second)
 	}
 	if accountParams.PrivateKey != "" {
 		key, err := hedera.PrivateKeyFromString(accountParams.PrivateKey)
@@ -91,14 +101,19 @@ func (a *AccountService) CreateAccount(_ context.Context, accountParams param.Cr
 }
 
 // CreateAccountFromAlias Create an account from aliasId by transferring some HBAR amount from given account (opperatorId)
-func (a *AccountService) CreateAccountFromAlias(_ context.Context, fromAliasParams param.AccountFromAliasParams) (*response.AccountResponse, error) {
+func (a *AccountService) CreateAccountFromAlias(_ context.Context, fromAliasParams param.AccountFromAliasParams) (*hedera.TransactionReceipt, error) {
 	operator, err := hedera.AccountIDFromString(fromAliasParams.OperatorId)
 	if err != nil {
 		return nil, err
 	}
-	alias, err := hedera.AccountIDFromString(fromAliasParams.AliasAccountId)
+	var aliasId param.Alias
+	if err := json.Unmarshal([]byte(fromAliasParams.AliasAccountId), &aliasId); err != nil {
+		return nil, response.InvalidParams.WithData(err.Error())
+	}
+
+	alias, err := hedera.AccountIDFromString(string(aliasId))
 	if err != nil {
-		return nil, response.HederaError.WithData(err.Error())
+		return nil, err
 	}
 
 	resp, err := hedera.NewTransferTransaction().SetGrpcDeadline(&threeSecondsDuration).
@@ -113,11 +128,7 @@ func (a *AccountService) CreateAccountFromAlias(_ context.Context, fromAliasPara
 	if err != nil {
 		return nil, err
 	}
-	var accId string
-	if receipt.Status == hedera.StatusSuccess {
-		accId = receipt.AccountID.String()
-	}
-	return &response.AccountResponse{AccountId: accId, Status: receipt.Status.String()}, nil
+	return &receipt, nil
 }
 
 // GetAccountInfo Get info for a given accountId and return a custom object containing aggregated information about the account
@@ -137,17 +148,6 @@ func (a *AccountService) GetAccountInfo(_ context.Context, accountId string) (*r
 		AccountMemo:                   resp.AccountMemo,
 		MaxAutomaticTokenAssociations: resp.MaxAutomaticTokenAssociations,
 		AutoRenewPeriod:               resp.AutoRenewPeriod}, nil
-}
-
-// UpdateAccount transaction to be associated with hedera.AccountUpdateTransaction and to be enough generic, so different
-// updates can be calling this func
-func (a *AccountService) UpdateAccount(_ context.Context, params param.UpdateAccountParams) (*response.AccountResponse, error) {
-	if params.NewPrivateKey != "" { // Proceed with UpdateAccountMemo
-		return a.UpdateAccountKey(params)
-	} else if params.Memo != "" { // Proceed with UpdateAccountKey
-		return a.UpdateAccountMemo(params)
-	}
-	return nil, nil
 }
 
 // DeleteAccount deletes a provided account by signing the transaction with the key of that account
@@ -170,7 +170,7 @@ func (a *AccountService) DeleteAccount(_ context.Context, param param.DeleteAcco
 }
 
 // UpdateAccountKey updates an existing acoount id keys with provided params
-func (a *AccountService) UpdateAccountKey(params param.UpdateAccountParams) (*response.AccountResponse, error) {
+func (a *AccountService) UpdateAccountKey(_ context.Context, params param.UpdateAccountParams) (*response.AccountResponse, error) {
 	accId, err := hedera.AccountIDFromString(params.AccountId)
 	if err != nil {
 		return nil, err
@@ -210,7 +210,7 @@ func (a *AccountService) UpdateAccountKey(params param.UpdateAccountParams) (*re
 }
 
 // UpdateAccountMemo updates account memo of an existing account ID
-func (a *AccountService) UpdateAccountMemo(params param.UpdateAccountParams) (*response.AccountResponse, error) {
+func (a *AccountService) UpdateAccountMemo(_ context.Context, params param.UpdateAccountParams) (*response.AccountResponse, error) {
 	accId, err := hedera.AccountIDFromString(params.AccountId)
 	if err != nil {
 		return nil, err

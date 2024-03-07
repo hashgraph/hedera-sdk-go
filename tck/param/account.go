@@ -1,19 +1,21 @@
 package param
 
-import "time"
+import (
+	"encoding/json"
+)
 
 // ---- Different methods params structs ----
 type CreateAccountParams struct {
-	PublicKey                     string        `json:"publicKey"`
-	InitialBalance                int64         `json:"initialBalance"`
-	ReceiverSignatureRequired     bool          `json:"receiverSignatureRequired"`
-	MaxAutomaticTokenAssociations uint32        `json:"maxAutomaticTokenAssociations"`
-	StakedAccountId               string        `json:"stakedAccountId"`
-	StakedNodeId                  int64         `json:"stakedNodeId"`
-	DeclineStakingReward          bool          `json:"declineStakingReward"`
-	AccountMemo                   string        `json:"accountMemo"`
-	AutoRenewPeriod               time.Duration `json:"autoRenewPeriod"`
-	PrivateKey                    string        `json:"privateKey"`
+	PublicKey                     string      `json:"publicKey"`
+	InitialBalance                int64       `json:"initialBalance"`
+	ReceiverSignatureRequired     bool        `json:"receiverSignatureRequired"`
+	MaxAutomaticTokenAssociations uint32      `json:"maxAutomaticTokenAssociations"`
+	StakedAccountId               *string     `json:"stakedAccountId"`
+	StakedNodeId                  json.Number `json:"stakedNodeId"`
+	DeclineStakingReward          bool        `json:"declineStakingReward"`
+	AccountMemo                   string      `json:"accountMemo"`
+	AutoRenewPeriod               string      `json:"autoRenewPeriod"`
+	PrivateKey                    string      `json:"privateKey"`
 }
 
 type AccountFromAliasParams struct {
@@ -21,6 +23,8 @@ type AccountFromAliasParams struct {
 	AliasAccountId string `json:"aliasAccountId"`
 	InitialBalance int64  `json:"initialBalance"`
 }
+
+type Alias string
 
 type UpdateAccountKeyParams struct {
 	AccountId     string `json:"accountId"`
