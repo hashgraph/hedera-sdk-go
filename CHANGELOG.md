@@ -1,3 +1,9 @@
+## v2.36.0
+
+### Added
+
+-   Implemented HIP-844 (Add signerNonce field)
+
 ## v2.35.0
 
 ### Fixed

@@ -92,7 +92,7 @@ func (id NftID) ToStringWithChecksum(client Client) (string, error) {
 
 func (id NftID) _ToProtobuf() *services.NftID {
 	return &services.NftID{
-		TokenID:      id.TokenID._ToProtobuf(),
+		Token_ID:     id.TokenID._ToProtobuf(),
 		SerialNumber: id.SerialNumber,
 	}
 }
@@ -103,8 +103,8 @@ func _NftIDFromProtobuf(pb *services.NftID) NftID {
 	}
 
 	tokenID := TokenID{}
-	if pb.TokenID != nil {
-		tokenID = *_TokenIDFromProtobuf(pb.TokenID)
+	if pb.Token_ID != nil {
+		tokenID = *_TokenIDFromProtobuf(pb.Token_ID)
 	}
 
 	return NftID{
