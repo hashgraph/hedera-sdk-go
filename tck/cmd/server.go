@@ -29,16 +29,16 @@ func main() {
 
 	// Create a new RPC server
 	assigner := handler.Map{
-		"setup":                  errorMiddleware(HandleError, handler.New(sdkService.Setup)),
-		"reset":                  errorMiddleware(HandleError, handler.New(sdkService.Reset)),
-		"createAccount":          errorMiddleware(HandleError, handler.New(accountService.CreateAccount)),
-		"createAccountFromAlias": errorMiddleware(HandleError, handler.New(accountService.CreateAccountFromAlias)),
-		"getAccountInfo":         errorMiddleware(HandleError, handler.New(accountService.GetAccountInfo)),
-		"updateAccountMemo":      errorMiddleware(HandleError, handler.New(accountService.UpdateAccountMemo)),
-		"updateAccountKey":       errorMiddleware(HandleError, handler.New(accountService.UpdateAccountKey)),
-		"deleteAccount":          errorMiddleware(HandleError, handler.New(accountService.DeleteAccount)),
-		"generatePublicKey":      errorMiddleware(HandleError, handler.New(methods.GeneratePublicKey)),
-		"generatePrivateKey":     errorMiddleware(HandleError, handler.New(methods.GeneratePrivateKey)),
+		"setup":                  errorHandlerWrapper(HandleError, handler.New(sdkService.Setup)),
+		"reset":                  errorHandlerWrapper(HandleError, handler.New(sdkService.Reset)),
+		"createAccount":          errorHandlerWrapper(HandleError, handler.New(accountService.CreateAccount)),
+		"createAccountFromAlias": errorHandlerWrapper(HandleError, handler.New(accountService.CreateAccountFromAlias)),
+		"getAccountInfo":         errorHandlerWrapper(HandleError, handler.New(accountService.GetAccountInfo)),
+		"updateAccountMemo":      errorHandlerWrapper(HandleError, handler.New(accountService.UpdateAccountMemo)),
+		"updateAccountKey":       errorHandlerWrapper(HandleError, handler.New(accountService.UpdateAccountKey)),
+		"deleteAccount":          errorHandlerWrapper(HandleError, handler.New(accountService.DeleteAccount)),
+		"generatePublicKey":      errorHandlerWrapper(HandleError, handler.New(methods.GeneratePublicKey)),
+		"generatePrivateKey":     errorHandlerWrapper(HandleError, handler.New(methods.GeneratePrivateKey)),
 	}
 
 	bridge := jhttp.NewBridge(assigner, nil)
@@ -101,7 +101,9 @@ func HandleError(_ context.Context, request *jrpc2.Request, err error) error {
 	return nil
 }
 
-func errorMiddleware(eh ErrorHandler, h jrpc2.Handler) jrpc2.Handler {
+// this wraps the jrpc2.Handler as it invokes the ErrorHandler func if error is returned
+// essentially acts as a "postHandler"
+func errorHandlerWrapper(eh ErrorHandler, h jrpc2.Handler) jrpc2.Handler {
 	return func(ctx context.Context, req *jrpc2.Request) (any, error) {
 		res, err := h(ctx, req)
 		if err != nil {
