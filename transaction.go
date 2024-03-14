@@ -104,9 +104,6 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 	if err != nil {
 		return Transaction{}, errors.Wrap(err, "error deserializing from bytes to transaction List")
 	}
-	if err != nil {
-		return Transaction{}, err
-	}
 
 	transactions := _NewLockableSlice()
 
@@ -315,6 +312,8 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 		return *_EthereumTransactionFromProtobuf(tx, first), nil
 	case *services.TransactionBody_UtilPrng:
 		return *_PrngTransactionFromProtobuf(tx, first), nil
+	case *services.TransactionBody_TokenUpdateNfts:
+		return *_NewTokenUpdateNftsFromProtobuf(tx, first), nil
 	default:
 		return Transaction{}, errFailedToDeserializeBytes
 	}
