@@ -2,10 +2,6 @@ package methods
 
 import (
 	"context"
-	"strconv"
-
-	"github.com/hashgraph/hedera-sdk-go/tck/param"
-	"github.com/hashgraph/hedera-sdk-go/tck/response"
 	"github.com/hashgraph/hedera-sdk-go/v2"
 )
 
@@ -14,17 +10,29 @@ type SDKService struct {
 	Client *hedera.Client
 }
 
+// Parameters for the setup function
+type SetupParams struct {
+	OperatorAccountId  string
+	OperatorPrivateKey string
+	NodeIp             *string
+	NodeAccountId      *uint64
+	MirrorNetworkIp    *string
+}
+
+// Response structure for the setup function
+type SetupResponse struct {
+	Message string
+	Status  string
+}
+
 // Setup function for the SDK
-func (s *SDKService) Setup(_ context.Context, params param.SetupParams) (*response.SetupResponse, error) {
+func (s *SDKService) Setup(_ context.Context, params SetupParams) SetupResponse {
 	var clientType string
+
 	if params.NodeIp != nil && params.NodeAccountId != nil && params.MirrorNetworkIp != nil {
 		// Custom client setup
-		nodeAccountId, err := strconv.ParseUint(*params.NodeAccountId, 10, 64)
-		if err != nil {
-			return nil, response.InvalidParams.WithData(err.Error())
-		}
 		node := map[string]hedera.AccountID{
-			*params.NodeIp: {Account: nodeAccountId},
+			*params.NodeIp: {Account: *params.NodeAccountId},
 		}
 		s.Client = hedera.ClientForNetwork(node)
 		clientType = "custom"
@@ -39,11 +47,17 @@ func (s *SDKService) Setup(_ context.Context, params param.SetupParams) (*respon
 	operatorId, _ := hedera.AccountIDFromString(params.OperatorAccountId)
 	operatorKey, _ := hedera.PrivateKeyFromString(params.OperatorPrivateKey)
 	s.Client.SetOperator(operatorId, operatorKey)
-	return response.NewSetupReponse("Successfully setup " + clientType + " client."), nil
+
+	return SetupResponse{
+		Message: "Successfully setup " + clientType + " client.",
+		Status:  "SUCCESS",
+	}
 }
 
 // Reset function for the SDK
-func (s *SDKService) Reset(_ context.Context) (*response.SetupResponse, error) {
+func (s *SDKService) Reset(_ context.Context) SetupResponse {
 	s.Client = nil
-	return response.NewSetupReponse(""), nil
+	return SetupResponse{
+		Status: "SUCCESS",
+	}
 }
