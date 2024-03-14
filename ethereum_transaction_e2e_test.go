@@ -80,7 +80,6 @@ func decodeHex(t *testing.T, s string) []byte {
 
 // Testing the signer nonce defined in HIP-844
 func TestIntegrationEthereumTransaction(t *testing.T) {
-	t.Skip("Skipping this test because it's flaky with new local node version")
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
