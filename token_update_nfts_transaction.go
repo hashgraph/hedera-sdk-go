@@ -12,7 +12,7 @@ import (
 type TokenUpdateNfts struct {
 	Transaction
 	tokenID       *TokenID
-	serialNumbers []uint64
+	serialNumbers []int64
 	metadata      []byte
 }
 
@@ -26,10 +26,10 @@ func _NewTokenUpdateNftsFromProtobuf(tx Transaction, pb *services.TransactionBod
 	return &TokenUpdateNfts{
 		Transaction: tx,
 		tokenID:     _TokenIDFromProtobuf(pb.GetTokenUpdateNfts().GetToken()),
-		serialNumbers: func() []uint64 {
-			var serialNumbers []uint64
+		serialNumbers: func() []int64 {
+			var serialNumbers []int64
 			for _, serialNumber := range pb.GetTokenUpdateNfts().GetSerialNumbers() {
-				serialNumbers = append(serialNumbers, uint64(serialNumber))
+				serialNumbers = append(serialNumbers, int64(serialNumber))
 			}
 			return serialNumbers
 		}(),
@@ -49,12 +49,12 @@ func (t *TokenUpdateNfts) SetTokenID(tokenID TokenID) *TokenUpdateNfts {
 }
 
 // Getter for serialNumbers
-func (t *TokenUpdateNfts) GetSerialNumbers() []uint64 {
+func (t *TokenUpdateNfts) GetSerialNumbers() []int64 {
 	return t.serialNumbers
 }
 
 // Setter for serialNumbers
-func (t *TokenUpdateNfts) SetSerialNumbers(serialNumbers []uint64) *TokenUpdateNfts {
+func (t *TokenUpdateNfts) SetSerialNumbers(serialNumbers []int64) *TokenUpdateNfts {
 	t._RequireNotFrozen()
 	t.serialNumbers = serialNumbers
 	return t

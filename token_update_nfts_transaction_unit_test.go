@@ -1,3 +1,6 @@
+//go:build all || unit
+// +build all unit
+
 package hedera
 
 import (
@@ -22,7 +25,7 @@ func TestUnitTokenUpdateNftsTransactionValidate(t *testing.T) {
 
 	tokenUpdate := NewTokenUpdateNfts().
 		SetTokenID(tokenID).
-		SetSerialNumbers([]uint64{1, 2, 3}).
+		SetSerialNumbers([]int64{1, 2, 3}).
 		SetMetadata([]byte("metadata"))
 
 	err = tokenUpdate.validateNetworkOnIDs(client)
@@ -42,7 +45,7 @@ func TestUnitTokenUpdateNftsTransactionValidateWrong(t *testing.T) {
 
 	tokenUpdate := NewTokenUpdateNfts().
 		SetTokenID(tokenID).
-		SetSerialNumbers([]uint64{1, 2, 3}).
+		SetSerialNumbers([]int64{1, 2, 3}).
 		SetMetadata([]byte("metadata"))
 
 	err = tokenUpdate.validateNetworkOnIDs(client)
@@ -71,7 +74,7 @@ func TestUnitTokenUpdateNftsTransactionGet(t *testing.T) {
 
 	transaction, err := NewTokenUpdateNfts().
 		SetTokenID(tokenID).
-		SetSerialNumbers([]uint64{1, 2, 3}).
+		SetSerialNumbers([]int64{1, 2, 3}).
 		SetTransactionID(transactionID).
 		SetNodeAccountIDs(nodeAccountID).
 		SetMetadata([]byte("metadata")).Freeze()
@@ -173,7 +176,7 @@ func TestUnitTokenUpdateNftTransactionMock(t *testing.T) {
 
 	freeze, err := NewTokenUpdateNfts().
 		SetTokenID(token).
-		SetSerialNumbers([]uint64{1, 2, 3}).
+		SetSerialNumbers([]int64{1, 2, 3}).
 		SetNodeAccountIDs([]AccountID{{Account: 3}}).
 		SetMetadata([]byte("metadata")).FreezeWith(client)
 	require.NoError(t, err)
@@ -194,7 +197,7 @@ func TestUnitTokenUpdateNftsTransactionSignWithOperator(t *testing.T) {
 
 	tokenUpdate := NewTokenUpdateNfts().
 		SetTokenID(tokenID).
-		SetSerialNumbers([]uint64{1, 2, 3}).
+		SetSerialNumbers([]int64{1, 2, 3}).
 		SetMetadata([]byte("metadata"))
 
 	_, err = tokenUpdate.SignWithOperator(client)
@@ -209,7 +212,7 @@ func TestUnitTokenUpdateNftsTransactionGetters(t *testing.T) {
 
 	tokenUpdate := NewTokenUpdateNfts().
 		SetTokenID(tokenID).
-		SetSerialNumbers([]uint64{1, 2, 3}).
+		SetSerialNumbers([]int64{1, 2, 3}).
 		SetMetadata([]byte("metadata"))
 
 	assert.Equal(t, &tokenID, tokenUpdate.GetTokenID())

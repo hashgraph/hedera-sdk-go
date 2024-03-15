@@ -91,8 +91,9 @@ func main() {
 
 	metadataUpdateSubmit, err := hedera.NewTokenUpdateNfts().
 		SetTokenID(nftTokenID).
-		SetSerialNumbers([]uint64{1, 2, 3}).
+		SetSerialNumbers([]int64{1, 2, 3}).
 		SetMetadata([]byte("updated")).
+		Sign(operatorKey).
 		Execute(client)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error submitting transaction", err))
