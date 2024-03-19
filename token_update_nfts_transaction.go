@@ -1,11 +1,9 @@
 package hedera
 
 import (
-	"context"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
-	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
@@ -261,12 +259,6 @@ func (tx *TokenUpdateNfts) getMethod(channel *_Channel) _Method {
 	}
 }
 
-func (tx *TokenUpdateNfts) preFreezeWith(client *Client) {
-	// TODO
-}
-
 func (tx *TokenUpdateNfts) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
-
-type NftMetadataUpdate func(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)

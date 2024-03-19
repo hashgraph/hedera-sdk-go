@@ -11,6 +11,26 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+/*-
+ *
+ * Hedera Go SDK
+ *
+ * Copyright (C) 2020 - 2024 Hedera Hashgraph, LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 func TestTokenUpdateNftsUpdatesMetadata(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
@@ -40,7 +60,8 @@ func TestTokenUpdateNftsUpdatesMetadata(t *testing.T) {
 	assert.True(t, reflect.DeepEqual(metadataListAfterMint, initialMetadataList), "metadata after minting should match initial metadata")
 
 	// update nft metadata for half of the NFTs
-	tokenUpdateNftsTransactionReceipt := updateNftMetadata(t, &env, tokenID, nftSerials[:nftCount/2], updatedMetadata, metadataKey)
+	tokenUpdateNftsTransactionReceipt, err := updateNftMetadata(t, &env, tokenID, nftSerials[:nftCount/2], updatedMetadata, &metadataKey)
+	require.NoError(t, err)
 
 	// verify the metadata is updated
 	nftSerialsUpdated := tokenUpdateNftsTransactionReceipt.SerialNumbers[:nftCount/2]
@@ -67,7 +88,7 @@ func TestCanUpdateNFTMetadataAfterMetadataKeySet(t *testing.T) {
 	updatedMetadataList := generateNftMetadata(updatedMetadata, nftCount/2)
 
 	// Create a token without a metadata key
-	tokenID := createTokenWithoutMetadataKey(t, &env)
+	tokenID := createTokenWithMetadataKey(t, &env, nil)
 
 	// Update the token with a metadata key
 	updateTokenMetadataKey(t, tokenID, &metadataKey, &env)
@@ -83,12 +104,42 @@ func TestCanUpdateNFTMetadataAfterMetadataKeySet(t *testing.T) {
 	assert.Equal(t, initialMetadataList, metadataListAfterMint, "metadata after minting should match initial metadata")
 
 	// Update metadata for the first half of the NFTs
-	tokenUpdateNftsTransactionReceipt := updateNftMetadata(t, &env, tokenID, nftSerials[:nftCount/2], updatedMetadata, metadataKey)
+	tokenUpdateNftsTransactionReceipt, err := updateNftMetadata(t, &env, tokenID, nftSerials[:nftCount/2], updatedMetadata, &metadataKey)
+	require.NoError(t, err)
 
 	// Verify updated metadata for NFTs
 	nftSerialsUpdated := tokenUpdateNftsTransactionReceipt.SerialNumbers[:nftCount/2]
 	metadataListAfterUpdate := getMetadataList(t, &env, tokenID, nftSerialsUpdated)
 	assert.Equal(t, updatedMetadataList, metadataListAfterUpdate, "updated metadata should match expected updated metadata")
+}
+
+func TestCannotUpdateNFTMetadataWhenKeyIsNotSet(t *testing.T) {
+	env := NewIntegrationTestEnv(t)
+
+	// Generate metadata key
+	metadataKey, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+
+	nftCount := 4
+	initialMetadataList := generateNftMetadata([]byte{4, 2, 0}, nftCount)
+	updatedMetadata := []byte{6, 9}
+
+	// Create a token without a metadata key
+	tokenID := createTokenWithMetadataKey(t, &env, nil)
+
+	// Mint tokens
+	tokenMintTransactionReceipts := mintTokens(t, &env, tokenID, initialMetadataList)
+	nftSerials := make([]int64, 0)
+	for _, receipt := range tokenMintTransactionReceipts {
+		nftSerials = append(nftSerials, receipt.SerialNumbers[0])
+	}
+
+	metadataListAfterMint := getMetadataList(t, &env, tokenID, nftSerials)
+	assert.Equal(t, initialMetadataList, metadataListAfterMint, "metadata after minting should match initial metadata")
+
+	// Update metadata for the first half of the NFTs
+	_, err = updateNftMetadata(t, &env, tokenID, nftSerials[:nftCount/2], updatedMetadata, &metadataKey)
+	require.Error(t, err)
 }
 
 func TestCannotUpdateNFTMetadataWhenTransactionIsNotSignedWithMetadataKey(t *testing.T) {
@@ -113,7 +164,7 @@ func TestCannotUpdateNFTMetadataWhenTransactionIsNotSignedWithMetadataKey(t *tes
 	}
 
 	// Assert this will fail
-	_, err = updateNftMetadataWithWrongKey(t, &env, tokenID, nftSerials, updatedMetadata, env.OperatorKey)
+	_, err = updateNftMetadata(t, &env, tokenID, nftSerials, updatedMetadata, &env.OperatorKey)
 	require.Error(t, err)
 }
 
@@ -150,41 +201,33 @@ func TestCannotUpdateNFTMetadataWhenMetadataKeyWasRemoved(t *testing.T) {
 	}
 
 	// Check NFTs' metadata can't be updated when a metadata key is not set
-	_, err = updateNftMetadataWithNoMetadataKey(t, &env, tokenID, nftSerials, updatedMetadata, metadataKey)
+	_, err = updateNftMetadata(t, &env, tokenID, nftSerials, updatedMetadata, &metadataKey)
 	require.Error(t, err)
 }
 
 // Utility functions
-
 func createTokenWithMetadataKey(t *testing.T, env *IntegrationTestEnv, metadataKey *PrivateKey) TokenID {
-	tokenCreateTx := NewTokenCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetTokenType(TokenTypeNonFungibleUnique).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetSupplyKey(env.Client.GetOperatorPublicKey()).
-		SetMetadataKey(metadataKey)
-
-	tx, err := tokenCreateTx.Execute(env.Client)
-	require.NoError(t, err)
-
-	receipt, err := tx.GetReceipt(env.Client)
-	require.NoError(t, err)
-
-	return *receipt.TokenID
-}
-
-func createTokenWithoutMetadataKey(t *testing.T, env *IntegrationTestEnv) TokenID {
-	tokenCreateTx := NewTokenCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetTokenType(TokenTypeNonFungibleUnique).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetSupplyKey(env.Client.GetOperatorPublicKey())
+	var tokenCreateTx *TokenCreateTransaction
+	if metadataKey == nil {
+		tokenCreateTx = NewTokenCreateTransaction().
+			SetNodeAccountIDs(env.NodeAccountIDs).
+			SetTokenName("ffff").
+			SetTokenSymbol("F").
+			SetTokenType(TokenTypeNonFungibleUnique).
+			SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+			SetAdminKey(env.Client.GetOperatorPublicKey()).
+			SetSupplyKey(env.Client.GetOperatorPublicKey())
+	} else {
+		tokenCreateTx = NewTokenCreateTransaction().
+			SetNodeAccountIDs(env.NodeAccountIDs).
+			SetTokenName("ffff").
+			SetTokenSymbol("F").
+			SetTokenType(TokenTypeNonFungibleUnique).
+			SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+			SetAdminKey(env.Client.GetOperatorPublicKey()).
+			SetSupplyKey(env.Client.GetOperatorPublicKey()).
+			SetMetadataKey(metadataKey)
+	}
 
 	tx, err := tokenCreateTx.Execute(env.Client)
 	require.NoError(t, err)
@@ -228,27 +271,19 @@ func mintTokens(t *testing.T, env *IntegrationTestEnv, tokenID TokenID, metadata
 	return receipts
 }
 
-func updateNftMetadataWithWrongKey(t *testing.T, env *IntegrationTestEnv, tokenID TokenID, serials []int64, updatedMetadata []byte, wrongKey PrivateKey) (*TransactionReceipt, error) {
-	tokenUpdateNftsTx := NewTokenUpdateNfts().
-		SetTokenID(tokenID).
-		SetSerialNumbers(serials).
-		SetMetadata(updatedMetadata).
-		Sign(wrongKey)
-
-	tx, err := tokenUpdateNftsTx.Execute(env.Client)
-	require.NoError(t, err)
-
-	receipt, err := tx.GetReceipt(env.Client)
-
-	return &receipt, err
-}
-
-func updateNftMetadataWithNoMetadataKey(t *testing.T, env *IntegrationTestEnv, tokenID TokenID, serials []int64, updatedMetadata []byte, metadataKey PrivateKey) (*TransactionReceipt, error) {
-	tokenUpdateNftsTx := NewTokenUpdateNfts().
-		SetTokenID(tokenID).
-		SetSerialNumbers(serials).
-		SetMetadata(updatedMetadata).
-		Sign(metadataKey)
+func updateNftMetadata(t *testing.T, env *IntegrationTestEnv, tokenID TokenID, serials []int64, updatedMetadata []byte, metadataKey *PrivateKey) (*TransactionReceipt, error) {
+	var tokenUpdateNftsTx *TokenUpdateNfts
+	if metadataKey == nil {
+		tokenUpdateNftsTx = NewTokenUpdateNfts().
+			SetTokenID(tokenID).
+			SetSerialNumbers(serials)
+	} else {
+		tokenUpdateNftsTx = NewTokenUpdateNfts().
+			SetTokenID(tokenID).
+			SetSerialNumbers(serials).
+			SetMetadata(updatedMetadata).
+			Sign(*metadataKey)
+	}
 
 	tx, err := tokenUpdateNftsTx.Execute(env.Client)
 	require.NoError(t, err)
@@ -257,22 +292,6 @@ func updateNftMetadataWithNoMetadataKey(t *testing.T, env *IntegrationTestEnv, t
 	require.NoError(t, err)
 
 	return &receipt, err
-}
-
-func updateNftMetadata(t *testing.T, env *IntegrationTestEnv, tokenID TokenID, serials []int64, updatedMetadata []byte, metadataKey PrivateKey) *TransactionReceipt {
-	tokenUpdateNftsTx := NewTokenUpdateNfts().
-		SetTokenID(tokenID).
-		SetSerialNumbers(serials).
-		SetMetadata(updatedMetadata).
-		Sign(metadataKey)
-
-	tx, err := tokenUpdateNftsTx.Execute(env.Client)
-	require.NoError(t, err)
-
-	receipt, err := tx.GetReceipt(env.Client)
-	require.NoError(t, err)
-
-	return &receipt
 }
 
 func getTokenInfo(t *testing.T, env *IntegrationTestEnv, tokenID TokenID) TokenInfo {

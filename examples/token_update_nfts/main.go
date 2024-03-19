@@ -5,11 +5,9 @@ import (
 	"os"
 
 	"github.com/hashgraph/hedera-sdk-go/v2"
-	"github.com/joho/godotenv"
 )
 
 func main() {
-	_ = godotenv.Load()
 	var client *hedera.Client
 	var err error
 
@@ -31,7 +29,7 @@ func main() {
 	// Setting the client operator ID and key
 	client.SetOperator(operatorAccountID, operatorKey)
 
-	cid := []string{"meta1",
+	metadataList := []string{"meta1",
 		"meta2",
 		"meta3",
 		"meta4",
@@ -64,7 +62,7 @@ func main() {
 	// mint nfts
 	nftCollection := []hedera.TransactionReceipt{}
 
-	for i, s := range cid {
+	for i, s := range metadataList {
 		mintTransaction, err := hedera.NewTokenMintTransaction().SetTokenID(nftTokenID).SetMetadata([]byte(s)).FreezeWith(client)
 		if err != nil {
 			panic(fmt.Sprintf("%v : error creating mint transaction", err))

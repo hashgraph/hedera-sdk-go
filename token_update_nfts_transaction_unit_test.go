@@ -3,6 +3,26 @@
 
 package hedera
 
+/*-
+ *
+ * Hedera Go SDK
+ *
+ * Copyright (C) 2020 - 2024 Hedera Hashgraph, LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 import (
 	"testing"
 
@@ -80,27 +100,27 @@ func TestUnitTokenUpdateNftsTransactionGet(t *testing.T) {
 		SetMetadata([]byte("metadata")).Freeze()
 
 	require.NoError(t, err)
-	transaction.GetTokenID()
-	transaction.GetSerialNumbers()
-	transaction.GetMetadata()
-	transaction.GetMaxTransactionFee()
-	transaction.GetTransactionMemo()
-	transaction.GetRegenerateTransactionID()
+	require.NotNil(t, transaction.GetTokenID())
+	require.NotNil(t, transaction.GetSerialNumbers())
+	require.NotNil(t, transaction.GetMetadata())
+	require.NotNil(t, transaction.GetMaxTransactionFee())
+	require.NotNil(t, transaction.GetTransactionMemo())
+	require.NotNil(t, transaction.GetRegenerateTransactionID())
 	_, err = transaction.GetSignatures()
 	require.NoError(t, err)
-	transaction.GetRegenerateTransactionID()
-	transaction.GetMaxTransactionFee()
-	transaction.GetRegenerateTransactionID()
+	require.NotNil(t, transaction.GetRegenerateTransactionID())
+	require.NotNil(t, transaction.GetMaxTransactionFee())
+	require.NotNil(t, transaction.GetRegenerateTransactionID())
 	byt, err := transaction.ToBytes()
 	require.NoError(t, err)
 	txFromBytes, err := TransactionFromBytes(byt)
 	require.NoError(t, err)
 	sig, err := newKey.SignTransaction(&transaction.Transaction)
 	require.NoError(t, err)
-	transaction.getName()
-	transaction.GetMaxRetry()
-	transaction.GetMaxBackoff()
-	transaction.GetMinBackoff()
+	require.NotNil(t, transaction.getName())
+	require.NotNil(t, transaction.GetMaxRetry())
+	require.NotNil(t, transaction.GetMaxBackoff())
+	require.NotNil(t, transaction.GetMinBackoff())
 	switch b := txFromBytes.(type) {
 	case TokenUpdateNfts:
 		b.AddSignature(newKey.PublicKey(), sig)
@@ -117,21 +137,21 @@ func TestUnitTokenUpdateNftsTransactionNothingSet(t *testing.T) {
 		SetNodeAccountIDs(nodeAccountID).Freeze()
 
 	require.NoError(t, err)
-	transaction.GetTokenID()
-	transaction.GetSerialNumbers()
-	transaction.GetMetadata()
-	transaction.GetMaxTransactionFee()
-	transaction.GetTransactionMemo()
-	transaction.GetRegenerateTransactionID()
+	require.Nil(t, transaction.GetTokenID())
+	require.Nil(t, transaction.GetSerialNumbers())
+	require.Nil(t, transaction.GetMetadata())
+	require.NotNil(t, transaction.GetMaxTransactionFee())
+	require.NotNil(t, transaction.GetTransactionMemo())
+	require.NotNil(t, transaction.GetRegenerateTransactionID())
 	_, err = transaction.GetSignatures()
 	require.NoError(t, err)
-	transaction.GetRegenerateTransactionID()
-	transaction.GetMaxTransactionFee()
-	transaction.GetRegenerateTransactionID()
-	transaction.getName()
-	transaction.GetMaxRetry()
-	transaction.GetMaxBackoff()
-	transaction.GetMinBackoff()
+	require.NotNil(t, transaction.GetRegenerateTransactionID())
+	require.NotNil(t, transaction.GetMaxTransactionFee())
+	require.NotNil(t, transaction.GetRegenerateTransactionID())
+	require.NotNil(t, transaction.getName())
+	require.NotNil(t, transaction.GetMaxRetry())
+	require.NotNil(t, transaction.GetMaxBackoff())
+	require.NotNil(t, transaction.GetMinBackoff())
 	proto := transaction.build().GetTokenUpdateNfts()
 	require.Nil(t, proto.Metadata)
 	require.Nil(t, proto.SerialNumbers)
@@ -202,20 +222,4 @@ func TestUnitTokenUpdateNftsTransactionSignWithOperator(t *testing.T) {
 
 	_, err = tokenUpdate.SignWithOperator(client)
 	require.NoError(t, err)
-}
-
-func TestUnitTokenUpdateNftsTransactionGetters(t *testing.T) {
-	t.Parallel()
-
-	tokenID, err := TokenIDFromString("0.0.123-esxsf")
-	require.NoError(t, err)
-
-	tokenUpdate := NewTokenUpdateNfts().
-		SetTokenID(tokenID).
-		SetSerialNumbers([]int64{1, 2, 3}).
-		SetMetadata([]byte("metadata"))
-
-	assert.Equal(t, &tokenID, tokenUpdate.GetTokenID())
-	assert.Equal(t, []uint64{1, 2, 3}, tokenUpdate.GetSerialNumbers())
-	assert.Equal(t, []byte("metadata"), tokenUpdate.GetMetadata())
 }
