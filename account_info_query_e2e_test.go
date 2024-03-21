@@ -24,9 +24,9 @@ package hedera
  */
 
 import (
-	"testing"
-
 	"github.com/stretchr/testify/assert"
+	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -52,6 +52,7 @@ func TestIntegrationAccountInfoQueryCanExecute(t *testing.T) {
 
 	accountID := *receipt.AccountID
 	require.NoError(t, err)
+	time.Sleep(3 * time.Second)
 
 	info, err := NewAccountInfoQuery().
 		SetAccountID(accountID).
@@ -82,8 +83,8 @@ func TestIntegrationAccountInfoQueryCanExecute(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	//err = CloseIntegrationTestEnv(env, nil)
-	//require.NoError(t, err)
+	err = CloseIntegrationTestEnv(env, nil)
+	require.NoError(t, err)
 }
 
 func TestIntegrationAccountInfoQueryGetCost(t *testing.T) {
@@ -116,7 +117,7 @@ func TestIntegrationAccountInfoQueryGetCost(t *testing.T) {
 
 	cost, err := accountInfo.GetCost(env.Client)
 	require.NoError(t, err)
-
+	time.Sleep(3 * time.Second)
 	info, err := accountInfo.SetQueryPayment(cost).Execute(env.Client)
 	require.NoError(t, err)
 
@@ -230,6 +231,7 @@ func TestIntegrationAccountInfoQuerySetBigMaxPayment(t *testing.T) {
 	_, err = accountInfo.GetCost(env.Client)
 	require.NoError(t, err)
 
+	time.Sleep(3 * time.Second)
 	info, err := accountInfo.SetQueryPayment(NewHbar(1)).Execute(env.Client)
 	require.NoError(t, err)
 

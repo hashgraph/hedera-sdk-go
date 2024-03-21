@@ -21,6 +21,7 @@ package hedera
  */
 
 import (
+	"errors"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -56,7 +57,37 @@ func (q *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
 		return AccountInfo{}, err
 	}
 
-	return _AccountInfoFromProtobuf(resp.GetCryptoGetInfo().AccountInfo)
+	result, err := _AccountInfoFromProtobuf(resp.GetCryptoGetInfo().AccountInfo)
+	if err != nil {
+		return AccountInfo{}, err
+	}
+
+	network := obtainUrlForMirrorNode(client)
+	_, err = accountInfoqueryTokensRelationshipFromMirrorNode(network, q.accountID.String(), &result)
+
+	if err != nil {
+		return AccountInfo{}, err
+	}
+	return result, nil
+}
+
+// Helper function, which query the mirror node about tokenRelationship of for all tokens that the account is
+// being associated with
+func accountInfoqueryTokensRelationshipFromMirrorNode(network string, id string, result *AccountInfo) (*AccountInfo, error) {
+	response, err := tokenReleationshipQuery(network, id)
+	if err != nil {
+		return result, err
+	}
+	tokens, ok := response["tokens"].([]interface{})
+	if !ok {
+		return result, errors.New("Ivalid tokens format")
+	}
+	mappedTokens, err := mapTokenRelationship(tokens)
+	if err != nil {
+		return &AccountInfo{}, err
+	}
+	result.TokenRelationships = mappedTokens
+	return result, nil
 }
 
 // SetGrpcDeadline When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)

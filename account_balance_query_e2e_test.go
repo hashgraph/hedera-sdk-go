@@ -24,6 +24,7 @@ package hedera
  */
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -194,6 +195,8 @@ func TestIntegrationAccountBalanceQueryNoAccountIDError(t *testing.T) {
 	_, err := NewAccountBalanceQuery().
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		Execute(env.Client)
+
+	fmt.Println(env.Client.network.ledgerID)
 	assert.Error(t, err)
 	assert.True(t, err.Error() == "exceptional precheck status INVALID_ACCOUNT_ID")
 

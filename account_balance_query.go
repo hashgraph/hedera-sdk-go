@@ -96,7 +96,6 @@ func (q *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error) {
 	if client == nil {
 		return AccountBalance{}, errNoClientProvided
 	}
-
 	var err error
 
 	err = q.validateNetworkOnIDs(client)
@@ -113,7 +112,38 @@ func (q *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error) {
 		return AccountBalance{}, err
 	}
 
-	return _AccountBalanceFromProtobuf(resp.(*services.Response).GetCryptogetAccountBalance()), nil
+	result := _AccountBalanceFromProtobuf(resp.(*services.Response).GetCryptogetAccountBalance())
+
+	network := obtainUrlForMirrorNode(client)
+	if q.accountID != nil {
+		err = queryBalanceFromMirrorNode(network, q.accountID.String(), &result)
+	} else {
+		err = queryBalanceFromMirrorNode(network, q.contractID.String(), &result)
+	}
+	if err != nil {
+		return AccountBalance{}, nil
+	}
+	return result, nil
+}
+
+// Helper function, which query the mirror node and if the balance has tokens, it iterate over the tokens and assign them
+// inside `AccountBalance` tokens field
+func queryBalanceFromMirrorNode(network string, id string, result *AccountBalance) error {
+	response, err := accountBalanceQuery(network, id)
+	if err != nil {
+		return err
+	}
+	// If user has tokens
+	result.Tokens.balances = make(map[string]uint64)
+	if tokens, ok := response["tokens"].([]map[string]interface{}); ok {
+		for _, token := range tokens {
+			for key, value := range token {
+				result.Tokens.balances[key] = value.(uint64)
+			}
+		}
+	}
+
+	return nil
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this query.
