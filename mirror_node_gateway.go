@@ -39,8 +39,8 @@ func accountInfoMirrorNodeQuery(network string, accountId string) (map[string]in
 
 // Function to obtain balance of tokens for given account ID. Return the pure JSON response as mapping
 func accountBalanceMirrorNodeQuery(network string, accountId string) (map[string]interface{}, error) {
+	// accountInfoMirrorNodeQuery provides the needed data this function exists only for the convenience of naming
 	info, err := accountInfoMirrorNodeQuery(network, accountId)
-	// Cast balance body to map
 	return info["balance"].(map[string]interface{}), err
 }
 
@@ -73,6 +73,7 @@ func makeGetRequest(url string) (response map[string]interface{}, e error) {
 	return resultMap, nil
 }
 
+// Uses the client to deduce the current network as the network is ambiguous during Mirror Node calls
 func obtainUrlForMirrorNode(client *Client) string {
 	const localNetwork = "127.0.0.1"
 	if client.GetMirrorNetwork()[0] == localNetwork+":5600" || client.GetMirrorNetwork()[0] == localNetwork+":443" {
@@ -82,6 +83,8 @@ func obtainUrlForMirrorNode(client *Client) string {
 	}
 }
 
+// This function takes the current network(localhost,testnet,previewnet,mainnet) adds the current api version hardcore style
+// and concatenates further parameters for the call to MirrorNode
 func buildUrl(network string, params ...string) string {
 	url := "https://" + network + "/api/v1"
 	for _, arg := range params {
