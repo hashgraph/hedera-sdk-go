@@ -113,7 +113,38 @@ func (q *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error) {
 		return AccountBalance{}, err
 	}
 
-	return _AccountBalanceFromProtobuf(resp.(*services.Response).GetCryptogetAccountBalance()), nil
+	accountBalance := _AccountBalanceFromProtobuf(resp.(*services.Response).GetCryptogetAccountBalance())
+
+	// accountId value could be either in q.accountID or q.contractID
+	accountId := q.accountID.String()
+	if accountId == "" {
+		accountId = q.contractID.String()
+	}
+
+	fetchTokenBalances(obtainUrlForMirrorNode(client), accountId, &accountBalance)
+
+	return accountBalance, nil
+}
+
+// Helper function, which query the mirror node and if the balance has tokens, it iterate over the tokens and assign them
+// inside `AccountBalance` tokens field
+func fetchTokenBalances(network string, id string, accountBalance *AccountBalance) error {
+	response, err := accountBalanceMirrorNodeQuery(network, id)
+	if err != nil {
+		return err
+	}
+
+	accountBalance.Tokens.balances = make(map[string]uint64)
+
+	if tokensObject, ok := response["tokens"].([]interface{}); ok {
+		for _, tokenObject := range tokensObject {
+			if tokenJSON, ok := tokenObject.(map[string]interface{}); ok {
+				accountBalance.Tokens.balances[tokenJSON["token_id"].(string)] = uint64(tokenJSON["balance"].(float64))
+			}
+		}
+	}
+
+	return nil
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this query.

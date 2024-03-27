@@ -26,11 +26,8 @@ import (
 
 type AccountBalance struct {
 	Hbars Hbar
-
 	// Deprecated: Use `AccountBalance.Tokens` instead
-	Token map[TokenID]uint64
-
-	// Deprecated
+	Token  map[TokenID]uint64
 	Tokens TokenBalanceMap
 	// Deprecated
 	TokenDecimals TokenDecimalMap
