@@ -19,11 +19,11 @@ package hedera
  * limitations under the License.
  *
  */
+import "github.com/pkg/errors"
 
 // TokenRelationship is the information about a token relationship
 type TokenRelationship struct {
 	TokenID              TokenID
-	Symbol               string
 	Balance              uint64
 	KycStatus            *bool
 	FreezeStatus         *bool
@@ -31,77 +31,46 @@ type TokenRelationship struct {
 	AutomaticAssociation bool
 }
 
-// func _TokenRelationshipFromProtobuf(pb *services.TokenRelationship) TokenRelationship {
-//	if pb == nil {
-//		return TokenRelationship{}
-//	}
-//
-//	tokenID := TokenID{}
-//	if pb.TokenId != nil {
-//		tokenID = *_TokenIDFromProtobuf(pb.TokenId)
-//	}
-//
-//	return TokenRelationship{
-//		TokenID:              tokenID,
-//		Symbol:               pb.Symbol,
-//		Balance:              pb.Balance,
-//		KycStatus:            _KycStatusFromProtobuf(pb.KycStatus),
-//		FreezeStatus:         _FreezeStatusFromProtobuf(pb.FreezeStatus),
-//		Decimals:             pb.Decimals,
-//		AutomaticAssociation: pb.AutomaticAssociation,
-//	}
-//}
-//
-// func (relationship *TokenRelationship) _ToProtobuf() *services.TokenRelationship {
-//	var freezeStatus services.TokenFreezeStatus
-//	switch *relationship.FreezeStatus {
-//	case true:
-//		freezeStatus = 1
-//	case false:
-//		freezeStatus = 2
-//	default:
-//		freezeStatus = 0
-//	}
-//
-//	var kycStatus services.TokenKycStatus
-//	switch *relationship.KycStatus {
-//	case true:
-//		kycStatus = 1
-//	case false:
-//		kycStatus = 2
-//	default:
-//		kycStatus = 0
-//	}
-//
-//	return &services.TokenRelationship{
-//		TokenId:              relationship.TokenID._ToProtobuf(),
-//		Symbol:               relationship.Symbol,
-//		Balance:              relationship.Balance,
-//		KycStatus:            kycStatus,
-//		FreezeStatus:         freezeStatus,
-//		Decimals:             relationship.Decimals,
-//		AutomaticAssociation: relationship.AutomaticAssociation,
-//	}
-//}
-//
-// func (relationship TokenRelationship) ToBytes() []byte {
-//	data, err := protobuf.Marshal(relationship._ToProtobuf())
-//	if err != nil {
-//		return make([]byte, 0)
-//	}
-//
-//	return data
-//}
-//
-// func TokenRelationshipFromBytes(data []byte) (TokenRelationship, error) {
-//	if data == nil {
-//		return TokenRelationship{}, errors.New("byte array can't be null")
-//	}
-//	pb := services.TokenRelationship{}
-//	err := protobuf.Unmarshal(data, &pb)
-//	if err != nil {
-//		return TokenRelationship{}, err
-//	}
-//
-//	return _TokenRelationshipFromProtobuf(&pb), nil
-//}
+func TokenRelationshipFromJson(tokenObject interface{}) (*TokenRelationship, error) {
+	tokenJSON, ok := tokenObject.(map[string]interface{})
+	if !ok {
+		return nil, errors.New("Invalid token JSON object")
+	}
+
+	tokenId, err := TokenIDFromString(tokenJSON["token_id"].(string))
+	if err != nil {
+		return nil, err
+	}
+
+	var freezeStatus *bool
+	if tokenFreezeStatus, ok := tokenJSON["freeze_status"].(string); ok {
+		var freezeStatusValue bool
+		if tokenFreezeStatus == "FROZEN" || tokenFreezeStatus == "UNFROZEN" {
+			freezeStatusValue = tokenFreezeStatus == "FROZEN"
+			freezeStatus = &freezeStatusValue
+		} else {
+			freezeStatus = nil
+		}
+	}
+
+	var kycStatus *bool
+	if tokenKycStatus, ok := tokenJSON["kyc_status"].(string); ok {
+		var kycStatusValue bool
+		if tokenKycStatus == "GRANTED" || tokenKycStatus == "REVOKED" {
+			kycStatusValue = tokenKycStatus == "GRANTED"
+			kycStatus = &kycStatusValue
+		} else {
+			kycStatus = nil
+		}
+	}
+
+	tokenRelationship := &TokenRelationship{
+		TokenID:              tokenId,
+		Balance:              uint64(tokenJSON["balance"].(float64)),
+		KycStatus:            kycStatus,
+		FreezeStatus:         freezeStatus,
+		Decimals:             tokenJSON["decimals"].(uint32),
+		AutomaticAssociation: tokenJSON["automatic_association"].(bool),
+	}
+	return tokenRelationship, nil
+}
