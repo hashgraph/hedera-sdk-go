@@ -313,7 +313,7 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 	case *services.TransactionBody_UtilPrng:
 		return *_PrngTransactionFromProtobuf(tx, first), nil
 	case *services.TransactionBody_TokenUpdateNfts:
-		return *_NewTokenUpdateNftsFromProtobuf(tx, first), nil
+		return *_NewTokenUpdateNftsTransactionFromProtobuf(tx, first), nil
 	default:
 		return Transaction{}, errFailedToDeserializeBytes
 	}

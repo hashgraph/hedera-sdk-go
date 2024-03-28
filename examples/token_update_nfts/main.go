@@ -29,17 +29,22 @@ func main() {
 	// Setting the client operator ID and key
 	client.SetOperator(operatorAccountID, operatorKey)
 
-	metadataList := []string{"meta1",
-		"meta2",
-		"meta3",
-		"meta4",
-		"meta5"}
+	metadataKey, err := hedera.PrivateKeyGenerateEd25519()
+	if err != nil {
+		panic(fmt.Sprintf("%v : error creating metadata key", err))
+	}
+	fmt.Println("create metadata key: ", metadataKey.String())
+
+	var initialMetadataList = [][]byte{{2, 1}, {1, 2}}
+	var updatedMetadata = []byte{22, 22}
+
+	// create token with metadata key
 	nftCreateTransaction, err := hedera.NewTokenCreateTransaction().
 		SetTokenName("HIP-542 Example Collection").SetTokenSymbol("HIP-542").
 		SetTokenType(hedera.TokenTypeNonFungibleUnique).SetDecimals(0).
 		SetInitialSupply(0).SetMaxSupply(10).
 		SetTreasuryAccountID(client.GetOperatorAccountID()).SetSupplyType(hedera.TokenSupplyTypeFinite).
-		SetAdminKey(operatorKey).SetFreezeKey(operatorKey).SetSupplyKey(operatorKey).SetMetadataKey(operatorKey).FreezeWith(client)
+		SetAdminKey(operatorKey).SetFreezeKey(operatorKey).SetSupplyKey(operatorKey).SetMetadataKey(metadataKey).FreezeWith(client)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error creating token transaction", err))
 	}
@@ -59,47 +64,94 @@ func main() {
 	nftTokenID := *nftCreateReceipt.TokenID
 	fmt.Println("Created NFT with token id: ", nftTokenID)
 
-	// mint nfts
-	nftCollection := []hedera.TransactionReceipt{}
-
-	for i, s := range metadataList {
-		mintTransaction, err := hedera.NewTokenMintTransaction().SetTokenID(nftTokenID).SetMetadata([]byte(s)).FreezeWith(client)
-		if err != nil {
-			panic(fmt.Sprintf("%v : error creating mint transaction", err))
-		}
-		mintTransactionSubmit, err := mintTransaction.Sign(operatorKey).Execute(client)
-		if err != nil {
-			panic(fmt.Sprintf("%v : error submitting transaction", err))
-		}
-		receipt, err := mintTransactionSubmit.GetReceipt(client)
-		if err != nil {
-			panic(fmt.Sprintf("%v : error receiving receipt", err))
-		}
-		nftCollection = append(nftCollection, receipt)
-		fmt.Println("Created NFT ", nftTokenID.String(), " with serial: ", nftCollection[i].SerialNumbers[0])
-	}
-	exampleNftId := nftTokenID.Nft(nftCollection[0].SerialNumbers[0])
-
-	//Returns the info for the specified NFT id
-	nftInfo, err := hedera.NewTokenNftInfoQuery().SetNftID(exampleNftId).Execute(client)
+	tokenInfo, err := hedera.NewTokenInfoQuery().SetTokenID(nftTokenID).Execute(client)
 	if err != nil {
-		panic(fmt.Sprintf("%v : error info query transaction", err))
+		panic(fmt.Sprintf("%v : error getting token info", err))
 	}
-	fmt.Println(string(nftInfo[0].Metadata))
+	fmt.Println("Token metadata key: ", tokenInfo.MetadataKey.String())
 
-	metadataUpdateSubmit, err := hedera.NewTokenUpdateNfts().
+	// mint nfts
+	mintTransaction, err := hedera.NewTokenMintTransaction().SetTokenID(nftTokenID).SetMetadatas(initialMetadataList).FreezeWith(client)
+
+	for _, v := range mintTransaction.GetMetadatas() {
+		fmt.Println("Set metadata: ", v)
+	}
+
+	mintTransactionSubmit, err := mintTransaction.Sign(operatorKey).Execute(client)
+	receipt, err := mintTransactionSubmit.GetReceipt(client)
+
+	// Check that metadata was set correctly
+	serials := receipt.SerialNumbers
+	fmt.Println(serials)
+	var metadataAfterMint = make([][]byte, len(initialMetadataList))
+	for i, v := range serials {
+		nftID := hedera.NftID{nftTokenID, v}
+		nftInfo, err := hedera.NewTokenNftInfoQuery().SetNftID(nftID).Execute(client)
+		if err != nil {
+			panic(fmt.Sprintf("%v : error getting token info", err))
+		}
+		fmt.Println(nftInfo)
+		metadataAfterMint[i] = nftInfo[0].Metadata
+	}
+	fmt.Println("Metadata after mint: ", metadataAfterMint)
+
+	// create account owner of nft
+	accountCreateTransaction, err := hedera.NewAccountCreateTransaction().
+		SetKey(operatorKey).SetMaxAutomaticTokenAssociations(10).Execute(client)
+	if err != nil {
+		panic(fmt.Sprintf("%v : error creating account", err))
+	}
+	receipt, err = accountCreateTransaction.GetReceipt(client)
+	if err != nil {
+		panic(fmt.Sprintf("%v : error receiving receipt", err))
+	}
+	newAccountId := receipt.AccountID
+
+	tokenAssociateTransaction, err := hedera.NewTokenAssociateTransaction().SetAccountID(*newAccountId).SetTokenIDs(nftTokenID).Sign(operatorKey).Execute(client)
+	if err != nil {
+		panic(fmt.Sprintf("%v : error associate token", err))
+	}
+	_, err = tokenAssociateTransaction.GetReceipt(client)
+	if err != nil {
+		panic(fmt.Sprintf("%v : error getting receipt", err))
+	}
+
+	tokenTransferTransaction, err := hedera.NewTransferTransaction().AddNftTransfer(nftTokenID.Nft(serials[0]), operatorAccountID, *newAccountId).Execute(client)
+	if err != nil {
+		panic(fmt.Sprintf("%v : error transfering nft", err))
+	}
+	_, err = tokenTransferTransaction.GetReceipt(client)
+	if err != nil {
+		panic(fmt.Sprintf("%v : error getting receipt", err))
+	}
+
+	// update nfts metadata
+	metadataUpdateTransaction, err := hedera.NewTokenUpdateNftsTransaction().
 		SetTokenID(nftTokenID).
-		SetSerialNumbers([]int64{1, 2, 3}).
-		SetMetadata([]byte("updated")).
-		Sign(operatorKey).
-		Execute(client)
+		SetSerialNumbers(serials).
+		SetMetadata(updatedMetadata).
+		FreezeWith(client)
+	if err != nil {
+		panic(fmt.Sprintf("%v : error creating transaction", err))
+	}
+	fmt.Println("Updatad metadata: ", metadataUpdateTransaction.GetMetadata())
+	metadataUpdateSubmit, err := metadataUpdateTransaction.Sign(metadataKey).Execute(client)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error submitting transaction", err))
 	}
 
-	receipt, err := metadataUpdateSubmit.GetReceipt(client)
+	receipt, err = metadataUpdateSubmit.GetReceipt(client)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error receiving receipt", err))
 	}
-	fmt.Println("metadata update: ", receipt)
+	fmt.Println("Metadata update status: ", receipt.Status)
+
+	for _, v := range serials {
+		nftID := hedera.NftID{nftTokenID, v}
+		nftInfo, err := hedera.NewTokenNftInfoQuery().SetNftID(nftID).Execute(client)
+		if err != nil {
+			panic(fmt.Sprintf("%v : error getting token info", err))
+		}
+		fmt.Println("Metadata after update for serial number ", v, ": ", nftInfo[0].Metadata)
+	}
 }

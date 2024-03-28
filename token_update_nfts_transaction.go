@@ -14,13 +14,13 @@ type TokenUpdateNfts struct {
 	metadata      []byte
 }
 
-func NewTokenUpdateNfts() *TokenUpdateNfts {
+func NewTokenUpdateNftsTransaction() *TokenUpdateNfts {
 	return &TokenUpdateNfts{
 		Transaction: _NewTransaction(),
 	}
 }
 
-func _NewTokenUpdateNftsFromProtobuf(tx Transaction, pb *services.TransactionBody) *TokenUpdateNfts {
+func _NewTokenUpdateNftsTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *TokenUpdateNfts {
 	return &TokenUpdateNfts{
 		Transaction: tx,
 		tokenID:     _TokenIDFromProtobuf(pb.GetTokenUpdateNfts().GetToken()),
@@ -247,9 +247,7 @@ func (tx *TokenUpdateNfts) buildProtoBody() *services.TokenUpdateNftsTransaction
 			body.SerialNumbers = serialNumbers
 		}
 	}
-	if len(tx.metadata) != 0 {
-		body.Metadata = wrapperspb.Bytes(tx.metadata)
-	}
+	body.Metadata = wrapperspb.Bytes(tx.metadata)
 	return body
 }
 

@@ -43,7 +43,7 @@ func TestUnitTokenUpdateNftsTransactionValidate(t *testing.T) {
 	tokenID, err := TokenIDFromString("0.0.123-esxsf")
 	require.NoError(t, err)
 
-	tokenUpdate := NewTokenUpdateNfts().
+	tokenUpdate := NewTokenUpdateNftsTransaction().
 		SetTokenID(tokenID).
 		SetSerialNumbers([]int64{1, 2, 3}).
 		SetMetadata([]byte("metadata"))
@@ -63,7 +63,7 @@ func TestUnitTokenUpdateNftsTransactionValidateWrong(t *testing.T) {
 	tokenID, err := TokenIDFromString("0.0.123-rmkykd")
 	require.NoError(t, err)
 
-	tokenUpdate := NewTokenUpdateNfts().
+	tokenUpdate := NewTokenUpdateNftsTransaction().
 		SetTokenID(tokenID).
 		SetSerialNumbers([]int64{1, 2, 3}).
 		SetMetadata([]byte("metadata"))
@@ -92,7 +92,7 @@ func TestUnitTokenUpdateNftsTransactionGet(t *testing.T) {
 	require.NoError(t, err)
 	client.SetAutoValidateChecksums(true)
 
-	transaction, err := NewTokenUpdateNfts().
+	transaction, err := NewTokenUpdateNftsTransaction().
 		SetTokenID(tokenID).
 		SetSerialNumbers([]int64{1, 2, 3}).
 		SetTransactionID(transactionID).
@@ -132,7 +132,7 @@ func TestUnitTokenUpdateNftsTransactionNothingSet(t *testing.T) {
 	nodeAccountID := []AccountID{{Account: 10}}
 	transactionID := TransactionIDGenerate(AccountID{Account: 324})
 
-	transaction, err := NewTokenUpdateNfts().
+	transaction, err := NewTokenUpdateNftsTransaction().
 		SetTransactionID(transactionID).
 		SetNodeAccountIDs(nodeAccountID).Freeze()
 
@@ -194,7 +194,7 @@ func TestUnitTokenUpdateNftTransactionMock(t *testing.T) {
 	checksum := "dmqui"
 	token := TokenID{Token: 3, checksum: &checksum}
 
-	freeze, err := NewTokenUpdateNfts().
+	freeze, err := NewTokenUpdateNftsTransaction().
 		SetTokenID(token).
 		SetSerialNumbers([]int64{1, 2, 3}).
 		SetNodeAccountIDs([]AccountID{{Account: 3}}).
@@ -215,7 +215,7 @@ func TestUnitTokenUpdateNftsTransactionSignWithOperator(t *testing.T) {
 	tokenID, err := TokenIDFromString("0.0.123")
 	require.NoError(t, err)
 
-	tokenUpdate := NewTokenUpdateNfts().
+	tokenUpdate := NewTokenUpdateNftsTransaction().
 		SetTokenID(tokenID).
 		SetSerialNumbers([]int64{1, 2, 3}).
 		SetMetadata([]byte("metadata"))

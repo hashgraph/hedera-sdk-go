@@ -103,7 +103,8 @@ func (tokenInfo *TokenInfo) FreezeStatusToProtobuf() *services.TokenFreezeStatus
 	var freezeStatus services.TokenFreezeStatus
 
 	if tokenInfo.DefaultFreezeStatus == nil {
-		return nil
+		freezeStatus = services.TokenFreezeStatus_FreezeNotApplicable
+		return &freezeStatus
 	}
 
 	switch *tokenInfo.DefaultFreezeStatus {
@@ -123,7 +124,8 @@ func (tokenInfo *TokenInfo) KycStatusToProtobuf() *services.TokenKycStatus {
 	var kycStatus services.TokenKycStatus
 
 	if tokenInfo.DefaultKycStatus == nil {
-		return nil
+		kycStatus = services.TokenKycStatus_KycNotApplicable
+		return &kycStatus
 	}
 
 	switch *tokenInfo.DefaultKycStatus {
@@ -143,7 +145,8 @@ func (tokenInfo *TokenInfo) PauseStatusToProtobuf() *services.TokenPauseStatus {
 	var pauseStatus services.TokenPauseStatus
 
 	if tokenInfo.PauseStatus == nil {
-		return nil
+		pauseStatus = services.TokenPauseStatus_PauseNotApplicable
+		return &pauseStatus
 	}
 
 	switch *tokenInfo.PauseStatus {
