@@ -54,6 +54,7 @@ type TokenInfo struct {
 	CustomFees          []Fee
 	PauseKey            Key
 	PauseStatus         *bool
+	MetadataKey         Key
 	LedgerID            LedgerID
 }
 
@@ -102,7 +103,8 @@ func (tokenInfo *TokenInfo) FreezeStatusToProtobuf() *services.TokenFreezeStatus
 	var freezeStatus services.TokenFreezeStatus
 
 	if tokenInfo.DefaultFreezeStatus == nil {
-		return nil
+		freezeStatus = services.TokenFreezeStatus_FreezeNotApplicable
+		return &freezeStatus
 	}
 
 	switch *tokenInfo.DefaultFreezeStatus {
@@ -122,7 +124,8 @@ func (tokenInfo *TokenInfo) KycStatusToProtobuf() *services.TokenKycStatus {
 	var kycStatus services.TokenKycStatus
 
 	if tokenInfo.DefaultKycStatus == nil {
-		return nil
+		kycStatus = services.TokenKycStatus_KycNotApplicable
+		return &kycStatus
 	}
 
 	switch *tokenInfo.DefaultKycStatus {
@@ -142,7 +145,8 @@ func (tokenInfo *TokenInfo) PauseStatusToProtobuf() *services.TokenPauseStatus {
 	var pauseStatus services.TokenPauseStatus
 
 	if tokenInfo.PauseStatus == nil {
-		return nil
+		pauseStatus = services.TokenPauseStatus_PauseNotApplicable
+		return &pauseStatus
 	}
 
 	switch *tokenInfo.PauseStatus {
@@ -190,6 +194,11 @@ func _TokenInfoFromProtobuf(pb *services.TokenInfo) TokenInfo {
 	var pauseKey Key
 	if pb.PauseKey != nil {
 		pauseKey, _ = _KeyFromProtobuf(pb.PauseKey)
+	}
+
+	var metadataKey Key
+	if pb.MetadataKey != nil {
+		metadataKey, _ = _KeyFromProtobuf(pb.MetadataKey)
 	}
 
 	var feeScheduleKey Key
@@ -254,6 +263,7 @@ func _TokenInfoFromProtobuf(pb *services.TokenInfo) TokenInfo {
 		FeeScheduleKey:      feeScheduleKey,
 		CustomFees:          customFees,
 		PauseKey:            pauseKey,
+		MetadataKey:         metadataKey,
 		PauseStatus:         _PauseStatusFromProtobuf(pb.PauseStatus),
 		LedgerID:            LedgerID{pb.LedgerId},
 	}
@@ -288,6 +298,11 @@ func (tokenInfo *TokenInfo) _ToProtobuf() *services.TokenInfo {
 	var pauseKey *services.Key
 	if tokenInfo.PauseKey != nil {
 		pauseKey = tokenInfo.PauseKey._ToProtoKey()
+	}
+
+	var metadataKey *services.Key
+	if tokenInfo.MetadataKey != nil {
+		metadataKey = tokenInfo.MetadataKey._ToProtoKey()
 	}
 
 	var feeScheduleKey *services.Key
@@ -337,6 +352,7 @@ func (tokenInfo *TokenInfo) _ToProtobuf() *services.TokenInfo {
 		FeeScheduleKey:      feeScheduleKey,
 		CustomFees:          customFees,
 		PauseKey:            pauseKey,
+		MetadataKey:         metadataKey,
 		PauseStatus:         *tokenInfo.PauseStatusToProtobuf(),
 		LedgerId:            tokenInfo.LedgerID.ToBytes(),
 	}

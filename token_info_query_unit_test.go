@@ -219,6 +219,7 @@ func TestUnitTokenInfoQueryMock(t *testing.T) {
 						CustomFees:          nil,
 						PauseKey:            nil,
 						PauseStatus:         0,
+						MetadataKey:         nil,
 						LedgerId:            nil,
 					},
 				},
