@@ -27,6 +27,7 @@ const (
 	NetworkNameTestnet    NetworkName = "testnet"
 	NetworkNamePreviewnet NetworkName = "previewnet"
 	NetworkNameOther      NetworkName = "other"
+	NetworkNameOther2     NetworkName = "other2"
 )
 
 // Deprecated
