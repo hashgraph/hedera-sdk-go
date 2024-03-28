@@ -1,0 +1,2778 @@
+=== RUN   TestIntegrationAccountBalanceQueryCanExecute
+=== PAUSE TestIntegrationAccountBalanceQueryCanExecute
+=== RUN   TestIntegrationAccountBalanceQueryCanGetTokenBalance
+=== PAUSE TestIntegrationAccountBalanceQueryCanGetTokenBalance
+=== RUN   TestIntegrationAccountBalanceQueryGetCost
+=== PAUSE TestIntegrationAccountBalanceQueryGetCost
+=== RUN   TestIntegrationAccountBalanceQuerySetBigMaxPayment
+=== PAUSE TestIntegrationAccountBalanceQuerySetBigMaxPayment
+=== RUN   TestIntegrationAccountBalanceQuerySetSmallMaxPayment
+=== PAUSE TestIntegrationAccountBalanceQuerySetSmallMaxPayment
+=== RUN   TestIntegrationAccountBalanceQueryCanSetQueryPayment
+=== PAUSE TestIntegrationAccountBalanceQueryCanSetQueryPayment
+=== RUN   TestIntegrationAccountBalanceQueryCostCanSetPaymentOneTinybar
+=== PAUSE TestIntegrationAccountBalanceQueryCostCanSetPaymentOneTinybar
+=== RUN   TestIntegrationAccountBalanceQueryNoAccountIDError
+=== PAUSE TestIntegrationAccountBalanceQueryNoAccountIDError
+=== RUN   TestIntegrationAccountCreateTransactionCanExecute
+=== PAUSE TestIntegrationAccountCreateTransactionCanExecute
+=== RUN   TestIntegrationAccountCreateTransactionCanFreezeModify
+=== PAUSE TestIntegrationAccountCreateTransactionCanFreezeModify
+=== RUN   TestIntegrationAccountCreateTransactionNoKey
+=== PAUSE TestIntegrationAccountCreateTransactionNoKey
+=== RUN   TestIntegrationAccountCreateTransactionAddSignature
+=== PAUSE TestIntegrationAccountCreateTransactionAddSignature
+=== RUN   TestIntegrationAccountCreateTransactionNetwork
+=== PAUSE TestIntegrationAccountCreateTransactionNetwork
+=== RUN   TestIntegrationAccountCreateTransactionWithAliasFromAdminKey
+=== PAUSE TestIntegrationAccountCreateTransactionWithAliasFromAdminKey
+=== RUN   TestIntegrationAccountCreateTransactionWithAliasFromAdminKeyWithReceiverSigRequired
+=== PAUSE TestIntegrationAccountCreateTransactionWithAliasFromAdminKeyWithReceiverSigRequired
+=== RUN   TestIntegrationAccountCreateTransactionWithAliasFromAdminKeyWithReceiverSigRequiredWithoutSignature
+=== PAUSE TestIntegrationAccountCreateTransactionWithAliasFromAdminKeyWithReceiverSigRequiredWithoutSignature
+=== RUN   TestIntegrationAccountCreateTransactionWithAlias
+=== PAUSE TestIntegrationAccountCreateTransactionWithAlias
+=== RUN   TestIntegrationAccountCreateTransactionWithAliasWithoutSignature
+=== PAUSE TestIntegrationAccountCreateTransactionWithAliasWithoutSignature
+=== RUN   TestIntegrationAccountCreateTransactionWithAliasWithReceiverSigRequired
+=== PAUSE TestIntegrationAccountCreateTransactionWithAliasWithReceiverSigRequired
+=== RUN   TestIntegrationAccountCreateTransactionWithAliasWithReceiverSigRequiredWithoutSignature
+=== PAUSE TestIntegrationAccountCreateTransactionWithAliasWithReceiverSigRequiredWithoutSignature
+=== RUN   TestIntegrationSerializeTransactionWithoutNodeAccountIdDeserialiseAndExecute
+=== PAUSE TestIntegrationSerializeTransactionWithoutNodeAccountIdDeserialiseAndExecute
+=== RUN   TestIntegrationAccountDeleteTransactionCanExecute
+=== PAUSE TestIntegrationAccountDeleteTransactionCanExecute
+=== RUN   TestIntegrationAccountDeleteTransactionNoTransferAccountID
+=== PAUSE TestIntegrationAccountDeleteTransactionNoTransferAccountID
+=== RUN   TestIntegrationAccountDeleteTransactionNoAccountID
+=== PAUSE TestIntegrationAccountDeleteTransactionNoAccountID
+=== RUN   TestIntegrationAccountDeleteTransactionNoSigning
+=== PAUSE TestIntegrationAccountDeleteTransactionNoSigning
+=== RUN   TestIntegrationAccountIDCanPopulateAccountNumber
+=== PAUSE TestIntegrationAccountIDCanPopulateAccountNumber
+=== RUN   TestIntegrationAccountIDCanPopulateAccountAliasEvmAddress
+=== PAUSE TestIntegrationAccountIDCanPopulateAccountAliasEvmAddress
+=== RUN   TestIntegrationAccountIDCanPopulateAccountAliasEvmAddressWithMirror
+=== PAUSE TestIntegrationAccountIDCanPopulateAccountAliasEvmAddressWithMirror
+=== RUN   TestIntegrationAccountIDCanPopulateAccountAliasEvmAddressWithNoMirror
+=== PAUSE TestIntegrationAccountIDCanPopulateAccountAliasEvmAddressWithNoMirror
+=== RUN   TestIntegrationAccountIDCanPopulateAccountAliasEvmAddressWithMirrorAndNoEvmAddress
+=== PAUSE TestIntegrationAccountIDCanPopulateAccountAliasEvmAddressWithMirrorAndNoEvmAddress
+=== RUN   TestIntegrationVerifySignatureFlowCanExecute
+=== PAUSE TestIntegrationVerifySignatureFlowCanExecute
+=== RUN   TestIntegrationVerifySignatureFlowKeyList
+=== PAUSE TestIntegrationVerifySignatureFlowKeyList
+=== RUN   TestIntegrationAccountInfoQueryCanExecute
+=== PAUSE TestIntegrationAccountInfoQueryCanExecute
+=== RUN   TestIntegrationAccountInfoQueryGetCost
+=== PAUSE TestIntegrationAccountInfoQueryGetCost
+=== RUN   TestIntegrationAccountInfoQueryInsufficientFee
+=== PAUSE TestIntegrationAccountInfoQueryInsufficientFee
+=== RUN   TestIntegrationAccountInfoQuerySetBigMaxPayment
+=== PAUSE TestIntegrationAccountInfoQuerySetBigMaxPayment
+=== RUN   TestIntegrationAccountInfoQuerySetSmallMaxPayment
+=== PAUSE TestIntegrationAccountInfoQuerySetSmallMaxPayment
+=== RUN   TestIntegrationAccountInfoQueryNoAccountID
+=== PAUSE TestIntegrationAccountInfoQueryNoAccountID
+=== RUN   TestIntegrationAccountRecordQueryCanExecute
+=== PAUSE TestIntegrationAccountRecordQueryCanExecute
+=== RUN   TestIntegrationAccountRecordQueryGetCost
+=== PAUSE TestIntegrationAccountRecordQueryGetCost
+=== RUN   TestIntegrationAccountRecordQuerySetBigMaxPayment
+=== PAUSE TestIntegrationAccountRecordQuerySetBigMaxPayment
+=== RUN   TestIntegrationAccountRecordQuerySetSmallMaxPayment
+=== PAUSE TestIntegrationAccountRecordQuerySetSmallMaxPayment
+=== RUN   TestIntegrationAccountRecordQueryInsufficientFee
+=== PAUSE TestIntegrationAccountRecordQueryInsufficientFee
+=== RUN   TestIntegrationAccountRecordQueryNoAccountID
+=== PAUSE TestIntegrationAccountRecordQueryNoAccountID
+=== RUN   TestIntegrationAccountStakersQueryCanExecute
+=== PAUSE TestIntegrationAccountStakersQueryCanExecute
+=== RUN   TestIntegrationAccountStakersQueryGetCost
+=== PAUSE TestIntegrationAccountStakersQueryGetCost
+=== RUN   TestIntegrationAccountStakersQuerySetBigMaxPayment
+=== PAUSE TestIntegrationAccountStakersQuerySetBigMaxPayment
+=== RUN   TestIntegrationAccountStakersQuerySetSmallMaxPayment
+=== PAUSE TestIntegrationAccountStakersQuerySetSmallMaxPayment
+=== RUN   TestIntegrationAccountStakersQueryInsufficientFee
+=== PAUSE TestIntegrationAccountStakersQueryInsufficientFee
+=== RUN   TestIntegrationAccountStakersQueryNoAccountID
+=== PAUSE TestIntegrationAccountStakersQueryNoAccountID
+=== RUN   TestIntegrationAccountUpdateTransactionCanExecute
+=== PAUSE TestIntegrationAccountUpdateTransactionCanExecute
+=== RUN   TestIntegrationAccountUpdateTransactionNoSigning
+=== PAUSE TestIntegrationAccountUpdateTransactionNoSigning
+=== RUN   TestIntegrationAccountUpdateTransactionAccountIDNotSet
+=== PAUSE TestIntegrationAccountUpdateTransactionAccountIDNotSet
+=== RUN   TestIntegrationClientCanExecuteSerializedTransactionFromAnotherClient
+=== PAUSE TestIntegrationClientCanExecuteSerializedTransactionFromAnotherClient
+=== RUN   TestIntegrationClientCanFailGracefullyWhenDoesNotHaveNodeOfAnotherClient
+=== PAUSE TestIntegrationClientCanFailGracefullyWhenDoesNotHaveNodeOfAnotherClient
+=== RUN   TestIntegrationContractBytecodeQueryCanExecute
+=== PAUSE TestIntegrationContractBytecodeQueryCanExecute
+=== RUN   TestIntegrationContractBytecodeQueryGetCostExecute
+=== PAUSE TestIntegrationContractBytecodeQueryGetCostExecute
+=== RUN   TestIntegrationContractBytecodeQuerySetBigMaxPayment
+=== PAUSE TestIntegrationContractBytecodeQuerySetBigMaxPayment
+=== RUN   TestIntegrationContractBytecodeQuerySetSmallMaxPayment
+=== PAUSE TestIntegrationContractBytecodeQuerySetSmallMaxPayment
+=== RUN   TestIntegrationContractBytecodeQueryInsufficientFee
+=== PAUSE TestIntegrationContractBytecodeQueryInsufficientFee
+=== RUN   TestIntegrationContractBytecodeQueryNoContractID
+=== PAUSE TestIntegrationContractBytecodeQueryNoContractID
+=== RUN   TestIntegrationContractCallQueryCanExecute
+=== PAUSE TestIntegrationContractCallQueryCanExecute
+=== RUN   TestIntegrationContractCallQueryGetCost
+=== PAUSE TestIntegrationContractCallQueryGetCost
+=== RUN   TestIntegrationContractCallQuerySetMaxPaymentBig
+=== PAUSE TestIntegrationContractCallQuerySetMaxPaymentBig
+=== RUN   TestIntegrationContractCallQuerySetSmallMaxPayment
+=== PAUSE TestIntegrationContractCallQuerySetSmallMaxPayment
+=== RUN   TestIntegrationContractCallQueryInsufficientFee
+=== PAUSE TestIntegrationContractCallQueryInsufficientFee
+=== RUN   TestIntegrationContractCallQueryNoContractID
+=== PAUSE TestIntegrationContractCallQueryNoContractID
+=== RUN   TestIntegrationContractCallQueryNoGas
+=== PAUSE TestIntegrationContractCallQueryNoGas
+=== RUN   TestIntegrationContractCallQueryNoFunction
+=== PAUSE TestIntegrationContractCallQueryNoFunction
+=== RUN   TestIntegrationContractCreateFlowCanExecute
+=== PAUSE TestIntegrationContractCreateFlowCanExecute
+=== RUN   TestIntegrationContractCreateFlowSmallContractCanExecute
+=== PAUSE TestIntegrationContractCreateFlowSmallContractCanExecute
+=== RUN   TestIntegrationContractCreateFlowGettersAndSetters
+=== PAUSE TestIntegrationContractCreateFlowGettersAndSetters
+=== RUN   TestIntegrationContractCreateTransactionCanExecute
+=== PAUSE TestIntegrationContractCreateTransactionCanExecute
+=== RUN   TestIntegrationContractCreateTransactionNoAdminKey
+=== PAUSE TestIntegrationContractCreateTransactionNoAdminKey
+=== RUN   TestIntegrationContractCreateTransactionNoGas
+=== PAUSE TestIntegrationContractCreateTransactionNoGas
+=== RUN   TestIntegrationContractCreateTransactionNoBytecodeFileID
+=== PAUSE TestIntegrationContractCreateTransactionNoBytecodeFileID
+=== RUN   TestIntegrationContractCreateTransactionSetBytecode
+=== PAUSE TestIntegrationContractCreateTransactionSetBytecode
+=== RUN   TestIntegrationContractDeleteTransactionCanExecute
+=== PAUSE TestIntegrationContractDeleteTransactionCanExecute
+=== RUN   TestIntegrationContractDeleteTransactionNoContractID
+=== PAUSE TestIntegrationContractDeleteTransactionNoContractID
+=== RUN   TestIntegrationContractExecuteTransactionCanExecute
+=== PAUSE TestIntegrationContractExecuteTransactionCanExecute
+=== RUN   TestIntegrationContractExecuteTransactionNoContractID
+=== PAUSE TestIntegrationContractExecuteTransactionNoContractID
+=== RUN   TestIntegrationContractExecuteTransactionNoGas
+=== PAUSE TestIntegrationContractExecuteTransactionNoGas
+=== RUN   TestIntegrationContractExecuteTransactionNoFunction
+=== PAUSE TestIntegrationContractExecuteTransactionNoFunction
+=== RUN   TestUint8Min
+=== PAUSE TestUint8Min
+=== RUN   TestUint8Max
+=== PAUSE TestUint8Max
+=== RUN   TestUint16Min
+=== PAUSE TestUint16Min
+=== RUN   TestUint16Max
+=== PAUSE TestUint16Max
+=== RUN   TestUint24Min
+=== PAUSE TestUint24Min
+=== RUN   TestUint24Max
+=== PAUSE TestUint24Max
+=== RUN   TestUint32Min
+=== PAUSE TestUint32Min
+=== RUN   TestUint32Max
+=== PAUSE TestUint32Max
+=== RUN   TestUint40Min
+=== PAUSE TestUint40Min
+=== RUN   TestUint40Max
+=== PAUSE TestUint40Max
+=== RUN   TestUint48Min
+=== PAUSE TestUint48Min
+=== RUN   TestUint48Max
+=== PAUSE TestUint48Max
+=== RUN   TestUint56Min
+=== PAUSE TestUint56Min
+=== RUN   TestUint56Max
+=== PAUSE TestUint56Max
+=== RUN   TestUint64Min
+=== PAUSE TestUint64Min
+=== RUN   TestUint64Max
+=== PAUSE TestUint64Max
+=== RUN   TestUint72Min
+=== PAUSE TestUint72Min
+=== RUN   TestUint72Max
+=== PAUSE TestUint72Max
+=== RUN   TestUint80Min
+=== PAUSE TestUint80Min
+=== RUN   TestUint80Max
+=== PAUSE TestUint80Max
+=== RUN   TestUint88Min
+=== PAUSE TestUint88Min
+=== RUN   TestUint88Max
+=== PAUSE TestUint88Max
+=== RUN   TestUint96Min
+=== PAUSE TestUint96Min
+=== RUN   TestUint96Max
+=== PAUSE TestUint96Max
+=== RUN   TestUint104Min
+=== PAUSE TestUint104Min
+=== RUN   TestUint104Max
+=== PAUSE TestUint104Max
+=== RUN   TestUint112Min
+=== PAUSE TestUint112Min
+=== RUN   TestUint112Max
+=== PAUSE TestUint112Max
+=== RUN   TestUint120Min
+=== PAUSE TestUint120Min
+=== RUN   TestUint120Max
+=== PAUSE TestUint120Max
+=== RUN   TestUint128Min
+=== PAUSE TestUint128Min
+=== RUN   TestUint128Max
+=== PAUSE TestUint128Max
+=== RUN   TestUint136Min
+=== PAUSE TestUint136Min
+=== RUN   TestUint136Max
+=== PAUSE TestUint136Max
+=== RUN   TestUint144Min
+=== PAUSE TestUint144Min
+=== RUN   TestUint144Max
+=== PAUSE TestUint144Max
+=== RUN   TestUint152Min
+=== PAUSE TestUint152Min
+=== RUN   TestUint152Max
+=== PAUSE TestUint152Max
+=== RUN   TestUint160Min
+=== PAUSE TestUint160Min
+=== RUN   TestUint160Max
+=== PAUSE TestUint160Max
+=== RUN   TestUint168Min
+=== PAUSE TestUint168Min
+=== RUN   TestUint168Max
+=== PAUSE TestUint168Max
+=== RUN   TestUint176Min
+=== PAUSE TestUint176Min
+=== RUN   TestUint176Max
+=== PAUSE TestUint176Max
+=== RUN   TestUint184Min
+=== PAUSE TestUint184Min
+=== RUN   TestUint184Max
+=== PAUSE TestUint184Max
+=== RUN   TestUint192Min
+=== PAUSE TestUint192Min
+=== RUN   TestUint192Max
+=== PAUSE TestUint192Max
+=== RUN   TestUint200Min
+=== PAUSE TestUint200Min
+=== RUN   TestUint200Max
+=== PAUSE TestUint200Max
+=== RUN   TestUint208Min
+=== PAUSE TestUint208Min
+=== RUN   TestUint208Max
+=== PAUSE TestUint208Max
+=== RUN   TestUint216Min
+=== PAUSE TestUint216Min
+=== RUN   TestUint216Max
+=== PAUSE TestUint216Max
+=== RUN   TestUint224Min
+=== PAUSE TestUint224Min
+=== RUN   TestUint224Max
+=== PAUSE TestUint224Max
+=== RUN   TestUint232Min
+=== PAUSE TestUint232Min
+=== RUN   TestUint232Max
+=== PAUSE TestUint232Max
+=== RUN   TestUint240Min
+=== PAUSE TestUint240Min
+=== RUN   TestUint240Max
+=== PAUSE TestUint240Max
+=== RUN   TestUint248Min
+=== PAUSE TestUint248Min
+=== RUN   TestUint248Max
+=== PAUSE TestUint248Max
+=== RUN   TestUint256Min
+=== PAUSE TestUint256Min
+=== RUN   TestUint256Max
+=== PAUSE TestUint256Max
+=== RUN   TestInt8Min
+=== PAUSE TestInt8Min
+=== RUN   TestInt8Max
+=== PAUSE TestInt8Max
+=== RUN   TestInt16Min
+=== PAUSE TestInt16Min
+=== RUN   TestInt16Max
+=== PAUSE TestInt16Max
+=== RUN   TestInt24Min
+=== PAUSE TestInt24Min
+=== RUN   TestInt24Max
+=== PAUSE TestInt24Max
+=== RUN   TestInt32Min
+=== PAUSE TestInt32Min
+=== RUN   TestInt32Max
+=== PAUSE TestInt32Max
+=== RUN   TestInt40Min
+=== PAUSE TestInt40Min
+=== RUN   TestInt40Max
+=== PAUSE TestInt40Max
+=== RUN   TestInt48Min
+=== PAUSE TestInt48Min
+=== RUN   TestInt48Max
+=== PAUSE TestInt48Max
+=== RUN   TestInt56Min
+=== PAUSE TestInt56Min
+=== RUN   TestInt56Max
+=== PAUSE TestInt56Max
+=== RUN   TestInt64Min
+=== PAUSE TestInt64Min
+=== RUN   TestInt64Max
+=== PAUSE TestInt64Max
+=== RUN   TestInt72Min
+=== PAUSE TestInt72Min
+=== RUN   TestInt72Max
+=== PAUSE TestInt72Max
+=== RUN   TestInt80Min
+=== PAUSE TestInt80Min
+=== RUN   TestInt80Max
+=== PAUSE TestInt80Max
+=== RUN   TestInt88Min
+=== PAUSE TestInt88Min
+=== RUN   TestInt88Max
+=== PAUSE TestInt88Max
+=== RUN   TestInt96Min
+=== PAUSE TestInt96Min
+=== RUN   TestInt96Max
+=== PAUSE TestInt96Max
+=== RUN   TestInt104Min
+=== PAUSE TestInt104Min
+=== RUN   TestInt104Max
+=== PAUSE TestInt104Max
+=== RUN   TestInt112Min
+=== PAUSE TestInt112Min
+=== RUN   TestInt112Max
+=== PAUSE TestInt112Max
+=== RUN   TestInt120Min
+=== PAUSE TestInt120Min
+=== RUN   TestInt120Max
+=== PAUSE TestInt120Max
+=== RUN   TestInt128Min
+=== PAUSE TestInt128Min
+=== RUN   TestInt128Max
+=== PAUSE TestInt128Max
+=== RUN   TestInt136Min
+=== PAUSE TestInt136Min
+=== RUN   TestInt136Max
+=== PAUSE TestInt136Max
+=== RUN   TestInt144Min
+=== PAUSE TestInt144Min
+=== RUN   TestInt144Max
+=== PAUSE TestInt144Max
+=== RUN   TestInt152Min
+=== PAUSE TestInt152Min
+=== RUN   TestInt152Max
+=== PAUSE TestInt152Max
+=== RUN   TestInt160Min
+=== PAUSE TestInt160Min
+=== RUN   TestInt160Max
+=== PAUSE TestInt160Max
+=== RUN   TestInt168Min
+=== PAUSE TestInt168Min
+=== RUN   TestInt168Max
+=== PAUSE TestInt168Max
+=== RUN   TestInt176Min
+=== PAUSE TestInt176Min
+=== RUN   TestInt176Max
+=== PAUSE TestInt176Max
+=== RUN   TestInt184Min
+=== PAUSE TestInt184Min
+=== RUN   TestInt184Max
+=== PAUSE TestInt184Max
+=== RUN   TestInt192Min
+=== PAUSE TestInt192Min
+=== RUN   TestInt192Max
+=== PAUSE TestInt192Max
+=== RUN   TestInt200Min
+=== PAUSE TestInt200Min
+=== RUN   TestInt200Max
+=== PAUSE TestInt200Max
+=== RUN   TestInt208Min
+=== PAUSE TestInt208Min
+=== RUN   TestInt208Max
+=== PAUSE TestInt208Max
+=== RUN   TestInt216Min
+=== PAUSE TestInt216Min
+=== RUN   TestInt216Max
+=== PAUSE TestInt216Max
+=== RUN   TestInt224Min
+=== PAUSE TestInt224Min
+=== RUN   TestInt224Max
+=== PAUSE TestInt224Max
+=== RUN   TestInt232Min
+=== PAUSE TestInt232Min
+=== RUN   TestInt232Max
+=== PAUSE TestInt232Max
+=== RUN   TestInt240Min
+=== PAUSE TestInt240Min
+=== RUN   TestInt240Max
+=== PAUSE TestInt240Max
+=== RUN   TestInt248Min
+=== PAUSE TestInt248Min
+=== RUN   TestInt248Max
+=== PAUSE TestInt248Max
+=== RUN   TestInt256Min
+=== PAUSE TestInt256Min
+=== RUN   TestInt256Max
+=== PAUSE TestInt256Max
+=== RUN   TestMultipleInt8
+=== PAUSE TestMultipleInt8
+=== RUN   TestMultipleInt40
+=== PAUSE TestMultipleInt40
+=== RUN   TestMultipleInt256
+=== PAUSE TestMultipleInt256
+=== RUN   TestMultipleTypes
+=== PAUSE TestMultipleTypes
+=== RUN   TestBigInt256
+=== PAUSE TestBigInt256
+=== RUN   TestBigUint256
+=== PAUSE TestBigUint256
+=== RUN   TestMultiplBigInt256
+=== PAUSE TestMultiplBigInt256
+=== RUN   TestString
+=== PAUSE TestString
+=== RUN   TestStringArray
+=== PAUSE TestStringArray
+=== RUN   TestAddress
+=== PAUSE TestAddress
+=== RUN   TestAddressArray
+=== PAUSE TestAddressArray
+=== RUN   TestBoolean
+=== PAUSE TestBoolean
+=== RUN   TestBytes
+=== PAUSE TestBytes
+=== RUN   TestBytesArray
+=== PAUSE TestBytesArray
+=== RUN   TestBytes32
+=== PAUSE TestBytes32
+=== RUN   TestBytes32Array
+=== PAUSE TestBytes32Array
+=== RUN   TestContractNonces
+=== PAUSE TestContractNonces
+=== RUN   TestIntegrationContractIDCanPopulateAccountNumber
+=== PAUSE TestIntegrationContractIDCanPopulateAccountNumber
+=== RUN   TestIntegrationContractInfoQueryCanExecute
+=== PAUSE TestIntegrationContractInfoQueryCanExecute
+=== RUN   TestIntegrationContractInfoQueryGetCost
+=== PAUSE TestIntegrationContractInfoQueryGetCost
+=== RUN   TestIntegrationContractInfoQuerySetBigMaxPayment
+=== PAUSE TestIntegrationContractInfoQuerySetBigMaxPayment
+=== RUN   TestIntegrationContractInfoQuerySetSmallMaxPayment
+=== PAUSE TestIntegrationContractInfoQuerySetSmallMaxPayment
+=== RUN   TestIntegrationContractInfoQueryInsufficientFee
+=== PAUSE TestIntegrationContractInfoQueryInsufficientFee
+=== RUN   TestIntegrationContractInfoQueryNoContractID
+=== PAUSE TestIntegrationContractInfoQueryNoContractID
+=== RUN   TestIntegrationContractUpdateTransactionCanExecute
+=== PAUSE TestIntegrationContractUpdateTransactionCanExecute
+=== RUN   TestIntegrationContractUpdateTransactionNoContractID
+=== PAUSE TestIntegrationContractUpdateTransactionNoContractID
+=== RUN   TestSetKeyUsesAnyKey
+=== PAUSE TestSetKeyUsesAnyKey
+=== RUN   TestIntegrationEthereumTransaction
+    ethereum_transaction_e2e_test.go:84: 
+--- SKIP: TestIntegrationEthereumTransaction (0.00s)
+=== RUN   TestIntegrationFileAppendTransactionCanExecute
+=== PAUSE TestIntegrationFileAppendTransactionCanExecute
+=== RUN   TestIntegrationFileAppendTransactionNoFileID
+=== PAUSE TestIntegrationFileAppendTransactionNoFileID
+=== RUN   TestIntegrationFileAppendTransactionNothingSet
+=== PAUSE TestIntegrationFileAppendTransactionNothingSet
+=== RUN   TestIntegrationFileAppendTransactionCanExecuteAfterSerializationDeserialization
+=== PAUSE TestIntegrationFileAppendTransactionCanExecuteAfterSerializationDeserialization
+=== RUN   TestIntegrationFileContentsQueryCanExecute
+=== PAUSE TestIntegrationFileContentsQueryCanExecute
+=== RUN   TestIntegrationFileContentsQueryGetCost
+=== PAUSE TestIntegrationFileContentsQueryGetCost
+=== RUN   TestIntegrationFileContentsQuerySetBigMaxPayment
+=== PAUSE TestIntegrationFileContentsQuerySetBigMaxPayment
+=== RUN   TestIntegrationFileContentsQuerySetSmallMaxPayment
+=== PAUSE TestIntegrationFileContentsQuerySetSmallMaxPayment
+=== RUN   TestIntegrationFileContentsQueryInsufficientFee
+=== PAUSE TestIntegrationFileContentsQueryInsufficientFee
+=== RUN   TestIntegrationFileContentsQueryNoFileID
+=== PAUSE TestIntegrationFileContentsQueryNoFileID
+=== RUN   TestIntegrationFileCreateTransactionCanExecute
+=== PAUSE TestIntegrationFileCreateTransactionCanExecute
+=== RUN   TestIntegrationFileCreateTransactionNoKey
+=== PAUSE TestIntegrationFileCreateTransactionNoKey
+=== RUN   TestIntegrationFileDeleteTransactionCanExecute
+=== PAUSE TestIntegrationFileDeleteTransactionCanExecute
+=== RUN   TestIntegrationFileDeleteTransactionNothingSet
+=== PAUSE TestIntegrationFileDeleteTransactionNothingSet
+=== RUN   TestIntegrationFileInfoQueryCanExecute
+=== PAUSE TestIntegrationFileInfoQueryCanExecute
+=== RUN   TestIntegrationFileInfoQueryGetCost
+=== PAUSE TestIntegrationFileInfoQueryGetCost
+=== RUN   TestIntegrationFileInfoQuerySetBigMaxPayment
+=== PAUSE TestIntegrationFileInfoQuerySetBigMaxPayment
+=== RUN   TestIntegrationFileInfoQuerySetSmallMaxPayment
+=== PAUSE TestIntegrationFileInfoQuerySetSmallMaxPayment
+=== RUN   TestIntegrationFileInfoQueryInsufficientFee
+=== PAUSE TestIntegrationFileInfoQueryInsufficientFee
+=== RUN   TestIntegrationFileInfoQueryNoFileID
+=== PAUSE TestIntegrationFileInfoQueryNoFileID
+=== RUN   TestIntegrationFileUpdateTransactionCanExecute
+=== PAUSE TestIntegrationFileUpdateTransactionCanExecute
+=== RUN   TestIntegrationFileUpdateTransactionNoFileID
+=== PAUSE TestIntegrationFileUpdateTransactionNoFileID
+=== RUN   TestIntegrationLiveHashAddTransactionCanExecute
+=== PAUSE TestIntegrationLiveHashAddTransactionCanExecute
+=== RUN   TestIntegrationLiveHashQueryCanExecute
+=== PAUSE TestIntegrationLiveHashQueryCanExecute
+=== RUN   TestIntegrationLiveHashQueryGetCost
+=== PAUSE TestIntegrationLiveHashQueryGetCost
+=== RUN   TestIntegrationMultiAppTransfer
+=== PAUSE TestIntegrationMultiAppTransfer
+=== RUN   TestIntegrationNetworkVersionInfoQueryCanExecute
+=== PAUSE TestIntegrationNetworkVersionInfoQueryCanExecute
+=== RUN   TestIntegrationNetworkVersionInfoQueryGetCost
+=== PAUSE TestIntegrationNetworkVersionInfoQueryGetCost
+=== RUN   TestIntegrationOneSignature
+=== PAUSE TestIntegrationOneSignature
+=== RUN   TestIntegrationScheduleCreateTransactionCanExecute
+=== PAUSE TestIntegrationScheduleCreateTransactionCanExecute
+=== RUN   TestIntegrationSerializeTransactionDeserializeAndAgainSerializeHasTheSameBytesFreezeBeforeSer
+=== PAUSE TestIntegrationSerializeTransactionDeserializeAndAgainSerializeHasTheSameBytesFreezeBeforeSer
+=== RUN   TestIntegrationSerializeTransactionDeserializeAndAgainSerializeHasTheSameBytesDontFreeze
+=== PAUSE TestIntegrationSerializeTransactionDeserializeAndAgainSerializeHasTheSameBytesDontFreeze
+=== RUN   TestIntegrationAddSignatureSerializeDeserializeAddAnotherSignatureExecute
+=== PAUSE TestIntegrationAddSignatureSerializeDeserializeAddAnotherSignatureExecute
+=== RUN   TestIntegrationTransactionShouldReturnFailedReceiptWhenFieldsAreNotSet
+=== PAUSE TestIntegrationTransactionShouldReturnFailedReceiptWhenFieldsAreNotSet
+=== RUN   TestIntegrationAddSignatureSerializeDeserialiseExecute
+=== PAUSE TestIntegrationAddSignatureSerializeDeserialiseExecute
+=== RUN   TestIntegrationTopicCreateTransactionAfterSerialization
+=== PAUSE TestIntegrationTopicCreateTransactionAfterSerialization
+=== RUN   TestIntegrationTopicSubmitTransactionSerializationDeserialization
+=== PAUSE TestIntegrationTopicSubmitTransactionSerializationDeserialization
+=== RUN   TestIntegrationPreviewnetTls
+--- PASS: TestIntegrationPreviewnetTls (4.27s)
+=== RUN   TestIntegrationTestnetTls
+--- PASS: TestIntegrationTestnetTls (5.24s)
+=== RUN   TestIntegrationTokenAssociateTransactionCanExecute
+=== PAUSE TestIntegrationTokenAssociateTransactionCanExecute
+=== RUN   TestIntegrationTokenAssociateTransactionNoAccountID
+=== PAUSE TestIntegrationTokenAssociateTransactionNoAccountID
+=== RUN   TestIntegrationTokenAssociateTransactionNoTokenID
+=== PAUSE TestIntegrationTokenAssociateTransactionNoTokenID
+=== RUN   TestIntegrationTokenAssociateTransactionAutoAssociate
+=== PAUSE TestIntegrationTokenAssociateTransactionAutoAssociate
+=== RUN   TestIntegrationTokenBurnTransactionCanExecute
+=== PAUSE TestIntegrationTokenBurnTransactionCanExecute
+=== RUN   TestIntegrationTokenBurnTransactionNoAmount
+=== PAUSE TestIntegrationTokenBurnTransactionNoAmount
+=== RUN   TestIntegrationTokenBurnTransactionNoTokenID
+=== PAUSE TestIntegrationTokenBurnTransactionNoTokenID
+=== RUN   TestIntegrationTokenCreateTransactionCanExecute
+=== PAUSE TestIntegrationTokenCreateTransactionCanExecute
+=== RUN   TestIntegrationTokenCreateTransactionMultipleKeys
+=== PAUSE TestIntegrationTokenCreateTransactionMultipleKeys
+=== RUN   TestIntegrationTokenCreateTransactionNoKeys
+=== PAUSE TestIntegrationTokenCreateTransactionNoKeys
+=== RUN   TestIntegrationTokenCreateTransactionAdminSign
+=== PAUSE TestIntegrationTokenCreateTransactionAdminSign
+=== RUN   TestIntegrationTokenCreateTransactionWithCustomFees
+=== PAUSE TestIntegrationTokenCreateTransactionWithCustomFees
+=== RUN   TestIntegrationTokenCreateTransactionWithCustomFeesDenominatorZero
+=== PAUSE TestIntegrationTokenCreateTransactionWithCustomFeesDenominatorZero
+=== RUN   TestIntegrationTokenCreateTransactionWithInvalidFeeCollectorAccountID
+=== PAUSE TestIntegrationTokenCreateTransactionWithInvalidFeeCollectorAccountID
+=== RUN   TestIntegrationTokenCreateTransactionWithMaxLessThanMin
+=== PAUSE TestIntegrationTokenCreateTransactionWithMaxLessThanMin
+=== RUN   TestIntegrationTokenCreateTransactionWithRoyaltyCustomFee
+=== PAUSE TestIntegrationTokenCreateTransactionWithRoyaltyCustomFee
+=== RUN   TestIntegrationTokenCreateTransactionWithRoyaltyCannotExceedOne
+=== PAUSE TestIntegrationTokenCreateTransactionWithRoyaltyCannotExceedOne
+=== RUN   TestIntegrationTokenCreateTransactionFeeCollectorMissing
+=== PAUSE TestIntegrationTokenCreateTransactionFeeCollectorMissing
+=== RUN   TestIntegrationTokenCreateTransactionRoyaltyFeeOnlyAllowedForNonFungibleUnique
+=== PAUSE TestIntegrationTokenCreateTransactionRoyaltyFeeOnlyAllowedForNonFungibleUnique
+=== RUN   TestIntegrationTokenAccountStillOwnsNfts
+=== PAUSE TestIntegrationTokenAccountStillOwnsNfts
+=== RUN   TestIntegrationTokenDeleteTransactionCanExecute
+=== PAUSE TestIntegrationTokenDeleteTransactionCanExecute
+=== RUN   TestIntegrationTokenDeleteTransactionNoKeys
+=== PAUSE TestIntegrationTokenDeleteTransactionNoKeys
+=== RUN   TestIntegrationTokenDeleteTransactionNoTokenID
+=== PAUSE TestIntegrationTokenDeleteTransactionNoTokenID
+=== RUN   TestIntegrationTokenDissociateTransactionCanExecute
+=== PAUSE TestIntegrationTokenDissociateTransactionCanExecute
+=== RUN   TestIntegrationTokenDissociateTransactionNoSigningOne
+=== PAUSE TestIntegrationTokenDissociateTransactionNoSigningOne
+=== RUN   TestIntegrationTokenDissociateTransactionNoTokenID
+=== PAUSE TestIntegrationTokenDissociateTransactionNoTokenID
+=== RUN   TestIntegrationTokenDissociateTransactionNoAccountID
+=== PAUSE TestIntegrationTokenDissociateTransactionNoAccountID
+=== RUN   TestIntegrationTokenFeeScheduleUpdateTransactionCanExecute
+=== PAUSE TestIntegrationTokenFeeScheduleUpdateTransactionCanExecute
+=== RUN   TestIntegrationTokenFeeScheduleUpdateTransactionWithFractional
+=== PAUSE TestIntegrationTokenFeeScheduleUpdateTransactionWithFractional
+=== RUN   TestIntegrationTokenFeeScheduleUpdateTransactionNoFeeScheduleKey
+=== PAUSE TestIntegrationTokenFeeScheduleUpdateTransactionNoFeeScheduleKey
+=== RUN   TestIntegrationTokenFeeScheduleUpdateTransactionScheduleAlreadyHasNoFees
+=== PAUSE TestIntegrationTokenFeeScheduleUpdateTransactionScheduleAlreadyHasNoFees
+=== RUN   TestIntegrationTokenFeeScheduleUpdateTransactionFractionalFeeOnlyForFungibleCommon
+=== PAUSE TestIntegrationTokenFeeScheduleUpdateTransactionFractionalFeeOnlyForFungibleCommon
+=== RUN   TestIntegrationTokenFeeScheduleUpdateTransactionDenominationMustBeFungibleCommon
+=== PAUSE TestIntegrationTokenFeeScheduleUpdateTransactionDenominationMustBeFungibleCommon
+=== RUN   TestIntegrationTokenFeeScheduleUpdateTransactionCustomFeeListTooLong
+=== PAUSE TestIntegrationTokenFeeScheduleUpdateTransactionCustomFeeListTooLong
+=== RUN   TestIntegrationTokenFreezeTransactionCanExecute
+=== PAUSE TestIntegrationTokenFreezeTransactionCanExecute
+=== RUN   TestIntegrationTokenFreezeTransactionNoAccountID
+=== PAUSE TestIntegrationTokenFreezeTransactionNoAccountID
+=== RUN   TestIntegrationTokenGrantKycTransactionCanExecute
+=== PAUSE TestIntegrationTokenGrantKycTransactionCanExecute
+=== RUN   TestIntegrationTokenGrantKycTransactionNoTokenID
+=== PAUSE TestIntegrationTokenGrantKycTransactionNoTokenID
+=== RUN   TestIntegrationTokenGrantKycTransactionNoAccountID
+=== PAUSE TestIntegrationTokenGrantKycTransactionNoAccountID
+=== RUN   TestIntegrationTokenGrantKycTransactionNoKycSet
+=== PAUSE TestIntegrationTokenGrantKycTransactionNoKycSet
+=== RUN   TestIntegrationTokenInfoQueryCanExecute
+=== PAUSE TestIntegrationTokenInfoQueryCanExecute
+=== RUN   TestIntegrationTokenInfoQueryGetCost
+=== PAUSE TestIntegrationTokenInfoQueryGetCost
+=== RUN   TestIntegrationTokenInfoQuerySetBigMaxPayment
+=== PAUSE TestIntegrationTokenInfoQuerySetBigMaxPayment
+=== RUN   TestIntegrationTokenInfoQuerySetSmallMaxPayment
+=== PAUSE TestIntegrationTokenInfoQuerySetSmallMaxPayment
+=== RUN   TestIntegrationTokenInfoQueryInsufficientCost
+=== PAUSE TestIntegrationTokenInfoQueryInsufficientCost
+=== RUN   TestIntegrationTokenInfoQueryNoPayment
+=== PAUSE TestIntegrationTokenInfoQueryNoPayment
+=== RUN   TestIntegrationTokenInfoQueryNoTokenID
+=== PAUSE TestIntegrationTokenInfoQueryNoTokenID
+=== RUN   TestIntegrationTokenMintTransactionCanExecute
+=== PAUSE TestIntegrationTokenMintTransactionCanExecute
+=== RUN   TestIntegrationTokenMintTransactionNoAmount
+=== PAUSE TestIntegrationTokenMintTransactionNoAmount
+=== RUN   TestIntegrationTokenMintTransactionNoTokenID
+=== PAUSE TestIntegrationTokenMintTransactionNoTokenID
+=== RUN   TestIntegrationTokenMintTransactionMaxReached
+=== PAUSE TestIntegrationTokenMintTransactionMaxReached
+=== RUN   TestIntegrationCantTransferOnBehalfOfSpenderWithoutAllowanceApproval
+=== PAUSE TestIntegrationCantTransferOnBehalfOfSpenderWithoutAllowanceApproval
+=== RUN   TestIntegrationCantTransferOnBehalfOfSpenderAfterRemovingTheAllowanceApproval
+=== PAUSE TestIntegrationCantTransferOnBehalfOfSpenderAfterRemovingTheAllowanceApproval
+=== RUN   TestIntegrationCantRemoveSingleSerialNumberAllowanceWhenAllowanceIsForAllSerials
+=== PAUSE TestIntegrationCantRemoveSingleSerialNumberAllowanceWhenAllowanceIsForAllSerials
+=== RUN   TestIntegrationAfterGivenAllowanceForAllSerialsCanGiveSingleSerialToOtherAccounts
+=== PAUSE TestIntegrationAfterGivenAllowanceForAllSerialsCanGiveSingleSerialToOtherAccounts
+=== RUN   TestIntegrationTokenNftGetInfoByNftIDCanExecute
+=== PAUSE TestIntegrationTokenNftGetInfoByNftIDCanExecute
+=== RUN   TestIntegrationTokenPauseTransactionCanExecute
+=== PAUSE TestIntegrationTokenPauseTransactionCanExecute
+=== RUN   TestIntegrationTokenRevokeKycTransactionCanExecute
+=== PAUSE TestIntegrationTokenRevokeKycTransactionCanExecute
+=== RUN   TestIntegrationTokenRevokeKycTransactionNoTokenID
+=== PAUSE TestIntegrationTokenRevokeKycTransactionNoTokenID
+=== RUN   TestIntegrationTokenRevokeKycTransactionNoAccountID
+=== PAUSE TestIntegrationTokenRevokeKycTransactionNoAccountID
+=== RUN   TestIntegrationTokenTransferTransactionCanExecute
+=== PAUSE TestIntegrationTokenTransferTransactionCanExecute
+=== RUN   TestIntegrationTokenTransferTransactionNotZeroSum
+=== PAUSE TestIntegrationTokenTransferTransactionNotZeroSum
+=== RUN   TestIntegrationTokenFeeScheduleUpdateHugeAmountTransaction
+=== PAUSE TestIntegrationTokenFeeScheduleUpdateHugeAmountTransaction
+=== RUN   TestIntegrationNftTransferTransactionAccountAmountTransfersOnlyForFungibleCommon
+=== PAUSE TestIntegrationNftTransferTransactionAccountAmountTransfersOnlyForFungibleCommon
+=== RUN   TestIntegrationTokenFeeScheduleUpdateTokenNotAssociatedToFeeCollector
+=== PAUSE TestIntegrationTokenFeeScheduleUpdateTokenNotAssociatedToFeeCollector
+=== RUN   TestIntegrationTokenUnfreezeTransactionCanExecute
+=== PAUSE TestIntegrationTokenUnfreezeTransactionCanExecute
+=== RUN   TestIntegrationTokenUnfreezeTransactionNoTokenID
+=== PAUSE TestIntegrationTokenUnfreezeTransactionNoTokenID
+=== RUN   TestIntegrationTokenUnfreezeTransactionNoAccountID
+=== PAUSE TestIntegrationTokenUnfreezeTransactionNoAccountID
+=== RUN   TestIntegrationTokenUpdateTransactionCanExecute
+=== PAUSE TestIntegrationTokenUpdateTransactionCanExecute
+=== RUN   TestIntegrationTokenUpdateTransactionDifferentKeys
+=== PAUSE TestIntegrationTokenUpdateTransactionDifferentKeys
+=== RUN   TestIntegrationTokenUpdateTransactionNoTokenID
+=== PAUSE TestIntegrationTokenUpdateTransactionNoTokenID
+=== RUN   TestIntegrationTokenWipeTransactionCanExecute
+=== PAUSE TestIntegrationTokenWipeTransactionCanExecute
+=== RUN   TestIntegrationTokenWipeTransactionNoAmount
+=== PAUSE TestIntegrationTokenWipeTransactionNoAmount
+=== RUN   TestIntegrationTokenWipeTransactionNoTokenID
+=== PAUSE TestIntegrationTokenWipeTransactionNoTokenID
+=== RUN   TestIntegrationTokenWipeTransactionNoAccountID
+=== PAUSE TestIntegrationTokenWipeTransactionNoAccountID
+=== RUN   TestIntegrationTokenWipeTransactionNotZeroTokensAtDelete
+=== PAUSE TestIntegrationTokenWipeTransactionNotZeroTokensAtDelete
+=== RUN   TestIntegrationTopicCreateTransactionCanExecute
+=== PAUSE TestIntegrationTopicCreateTransactionCanExecute
+=== RUN   TestIntegrationTopicCreateTransactionDifferentKeys
+=== PAUSE TestIntegrationTopicCreateTransactionDifferentKeys
+=== RUN   TestIntegrationTopicCreateTransactionJustSetMemo
+=== PAUSE TestIntegrationTopicCreateTransactionJustSetMemo
+=== RUN   TestIntegrationTopicDeleteTransactionCanExecute
+=== PAUSE TestIntegrationTopicDeleteTransactionCanExecute
+=== RUN   TestIntegrationTopicDeleteTransactionNoTopicID
+=== PAUSE TestIntegrationTopicDeleteTransactionNoTopicID
+=== RUN   TestIntegrationTopicInfoQueryCanExecute
+=== PAUSE TestIntegrationTopicInfoQueryCanExecute
+=== RUN   TestIntegrationTopicInfoQueryGetCost
+=== PAUSE TestIntegrationTopicInfoQueryGetCost
+=== RUN   TestIntegrationTopicInfoQuerySetBigMaxPayment
+=== PAUSE TestIntegrationTopicInfoQuerySetBigMaxPayment
+=== RUN   TestIntegrationTopicInfoQuerySetSmallMaxPayment
+=== PAUSE TestIntegrationTopicInfoQuerySetSmallMaxPayment
+=== RUN   TestIntegrationTopicInfoQueryInsufficientFee
+=== PAUSE TestIntegrationTopicInfoQueryInsufficientFee
+=== RUN   TestIntegrationTopicInfoQueryThreshold
+=== PAUSE TestIntegrationTopicInfoQueryThreshold
+=== RUN   TestIntegrationTopicInfoQueryNoTopicID
+=== PAUSE TestIntegrationTopicInfoQueryNoTopicID
+=== RUN   TestIntegrationTopicUpdateTransactionCanExecute
+=== PAUSE TestIntegrationTopicUpdateTransactionCanExecute
+=== RUN   TestIntegrationTopicUpdateTransactionNoMemo
+=== PAUSE TestIntegrationTopicUpdateTransactionNoMemo
+=== RUN   TestIntegrationTopicUpdateTransactionNoTopicID
+=== PAUSE TestIntegrationTopicUpdateTransactionNoTopicID
+=== RUN   TestIntegrationTransactionAddSignature
+=== PAUSE TestIntegrationTransactionAddSignature
+=== RUN   TestIntegrationTransactionSignTransaction
+=== PAUSE TestIntegrationTransactionSignTransaction
+=== RUN   TestIntegrationTransactionGetHash
+=== PAUSE TestIntegrationTransactionGetHash
+=== RUN   TestIntegrationTransactionReceiptQueryCanExecute
+=== PAUSE TestIntegrationTransactionReceiptQueryCanExecute
+=== RUN   TestIntegrationTransactionRecordQueryCanExecute
+=== PAUSE TestIntegrationTransactionRecordQueryCanExecute
+=== RUN   TestIntegrationTransactionRecordQueryReceiptPaymentZero
+=== PAUSE TestIntegrationTransactionRecordQueryReceiptPaymentZero
+=== RUN   TestIntegrationTransactionRecordQueryInsufficientFee
+=== PAUSE TestIntegrationTransactionRecordQueryInsufficientFee
+=== RUN   TestIntegrationTransferTransactionCanTransferHbar
+=== PAUSE TestIntegrationTransferTransactionCanTransferHbar
+=== RUN   TestIntegrationTransferTransactionTransferHbarNothingSet
+=== PAUSE TestIntegrationTransferTransactionTransferHbarNothingSet
+=== RUN   TestIntegrationTransferTransactionTransferHbarPositiveFlippedAmount
+=== PAUSE TestIntegrationTransferTransactionTransferHbarPositiveFlippedAmount
+=== RUN   TestIntegrationTransferTransactionCanTransferFromBytes
+=== PAUSE TestIntegrationTransferTransactionCanTransferFromBytes
+=== RUN   TestIntegrationTransferTransactionCanTransferFromBytesAfter
+=== PAUSE TestIntegrationTransferTransactionCanTransferFromBytesAfter
+=== RUN   TestIntegrationTransferTransactionCanTransferSignature
+=== PAUSE TestIntegrationTransferTransactionCanTransferSignature
+=== RUN   TestIntegrationTransferTransactionCanTransferHbarWithAliasID
+=== PAUSE TestIntegrationTransferTransactionCanTransferHbarWithAliasID
+=== CONT  TestIntegrationTokenMintTransactionNoTokenID
+=== CONT  TestIntegrationAccountBalanceQueryCanGetTokenBalance
+=== CONT  TestIntegrationContractUpdateTransactionCanExecute
+=== CONT  TestIntegrationContractIDCanPopulateAccountNumber
+=== CONT  TestIntegrationNetworkVersionInfoQueryGetCost
+=== CONT  TestIntegrationTokenAssociateTransactionCanExecute
+=== CONT  TestIntegrationTokenGrantKycTransactionNoTokenID
+=== CONT  TestIntegrationTopicSubmitTransactionSerializationDeserialization
+0.0.3537
+--- PASS: TestIntegrationNetworkVersionInfoQueryGetCost (1.16s)
+=== CONT  TestIntegrationTokenFreezeTransactionCanExecute
+--- PASS: TestIntegrationTopicSubmitTransactionSerializationDeserialization (1.30s)
+=== CONT  TestInt208Max
+=== NAME  TestIntegrationTokenMintTransactionNoTokenID
+    token_mint_transaction_e2e_test.go:232: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/token_mint_transaction_e2e_test.go:232
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestIntegrationTokenMintTransactionNoTokenID
+--- PASS: TestIntegrationAccountBalanceQueryCanGetTokenBalance (2.24s)
+=== CONT  TestIntegrationTokenBurnTransactionNoTokenID
+=== NAME  TestIntegrationTokenGrantKycTransactionNoTokenID
+    token_grant_kyc_transaction_e2e_test.go:185: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/token_grant_kyc_transaction_e2e_test.go:185
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestIntegrationTokenGrantKycTransactionNoTokenID
+--- PASS: TestIntegrationContractUpdateTransactionCanExecute (3.55s)
+=== CONT  TestInt192Min
+=== NAME  TestIntegrationTokenBurnTransactionNoTokenID
+    token_burn_transaction_e2e_test.go:234: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/token_burn_transaction_e2e_test.go:234
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestIntegrationTokenBurnTransactionNoTokenID
+--- FAIL: TestIntegrationTokenMintTransactionNoTokenID (3.79s)
+=== CONT  TestIntegrationTokenInfoQueryInsufficientCost
+--- PASS: TestIntegrationTokenAssociateTransactionCanExecute (3.94s)
+=== CONT  TestIntegrationFileContentsQueryCanExecute
+--- FAIL: TestIntegrationTokenGrantKycTransactionNoTokenID (3.94s)
+=== CONT  TestIntegrationSerializeTransactionDeserializeAndAgainSerializeHasTheSameBytesFreezeBeforeSer
+197
+[10 194 1 42 191 1 10 85 10 19 10 12 8 166 253 149 176 6 16 206 228 131 147 2 18 3 24 236 27 18 2 24 3 24 128 228 151 208 18 34 2 8 120 90 48 10 34 18 32 69 67 196 72 245 105 82 186 252 179 148 254 124 187 26 149 28 70 48 255 136 151 121 192 233 141 99 80 206 13 216 119 16 128 132 175 95 74 5 8 208 200 225 3 18 102 10 100 10 32 39 83 238 184 162 157 209 54 119 85 175 150 64 199 169 214 39 178 223 41 51 57 249 222 165 129 115 251 61 142 253 164 26 64 229 7 6 23 14 121 223 120 234 159 204 131 243 69 51 246 190 93 105 135 23 139 205 253 166 54 170 63 85 224 59 242 23 206 228 163 108 115 29 71 214 81 50 27 172 9 115 150 62 166 93 116 78 120 222 90 114 66 75 179 87 161 172 15]
+--- PASS: TestIntegrationSerializeTransactionDeserializeAndAgainSerializeHasTheSameBytesFreezeBeforeSer (0.74s)
+=== CONT  TestIntegrationSerializeTransactionDeserializeAndAgainSerializeHasTheSameBytesDontFreeze
+--- PASS: TestIntegrationSerializeTransactionDeserializeAndAgainSerializeHasTheSameBytesDontFreeze (0.00s)
+=== CONT  TestAddressArray
+--- PASS: TestIntegrationTokenFreezeTransactionCanExecute (4.46s)
+=== CONT  TestIntegrationTokenCreateTransactionWithMaxLessThanMin
+--- PASS: TestIntegrationTokenInfoQueryInsufficientCost (1.96s)
+=== CONT  TestBoolean
+--- FAIL: TestIntegrationTokenBurnTransactionNoTokenID (3.54s)
+=== CONT  TestIntegrationTokenCreateTransactionFeeCollectorMissing
+--- PASS: TestIntegrationFileContentsQueryCanExecute (2.22s)
+=== CONT  TestIntegrationFileDeleteTransactionNothingSet
+--- PASS: TestIntegrationContractIDCanPopulateAccountNumber (6.31s)
+=== CONT  TestMultipleInt8
+=== NAME  TestAddressArray
+    contract_function_parameters_e2e_test.go:1705: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1705
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestAddressArray
+--- FAIL: TestAddressArray (2.51s)
+=== CONT  TestBytesArray
+=== NAME  TestIntegrationFileDeleteTransactionNothingSet
+    file_delete_transaction_e2e_test.go:88: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/file_delete_transaction_e2e_test.go:88
+        	Error:      	Received unexpected error:
+        	            	rpc error: code = Unknown desc = 
+        	            	retry 0/100
+        	            	github.com/hashgraph/hedera-sdk-go/v2._Execute
+        	            		/Users/ivanivanov/IdeaProjects/hedera-sdk-go/executable.go:303
+        	            	github.com/hashgraph/hedera-sdk-go/v2.(*Transaction).execute
+        	            		/Users/ivanivanov/IdeaProjects/hedera-sdk-go/transaction.go:4862
+        	            	github.com/hashgraph/hedera-sdk-go/v2.(*FileDeleteTransaction).Execute
+        	            		/Users/ivanivanov/IdeaProjects/hedera-sdk-go/file_delete_transaction.go:215
+        	            	github.com/hashgraph/hedera-sdk-go/v2.TestIntegrationFileDeleteTransactionNothingSet
+        	            		/Users/ivanivanov/IdeaProjects/hedera-sdk-go/file_delete_transaction_e2e_test.go:87
+        	            	testing.tRunner
+        	            		/opt/homebrew/Cellar/go/1.21.7/libexec/src/testing/testing.go:1595
+        	            	runtime.goexit
+        	            		/opt/homebrew/Cellar/go/1.21.7/libexec/src/runtime/asm_arm64.s:1197
+        	Test:       	TestIntegrationFileDeleteTransactionNothingSet
+--- FAIL: TestIntegrationFileDeleteTransactionNothingSet (1.07s)
+=== CONT  TestIntegrationContractUpdateTransactionNoContractID
+=== NAME  TestMultipleInt8
+    contract_function_parameters_e2e_test.go:1548: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1548
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestMultipleInt8
+--- FAIL: TestMultipleInt8 (1.00s)
+=== CONT  TestIntegrationTokenFeeScheduleUpdateTransactionNoFeeScheduleKey
+--- PASS: TestIntegrationTokenCreateTransactionWithMaxLessThanMin (1.70s)
+=== CONT  TestIntegrationTokenDissociateTransactionNoTokenID
+--- PASS: TestIntegrationTokenCreateTransactionFeeCollectorMissing (1.61s)
+=== CONT  TestInt240Min
+=== NAME  TestBoolean
+    contract_function_parameters_e2e_test.go:1724: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1724
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestBoolean
+--- FAIL: TestBoolean (1.66s)
+=== CONT  TestIntegrationNetworkVersionInfoQueryCanExecute
+=== NAME  TestIntegrationContractUpdateTransactionNoContractID
+    contract_update_transaction_e2e_test.go:149: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_update_transaction_e2e_test.go:149
+        	Error:      	Not equal: 
+        	            	expected: "exceptional precheck status INVALID_CONTRACT_ID received for transaction 0.0.3576@1711636139.074305339"
+        	            	actual  : "retry 0/100: rpc error: code = Unknown desc = "
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1 +1 @@
+        	            	-exceptional precheck status INVALID_CONTRACT_ID received for transaction 0.0.3576@1711636139.074305339
+        	            	+retry 0/100: rpc error: code = Unknown desc = 
+        	Test:       	TestIntegrationContractUpdateTransactionNoContractID
+{{0 48 0  } {0 48 0 alpha.4 }}
+=== NAME  TestBytesArray
+    contract_function_parameters_e2e_test.go:1754: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1754
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestBytesArray
+--- FAIL: TestBytesArray (1.13s)
+=== CONT  TestIntegrationTokenCreateTransactionWithCustomFeesDenominatorZero
+--- FAIL: TestIntegrationContractUpdateTransactionNoContractID (1.47s)
+=== CONT  TestInt200Max
+--- PASS: TestIntegrationNetworkVersionInfoQueryCanExecute (1.37s)
+=== CONT  TestIntegrationFileInfoQueryNoFileID
+    file_info_query_e2e_test.go:274: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/file_info_query_e2e_test.go:274
+        	Error:      	Not equal: 
+        	            	expected: "exceptional precheck status INVALID_FILE_ID"
+        	            	actual  : "retry 0/100: rpc error: code = Unknown desc = "
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1 +1 @@
+        	            	-exceptional precheck status INVALID_FILE_ID
+        	            	+retry 0/100: rpc error: code = Unknown desc = 
+        	Test:       	TestIntegrationFileInfoQueryNoFileID
+--- PASS: TestIntegrationTokenCreateTransactionWithCustomFeesDenominatorZero (1.01s)
+=== CONT  TestBytes32Array
+--- FAIL: TestIntegrationFileInfoQueryNoFileID (1.12s)
+=== CONT  TestIntegrationTokenDissociateTransactionNoAccountID
+=== NAME  TestInt240Min
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1491
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt240Min
+--- FAIL: TestInt240Min (2.90s)
+=== CONT  TestMultipleInt256
+=== NAME  TestBytes32Array
+    contract_function_parameters_e2e_test.go:1796: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1796
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestBytes32Array
+--- FAIL: TestBytes32Array (1.28s)
+=== CONT  TestIntegrationFileContentsQuerySetBigMaxPayment
+--- PASS: TestIntegrationTokenFeeScheduleUpdateTransactionNoFeeScheduleKey (3.71s)
+=== CONT  TestIntegrationTokenFeeScheduleUpdateTransactionFractionalFeeOnlyForFungibleCommon
+=== NAME  TestMultipleInt256
+    contract_function_parameters_e2e_test.go:1576: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1576
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestMultipleInt256
+--- FAIL: TestMultipleInt256 (0.74s)
+=== CONT  TestInt248Min
+--- PASS: TestIntegrationTokenDissociateTransactionNoTokenID (4.80s)
+=== CONT  TestIntegrationFileInfoQueryCanExecute
+=== NAME  TestIntegrationTokenDissociateTransactionNoAccountID
+    token_dissociate_transaction_e2e_test.go:359: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/token_dissociate_transaction_e2e_test.go:359
+        	Error:      	Not equal: 
+        	            	expected: "exceptional precheck status INVALID_ACCOUNT_ID received for transaction 0.0.3588@1711636140.755009276"
+        	            	actual  : "retry 0/100: rpc error: code = Unknown desc = "
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1 +1 @@
+        	            	-exceptional precheck status INVALID_ACCOUNT_ID received for transaction 0.0.3588@1711636140.755009276
+        	            	+retry 0/100: rpc error: code = Unknown desc = 
+        	Test:       	TestIntegrationTokenDissociateTransactionNoAccountID
+--- PASS: TestIntegrationFileContentsQuerySetBigMaxPayment (2.06s)
+=== CONT  TestIntegrationContractInfoQuerySetBigMaxPayment
+--- FAIL: TestIntegrationTokenDissociateTransactionNoAccountID (3.96s)
+=== CONT  TestIntegrationContractInfoQueryNoContractID
+--- PASS: TestIntegrationFileInfoQueryCanExecute (1.91s)
+=== CONT  TestIntegrationTokenInfoQueryCanExecute
+--- PASS: TestIntegrationTokenFeeScheduleUpdateTransactionFractionalFeeOnlyForFungibleCommon (3.81s)
+=== CONT  TestIntegrationLiveHashQueryCanExecute
+=== NAME  TestInt248Min
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1509
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt248Min
+--- FAIL: TestInt248Min (4.00s)
+=== CONT  TestInt216Min
+--- PASS: TestIntegrationContractInfoQueryNoContractID (1.31s)
+=== CONT  TestIntegrationTokenGrantKycTransactionNoAccountID
+--- PASS: TestIntegrationContractInfoQuerySetBigMaxPayment (3.22s)
+=== CONT  TestIntegrationTokenInfoQueryNoPayment
+=== CONT  TestBigUint256
+--- PASS: TestIntegrationTokenInfoQueryCanExecute (2.41s)
+=== NAME  TestBigUint256
+    contract_function_parameters_e2e_test.go:1626: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1626
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestBigUint256
+--- FAIL: TestBigUint256 (0.61s)
+=== CONT  TestIntegrationTokenBurnTransactionNoAmount
+=== NAME  TestIntegrationTokenGrantKycTransactionNoAccountID
+    token_grant_kyc_transaction_e2e_test.go:268: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/token_grant_kyc_transaction_e2e_test.go:268
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestIntegrationTokenGrantKycTransactionNoAccountID
+=== NAME  TestInt208Max
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1428
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt208Max
+--- FAIL: TestInt208Max (16.44s)
+=== CONT  TestIntegrationOneSignature
+--- PASS: TestIntegrationTokenInfoQueryNoPayment (2.40s)
+=== CONT  TestIntegrationTokenFeeScheduleUpdateTransactionCanExecute
+--- PASS: TestIntegrationOneSignature (1.48s)
+=== CONT  TestIntegrationTokenCreateTransactionWithCustomFees
+--- FAIL: TestIntegrationTokenGrantKycTransactionNoAccountID (4.49s)
+=== CONT  TestIntegrationTokenAssociateTransactionAutoAssociate
+=== NAME  TestInt192Min
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1383
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt192Min
+--- FAIL: TestInt192Min (16.31s)
+=== CONT  TestStringArray
+--- PASS: TestStringArray (1.38s)
+=== CONT  TestIntegrationTransactionShouldReturnFailedReceiptWhenFieldsAreNotSet
+=== CONT  TestIntegrationTokenFeeScheduleUpdateTransactionDenominationMustBeFungibleCommon
+--- PASS: TestIntegrationTokenBurnTransactionNoAmount (4.29s)
+=== NAME  TestIntegrationTransactionShouldReturnFailedReceiptWhenFieldsAreNotSet
+    serialize_deserialize_test.go:128: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/serialize_deserialize_test.go:128
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestIntegrationTransactionShouldReturnFailedReceiptWhenFieldsAreNotSet
+--- FAIL: TestIntegrationTransactionShouldReturnFailedReceiptWhenFieldsAreNotSet (0.54s)
+=== CONT  TestIntegrationTokenDeleteTransactionNoKeys
+--- PASS: TestIntegrationTokenAssociateTransactionAutoAssociate (2.12s)
+=== CONT  TestIntegrationFileAppendTransactionNoFileID
+--- PASS: TestIntegrationTokenFeeScheduleUpdateTransactionCanExecute (3.66s)
+=== CONT  TestInt240Max
+--- PASS: TestIntegrationTokenCreateTransactionWithCustomFees (3.08s)
+=== CONT  TestInt216Max
+=== NAME  TestIntegrationFileAppendTransactionNoFileID
+    file_append_transaction_e2e_test.go:107: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/file_append_transaction_e2e_test.go:107
+        	Error:      	Received unexpected error:
+        	            	rpc error: code = Unknown desc = 
+        	            	retry 0/100
+        	            	github.com/hashgraph/hedera-sdk-go/v2._Execute
+        	            		/Users/ivanivanov/IdeaProjects/hedera-sdk-go/executable.go:303
+        	            	github.com/hashgraph/hedera-sdk-go/v2.(*FileAppendTransaction).ExecuteAll
+        	            		/Users/ivanivanov/IdeaProjects/hedera-sdk-go/file_append_transaction.go:387
+        	            	github.com/hashgraph/hedera-sdk-go/v2.(*FileAppendTransaction).Execute
+        	            		/Users/ivanivanov/IdeaProjects/hedera-sdk-go/file_append_transaction.go:335
+        	            	github.com/hashgraph/hedera-sdk-go/v2.TestIntegrationFileAppendTransactionNoFileID
+        	            		/Users/ivanivanov/IdeaProjects/hedera-sdk-go/file_append_transaction_e2e_test.go:106
+        	            	testing.tRunner
+        	            		/opt/homebrew/Cellar/go/1.21.7/libexec/src/testing/testing.go:1595
+        	            	runtime.goexit
+        	            		/opt/homebrew/Cellar/go/1.21.7/libexec/src/runtime/asm_arm64.s:1197
+        	Test:       	TestIntegrationFileAppendTransactionNoFileID
+--- FAIL: TestIntegrationFileAppendTransactionNoFileID (0.88s)
+=== CONT  TestIntegrationAddSignatureSerializeDeserialiseExecute
+=== NAME  TestInt216Min
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1437
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt216Min
+--- FAIL: TestInt216Min (7.98s)
+=== CONT  TestIntegrationAddSignatureSerializeDeserializeAddAnotherSignatureExecute
+=== NAME  TestInt200Max
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1410
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt200Max
+--- FAIL: TestInt200Max (15.09s)
+=== CONT  TestIntegrationFileAppendTransactionNothingSet
+    file_append_transaction_e2e_test.go:135: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/file_append_transaction_e2e_test.go:135
+        	Error:      	Received unexpected error:
+        	            	rpc error: code = Unknown desc = 
+        	            	retry 0/100
+        	            	github.com/hashgraph/hedera-sdk-go/v2._Execute
+        	            		/Users/ivanivanov/IdeaProjects/hedera-sdk-go/executable.go:303
+        	            	github.com/hashgraph/hedera-sdk-go/v2.(*FileAppendTransaction).ExecuteAll
+        	            		/Users/ivanivanov/IdeaProjects/hedera-sdk-go/file_append_transaction.go:387
+        	            	github.com/hashgraph/hedera-sdk-go/v2.(*FileAppendTransaction).Execute
+        	            		/Users/ivanivanov/IdeaProjects/hedera-sdk-go/file_append_transaction.go:335
+        	            	github.com/hashgraph/hedera-sdk-go/v2.TestIntegrationFileAppendTransactionNothingSet
+        	            		/Users/ivanivanov/IdeaProjects/hedera-sdk-go/file_append_transaction_e2e_test.go:134
+        	            	testing.tRunner
+        	            		/opt/homebrew/Cellar/go/1.21.7/libexec/src/testing/testing.go:1595
+        	            	runtime.goexit
+        	            		/opt/homebrew/Cellar/go/1.21.7/libexec/src/runtime/asm_arm64.s:1197
+        	Test:       	TestIntegrationFileAppendTransactionNothingSet
+--- FAIL: TestIntegrationFileAppendTransactionNothingSet (0.55s)
+=== CONT  TestIntegrationLiveHashAddTransactionCanExecute
+--- PASS: TestIntegrationAddSignatureSerializeDeserialiseExecute (1.80s)
+=== CONT  TestInt256Min
+--- PASS: TestIntegrationTokenFeeScheduleUpdateTransactionDenominationMustBeFungibleCommon (3.16s)
+=== CONT  TestIntegrationTokenAssociateTransactionNoTokenID
+--- PASS: TestIntegrationTokenDeleteTransactionNoKeys (2.93s)
+=== CONT  TestIntegrationFileUpdateTransactionNoFileID
+=== CONT  TestIntegrationTokenInfoQuerySetSmallMaxPayment
+--- PASS: TestIntegrationAddSignatureSerializeDeserializeAddAnotherSignatureExecute (1.76s)
+=== NAME  TestIntegrationFileUpdateTransactionNoFileID
+    file_update_transaction_e2e_test.go:109: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/file_update_transaction_e2e_test.go:109
+        	Error:      	Received unexpected error:
+        	            	rpc error: code = Unknown desc = 
+        	            	retry 0/100
+        	            	github.com/hashgraph/hedera-sdk-go/v2._Execute
+        	            		/Users/ivanivanov/IdeaProjects/hedera-sdk-go/executable.go:303
+        	            	github.com/hashgraph/hedera-sdk-go/v2.(*Transaction).execute
+        	            		/Users/ivanivanov/IdeaProjects/hedera-sdk-go/transaction.go:4862
+        	            	github.com/hashgraph/hedera-sdk-go/v2.(*FileUpdateTransaction).Execute
+        	            		/Users/ivanivanov/IdeaProjects/hedera-sdk-go/file_update_transaction.go:290
+        	            	github.com/hashgraph/hedera-sdk-go/v2.TestIntegrationFileUpdateTransactionNoFileID
+        	            		/Users/ivanivanov/IdeaProjects/hedera-sdk-go/file_update_transaction_e2e_test.go:108
+        	            	testing.tRunner
+        	            		/opt/homebrew/Cellar/go/1.21.7/libexec/src/testing/testing.go:1595
+        	            	runtime.goexit
+        	            		/opt/homebrew/Cellar/go/1.21.7/libexec/src/runtime/asm_arm64.s:1197
+        	Test:       	TestIntegrationFileUpdateTransactionNoFileID
+--- FAIL: TestIntegrationFileUpdateTransactionNoFileID (0.92s)
+=== CONT  TestIntegrationTokenDissociateTransactionCanExecute
+=== NAME  TestIntegrationTokenAssociateTransactionNoTokenID
+    token_associate_transaction_e2e_test.go:189: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/token_associate_transaction_e2e_test.go:189
+        	Error:      	Received unexpected error:
+        	            	exceptional receipt status: FAIL_INVALID
+        	Test:       	TestIntegrationTokenAssociateTransactionNoTokenID
+--- FAIL: TestIntegrationTokenAssociateTransactionNoTokenID (2.43s)
+=== CONT  TestIntegrationTokenGrantKycTransactionNoKycSet
+--- PASS: TestIntegrationTokenInfoQuerySetSmallMaxPayment (2.64s)
+=== CONT  TestIntegrationContractInfoQueryGetCost
+=== NAME  TestInt216Max
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1446
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt216Max
+--- FAIL: TestInt216Max (6.03s)
+=== CONT  TestInt248Max
+--- PASS: TestIntegrationContractInfoQueryGetCost (2.80s)
+=== CONT  TestIntegrationTokenFeeScheduleUpdateTransactionCustomFeeListTooLong
+--- PASS: TestIntegrationTokenDissociateTransactionCanExecute (4.82s)
+=== CONT  TestIntegrationTokenFreezeTransactionNoAccountID
+=== NAME  TestInt248Max
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1518
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt248Max
+--- FAIL: TestInt248Max (3.41s)
+=== CONT  TestIntegrationContractInfoQuerySetSmallMaxPayment
+--- PASS: TestIntegrationTokenGrantKycTransactionNoKycSet (4.81s)
+=== CONT  TestIntegrationTokenDeleteTransactionCanExecute
+=== NAME  TestIntegrationTokenFreezeTransactionNoAccountID
+    token_freeze_transaction_e2e_test.go:184: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/token_freeze_transaction_e2e_test.go:184
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestIntegrationTokenFreezeTransactionNoAccountID
+--- FAIL: TestIntegrationTokenFreezeTransactionNoAccountID (3.53s)
+=== CONT  TestIntegrationScheduleCreateTransactionCanExecute
+--- PASS: TestIntegrationTokenDeleteTransactionCanExecute (2.45s)
+--- PASS: TestIntegrationTokenFeeScheduleUpdateTransactionCustomFeeListTooLong (3.98s)
+=== CONT  TestIntegrationTokenDissociateTransactionNoSigningOne
+=== CONT  TestInt256Max
+=== NAME  TestInt256Min
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1527
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt256Min
+--- FAIL: TestInt256Min (10.29s)
+=== CONT  TestInt224Max
+--- PASS: TestIntegrationContractInfoQuerySetSmallMaxPayment (3.14s)
+=== CONT  TestIntegrationTokenCreateTransactionWithRoyaltyCannotExceedOne
+--- PASS: TestIntegrationTokenDissociateTransactionNoSigningOne (2.26s)
+=== CONT  TestIntegrationTokenCreateTransactionWithRoyaltyCustomFee
+--- PASS: TestIntegrationTokenCreateTransactionWithRoyaltyCannotExceedOne (1.60s)
+=== CONT  TestIntegrationFileInfoQueryGetCost
+--- PASS: TestIntegrationScheduleCreateTransactionCanExecute (2.65s)
+=== CONT  TestIntegrationContractInfoQueryCanExecute
+=== NAME  TestInt224Max
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1464
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt224Max
+--- FAIL: TestInt224Max (2.10s)
+=== CONT  TestMultipleInt40
+--- PASS: TestMultipleInt40 (1.06s)
+=== CONT  TestIntegrationTokenCreateTransactionWithInvalidFeeCollectorAccountID
+=== NAME  TestIntegrationContractInfoQueryCanExecute
+    contract_info_query_e2e_test.go:79: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_info_query_e2e_test.go:79
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status INSUFFICIENT_TX_FEE
+        	Test:       	TestIntegrationContractInfoQueryCanExecute
+--- FAIL: TestIntegrationContractInfoQueryCanExecute (1.84s)
+=== CONT  TestIntegrationTokenInfoQueryGetCost
+--- PASS: TestIntegrationTokenCreateTransactionWithRoyaltyCustomFee (2.08s)
+=== CONT  TestContractNonces
+--- PASS: TestIntegrationFileInfoQueryGetCost (2.35s)
+=== CONT  TestIntegrationLiveHashQueryGetCost
+--- PASS: TestIntegrationTokenCreateTransactionWithInvalidFeeCollectorAccountID (1.67s)
+=== CONT  TestIntegrationTopicCreateTransactionAfterSerialization
+--- PASS: TestContractNonces (1.77s)
+=== CONT  TestBytes32
+--- PASS: TestIntegrationTokenInfoQueryGetCost (2.97s)
+=== CONT  TestMultiplBigInt256
+--- PASS: TestBytes32 (1.47s)
+=== CONT  TestIntegrationFileCreateTransactionCanExecute
+--- PASS: TestIntegrationTopicCreateTransactionAfterSerialization (2.26s)
+=== CONT  TestIntegrationFileInfoQueryInsufficientFee
+=== NAME  TestMultiplBigInt256
+    contract_function_parameters_e2e_test.go:1641: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1641
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestMultiplBigInt256
+--- FAIL: TestMultiplBigInt256 (0.65s)
+=== CONT  TestIntegrationTokenFeeScheduleUpdateTransactionWithFractional
+--- PASS: TestIntegrationFileInfoQueryInsufficientFee (2.15s)
+=== CONT  TestInt192Max
+=== NAME  TestInt256Max
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1536
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt256Max
+--- FAIL: TestInt256Max (10.09s)
+=== CONT  TestAddress
+--- PASS: TestIntegrationFileCreateTransactionCanExecute (2.60s)
+=== CONT  TestMultipleTypes
+--- PASS: TestIntegrationTokenFeeScheduleUpdateTransactionWithFractional (3.28s)
+=== CONT  TestInt200Min
+=== NAME  TestMultipleTypes
+    contract_function_parameters_e2e_test.go:1594: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1594
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestMultipleTypes
+--- FAIL: TestMultipleTypes (1.06s)
+=== CONT  TestInt232Min
+=== NAME  TestAddress
+    contract_function_parameters_e2e_test.go:1689: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1689
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestAddress
+=== CONT  TestIntegrationTokenAccountStillOwnsNfts
+--- FAIL: TestAddress (1.17s)
+--- PASS: TestIntegrationTokenAccountStillOwnsNfts (2.66s)
+=== CONT  TestIntegrationFileContentsQueryGetCost
+=== NAME  TestInt232Min
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1473
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt232Min
+--- FAIL: TestInt232Min (2.86s)
+=== CONT  TestIntegrationContractInfoQueryInsufficientFee
+=== CONT  TestIntegrationFileAppendTransactionCanExecute
+--- PASS: TestIntegrationFileContentsQueryGetCost (1.81s)
+=== NAME  TestInt192Max
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1392
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt192Max
+--- FAIL: TestInt192Max (6.81s)
+=== CONT  TestInt224Min
+--- PASS: TestIntegrationContractInfoQueryInsufficientFee (2.94s)
+=== CONT  TestInt232Max
+--- PASS: TestIntegrationFileAppendTransactionCanExecute (2.57s)
+=== CONT  TestIntegrationFileInfoQuerySetBigMaxPayment
+=== NAME  TestInt224Min
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1455
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt224Min
+--- FAIL: TestInt224Min (2.32s)
+=== CONT  TestIntegrationTokenBurnTransactionCanExecute
+--- PASS: TestIntegrationFileInfoQuerySetBigMaxPayment (1.69s)
+=== CONT  TestIntegrationFileDeleteTransactionCanExecute
+=== NAME  TestInt232Max
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1482
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt232Max
+--- FAIL: TestInt232Max (4.60s)
+=== CONT  TestIntegrationFileContentsQueryInsufficientFee
+--- PASS: TestIntegrationFileDeleteTransactionCanExecute (2.57s)
+=== CONT  TestIntegrationTokenCreateTransactionCanExecute
+=== NAME  TestInt240Max
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1500
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt240Max
+--- FAIL: TestInt240Max (35.64s)
+=== CONT  TestIntegrationTokenInfoQuerySetBigMaxPayment
+--- PASS: TestIntegrationFileContentsQueryInsufficientFee (1.97s)
+=== CONT  TestIntegrationTokenAssociateTransactionNoAccountID
+    token_associate_transaction_e2e_test.go:124: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/token_associate_transaction_e2e_test.go:124
+        	Error:      	Not equal: 
+        	            	expected: "exceptional precheck status INVALID_ACCOUNT_ID received for transaction 0.0.3736@1711636186.194614533"
+        	            	actual  : "retry 0/100: rpc error: code = Unknown desc = "
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1 +1 @@
+        	            	-exceptional precheck status INVALID_ACCOUNT_ID received for transaction 0.0.3736@1711636186.194614533
+        	            	+retry 0/100: rpc error: code = Unknown desc = 
+        	Test:       	TestIntegrationTokenAssociateTransactionNoAccountID
+--- PASS: TestIntegrationTokenBurnTransactionCanExecute (5.31s)
+=== CONT  TestInt208Min
+--- FAIL: TestIntegrationTokenAssociateTransactionNoAccountID (1.07s)
+=== CONT  TestIntegrationTokenFeeScheduleUpdateTransactionScheduleAlreadyHasNoFees
+--- PASS: TestIntegrationTokenCreateTransactionCanExecute (2.48s)
+=== CONT  TestSetKeyUsesAnyKey
+--- PASS: TestSetKeyUsesAnyKey (0.35s)
+=== CONT  TestIntegrationFileCreateTransactionNoKey
+--- PASS: TestIntegrationTokenInfoQuerySetBigMaxPayment (2.77s)
+=== CONT  TestIntegrationFileContentsQueryNoFileID
+--- PASS: TestIntegrationFileCreateTransactionNoKey (1.86s)
+=== CONT  TestBigInt256
+--- PASS: TestIntegrationFileContentsQueryNoFileID (1.17s)
+=== CONT  TestIntegrationFileUpdateTransactionCanExecute
+=== NAME  TestInt208Min
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1419
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt208Min
+--- FAIL: TestInt208Min (3.47s)
+=== CONT  TestIntegrationTokenDeleteTransactionNoTokenID
+--- PASS: TestIntegrationTokenFeeScheduleUpdateTransactionScheduleAlreadyHasNoFees (3.17s)
+=== CONT  TestIntegrationFileAppendTransactionCanExecuteAfterSerializationDeserialization
+=== NAME  TestBigInt256
+    contract_function_parameters_e2e_test.go:1611: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1611
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestBigInt256
+--- FAIL: TestBigInt256 (0.85s)
+=== CONT  TestIntegrationTokenCreateTransactionMultipleKeys
+=== NAME  TestIntegrationTokenDeleteTransactionNoTokenID
+    token_delete_transaction_e2e_test.go:104: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/token_delete_transaction_e2e_test.go:104
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestIntegrationTokenDeleteTransactionNoTokenID
+--- FAIL: TestIntegrationTokenDeleteTransactionNoTokenID (1.24s)
+=== CONT  TestString
+--- PASS: TestString (0.98s)
+=== CONT  TestIntegrationMultiAppTransfer
+=== CONT  TestIntegrationTokenCreateTransactionAdminSign
+--- PASS: TestIntegrationFileUpdateTransactionCanExecute (2.79s)
+--- PASS: TestIntegrationTokenCreateTransactionMultipleKeys (2.83s)
+=== CONT  TestIntegrationFileContentsQuerySetSmallMaxPayment
+--- PASS: TestIntegrationFileAppendTransactionCanExecuteAfterSerializationDeserialization (3.13s)
+=== CONT  TestIntegrationFileInfoQuerySetSmallMaxPayment
+--- PASS: TestIntegrationMultiAppTransfer (1.18s)
+=== CONT  TestBytes
+--- PASS: TestBytes (1.02s)
+=== CONT  TestIntegrationTokenCreateTransactionRoyaltyFeeOnlyAllowedForNonFungibleUnique
+--- PASS: TestIntegrationFileContentsQuerySetSmallMaxPayment (2.31s)
+=== CONT  TestIntegrationContractCallQueryNoContractID
+--- PASS: TestIntegrationFileInfoQuerySetSmallMaxPayment (2.34s)
+=== CONT  TestIntegrationTokenCreateTransactionNoKeys
+--- PASS: TestIntegrationTokenCreateTransactionAdminSign (3.53s)
+=== CONT  TestIntegrationTokenGrantKycTransactionCanExecute
+--- PASS: TestIntegrationTokenCreateTransactionRoyaltyFeeOnlyAllowedForNonFungibleUnique (1.97s)
+=== CONT  TestUint56Max
+--- PASS: TestIntegrationContractCallQueryNoContractID (0.96s)
+=== CONT  TestInt184Min
+--- PASS: TestIntegrationTokenCreateTransactionNoKeys (1.43s)
+=== CONT  TestInt184Max
+=== NAME  TestInt184Min
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1365
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt184Min
+--- FAIL: TestInt184Min (2.79s)
+=== CONT  TestInt176Min
+--- PASS: TestIntegrationTokenGrantKycTransactionCanExecute (4.74s)
+=== CONT  TestInt176Max
+=== NAME  TestUint56Max
+    contract_function_parameters_e2e_test.go:492: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:492
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint56Max
+--- FAIL: TestUint56Max (4.89s)
+=== CONT  TestInt168Min
+=== NAME  TestInt176Min
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1347
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt176Min
+--- FAIL: TestInt176Min (2.95s)
+=== CONT  TestInt160Max
+=== NAME  TestInt184Max
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1374
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt184Max
+--- FAIL: TestInt184Max (9.00s)
+=== CONT  TestInt168Max
+=== NAME  TestInt160Max
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1320
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt160Max
+--- FAIL: TestInt160Max (6.07s)
+=== CONT  TestInt152Max
+=== NAME  TestInt176Max
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1356
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt176Max
+--- FAIL: TestInt176Max (11.02s)
+=== CONT  TestInt152Min
+=== NAME  TestInt200Min
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1401
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt200Min
+--- FAIL: TestInt200Min (39.80s)
+=== CONT  TestInt144Max
+=== NAME  TestInt152Max
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1302
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt152Max
+--- FAIL: TestInt152Max (7.12s)
+=== CONT  TestInt160Min
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1311
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt160Min
+--- FAIL: TestInt160Min (3.01s)
+=== CONT  TestInt144Min
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1275
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt144Min
+--- FAIL: TestInt144Min (2.64s)
+=== CONT  TestInt136Max
+=== NAME  TestInt144Max
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1284
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt144Max
+--- FAIL: TestInt144Max (10.19s)
+=== CONT  TestInt128Max
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1248
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt128Max
+--- FAIL: TestInt128Max (2.30s)
+=== CONT  TestInt136Min
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1257
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt136Min
+--- FAIL: TestInt136Min (2.42s)
+=== CONT  TestInt120Max
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1230
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt120Max
+--- FAIL: TestInt120Max (2.41s)
+=== CONT  TestInt120Min
+=== NAME  TestInt168Max
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1338
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt168Max
+--- FAIL: TestInt168Max (25.81s)
+=== CONT  TestInt128Min
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1239
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt128Min
+--- FAIL: TestInt128Min (4.61s)
+=== CONT  TestInt112Max
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1212
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt112Max
+--- FAIL: TestInt112Max (2.61s)
+=== CONT  TestInt104Max
+=== NAME  TestInt152Min
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1293
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt152Min
+--- FAIL: TestInt152Min (28.86s)
+=== CONT  TestInt112Min
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1203
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt112Min
+--- FAIL: TestInt112Min (3.28s)
+=== CONT  TestInt96Max
+=== NAME  TestInt136Max
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1266
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt136Max
+--- FAIL: TestInt136Max (25.28s)
+=== CONT  TestInt104Min
+=== NAME  TestInt104Max
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1194
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt104Max
+--- FAIL: TestInt104Max (11.15s)
+=== CONT  TestInt96Min
+=== NAME  TestInt120Min
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1221
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt120Min
+--- FAIL: TestInt120Min (21.29s)
+=== CONT  TestInt88Min
+=== NAME  TestInt96Max
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1176
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt96Max
+--- FAIL: TestInt96Max (9.04s)
+=== CONT  TestInt80Max
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1140
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt80Max
+--- FAIL: TestInt80Max (3.61s)
+=== CONT  TestInt88Max
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1158
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt88Max
+--- FAIL: TestInt88Max (3.51s)
+=== CONT  TestInt80Min
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1131
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt80Min
+--- FAIL: TestInt80Min (2.00s)
+=== CONT  TestInt72Max
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1122
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt72Max
+--- FAIL: TestInt72Max (2.80s)
+=== CONT  TestInt64Max
+    contract_function_parameters_e2e_test.go:1103: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1103
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt64Max
+--- FAIL: TestInt64Max (1.60s)
+=== CONT  TestInt72Min
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1113
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt72Min
+--- FAIL: TestInt72Min (1.90s)
+=== CONT  TestInt56Max
+=== NAME  TestInt88Min
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1149
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt88Min
+--- FAIL: TestInt88Min (17.46s)
+=== CONT  TestInt64Min
+=== NAME  TestInt56Max
+    contract_function_parameters_e2e_test.go:1078: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1078
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt56Max
+=== CONT  TestInt56Min
+--- FAIL: TestInt56Max (2.37s)
+=== NAME  TestInt56Min
+    contract_function_parameters_e2e_test.go:1066: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1066
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt56Min
+--- FAIL: TestInt56Min (1.17s)
+=== CONT  TestInt48Max
+    contract_function_parameters_e2e_test.go:1053: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1053
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt48Max
+--- FAIL: TestInt48Max (1.32s)
+=== CONT  TestInt40Max
+    contract_function_parameters_e2e_test.go:1028: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1028
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt40Max
+--- FAIL: TestInt40Max (1.09s)
+=== CONT  TestInt48Min
+    contract_function_parameters_e2e_test.go:1041: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1041
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt48Min
+--- FAIL: TestInt48Min (1.19s)
+=== CONT  TestInt32Max
+    contract_function_parameters_e2e_test.go:1003: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1003
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt32Max
+--- FAIL: TestInt32Max (1.48s)
+=== CONT  TestInt40Min
+=== NAME  TestInt64Min
+    contract_function_parameters_e2e_test.go:1091: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1091
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt64Min
+--- FAIL: TestInt64Min (8.22s)
+=== CONT  TestInt24Max
+    contract_function_parameters_e2e_test.go:979: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:979
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt24Max
+--- FAIL: TestInt24Max (1.08s)
+=== CONT  TestInt32Min
+    contract_function_parameters_e2e_test.go:991: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:991
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt32Min
+--- FAIL: TestInt32Min (1.33s)
+=== CONT  TestInt16Max
+    contract_function_parameters_e2e_test.go:954: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:954
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt16Max
+--- FAIL: TestInt16Max (0.98s)
+=== CONT  TestInt24Min
+    contract_function_parameters_e2e_test.go:967: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:967
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt24Min
+--- FAIL: TestInt24Min (1.36s)
+=== CONT  TestInt16Min
+    contract_function_parameters_e2e_test.go:942: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:942
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt16Min
+--- FAIL: TestInt16Min (1.49s)
+=== CONT  TestInt8Max
+    contract_function_parameters_e2e_test.go:929: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:929
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt8Max
+--- FAIL: TestInt8Max (1.04s)
+=== CONT  TestUint256Max
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:905
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint256Max
+=== CONT  TestInt8Min
+--- FAIL: TestUint256Max (2.38s)
+=== NAME  TestInt8Min
+    contract_function_parameters_e2e_test.go:917: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:917
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt8Min
+--- FAIL: TestInt8Min (0.72s)
+=== CONT  TestUint248Max
+=== NAME  TestInt104Min
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1185
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt104Min
+--- FAIL: TestInt104Min (45.16s)
+=== CONT  TestUint248Min
+=== NAME  TestInt168Min
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1329
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt168Min
+--- FAIL: TestInt168Min (93.88s)
+=== CONT  TestUint256Min
+=== NAME  TestUint248Min
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:881
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint248Min
+--- FAIL: TestUint248Min (7.56s)
+=== CONT  TestUint240Min
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:865
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint240Min
+--- FAIL: TestUint240Min (2.90s)
+=== CONT  TestUint240Max
+=== NAME  TestUint256Min
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:897
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint256Min
+--- FAIL: TestUint256Min (8.10s)
+=== CONT  TestUint232Max
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:857
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint232Max
+--- FAIL: TestUint232Max (3.28s)
+=== CONT  TestUint232Min
+=== NAME  TestInt40Min
+    contract_function_parameters_e2e_test.go:1016: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1016
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt40Min
+--- FAIL: TestInt40Min (31.87s)
+=== CONT  TestUint224Min
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:833
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint224Min
+--- FAIL: TestUint224Min (2.69s)
+=== CONT  TestUint216Max
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:825
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint216Max
+--- FAIL: TestUint216Max (2.97s)
+=== CONT  TestUint224Max
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:841
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint224Max
+--- FAIL: TestUint224Max (2.49s)
+=== CONT  TestUint208Max
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:809
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint208Max
+--- FAIL: TestUint208Max (2.03s)
+=== CONT  TestUint216Min
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:817
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint216Min
+--- FAIL: TestUint216Min (2.89s)
+=== CONT  TestUint200Max
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:793
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint200Max
+--- FAIL: TestUint200Max (3.21s)
+=== CONT  TestUint200Min
+=== NAME  TestUint232Min
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:849
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint232Min
+--- FAIL: TestUint232Min (21.00s)
+=== CONT  TestUint208Min
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:801
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint208Min
+--- FAIL: TestUint208Min (2.81s)
+=== CONT  TestUint192Min
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:769
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint192Min
+--- FAIL: TestUint192Min (2.50s)
+=== CONT  TestUint184Max
+=== NAME  TestUint248Max
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:889
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint248Max
+--- FAIL: TestUint248Max (49.25s)
+=== CONT  TestUint192Max
+=== NAME  TestUint184Max
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:761
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint184Max
+--- FAIL: TestUint184Max (5.40s)
+=== CONT  TestUint184Min
+=== NAME  TestUint192Max
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:777
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint192Max
+--- FAIL: TestUint192Max (4.62s)
+=== CONT  TestUint176Min
+=== NAME  TestUint240Max
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:873
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint240Max
+--- FAIL: TestUint240Max (41.18s)
+=== CONT  TestUint176Max
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:745
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint176Max
+--- FAIL: TestUint176Max (2.25s)
+=== CONT  TestUint168Min
+=== NAME  TestInt96Min
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:1167
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestInt96Min
+--- FAIL: TestInt96Min (96.20s)
+=== CONT  TestUint160Max
+=== NAME  TestUint176Min
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:737
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint176Min
+--- FAIL: TestUint176Min (9.82s)
+=== CONT  TestUint168Max
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:729
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint168Max
+--- FAIL: TestUint168Max (2.49s)
+=== CONT  TestUint152Max
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:697
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint152Max
+--- FAIL: TestUint152Max (2.62s)
+=== CONT  TestUint160Min
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:705
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint160Min
+--- FAIL: TestUint160Min (2.93s)
+=== CONT  TestUint152Min
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:689
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint152Min
+--- FAIL: TestUint152Min (2.85s)
+=== CONT  TestUint144Max
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:681
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint144Max
+--- FAIL: TestUint144Max (2.63s)
+=== CONT  TestUint136Max
+=== NAME  TestUint160Max
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:713
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint160Max
+--- FAIL: TestUint160Max (20.84s)
+=== CONT  TestUint136Min
+=== NAME  TestUint136Max
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:665
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint136Max
+--- FAIL: TestUint136Max (3.07s)
+=== CONT  TestUint128Max
+=== NAME  TestUint136Min
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:657
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint136Min
+--- FAIL: TestUint136Min (3.09s)
+=== CONT  TestUint128Min
+=== NAME  TestUint128Max
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:649
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint128Max
+--- FAIL: TestUint128Max (6.47s)
+=== CONT  TestUint144Min
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:673
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint144Min
+--- FAIL: TestUint144Min (3.48s)
+=== CONT  TestUint120Min
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:625
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint120Min
+--- FAIL: TestUint120Min (2.49s)
+=== CONT  TestUint112Max
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:617
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint112Max
+--- FAIL: TestUint112Max (2.22s)
+=== CONT  TestUint120Max
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:633
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint120Max
+--- FAIL: TestUint120Max (2.49s)
+=== CONT  TestUint104Max
+=== NAME  TestUint168Min
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:721
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint168Min
+--- FAIL: TestUint168Min (41.23s)
+=== CONT  TestUint104Min
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:592
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint104Min
+--- FAIL: TestUint104Min (2.89s)
+=== CONT  TestUint96Max
+=== NAME  TestUint104Max
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:600
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint104Max
+--- FAIL: TestUint104Max (8.44s)
+=== CONT  TestUint112Min
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:609
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint112Min
+--- FAIL: TestUint112Min (2.53s)
+=== CONT  TestUint96Min
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:576
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint96Min
+--- FAIL: TestUint96Min (2.46s)
+=== CONT  TestUint88Min
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:560
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint88Min
+--- FAIL: TestUint88Min (2.39s)
+=== CONT  TestUint80Max
+=== NAME  TestUint200Min
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:785
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint200Min
+--- FAIL: TestUint200Min (77.25s)
+=== CONT  TestUint88Max
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:568
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint88Max
+--- FAIL: TestUint88Max (3.49s)
+=== CONT  TestUint72Max
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:535
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint72Max
+--- FAIL: TestUint72Max (2.17s)
+=== CONT  TestUint72Min
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:527
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint72Min
+--- FAIL: TestUint72Min (2.32s)
+=== CONT  TestUint80Min
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:544
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint80Min
+--- FAIL: TestUint80Min (2.38s)
+=== CONT  TestUint64Max
+=== NAME  TestUint184Min
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:753
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint184Min
+--- FAIL: TestUint184Min (76.14s)
+=== CONT  TestIntegrationTokenWipeTransactionNotZeroTokensAtDelete
+=== NAME  TestUint128Min
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:641
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint128Min
+--- FAIL: TestUint128Min (45.25s)
+=== CONT  TestIntegrationTransferTransactionCanTransferHbarWithAliasID
+--- PASS: TestIntegrationTransferTransactionCanTransferHbarWithAliasID (1.47s)
+=== CONT  TestIntegrationTransferTransactionCanTransferSignature
+=== NAME  TestUint64Max
+    contract_function_parameters_e2e_test.go:517: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:517
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint64Max
+--- FAIL: TestUint64Max (4.41s)
+=== CONT  TestIntegrationTransferTransactionCanTransferFromBytes
+--- PASS: TestIntegrationTransferTransactionCanTransferFromBytes (1.90s)
+=== CONT  TestIntegrationTransferTransactionTransferHbarPositiveFlippedAmount
+--- PASS: TestIntegrationTransferTransactionCanTransferSignature (2.15s)
+=== CONT  TestIntegrationTransferTransactionTransferHbarNothingSet
+--- PASS: TestIntegrationTokenWipeTransactionNotZeroTokensAtDelete (5.72s)
+=== CONT  TestIntegrationTransferTransactionCanTransferFromBytesAfter
+=== NAME  TestUint96Max
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:584
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint96Max
+--- FAIL: TestUint96Max (30.94s)
+=== CONT  TestIntegrationTransactionRecordQueryInsufficientFee
+--- PASS: TestIntegrationTransferTransactionTransferHbarPositiveFlippedAmount (1.73s)
+=== CONT  TestIntegrationTransactionRecordQueryReceiptPaymentZero
+--- PASS: TestIntegrationTransferTransactionTransferHbarNothingSet (1.77s)
+=== CONT  TestIntegrationTransferTransactionCanTransferHbar
+=== CONT  TestIntegrationTransactionRecordQueryCanExecute
+--- PASS: TestIntegrationTransferTransactionCanTransferFromBytesAfter (2.01s)
+--- PASS: TestIntegrationTransactionRecordQueryReceiptPaymentZero (1.78s)
+=== CONT  TestIntegrationTransactionReceiptQueryCanExecute
+--- PASS: TestIntegrationTransferTransactionCanTransferHbar (1.69s)
+=== CONT  TestIntegrationTransactionGetHash
+--- PASS: TestIntegrationTransactionRecordQueryInsufficientFee (2.51s)
+=== CONT  TestIntegrationTransactionSignTransaction
+--- PASS: TestIntegrationTransactionGetHash (1.54s)
+=== CONT  TestIntegrationTransactionAddSignature
+--- PASS: TestIntegrationTransactionReceiptQueryCanExecute (1.78s)
+=== CONT  TestIntegrationTopicUpdateTransactionNoTopicID
+--- PASS: TestIntegrationTransactionRecordQueryCanExecute (2.76s)
+=== CONT  TestIntegrationTopicUpdateTransactionNoMemo
+--- PASS: TestIntegrationTransactionSignTransaction (2.32s)
+=== CONT  TestIntegrationTopicInfoQueryNoTopicID
+--- PASS: TestIntegrationTopicUpdateTransactionNoTopicID (1.98s)
+=== CONT  TestIntegrationTopicInfoQueryThreshold
+--- PASS: TestIntegrationTransactionAddSignature (2.15s)
+=== CONT  TestIntegrationTopicInfoQueryInsufficientFee
+--- PASS: TestIntegrationTopicInfoQueryNoTopicID (1.06s)
+=== CONT  TestIntegrationTopicUpdateTransactionCanExecute
+=== NAME  TestUint80Max
+    contract_function_parameters_e2e_test.go:262: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:262
+        	            				/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:552
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint80Max
+--- FAIL: TestUint80Max (25.20s)
+=== CONT  TestIntegrationTopicInfoQuerySetBigMaxPayment
+--- PASS: TestIntegrationTopicInfoQueryThreshold (1.27s)
+=== CONT  TestIntegrationTopicInfoQuerySetSmallMaxPayment
+--- PASS: TestIntegrationTopicInfoQueryInsufficientFee (1.35s)
+=== CONT  TestIntegrationTopicInfoQueryGetCost
+--- PASS: TestIntegrationTopicInfoQuerySetBigMaxPayment (1.63s)
+=== CONT  TestIntegrationTopicDeleteTransactionNoTopicID
+--- PASS: TestIntegrationTopicUpdateTransactionNoMemo (3.25s)
+=== CONT  TestIntegrationTopicInfoQueryCanExecute
+--- PASS: TestIntegrationTopicUpdateTransactionCanExecute (2.37s)
+=== CONT  TestIntegrationTopicDeleteTransactionCanExecute
+--- PASS: TestIntegrationTopicInfoQuerySetSmallMaxPayment (1.76s)
+=== CONT  TestIntegrationTopicCreateTransactionJustSetMemo
+--- PASS: TestIntegrationTopicInfoQueryGetCost (1.68s)
+=== CONT  TestIntegrationTopicCreateTransactionDifferentKeys
+--- PASS: TestIntegrationTopicInfoQueryCanExecute (1.64s)
+=== CONT  TestIntegrationAccountStakersQuerySetSmallMaxPayment
+--- PASS: TestIntegrationTopicDeleteTransactionCanExecute (1.77s)
+=== CONT  TestUint64Min
+--- PASS: TestIntegrationTopicCreateTransactionJustSetMemo (1.22s)
+=== CONT  TestUint48Max
+--- PASS: TestIntegrationTopicCreateTransactionDifferentKeys (1.44s)
+=== CONT  TestUint48Min
+--- PASS: TestIntegrationAccountStakersQuerySetSmallMaxPayment (1.38s)
+=== CONT  TestUint40Max
+=== NAME  TestUint64Min
+    contract_function_parameters_e2e_test.go:505: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:505
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint64Min
+--- FAIL: TestUint64Min (1.12s)
+=== CONT  TestUint56Min
+=== NAME  TestUint40Max
+    contract_function_parameters_e2e_test.go:442: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:442
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint40Max
+--- FAIL: TestUint40Max (1.34s)
+=== CONT  TestUint40Min
+    contract_function_parameters_e2e_test.go:430: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:430
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint40Min
+--- FAIL: TestUint40Min (1.52s)
+=== CONT  TestUint32Min
+=== NAME  TestUint48Min
+    contract_function_parameters_e2e_test.go:455: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:455
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint48Min
+--- FAIL: TestUint48Min (4.11s)
+=== CONT  TestUint32Max
+    contract_function_parameters_e2e_test.go:417: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:417
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint32Max
+--- FAIL: TestUint32Max (0.85s)
+=== CONT  TestUint24Min
+    contract_function_parameters_e2e_test.go:381: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:381
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint24Min
+--- FAIL: TestUint24Min (1.42s)
+=== CONT  TestUint16Max
+    contract_function_parameters_e2e_test.go:368: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:368
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint16Max
+--- FAIL: TestUint16Max (1.07s)
+=== CONT  TestUint16Min
+    contract_function_parameters_e2e_test.go:356: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:356
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint16Min
+--- FAIL: TestUint16Min (0.94s)
+=== CONT  TestUint24Max
+    contract_function_parameters_e2e_test.go:393: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:393
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint24Max
+--- FAIL: TestUint24Max (1.26s)
+=== CONT  TestUint8Max
+    contract_function_parameters_e2e_test.go:343: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:343
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint8Max
+--- FAIL: TestUint8Max (0.97s)
+=== CONT  TestUint8Min
+=== NAME  TestUint56Min
+    contract_function_parameters_e2e_test.go:480: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:480
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint56Min
+--- FAIL: TestUint56Min (11.09s)
+=== CONT  TestIntegrationContractExecuteTransactionNoGas
+=== NAME  TestUint8Min
+    contract_function_parameters_e2e_test.go:331: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:331
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint8Min
+--- FAIL: TestUint8Min (2.07s)
+=== CONT  TestIntegrationContractExecuteTransactionNoContractID
+--- PASS: TestIntegrationContractExecuteTransactionNoContractID (0.31s)
+=== CONT  TestIntegrationContractExecuteTransactionNoFunction
+=== CONT  TestIntegrationContractExecuteTransactionCanExecute
+--- PASS: TestIntegrationContractExecuteTransactionNoGas (2.64s)
+--- PASS: TestIntegrationContractExecuteTransactionNoFunction (3.16s)
+=== CONT  TestIntegrationContractDeleteTransactionCanExecute
+=== NAME  TestUint48Max
+    contract_function_parameters_e2e_test.go:467: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:467
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint48Max
+--- FAIL: TestUint48Max (17.36s)
+=== CONT  TestIntegrationContractCreateTransactionSetBytecode
+--- PASS: TestIntegrationContractExecuteTransactionCanExecute (3.44s)
+=== CONT  TestIntegrationContractDeleteTransactionNoContractID
+--- PASS: TestIntegrationContractCreateTransactionSetBytecode (1.26s)
+=== CONT  TestIntegrationContractCreateTransactionNoBytecodeFileID
+=== NAME  TestIntegrationContractDeleteTransactionNoContractID
+    contract_delete_transaction_e2e_test.go:135: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_delete_transaction_e2e_test.go:135
+        	Error:      	Not equal: 
+        	            	expected: "exceptional precheck status INVALID_CONTRACT_ID received for transaction 0.0.3955@1711636449.181813630"
+        	            	actual  : "retry 0/100: rpc error: code = Unknown desc = "
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1 +1 @@
+        	            	-exceptional precheck status INVALID_CONTRACT_ID received for transaction 0.0.3955@1711636449.181813630
+        	            	+retry 0/100: rpc error: code = Unknown desc = 
+        	Test:       	TestIntegrationContractDeleteTransactionNoContractID
+--- PASS: TestIntegrationContractDeleteTransactionCanExecute (3.19s)
+=== CONT  TestIntegrationContractCreateTransactionNoGas
+--- FAIL: TestIntegrationContractDeleteTransactionNoContractID (1.97s)
+=== CONT  TestIntegrationContractCreateTransactionCanExecute
+=== NAME  TestUint32Min
+    contract_function_parameters_e2e_test.go:405: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_function_parameters_e2e_test.go:405
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status DUPLICATE_TRANSACTION
+        	Test:       	TestUint32Min
+--- FAIL: TestUint32Min (17.85s)
+=== CONT  TestIntegrationContractCreateFlowGettersAndSetters
+--- PASS: TestIntegrationContractCreateTransactionNoBytecodeFileID (2.99s)
+=== CONT  TestIntegrationContractCreateFlowSmallContractCanExecute
+=== CONT  TestIntegrationContractCreateTransactionNoAdminKey
+--- PASS: TestIntegrationContractCreateFlowGettersAndSetters (0.73s)
+--- PASS: TestIntegrationContractCreateTransactionNoGas (3.08s)
+=== CONT  TestIntegrationContractCallQueryNoFunction
+--- PASS: TestIntegrationContractCreateTransactionCanExecute (3.36s)
+=== CONT  TestIntegrationContractCreateFlowCanExecute
+--- PASS: TestIntegrationContractCreateFlowSmallContractCanExecute (2.11s)
+=== CONT  TestIntegrationContractCallQueryNoGas
+--- PASS: TestIntegrationContractCreateTransactionNoAdminKey (3.32s)
+=== CONT  TestIntegrationContractCallQueryInsufficientFee
+--- PASS: TestIntegrationContractCallQueryNoFunction (3.45s)
+=== CONT  TestIntegrationContractCallQuerySetSmallMaxPayment
+--- PASS: TestIntegrationContractCallQueryNoGas (2.94s)
+=== CONT  TestIntegrationContractCallQuerySetMaxPaymentBig
+--- PASS: TestIntegrationContractCreateFlowCanExecute (3.39s)
+=== CONT  TestIntegrationContractCallQueryGetCost
+--- PASS: TestIntegrationContractCallQueryInsufficientFee (3.28s)
+=== CONT  TestIntegrationContractBytecodeQueryNoContractID
+--- PASS: TestIntegrationContractCallQuerySetSmallMaxPayment (2.99s)
+=== CONT  TestIntegrationContractBytecodeQueryInsufficientFee
+--- PASS: TestIntegrationContractCallQueryGetCost (3.30s)
+=== CONT  TestIntegrationContractCallQueryCanExecute
+=== NAME  TestIntegrationContractBytecodeQueryNoContractID
+    contract_bytecode_query_e2e_test.go:448: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_bytecode_query_e2e_test.go:448
+        	Error:      	Not equal: 
+        	            	expected: "exceptional precheck status INVALID_CONTRACT_ID"
+        	            	actual  : "exceptional precheck status INSUFFICIENT_TX_FEE"
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1 +1 @@
+        	            	-exceptional precheck status INVALID_CONTRACT_ID
+        	            	+exceptional precheck status INSUFFICIENT_TX_FEE
+        	Test:       	TestIntegrationContractBytecodeQueryNoContractID
+--- PASS: TestIntegrationContractCallQuerySetMaxPaymentBig (3.86s)
+=== CONT  TestIntegrationContractBytecodeQuerySetBigMaxPayment
+--- FAIL: TestIntegrationContractBytecodeQueryNoContractID (3.71s)
+=== CONT  TestIntegrationContractBytecodeQuerySetSmallMaxPayment
+=== CONT  TestIntegrationContractBytecodeQueryGetCostExecute
+--- PASS: TestIntegrationContractBytecodeQueryInsufficientFee (3.23s)
+--- PASS: TestIntegrationContractCallQueryCanExecute (2.89s)
+=== CONT  TestIntegrationClientCanFailGracefullyWhenDoesNotHaveNodeOfAnotherClient
+--- PASS: TestIntegrationClientCanFailGracefullyWhenDoesNotHaveNodeOfAnotherClient (0.37s)
+=== CONT  TestIntegrationClientCanExecuteSerializedTransactionFromAnotherClient
+=== CONT  TestIntegrationContractBytecodeQueryCanExecute
+--- PASS: TestIntegrationContractBytecodeQuerySetBigMaxPayment (3.24s)
+--- PASS: TestIntegrationClientCanExecuteSerializedTransactionFromAnotherClient (1.01s)
+=== CONT  TestIntegrationAccountUpdateTransactionNoSigning
+=== NAME  TestIntegrationContractBytecodeQueryCanExecute
+    contract_bytecode_query_e2e_test.go:78: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/contract_bytecode_query_e2e_test.go:78
+        	Error:      	Received unexpected error:
+        	            	exceptional precheck status INSUFFICIENT_TX_FEE
+        	Test:       	TestIntegrationContractBytecodeQueryCanExecute
+--- FAIL: TestIntegrationContractBytecodeQueryCanExecute (1.03s)
+=== CONT  TestIntegrationAccountUpdateTransactionCanExecute
+--- PASS: TestIntegrationContractBytecodeQuerySetSmallMaxPayment (3.06s)
+=== CONT  TestIntegrationAccountStakersQueryNoAccountID
+--- PASS: TestIntegrationContractBytecodeQueryGetCostExecute (3.47s)
+=== CONT  TestIntegrationAccountUpdateTransactionAccountIDNotSet
+--- PASS: TestIntegrationAccountStakersQueryNoAccountID (1.07s)
+=== CONT  TestIntegrationAccountDeleteTransactionNoAccountID
+--- PASS: TestIntegrationAccountUpdateTransactionNoSigning (2.20s)
+=== CONT  TestIntegrationAccountStakersQueryInsufficientFee
+--- PASS: TestIntegrationAccountUpdateTransactionCanExecute (2.18s)
+=== CONT  TestIntegrationAccountStakersQueryGetCost
+=== NAME  TestIntegrationAccountUpdateTransactionAccountIDNotSet
+    account_update_transaction_e2e_test.go:189: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/account_update_transaction_e2e_test.go:189
+        	Error:      	Not equal: 
+        	            	expected: "exceptional receipt status: ACCOUNT_ID_DOES_NOT_EXIST"
+        	            	actual  : "exceptional receipt status: INVALID_ACCOUNT_ID"
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1 +1 @@
+        	            	-exceptional receipt status: ACCOUNT_ID_DOES_NOT_EXIST
+        	            	+exceptional receipt status: INVALID_ACCOUNT_ID
+        	Test:       	TestIntegrationAccountUpdateTransactionAccountIDNotSet
+--- FAIL: TestIntegrationAccountUpdateTransactionAccountIDNotSet (1.58s)
+=== CONT  TestIntegrationAccountStakersQueryCanExecute
+=== NAME  TestIntegrationAccountDeleteTransactionNoAccountID
+    account_delete_transaction_e2e_test.go:152: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/account_delete_transaction_e2e_test.go:152
+        	Error:      	Not equal: 
+        	            	expected: "exceptional precheck status ACCOUNT_ID_DOES_NOT_EXIST received for transaction 0.0.4023@1711636468.313913509"
+        	            	actual  : "retry 0/100: rpc error: code = Unknown desc = "
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1 +1 @@
+        	            	-exceptional precheck status ACCOUNT_ID_DOES_NOT_EXIST received for transaction 0.0.4023@1711636468.313913509
+        	            	+retry 0/100: rpc error: code = Unknown desc = 
+        	Test:       	TestIntegrationAccountDeleteTransactionNoAccountID
+--- PASS: TestIntegrationAccountStakersQueryInsufficientFee (1.08s)
+=== CONT  TestIntegrationAccountRecordQueryNoAccountID
+=== CONT  TestIntegrationAccountRecordQueryInsufficientFee
+--- PASS: TestIntegrationAccountStakersQueryGetCost (1.17s)
+--- PASS: TestIntegrationAccountStakersQueryCanExecute (0.76s)
+=== CONT  TestIntegrationAccountStakersQuerySetBigMaxPayment
+--- FAIL: TestIntegrationAccountDeleteTransactionNoAccountID (1.72s)
+=== CONT  TestIntegrationAccountRecordQuerySetBigMaxPayment
+--- PASS: TestIntegrationAccountRecordQueryNoAccountID (1.01s)
+=== CONT  TestIntegrationAccountRecordQueryGetCost
+--- PASS: TestIntegrationAccountStakersQuerySetBigMaxPayment (1.43s)
+=== CONT  TestIntegrationAccountRecordQuerySetSmallMaxPayment
+--- PASS: TestIntegrationAccountRecordQueryInsufficientFee (1.60s)
+=== CONT  TestIntegrationAccountInfoQueryNoAccountID
+--- PASS: TestIntegrationAccountRecordQuerySetBigMaxPayment (1.59s)
+=== CONT  TestIntegrationAccountRecordQueryCanExecute
+--- PASS: TestIntegrationAccountRecordQueryGetCost (1.97s)
+=== CONT  TestIntegrationAccountInfoQuerySetSmallMaxPayment
+--- PASS: TestIntegrationAccountInfoQueryNoAccountID (1.13s)
+=== CONT  TestIntegrationAccountInfoQuerySetBigMaxPayment
+--- PASS: TestIntegrationAccountRecordQuerySetSmallMaxPayment (1.51s)
+=== CONT  TestIntegrationAccountInfoQueryGetCost
+--- PASS: TestIntegrationAccountRecordQueryCanExecute (1.52s)
+=== CONT  TestIntegrationAccountInfoQueryCanExecute
+--- PASS: TestIntegrationAccountInfoQueryGetCost (1.93s)
+=== CONT  TestIntegrationVerifySignatureFlowKeyList
+--- PASS: TestIntegrationAccountInfoQuerySetBigMaxPayment (2.19s)
+=== CONT  TestIntegrationVerifySignatureFlowCanExecute
+--- PASS: TestIntegrationAccountInfoQueryCanExecute (2.06s)
+=== CONT  TestIntegrationAccountIDCanPopulateAccountAliasEvmAddressWithMirrorAndNoEvmAddress
+--- PASS: TestIntegrationAccountInfoQuerySetSmallMaxPayment (3.38s)
+=== CONT  TestIntegrationAccountIDCanPopulateAccountAliasEvmAddressWithNoMirror
+--- PASS: TestIntegrationVerifySignatureFlowCanExecute (2.40s)
+=== CONT  TestIntegrationAccountInfoQueryInsufficientFee
+--- PASS: TestIntegrationVerifySignatureFlowKeyList (2.49s)
+=== CONT  TestIntegrationAccountIDCanPopulateAccountAliasEvmAddress
+--- PASS: TestIntegrationAccountInfoQueryInsufficientFee (2.37s)
+=== CONT  TestIntegrationAccountIDCanPopulateAccountNumber
+--- PASS: TestIntegrationAccountIDCanPopulateAccountAliasEvmAddressWithMirrorAndNoEvmAddress (6.26s)
+=== CONT  TestIntegrationAccountDeleteTransactionNoSigning
+--- PASS: TestIntegrationAccountIDCanPopulateAccountAliasEvmAddressWithNoMirror (6.10s)
+=== CONT  TestIntegrationAccountCreateTransactionAddSignature
+--- PASS: TestIntegrationAccountIDCanPopulateAccountAliasEvmAddress (6.26s)
+=== CONT  TestIntegrationAccountDeleteTransactionNoTransferAccountID
+--- PASS: TestIntegrationAccountDeleteTransactionNoSigning (2.32s)
+=== CONT  TestIntegrationAccountIDCanPopulateAccountAliasEvmAddressWithMirror
+--- PASS: TestIntegrationAccountCreateTransactionAddSignature (1.91s)
+=== CONT  TestIntegrationAccountDeleteTransactionCanExecute
+=== NAME  TestIntegrationAccountDeleteTransactionNoTransferAccountID
+    account_delete_transaction_e2e_test.go:113: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/account_delete_transaction_e2e_test.go:113
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestIntegrationAccountDeleteTransactionNoTransferAccountID
+=== CONT  TestIntegrationAccountCreateTransactionWithAliasWithReceiverSigRequiredWithoutSignature
+--- FAIL: TestIntegrationAccountDeleteTransactionNoTransferAccountID (1.47s)
+--- PASS: TestIntegrationAccountIDCanPopulateAccountNumber (5.94s)
+=== CONT  TestIntegrationSerializeTransactionWithoutNodeAccountIdDeserialiseAndExecute
+--- PASS: TestIntegrationSerializeTransactionWithoutNodeAccountIdDeserialiseAndExecute (0.39s)
+=== CONT  TestIntegrationAccountCreateTransactionWithAliasWithoutSignature
+--- PASS: TestIntegrationAccountDeleteTransactionCanExecute (2.06s)
+=== CONT  TestIntegrationAccountCreateTransactionWithAliasWithReceiverSigRequired
+--- PASS: TestIntegrationAccountCreateTransactionWithAliasWithReceiverSigRequiredWithoutSignature (1.61s)
+=== CONT  TestIntegrationAccountCreateTransactionWithAliasFromAdminKeyWithReceiverSigRequiredWithoutSignature
+--- PASS: TestIntegrationAccountCreateTransactionWithAliasWithReceiverSigRequired (1.45s)
+=== CONT  TestIntegrationAccountCreateTransactionWithAliasFromAdminKeyWithReceiverSigRequired
+--- PASS: TestIntegrationAccountCreateTransactionWithAliasWithoutSignature (1.75s)
+=== CONT  TestIntegrationAccountCreateTransactionWithAliasFromAdminKey
+--- PASS: TestIntegrationAccountCreateTransactionWithAliasFromAdminKeyWithReceiverSigRequiredWithoutSignature (2.05s)
+=== CONT  TestIntegrationAccountCreateTransactionNetwork
+--- PASS: TestIntegrationAccountCreateTransactionWithAliasFromAdminKey (1.30s)
+=== CONT  TestIntegrationAccountBalanceQueryCanSetQueryPayment
+--- PASS: TestIntegrationAccountCreateTransactionWithAliasFromAdminKeyWithReceiverSigRequired (1.84s)
+=== CONT  TestIntegrationAccountCreateTransactionNoKey
+--- PASS: TestIntegrationAccountIDCanPopulateAccountAliasEvmAddressWithMirror (6.14s)
+=== CONT  TestIntegrationAccountCreateTransactionCanFreezeModify
+=== NAME  TestIntegrationAccountCreateTransactionNoKey
+    account_create_transaction_e2e_test.go:134: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/account_create_transaction_e2e_test.go:134
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestIntegrationAccountCreateTransactionNoKey
+--- PASS: TestIntegrationAccountBalanceQueryCanSetQueryPayment (1.23s)
+=== CONT  TestIntegrationAccountCreateTransactionWithAlias
+--- FAIL: TestIntegrationAccountCreateTransactionNoKey (1.04s)
+=== CONT  TestIntegrationAccountBalanceQueryNoAccountIDError
+=== CONT  TestIntegrationAccountCreateTransactionCanExecute
+--- PASS: TestIntegrationAccountCreateTransactionNetwork (2.85s)
+--- PASS: TestIntegrationAccountBalanceQueryNoAccountIDError (1.29s)
+=== CONT  TestIntegrationTokenTransferTransactionCanExecute
+--- PASS: TestIntegrationAccountCreateTransactionCanFreezeModify (1.98s)
+=== CONT  TestIntegrationTokenWipeTransactionNoAccountID
+--- PASS: TestIntegrationAccountCreateTransactionWithAlias (1.87s)
+=== CONT  TestIntegrationTokenWipeTransactionNoTokenID
+--- PASS: TestIntegrationAccountCreateTransactionCanExecute (1.88s)
+=== CONT  TestIntegrationTokenWipeTransactionNoAmount
+=== NAME  TestIntegrationTokenWipeTransactionNoAccountID
+    token_wipe_transaction_e2e_test.go:480: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/token_wipe_transaction_e2e_test.go:480
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestIntegrationTokenWipeTransactionNoAccountID
+=== NAME  TestIntegrationTokenWipeTransactionNoTokenID
+    token_wipe_transaction_e2e_test.go:368: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/token_wipe_transaction_e2e_test.go:368
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestIntegrationTokenWipeTransactionNoTokenID
+=== CONT  TestIntegrationTopicCreateTransactionCanExecute
+--- FAIL: TestIntegrationTokenWipeTransactionNoAccountID (5.45s)
+--- PASS: TestIntegrationTokenTransferTransactionCanExecute (5.78s)
+=== CONT  TestIntegrationTokenWipeTransactionCanExecute
+--- PASS: TestIntegrationTokenWipeTransactionNoAmount (4.58s)
+=== CONT  TestIntegrationTokenUpdateTransactionDifferentKeys
+--- FAIL: TestIntegrationTokenWipeTransactionNoTokenID (6.21s)
+=== CONT  TestIntegrationTokenUpdateTransactionCanExecute
+--- PASS: TestIntegrationTopicCreateTransactionCanExecute (2.26s)
+=== CONT  TestIntegrationTokenUnfreezeTransactionNoAccountID
+--- PASS: TestIntegrationTokenUpdateTransactionCanExecute (2.61s)
+=== CONT  TestIntegrationTokenUnfreezeTransactionNoTokenID
+--- PASS: TestIntegrationTokenUpdateTransactionDifferentKeys (3.23s)
+=== CONT  TestIntegrationTokenUpdateTransactionNoTokenID
+    token_update_transaction_e2e_test.go:191: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/token_update_transaction_e2e_test.go:191
+        	Error:      	Not equal: 
+        	            	expected: "exceptional precheck status INVALID_TOKEN_ID received for transaction 0.0.4128@1711636503.001862446"
+        	            	actual  : "retry 0/100: rpc error: code = Unknown desc = "
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1 +1 @@
+        	            	-exceptional precheck status INVALID_TOKEN_ID received for transaction 0.0.4128@1711636503.001862446
+        	            	+retry 0/100: rpc error: code = Unknown desc = 
+        	Test:       	TestIntegrationTokenUpdateTransactionNoTokenID
+=== NAME  TestIntegrationTokenUnfreezeTransactionNoAccountID
+    token_unfreeze_transaction_e2e_test.go:301: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/token_unfreeze_transaction_e2e_test.go:301
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestIntegrationTokenUnfreezeTransactionNoAccountID
+=== NAME  TestIntegrationTokenUnfreezeTransactionNoTokenID
+    token_unfreeze_transaction_e2e_test.go:205: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/token_unfreeze_transaction_e2e_test.go:205
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestIntegrationTokenUnfreezeTransactionNoTokenID
+--- FAIL: TestIntegrationTokenUpdateTransactionNoTokenID (2.37s)
+=== CONT  TestIntegrationTokenUnfreezeTransactionCanExecute
+--- PASS: TestIntegrationTokenWipeTransactionCanExecute (6.19s)
+=== CONT  TestIntegrationNftTransferTransactionAccountAmountTransfersOnlyForFungibleCommon
+--- FAIL: TestIntegrationTokenUnfreezeTransactionNoAccountID (5.93s)
+=== CONT  TestIntegrationTokenFeeScheduleUpdateHugeAmountTransaction
+--- FAIL: TestIntegrationTokenUnfreezeTransactionNoTokenID (4.63s)
+=== CONT  TestIntegrationTokenTransferTransactionNotZeroSum
+    token_transfer_transaction_e2e_test.go:226: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/token_transfer_transaction_e2e_test.go:226
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestIntegrationTokenTransferTransactionNotZeroSum
+--- PASS: TestIntegrationTokenUnfreezeTransactionCanExecute (4.72s)
+=== CONT  TestIntegrationCantRemoveSingleSerialNumberAllowanceWhenAllowanceIsForAllSerials
+--- PASS: TestIntegrationTokenFeeScheduleUpdateHugeAmountTransaction (3.23s)
+=== CONT  TestIntegrationTokenRevokeKycTransactionNoAccountID
+--- FAIL: TestIntegrationTokenTransferTransactionNotZeroSum (4.49s)
+=== CONT  TestIntegrationTokenRevokeKycTransactionNoTokenID
+--- PASS: TestIntegrationNftTransferTransactionAccountAmountTransfersOnlyForFungibleCommon (6.48s)
+=== CONT  TestIntegrationTokenRevokeKycTransactionCanExecute
+=== NAME  TestIntegrationTokenRevokeKycTransactionNoAccountID
+    token_revoke_kyc_transaction_e2e_test.go:301: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/token_revoke_kyc_transaction_e2e_test.go:301
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestIntegrationTokenRevokeKycTransactionNoAccountID
+=== NAME  TestIntegrationTokenRevokeKycTransactionNoTokenID
+    token_revoke_kyc_transaction_e2e_test.go:205: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/token_revoke_kyc_transaction_e2e_test.go:205
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestIntegrationTokenRevokeKycTransactionNoTokenID
+--- PASS: TestIntegrationCantRemoveSingleSerialNumberAllowanceWhenAllowanceIsForAllSerials (4.42s)
+=== CONT  TestIntegrationTokenPauseTransactionCanExecute
+--- FAIL: TestIntegrationTokenRevokeKycTransactionNoAccountID (4.19s)
+=== CONT  TestIntegrationTokenNftGetInfoByNftIDCanExecute
+--- PASS: TestIntegrationTokenNftGetInfoByNftIDCanExecute (1.21s)
+=== CONT  TestIntegrationTokenFeeScheduleUpdateTokenNotAssociatedToFeeCollector
+--- FAIL: TestIntegrationTokenRevokeKycTransactionNoTokenID (4.50s)
+=== CONT  TestIntegrationAccountBalanceQueryGetCost
+--- PASS: TestIntegrationAccountBalanceQueryGetCost (0.93s)
+=== CONT  TestIntegrationAccountBalanceQuerySetSmallMaxPayment
+--- PASS: TestIntegrationTokenRevokeKycTransactionCanExecute (5.38s)
+=== CONT  TestIntegrationAccountBalanceQueryCostCanSetPaymentOneTinybar
+--- PASS: TestIntegrationTokenPauseTransactionCanExecute (3.16s)
+=== CONT  TestIntegrationAfterGivenAllowanceForAllSerialsCanGiveSingleSerialToOtherAccounts
+--- PASS: TestIntegrationAccountBalanceQuerySetSmallMaxPayment (0.85s)
+=== CONT  TestIntegrationCantTransferOnBehalfOfSpenderAfterRemovingTheAllowanceApproval
+--- PASS: TestIntegrationAccountBalanceQueryCostCanSetPaymentOneTinybar (0.93s)
+=== CONT  TestIntegrationCantTransferOnBehalfOfSpenderWithoutAllowanceApproval
+--- PASS: TestIntegrationTokenFeeScheduleUpdateTokenNotAssociatedToFeeCollector (2.52s)
+=== CONT  TestIntegrationTokenMintTransactionMaxReached
+=== NAME  TestIntegrationCantTransferOnBehalfOfSpenderWithoutAllowanceApproval
+    token_nft_allowance_e2e_test.go:73: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/token_nft_allowance_e2e_test.go:73
+        	Error:      	Not equal: 
+        	            	expected: "exceptional receipt status: SPENDER_DOES_NOT_HAVE_ALLOWANCE"
+        	            	actual  : "exceptional receipt status: TOKEN_NOT_ASSOCIATED_TO_ACCOUNT"
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1 +1 @@
+        	            	-exceptional receipt status: SPENDER_DOES_NOT_HAVE_ALLOWANCE
+        	            	+exceptional receipt status: TOKEN_NOT_ASSOCIATED_TO_ACCOUNT
+        	Test:       	TestIntegrationCantTransferOnBehalfOfSpenderWithoutAllowanceApproval
+--- FAIL: TestIntegrationCantTransferOnBehalfOfSpenderWithoutAllowanceApproval (3.13s)
+=== CONT  TestIntegrationTokenMintTransactionCanExecute
+--- PASS: TestIntegrationTokenMintTransactionMaxReached (3.62s)
+=== CONT  TestIntegrationTokenMintTransactionNoAmount
+--- PASS: TestIntegrationCantTransferOnBehalfOfSpenderAfterRemovingTheAllowanceApproval (4.56s)
+=== CONT  TestIntegrationAccountBalanceQuerySetBigMaxPayment
+--- PASS: TestIntegrationAfterGivenAllowanceForAllSerialsCanGiveSingleSerialToOtherAccounts (5.19s)
+=== CONT  TestIntegrationTokenInfoQueryNoTokenID
+    token_info_query_e2e_test.go:307: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/token_info_query_e2e_test.go:307
+        	Error:      	Not equal: 
+        	            	expected: "exceptional precheck status INVALID_TOKEN_ID"
+        	            	actual  : "retry 0/100: rpc error: code = Unknown desc = "
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1 +1 @@
+        	            	-exceptional precheck status INVALID_TOKEN_ID
+        	            	+retry 0/100: rpc error: code = Unknown desc = 
+        	Test:       	TestIntegrationTokenInfoQueryNoTokenID
+--- PASS: TestIntegrationAccountBalanceQuerySetBigMaxPayment (1.12s)
+=== CONT  TestIntegrationAccountBalanceQueryCanExecute
+--- FAIL: TestIntegrationTokenInfoQueryNoTokenID (1.06s)
+--- PASS: TestIntegrationAccountBalanceQueryCanExecute (0.92s)
+--- PASS: TestIntegrationTokenMintTransactionNoAmount (3.41s)
+--- PASS: TestIntegrationTokenMintTransactionCanExecute (4.14s)
+=== NAME  TestIntegrationLiveHashAddTransactionCanExecute
+    live_hash_add_transaction_e2e_test.go:67: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/live_hash_add_transaction_e2e_test.go:67
+        	Error:      	Not equal: 
+        	            	expected: "exceptional precheck status NOT_SUPPORTED received for transaction 0.0.3641@1711636774.631453040"
+        	            	actual  : "retry 100/100: exceptional precheck status BUSY received for transaction 0.0.3641@1711636774.631453040"
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1 +1 @@
+        	            	-exceptional precheck status NOT_SUPPORTED received for transaction 0.0.3641@1711636774.631453040
+        	            	+retry 100/100: exceptional precheck status BUSY received for transaction 0.0.3641@1711636774.631453040
+        	Test:       	TestIntegrationLiveHashAddTransactionCanExecute
+=== NAME  TestIntegrationLiveHashQueryGetCost
+    live_hash_query_e2e_test.go:139: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/live_hash_query_e2e_test.go:139
+        	Error:      	Not equal: 
+        	            	expected: "exceptional precheck status NOT_SUPPORTED received for transaction 0.0.3691@1711636782.809976764"
+        	            	actual  : "retry 100/100: exceptional precheck status BUSY received for transaction 0.0.3691@1711636782.809976764"
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1 +1 @@
+        	            	-exceptional precheck status NOT_SUPPORTED received for transaction 0.0.3691@1711636782.809976764
+        	            	+retry 100/100: exceptional precheck status BUSY received for transaction 0.0.3691@1711636782.809976764
+        	Test:       	TestIntegrationLiveHashQueryGetCost
+=== NAME  TestIntegrationLiveHashQueryCanExecute
+    live_hash_query_e2e_test.go:67: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/live_hash_query_e2e_test.go:67
+        	Error:      	Not equal: 
+        	            	expected: "exceptional precheck status NOT_SUPPORTED received for transaction 0.0.3605@1711636859.114048531"
+        	            	actual  : "retry 100/100: exceptional precheck status BUSY received for transaction 0.0.3605@1711636859.114048531"
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1 +1 @@
+        	            	-exceptional precheck status NOT_SUPPORTED received for transaction 0.0.3605@1711636859.114048531
+        	            	+retry 100/100: exceptional precheck status BUSY received for transaction 0.0.3605@1711636859.114048531
+        	Test:       	TestIntegrationLiveHashQueryCanExecute
+=== NAME  TestIntegrationTopicDeleteTransactionNoTopicID
+    topic_delete_transaction_e2e_test.go:119: 
+        	Error Trace:	/Users/ivanivanov/IdeaProjects/hedera-sdk-go/topic_delete_transaction_e2e_test.go:119
+        	Error:      	Not equal: 
+        	            	expected: "exceptional receipt status: INVALID_TOPIC_ID"
+        	            	actual  : "exceptional precheck status RECEIPT_NOT_FOUND"
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1 +1 @@
+        	            	-exceptional receipt status: INVALID_TOPIC_ID
+        	            	+exceptional precheck status RECEIPT_NOT_FOUND
+        	Test:       	TestIntegrationTopicDeleteTransactionNoTopicID
+--- FAIL: TestIntegrationTopicDeleteTransactionNoTopicID (789.64s)
+signal: interrupt
+FAIL	github.com/hashgraph/hedera-sdk-go/v2	1185.989s
