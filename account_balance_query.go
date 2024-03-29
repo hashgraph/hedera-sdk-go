@@ -126,8 +126,8 @@ func (q *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error) {
 	return accountBalance, nil
 }
 
-// Helper function, which query the mirror node and if the balance has tokens, it iterate over the tokens and assign them
-// inside `AccountBalance` tokens field.
+// Helper function, which queries the mirror node and if the balance query has tokens, it iterates over the tokens and
+// populates them in the appropriate `AccountBalance` tokens field.
 // IMPORTANT: This function will fetch the state of the data in the Mirror Node at the moment of its execution. It
 // is important to note that the Mirror Node currently needs 2-3 seconds to be updated with the latest data from the
 // consensus nodes. So if data related to token relationships is changed and a proper timeout is not introduced the
