@@ -12,7 +12,7 @@ require (
 	github.com/ethereum/c-kzg-4844 v0.4.2 // indirect
 	github.com/ethereum/go-ethereum v1.13.14
 	github.com/getsentry/sentry-go v0.25.0 // indirect
-	github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20240212102943-339831f56e4d
+	github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20240329142217-02f7fa55705d
 	github.com/json-iterator/go v1.1.12
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/pkg/errors v0.9.1
