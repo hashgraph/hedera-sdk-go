@@ -24,6 +24,7 @@ package hedera
  */
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -66,6 +67,7 @@ func TestIntegrationContractCallQueryCanExecute(t *testing.T) {
 	assert.True(t, contractReceipt.ContractID.Contract > 0)
 
 	assert.NotNil(t, contractReceipt.ContractID)
+	fmt.Println("adf")
 
 	contractID := *contractReceipt.ContractID
 
