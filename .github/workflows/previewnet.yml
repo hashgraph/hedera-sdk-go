@@ -4,6 +4,13 @@ env:
     OPERATOR_ID: ${{ secrets.PREVIEWNET_OPERATOR_ID }}
     HEDERA_NETWORK: "previewnet"
 
+defaults:
+    run:
+        shell: bash
+
+permissions:
+    contents: read
+
 on:
   schedule:
     - cron: '0 0 * * *'
@@ -12,16 +19,17 @@ jobs:
 
   build:
     name: Build
+    # runs-on: [ self-hosted, Linux, medium, ephemeral ]  # this will be enabled once we configure a self-hosted runner
     runs-on: ubuntu-latest
     steps:
       - name: Set up Go 1.19
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
         with:
           go-version: 1.19
         id: go
 
       - name: Check out code into the Go module directory
-        uses: actions/checkout@v3
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Vet Examples
         run: go vet ./examples/...
@@ -30,7 +38,7 @@ jobs:
         run: go vet .
 
       - name: Lint
-        uses: golangci/golangci-lint-action@v3
+        uses: golangci/golangci-lint-action@3cfe3a4abbb849e10058ce4af15d205b6da42804 # v4.0.0
         with:
           version: v1.50
 
