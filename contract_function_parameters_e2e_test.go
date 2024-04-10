@@ -250,7 +250,7 @@ func intType(t *testing.T, env IntegrationTestEnv, intType string, value string)
 
 	contractCall, err := NewContractCallQuery().SetGas(12000000).
 		SetContractID(contractID).
-		SetQueryPayment(NewHbar(1)).
+		SetQueryPayment(NewHbar(20)).
 		SetFunction(data.fnName, data.fnAdd(NewContractFunctionParameters(), math.U256Bytes(valueBigInt))).
 		Execute(env.Client)
 

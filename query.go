@@ -381,7 +381,6 @@ func (q *Query) validateNetworkOnIDs(*Client) error {
 }
 
 func (q *Query) getTransactionIDAndMessage() (string, string) {
-
 	txID := q.GetPaymentTransactionID().String()
 	if txID == "" {
 		txID = "None"
