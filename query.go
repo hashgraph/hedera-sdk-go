@@ -32,6 +32,7 @@ import (
 // Query is the struct used to build queries.
 type Query struct {
 	executable
+	client   *Client
 	pb       *services.Query
 	pbHeader *services.QueryHeader //nolint
 
@@ -207,6 +208,7 @@ func (q *Query) SetPaymentTransactionID(transactionID TransactionID) *Query {
 }
 
 func (q *Query) execute(client *Client, e QueryInterface) (*services.Response, error) {
+	q.client = client
 	if client == nil || client.operator == nil {
 		return nil, errNoClientProvided
 	}
@@ -292,8 +294,9 @@ func (q *Query) shouldRetry(e Executable, response interface{}) _ExecutionState 
 
 func (q *Query) generatePayments(client *Client, cost Hbar) error {
 	for _, nodeID := range q.nodeAccountIDs.slice {
+		txnID := TransactionIDGenerate(client.operator.accountID)
 		tx, err := _QueryMakePaymentTransaction(
-			q.paymentTransactionIDs._GetCurrent().(TransactionID),
+			txnID,
 			nodeID.(AccountID),
 			client.operator,
 			cost,
@@ -313,6 +316,10 @@ func (q *Query) advanceRequest() {
 }
 
 func (q *Query) makeRequest() interface{} {
+	q.paymentTransactions = make([]*services.Transaction, 0)
+	if q.client != nil {
+		q.generatePayments(q.client, q.queryPayment)
+	}
 	if q.isPaymentRequired && len(q.paymentTransactions) > 0 {
 		q.pbHeader.Payment = q.paymentTransactions[q.paymentTransactionIDs.index]
 	}
@@ -374,6 +381,7 @@ func (q *Query) validateNetworkOnIDs(*Client) error {
 }
 
 func (q *Query) getTransactionIDAndMessage() (string, string) {
+
 	txID := q.GetPaymentTransactionID().String()
 	if txID == "" {
 		txID = "None"
