@@ -318,7 +318,10 @@ func (q *Query) advanceRequest() {
 func (q *Query) makeRequest() interface{} {
 	q.paymentTransactions = make([]*services.Transaction, 0)
 	if q.client != nil {
-		q.generatePayments(q.client, q.queryPayment)
+		err := q.generatePayments(q.client, q.queryPayment)
+		if err != nil {
+			return q.pb
+		}
 	}
 	if q.isPaymentRequired && len(q.paymentTransactions) > 0 {
 		q.pbHeader.Payment = q.paymentTransactions[q.paymentTransactionIDs.index]
