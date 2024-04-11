@@ -35,6 +35,11 @@ jobs:
             distribution: temurin
             java-version: 17
 
+      -   name: Setup GCC
+          run: |
+              sudo apt-get update
+              sudo apt-get install -y --no-install-recommends gcc libc6-dev libc-dev
+
       -   name: Set up Go 1.19
           uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
           with:
