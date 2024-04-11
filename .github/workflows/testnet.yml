@@ -19,8 +19,7 @@ on:
 jobs:
   build:
     name: Build
-    # runs-on: [ self-hosted, Linux, medium, ephemeral ]  # this will be enabled once we configure a self-hosted runner
-    runs-on: ubuntu-latest
+    runs-on: [ self-hosted, Linux, medium, ephemeral ]
     steps:
       - name: Set up Go 1.19
         uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
@@ -42,8 +41,7 @@ jobs:
 
   test:
     name: Test
-    # runs-on: [ self-hosted, Linux, medium, ephemeral ]  # this will be enabled once we configure a self-hosted runner
-    runs-on: ubuntu-latest
+    runs-on: [ self-hosted, Linux, medium, ephemeral ]
     steps:
       - name: Set up Go 1.19
         uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
@@ -58,8 +56,7 @@ jobs:
 
   golangci:
     name: lint
-    # runs-on: [ self-hosted, Linux, medium, ephemeral ]  # this will be enabled once we configure a self-hosted runner
-    runs-on: ubuntu-latest
+    runs-on: [ self-hosted, Linux, medium, ephemeral ]
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - name: golangci-lint
