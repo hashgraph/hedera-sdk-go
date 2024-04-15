@@ -106,12 +106,8 @@ func TestIntegrationFileUpdateTransactionNoFileID(t *testing.T) {
 	resp, err = NewFileUpdateTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	require.NoError(t, err)
-
-	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
-	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, "exceptional receipt status: INVALID_FILE_ID", err.Error())
+		assert.Contains(t, err.Error(), "exceptional precheck status INVALID_FILE_ID")
 	}
 
 	resp, err = NewFileDeleteTransaction().

@@ -32,16 +32,15 @@ import (
 // Query is the struct used to build queries.
 type Query struct {
 	executable
-	client   *Client
-	pb       *services.Query
-	pbHeader *services.QueryHeader //nolint
-
+	client                *Client
+	pb                    *services.Query
+	pbHeader              *services.QueryHeader //nolint
 	paymentTransactionIDs *_LockableSlice
-	maxQueryPayment       Hbar
-	queryPayment          Hbar
-	timestamp             time.Time
 
 	paymentTransactions []*services.Transaction
+	maxQueryPayment     Hbar
+	queryPayment        Hbar
+	timestamp           time.Time
 
 	isPaymentRequired bool
 }
@@ -109,25 +108,20 @@ func (q *Query) getCost(client *Client, e QueryInterface) (Hbar, error) {
 
 	var err error
 
-	if !q.paymentTransactionIDs.locked {
-		q.paymentTransactionIDs._Clear()._Push(TransactionIDGenerate(client.operator.accountID))
-	}
-
 	err = e.validateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
-
+	q.paymentTransactions = make([]*services.Transaction, 0)
 	if !q.nodeAccountIDs.locked {
 		q.SetNodeAccountIDs([]AccountID{client.network._GetNode().accountID})
 	}
 
-	err = q.generatePayments(client, Hbar{})
-	if err != nil {
-		return Hbar{}, err
-	}
-
 	q.pb = e.buildQuery()
+
+	if q.isPaymentRequired && len(q.paymentTransactions) > 0 {
+		q.paymentTransactionIDs._Advance()
+	}
 
 	q.pbHeader.ResponseType = services.ResponseType_COST_ANSWER
 	q.paymentTransactionIDs._Advance()
@@ -220,10 +214,6 @@ func (q *Query) execute(client *Client, e QueryInterface) (*services.Response, e
 		return nil, err
 	}
 
-	if !q.paymentTransactionIDs.locked {
-		q.paymentTransactionIDs._Clear()._Push(TransactionIDGenerate(client.operator.accountID))
-	}
-
 	var cost Hbar
 	if q.queryPayment.tinybar != 0 {
 		cost = q.queryPayment
@@ -249,27 +239,18 @@ func (q *Query) execute(client *Client, e QueryInterface) (*services.Response, e
 
 		cost = actualCost
 	}
-
 	q.paymentTransactions = make([]*services.Transaction, 0)
-
 	if !q.nodeAccountIDs.locked {
 		q.SetNodeAccountIDs([]AccountID{client.network._GetNode().accountID})
 	}
 
 	if cost.tinybar > 0 {
-		err = q.generatePayments(client, cost)
+		// err = q.generatePayments(client, cost)
 
-		if err != nil {
-			return nil, err
-		}
 	}
 
 	q.pb = e.buildQuery()
 	q.pbHeader.ResponseType = services.ResponseType_ANSWER_ONLY
-
-	if q.isPaymentRequired && len(q.paymentTransactions) > 0 {
-		q.paymentTransactionIDs._Advance()
-	}
 
 	resp, err := _Execute(client, e)
 	if err != nil {
@@ -292,23 +273,24 @@ func (q *Query) shouldRetry(e Executable, response interface{}) _ExecutionState 
 	return executionStateError
 }
 
-func (q *Query) generatePayments(client *Client, cost Hbar) error {
+func (q *Query) generatePayments(client *Client, cost Hbar) (*services.Transaction, error) {
+	var tx *services.Transaction
+	var err error
 	for _, nodeID := range q.nodeAccountIDs.slice {
 		txnID := TransactionIDGenerate(client.operator.accountID)
-		tx, err := _QueryMakePaymentTransaction(
+		tx, err = _QueryMakePaymentTransaction(
 			txnID,
 			nodeID.(AccountID),
 			client.operator,
 			cost,
 		)
 		if err != nil {
-			return err
+			return nil, err
 		}
-
 		q.paymentTransactions = append(q.paymentTransactions, tx)
 	}
+	return tx, nil
 
-	return nil
 }
 
 func (q *Query) advanceRequest() {
@@ -316,15 +298,12 @@ func (q *Query) advanceRequest() {
 }
 
 func (q *Query) makeRequest() interface{} {
-	q.paymentTransactions = make([]*services.Transaction, 0)
 	if q.client != nil {
-		err := q.generatePayments(q.client, q.queryPayment)
+		tx, err := q.generatePayments(q.client, q.queryPayment)
 		if err != nil {
 			return q.pb
 		}
-	}
-	if q.isPaymentRequired && len(q.paymentTransactions) > 0 {
-		q.pbHeader.Payment = q.paymentTransactions[q.paymentTransactionIDs.index]
+		q.pbHeader.Payment = tx
 	}
 
 	return q.pb
@@ -362,9 +341,6 @@ func (q *Query) getName() string {
 
 func (q *Query) getLogID(queryInterface Executable) string {
 	timestamp := q.timestamp.UnixNano()
-	if q.paymentTransactionIDs._Length() > 0 && q.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart != nil {
-		timestamp = q.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart.UnixNano()
-	}
 	return fmt.Sprintf("%s:%d", queryInterface.getName(), timestamp)
 }
 

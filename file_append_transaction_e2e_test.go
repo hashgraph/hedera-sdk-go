@@ -104,11 +104,9 @@ func TestIntegrationFileAppendTransactionNoFileID(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetContents([]byte(" world!")).
 		Execute(env.Client)
-	require.NoError(t, err)
-	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, "exceptional receipt status: INVALID_FILE_ID", err.Error())
+		assert.Contains(t, err.Error(), "exceptional precheck status INVALID_FILE_ID", err.Error())
 	}
 
 	resp, err = NewFileDeleteTransaction().
@@ -128,14 +126,13 @@ func TestIntegrationFileAppendTransactionNothingSet(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
-	resp, err := NewFileAppendTransaction().
+	_, err := NewFileAppendTransaction().
 		SetContents([]byte(" world!")).
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		Execute(env.Client)
-	require.NoError(t, err)
-	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.Error(t, err)
 	if err != nil {
-		assert.Equal(t, "exceptional receipt status: INVALID_FILE_ID", err.Error())
+		assert.Contains(t, err.Error(), "exceptional precheck status INVALID_FILE_ID", err.Error())
 	}
 
 	err = CloseIntegrationTestEnv(env, nil)
