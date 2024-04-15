@@ -244,11 +244,6 @@ func (q *Query) execute(client *Client, e QueryInterface) (*services.Response, e
 		q.SetNodeAccountIDs([]AccountID{client.network._GetNode().accountID})
 	}
 
-	if cost.tinybar > 0 {
-		// err = q.generatePayments(client, cost)
-
-	}
-
 	q.pb = e.buildQuery()
 	q.pbHeader.ResponseType = services.ResponseType_ANSWER_ONLY
 
@@ -290,7 +285,6 @@ func (q *Query) generatePayments(client *Client, cost Hbar) (*services.Transacti
 		q.paymentTransactions = append(q.paymentTransactions, tx)
 	}
 	return tx, nil
-
 }
 
 func (q *Query) advanceRequest() {
