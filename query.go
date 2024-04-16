@@ -215,9 +215,7 @@ func (q *Query) execute(client *Client, e QueryInterface) (*services.Response, e
 	}
 
 	var cost Hbar
-	if q.queryPayment.tinybar != 0 {
-		cost = q.queryPayment
-	} else {
+	if q.queryPayment.tinybar == 0 {
 		if q.maxQueryPayment.tinybar == 0 {
 			cost = client.GetDefaultMaxQueryPayment()
 		} else {
@@ -237,8 +235,9 @@ func (q *Query) execute(client *Client, e QueryInterface) (*services.Response, e
 			}
 		}
 
-		cost = actualCost
+		q.queryPayment = actualCost
 	}
+
 	q.paymentTransactions = make([]*services.Transaction, 0)
 	if !q.nodeAccountIDs.locked {
 		q.SetNodeAccountIDs([]AccountID{client.network._GetNode().accountID})
