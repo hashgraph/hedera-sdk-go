@@ -103,7 +103,7 @@ func TestIntegrationFileUpdateTransactionNoFileID(t *testing.T) {
 	fileID := *receipt.FileID
 	assert.NotNil(t, fileID)
 
-	resp, err = NewFileUpdateTransaction().
+	_, err = NewFileUpdateTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
 	if err != nil {
