@@ -10,7 +10,7 @@ require (
 	github.com/cockroachdb/errors v1.11.1 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.2.0 // indirect
 	github.com/ethereum/c-kzg-4844 v0.4.2 // indirect
-	github.com/ethereum/go-ethereum v1.13.14
+	github.com/ethereum/go-ethereum v1.13.15
 	github.com/getsentry/sentry-go v0.25.0 // indirect
 	github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20240212102943-339831f56e4d
 	github.com/json-iterator/go v1.1.12
