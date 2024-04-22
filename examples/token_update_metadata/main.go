@@ -45,7 +45,7 @@ func updateMutableTokenMetadata(client *hedera.Client) {
 	var initialMetadata = []byte{1, 2, 3}
 	var newMetadata = []byte{3, 4, 5, 6}
 
-	resp, err := hedera.NewTokenCreateTransaction().
+	tx, err := hedera.NewTokenCreateTransaction().
 		SetTokenName("ffff").
 		SetTokenSymbol("F").
 		SetDecimals(3).
@@ -55,7 +55,11 @@ func updateMutableTokenMetadata(client *hedera.Client) {
 		SetTreasuryAccountID(client.GetOperatorAccountID()).
 		SetAdminKey(adminKey).
 		SetFreezeDefault(false).
-		Execute(client)
+		FreezeWith(client)
+	if err != nil {
+		panic(fmt.Sprintf("%v : error creating token", err))
+	}
+	resp, err := tx.Sign(adminKey).Execute(client)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error creating token", err))
 	}
@@ -75,14 +79,14 @@ func updateMutableTokenMetadata(client *hedera.Client) {
 	}
 	fmt.Println("token's metadata after creation: ", info.Metadata)
 
-	tx, err := hedera.NewTokenUpdateTransaction().
+	tx1, err := hedera.NewTokenUpdateTransaction().
 		SetTokenID(*receipt.TokenID).
 		SetMetadata(newMetadata).
 		FreezeWith(client)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error updating token", err))
 	}
-	resp, err = tx.Sign(adminKey).
+	resp, err = tx1.Sign(adminKey).
 		Execute(client)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error updating token", err))
