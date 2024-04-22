@@ -35,6 +35,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var testMetadata = []byte{1, 2, 3, 4, 5}
+
 func TestUnitTokenCreateTransactionValidate(t *testing.T) {
 	t.Parallel()
 
@@ -120,6 +122,7 @@ func TestUnitTokenCreateTransactionGet(t *testing.T) {
 		SetSupplyKey(newKey).
 		SetPauseKey(newKey).
 		SetMetadataKey(newKey).
+		SetMetadata(testMetadata).
 		SetExpirationTime(time.Now()).
 		SetFreezeDefault(false).
 		SetAutoRenewPeriod(60 * time.Second).
@@ -163,6 +166,7 @@ func TestUnitTokenCreateTransactionGet(t *testing.T) {
 	transaction.GetSupplyKey()
 	transaction.GetPauseKey()
 	transaction.GetMetadataKey()
+	transaction.GetMetadata()
 	transaction.GetExpirationTime()
 	transaction.GetMaxTransactionFee()
 	transaction.GetTransactionMemo()
@@ -240,6 +244,7 @@ func TestUnitTokenCreateTransactionNothingSet(t *testing.T) {
 	require.Nil(t, proto.PauseKey)
 	require.Nil(t, proto.SupplyKey)
 	require.Nil(t, proto.MetadataKey)
+	require.Nil(t, proto.Metadata)
 	require.Nil(t, proto.Treasury)
 }
 
@@ -330,6 +335,7 @@ func TestUnitTokenCreateTransactionMock(t *testing.T) {
 		SetKycKey(newKey).
 		SetSupplyKey(newKey).
 		SetPauseKey(newKey).
+		SetMetadata(testMetadata).
 		SetMetadataKey(newKey).
 		FreezeWith(client)
 	require.NoError(t, err)

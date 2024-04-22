@@ -40,7 +40,7 @@ func main() {
 
 	// create token with metadata key
 	nftCreateTransaction, err := hedera.NewTokenCreateTransaction().
-		SetTokenName("HIP-542 Example Collection").SetTokenSymbol("HIP-542").
+		SetTokenName("Example Collection").SetTokenSymbol("HDR").
 		SetTokenType(hedera.TokenTypeNonFungibleUnique).SetDecimals(0).
 		SetInitialSupply(0).SetMaxSupply(10).
 		SetTreasuryAccountID(client.GetOperatorAccountID()).SetSupplyType(hedera.TokenSupplyTypeFinite).
