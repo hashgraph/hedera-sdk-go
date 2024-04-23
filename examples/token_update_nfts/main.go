@@ -71,21 +71,27 @@ func main() {
 	fmt.Println("Token metadata key: ", tokenInfo.MetadataKey.String())
 
 	// Mint nfts
-	mintTransaction, err := hedera.NewTokenMintTransaction().SetTokenID(nftTokenID).SetMetadatas(initialMetadataList).FreezeWith(client)
+	mintTransaction, _ := hedera.NewTokenMintTransaction().SetTokenID(nftTokenID).SetMetadatas(initialMetadataList).FreezeWith(client)
 
 	for _, v := range mintTransaction.GetMetadatas() {
 		fmt.Println("Set metadata: ", v)
 	}
 
 	mintTransactionSubmit, err := mintTransaction.Sign(operatorKey).Execute(client)
+	if err != nil {
+		panic(fmt.Sprintf("%v : error minting NFT", err))
+	}
 	receipt, err := mintTransactionSubmit.GetReceipt(client)
+	if err != nil {
+		panic(fmt.Sprintf("%v : error minting NFT", err))
+	}
 
 	// Check that metadata was set correctly
 	serials := receipt.SerialNumbers
 	fmt.Println(serials)
 	var metadataAfterMint = make([][]byte, len(initialMetadataList))
 	for i, v := range serials {
-		nftID := hedera.NftID{nftTokenID, v}
+		nftID := hedera.NftID{TokenID: nftTokenID, SerialNumber: v}
 		nftInfo, err := hedera.NewTokenNftInfoQuery().SetNftID(nftID).Execute(client)
 		if err != nil {
 			panic(fmt.Sprintf("%v : error getting token info", err))
@@ -141,7 +147,7 @@ func main() {
 
 	// Check that metadata for the NFT was updated correctly
 	for _, v := range serials {
-		nftID := hedera.NftID{nftTokenID, v}
+		nftID := hedera.NftID{TokenID: nftTokenID, SerialNumber: v}
 		nftInfo, err := hedera.NewTokenNftInfoQuery().SetNftID(nftID).Execute(client)
 		if err != nil {
 			panic(fmt.Sprintf("%v : error getting token info", err))
