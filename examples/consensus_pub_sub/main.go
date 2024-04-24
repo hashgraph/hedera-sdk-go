@@ -11,8 +11,6 @@ import (
 const content = `Programming is the process of creating a set of instructions that tell a computer how to perform a task. Programming can be done using a variety of computer programming languages, such as JavaScript, Python, and C++`
 
 func main() {
-	fmt.Println("Skipping this example because it requires producer and consumer to run.")
-	return
 	var client *hedera.Client
 	var err error
 
