@@ -9,8 +9,6 @@ import (
 )
 
 func main() {
-	fmt.Println("Skipping this example because it requires producer and consumer to run.")
-	return
 	var client *hedera.Client
 	var err error
 
