@@ -1,5 +1,5 @@
 # Default code owners for entire repository
-*   @bamzedev @SimiHunjan @hashgraph/release-engineering @hashgraph/release-engineering-managers
+*   @hashgraph/hedera-sdk-go-maintainers 
 
 #########################
 #####  Core Files  ######
