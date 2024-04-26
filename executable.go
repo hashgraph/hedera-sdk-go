@@ -246,7 +246,7 @@ func _Execute(client *Client, e Executable) (interface{}, error) {
 
 		if !node._IsHealthy() {
 			txLogger.Trace("node is unhealthy, waiting before continuing", "requestId", e.getLogID(e), "delay", node._Wait().String())
-			_DelayForAttempt(e.getLogID(e), backOff.NextBackOff(), attempt, txLogger)
+			_DelayForAttempt(e.getLogID(e), currentBackoff, attempt, txLogger)
 			continue
 		}
 
@@ -324,7 +324,7 @@ func _Execute(client *Client, e Executable) (interface{}, error) {
 		switch e.shouldRetry(e, resp) {
 		case executionStateRetry:
 			errPersistent = statusError
-			_DelayForAttempt(e.getLogID(e), backOff.NextBackOff(), attempt, txLogger)
+			_DelayForAttempt(e.getLogID(e), currentBackoff, attempt, txLogger)
 			continue
 		case executionStateExpired:
 			if e.isTransaction() {
