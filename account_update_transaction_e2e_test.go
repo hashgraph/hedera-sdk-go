@@ -178,15 +178,12 @@ func TestIntegrationAccountUpdateTransactionAccountIDNotSet(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
-	resp, err := NewAccountUpdateTransaction().
+	_, err := NewAccountUpdateTransaction().
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		Execute(env.Client)
-	require.NoError(t, err)
-
-	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, "exceptional receipt status: ACCOUNT_ID_DOES_NOT_EXIST", err.Error())
+		assert.Contains(t, err.Error(), "exceptional precheck status ACCOUNT_ID_DOES_NOT_EXIST")
 	}
 
 	err = CloseIntegrationTestEnv(env, nil)

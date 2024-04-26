@@ -184,7 +184,10 @@ func TestIntegrationTopicUpdateTransactionNoTopicID(t *testing.T) {
 	_, err = NewTopicUpdateTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	require.NoError(t, err)
+	require.Error(t, err)
+	if err != nil {
+		assert.ErrorContains(t, err, "exceptional precheck status INVALID_TOPIC_ID")
+	}
 
 	resp, err = NewTopicDeleteTransaction().
 		SetTopicID(topicID).
