@@ -68,15 +68,6 @@ jobs:
               if: success()
               run: go test -tags="e2e" -timeout 9999s -v -coverprofile=e2e.out -covermode=atomic -race
 
-            # Skip this flow as the testnet env is currently not running with modularization
-            # - name: Tests Testnets
-            #   if: success()
-            #   env:
-            #     HEDERA_NETWORK: testnet
-            #     OPERATOR_ID: ${{ secrets.TESTNET_OPERATOR_ID }}
-            #     OPERATOR_KEY: ${{ secrets.TESTNET_OPERATOR_KEY }}
-            #   run: go test -tags="testnets" -timeout 9999s -v -coverprofile=testnets.out -covermode=atomic -race
-
             - name: Upload coverage to Codecov
               if: success()
               uses: codecov/codecov-action@v3
