@@ -7,6 +7,10 @@ import (
 	"github.com/hashgraph/hedera-sdk-go/v2"
 )
 
+/**
+ * @summary E2E-HIP-657 https://hips.hedera.com/hip/hip-657
+ * @description Update nfts metadata of non-fungible token with metadata key
+ */
 func main() {
 	var client *hedera.Client
 	var err error
@@ -16,16 +20,19 @@ func main() {
 	if err != nil {
 		panic(fmt.Sprintf("%v : error creating client", err))
 	}
+
 	// Retrieving operator ID from environment variable OPERATOR_ID
 	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error converting string to AccountID", err))
 	}
+
 	// Retrieving operator key from environment variable OPERATOR_KEY
 	operatorKey, err := hedera.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error converting string to PrivateKey", err))
 	}
+
 	// Setting the client operator ID and key
 	client.SetOperator(operatorAccountID, operatorKey)
 
@@ -48,18 +55,22 @@ func main() {
 	if err != nil {
 		panic(fmt.Sprintf("%v : error creating token transaction", err))
 	}
+
 	// Sign the transaction with the operator key
 	nftSignTransaction := nftCreateTransaction.Sign(operatorKey)
+
 	// Submit the transaction to the Hedera network
 	nftCreateSubmit, err := nftSignTransaction.Execute(client)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error submitting transaction", err))
 	}
+
 	// Get transaction receipt information
 	nftCreateReceipt, err := nftCreateSubmit.GetReceipt(client)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error receiving receipt", err))
 	}
+
 	// Get token id from the transaction
 	nftTokenID := *nftCreateReceipt.TokenID
 	fmt.Println("Created NFT with token id: ", nftTokenID)

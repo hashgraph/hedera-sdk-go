@@ -107,6 +107,7 @@ func TestUnitTokenUpdateNftsTransactionGet(t *testing.T) {
 		SetMaxRetry(3).
 		SetMaxBackoff(time.Second * 30).
 		SetMinBackoff(time.Second * 10).
+		SetMaxTransactionFee(NewHbar(10)).
 		SetLogLevel(LoggerLevelInfo).
 		Freeze()
 
