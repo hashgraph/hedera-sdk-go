@@ -142,6 +142,7 @@ func TestIntegrationAccountRecordQuerySetBigMaxPayment(t *testing.T) {
 	records := NewAccountRecordsQuery().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetAccountID(env.Client.GetOperatorAccountID()).
+		SetQueryPayment(NewHbar(10)).
 		SetMaxQueryPayment(NewHbar(100000))
 
 	_, err = records.GetCost(env.Client)

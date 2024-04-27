@@ -441,7 +441,6 @@ func TestIntegrationContractBytecodeQueryNoContractID(t *testing.T) {
 	_, err = NewContractBytecodeQuery().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetMaxQueryPayment(NewHbar(2)).
-		SetQueryPayment(HbarFromTinybar(30)).
 		Execute(env.Client)
 	assert.Error(t, err)
 	if err != nil {
