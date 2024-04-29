@@ -299,3 +299,547 @@ func DisabledTestIntegrationTokenUpdateTransactionTreasury(t *testing.T) { // no
 	err = CloseIntegrationTestEnv(env, &tokenID)
 	require.NoError(t, err)
 }
+
+var initialMetadata = []byte{1, 2, 3}
+var newMetadata = []byte{3, 4, 5, 6}
+
+func TestIntegrationTokenUpdateTransactionFungibleMetadata(t *testing.T) {
+	t.Parallel()
+	env := NewIntegrationTestEnv(t)
+
+	resp, err := NewTokenCreateTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetTokenName("ffff").
+		SetTokenSymbol("F").
+		SetDecimals(3).
+		SetTokenType(TokenTypeFungibleCommon).
+		SetInitialSupply(1000000).
+		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+		SetTokenMetadata(initialMetadata).
+		SetAdminKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeKey(env.Client.GetOperatorPublicKey()).
+		SetWipeKey(env.Client.GetOperatorPublicKey()).
+		SetKycKey(env.Client.GetOperatorPublicKey()).
+		SetSupplyKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeDefault(false).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	info, err := NewTokenInfoQuery().
+		SetTokenID(*receipt.TokenID).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		Execute(env.Client)
+	require.NoError(t, err)
+	assert.Equalf(t, initialMetadata, info.Metadata, "metadata did not match")
+
+	resp, err = NewTokenUpdateTransaction().
+		SetTokenID(*receipt.TokenID).
+		SetTokenMetadata(newMetadata).
+		Execute(env.Client)
+	assert.NoError(t, err)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	info, err = NewTokenInfoQuery().
+		SetTokenID(*receipt.TokenID).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		Execute(env.Client)
+	require.NoError(t, err)
+	assert.Equalf(t, newMetadata, info.Metadata, "updated metadata did not match")
+
+	err = CloseIntegrationTestEnv(env, receipt.TokenID)
+	require.NoError(t, err)
+}
+
+func TestIntegrationTokenUpdateTransactionNFTMetadata(t *testing.T) {
+	t.Parallel()
+	env := NewIntegrationTestEnv(t)
+
+	resp, err := NewTokenCreateTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetTokenName("ffff").
+		SetTokenSymbol("F").
+		SetTokenType(TokenTypeNonFungibleUnique).
+		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+		SetTokenMetadata(initialMetadata).
+		SetAdminKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeKey(env.Client.GetOperatorPublicKey()).
+		SetWipeKey(env.Client.GetOperatorPublicKey()).
+		SetKycKey(env.Client.GetOperatorPublicKey()).
+		SetSupplyKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeDefault(false).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	info, err := NewTokenInfoQuery().
+		SetTokenID(*receipt.TokenID).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		Execute(env.Client)
+	require.NoError(t, err)
+	assert.Equalf(t, initialMetadata, info.Metadata, "metadata did not match")
+
+	resp, err = NewTokenUpdateTransaction().
+		SetTokenID(*receipt.TokenID).
+		SetTokenMetadata(newMetadata).
+		Execute(env.Client)
+	assert.NoError(t, err)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	info, err = NewTokenInfoQuery().
+		SetTokenID(*receipt.TokenID).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		Execute(env.Client)
+	require.NoError(t, err)
+	assert.Equalf(t, newMetadata, info.Metadata, "updated metadata did not match")
+
+	err = CloseIntegrationTestEnv(env, receipt.TokenID)
+	require.NoError(t, err)
+}
+
+func TestIntegrationTokenUpdateTransactionMetadataImmutableFunbigleToken(t *testing.T) {
+	t.Parallel()
+	env := NewIntegrationTestEnv(t)
+
+	metadataKey, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+
+	pubKey := metadataKey.PublicKey()
+
+	resp, err := NewTokenCreateTransaction().
+		SetTokenName("ffff").
+		SetTokenSymbol("F").
+		SetTokenMetadata(initialMetadata).
+		SetDecimals(3).
+		SetTokenType(TokenTypeFungibleCommon).
+		SetInitialSupply(1000000).
+		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+		SetMetadataKey(pubKey).
+		SetFreezeDefault(false).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	info, err := NewTokenInfoQuery().
+		SetTokenID(*receipt.TokenID).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		Execute(env.Client)
+	require.NoError(t, err)
+	assert.Equalf(t, initialMetadata, info.Metadata, "metadata did not match")
+	assert.Equalf(t, pubKey.String(), info.MetadataKey.String(), "metadata key did not match")
+	assert.Equalf(t, nil, info.AdminKey, "admin key did not match")
+
+	tx, err := NewTokenUpdateTransaction().
+		SetTokenID(*receipt.TokenID).
+		SetTokenMetadata(newMetadata).
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+
+	resp, err = tx.Sign(metadataKey).
+		Execute(env.Client)
+	assert.NoError(t, err)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	info, err = NewTokenInfoQuery().
+		SetTokenID(*receipt.TokenID).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		Execute(env.Client)
+	require.NoError(t, err)
+	assert.Equalf(t, newMetadata, info.Metadata, "updated metadata did not match")
+}
+
+func TestIntegrationTokenUpdateTransactionMetadataImmutableNFT(t *testing.T) {
+	t.Parallel()
+	env := NewIntegrationTestEnv(t)
+
+	metadataKey, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+
+	resp, err := NewTokenCreateTransaction().
+		SetTokenName("ffff").
+		SetTokenSymbol("F").
+		SetTokenMetadata(initialMetadata).
+		SetTokenType(TokenTypeNonFungibleUnique).
+		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+		SetSupplyKey(env.Client.GetOperatorPublicKey()).
+		SetMetadataKey(metadataKey).
+		SetFreezeDefault(false).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	info, err := NewTokenInfoQuery().
+		SetTokenID(*receipt.TokenID).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		Execute(env.Client)
+	require.NoError(t, err)
+	assert.Equalf(t, initialMetadata, info.Metadata, "metadata did not match")
+	assert.Equalf(t, metadataKey.PublicKey().String(), info.MetadataKey.String(), "metadata key did not match")
+	assert.Equalf(t, nil, info.AdminKey, "admin key did not match")
+
+	tx, err := NewTokenUpdateTransaction().
+		SetTokenID(*receipt.TokenID).
+		SetTokenMetadata(newMetadata).
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+
+	resp, err = tx.Sign(metadataKey).
+		Execute(env.Client)
+	assert.NoError(t, err)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	info, err = NewTokenInfoQuery().
+		SetTokenID(*receipt.TokenID).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		Execute(env.Client)
+	require.NoError(t, err)
+	assert.Equalf(t, newMetadata, info.Metadata, "updated metadata did not match")
+}
+
+func TestIntegrationTokenUpdateTransactionCannotUpdateMetadataFungible(t *testing.T) {
+	t.Parallel()
+	env := NewIntegrationTestEnv(t)
+
+	initialMetadata := make([]byte, 50, 101)
+
+	resp, err := NewTokenCreateTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetTokenName("ffff").
+		SetTokenSymbol("F").
+		SetDecimals(3).
+		SetTokenType(TokenTypeFungibleCommon).
+		SetTokenMetadata(initialMetadata).
+		SetInitialSupply(1000000).
+		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+		SetAdminKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeKey(env.Client.GetOperatorPublicKey()).
+		SetWipeKey(env.Client.GetOperatorPublicKey()).
+		SetKycKey(env.Client.GetOperatorPublicKey()).
+		SetSupplyKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeDefault(false).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	info, err := NewTokenInfoQuery().
+		SetTokenID(*receipt.TokenID).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		Execute(env.Client)
+	require.NoError(t, err)
+	assert.Equalf(t, initialMetadata, info.Metadata, "metadata did not match")
+
+	resp, err = NewTokenUpdateTransaction().
+		SetTokenID(*receipt.TokenID).
+		SetTokenMemo("asdf").
+		Execute(env.Client)
+	assert.NoError(t, err)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	info, err = NewTokenInfoQuery().
+		SetTokenID(*receipt.TokenID).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		Execute(env.Client)
+	require.NoError(t, err)
+	assert.Equalf(t, initialMetadata, info.Metadata, "metadata did not match")
+
+	err = CloseIntegrationTestEnv(env, receipt.TokenID)
+	require.NoError(t, err)
+}
+
+func TestIntegrationTokenUpdateTransactionCannotUpdateMetadataNFT(t *testing.T) {
+	t.Parallel()
+	env := NewIntegrationTestEnv(t)
+
+	initialMetadata := make([]byte, 50, 101)
+
+	resp, err := NewTokenCreateTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetTokenName("ffff").
+		SetTokenSymbol("F").
+		SetTokenType(TokenTypeNonFungibleUnique).
+		SetTokenMetadata(initialMetadata).
+		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+		SetAdminKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeKey(env.Client.GetOperatorPublicKey()).
+		SetWipeKey(env.Client.GetOperatorPublicKey()).
+		SetKycKey(env.Client.GetOperatorPublicKey()).
+		SetSupplyKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeDefault(false).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	info, err := NewTokenInfoQuery().
+		SetTokenID(*receipt.TokenID).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		Execute(env.Client)
+	require.NoError(t, err)
+	assert.Equalf(t, initialMetadata, info.Metadata, "metadata did not match")
+
+	resp, err = NewTokenUpdateTransaction().
+		SetTokenID(*receipt.TokenID).
+		SetTokenMemo("asdf").
+		Execute(env.Client)
+	assert.NoError(t, err)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	info, err = NewTokenInfoQuery().
+		SetTokenID(*receipt.TokenID).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		Execute(env.Client)
+	require.NoError(t, err)
+	assert.Equalf(t, initialMetadata, info.Metadata, "metadata did not match")
+
+	err = CloseIntegrationTestEnv(env, receipt.TokenID)
+	require.NoError(t, err)
+}
+
+func TestIntegrationTokenUpdateTransactionEraseMetadataFungibleToken(t *testing.T) {
+	t.Parallel()
+	env := NewIntegrationTestEnv(t)
+
+	resp, err := NewTokenCreateTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetTokenName("ffff").
+		SetTokenSymbol("F").
+		SetDecimals(3).
+		SetTokenType(TokenTypeFungibleCommon).
+		SetTokenMetadata(initialMetadata).
+		SetInitialSupply(1000000).
+		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+		SetAdminKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeKey(env.Client.GetOperatorPublicKey()).
+		SetWipeKey(env.Client.GetOperatorPublicKey()).
+		SetKycKey(env.Client.GetOperatorPublicKey()).
+		SetSupplyKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeDefault(false).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	info, err := NewTokenInfoQuery().
+		SetTokenID(*receipt.TokenID).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		Execute(env.Client)
+	require.NoError(t, err)
+	assert.Equalf(t, initialMetadata, info.Metadata, "metadata did not match")
+
+	resp, err = NewTokenUpdateTransaction().
+		SetTokenID(*receipt.TokenID).
+		SetTokenMetadata([]byte{}).
+		Execute(env.Client)
+	assert.NoError(t, err)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	info, err = NewTokenInfoQuery().
+		SetTokenID(*receipt.TokenID).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		Execute(env.Client)
+	require.NoError(t, err)
+	assert.Equalf(t, []byte(nil), info.Metadata, "metadata did not match")
+
+	err = CloseIntegrationTestEnv(env, receipt.TokenID)
+	require.NoError(t, err)
+}
+
+func TestIntegrationTokenUpdateTransactionEraseMetadataNFT(t *testing.T) {
+	t.Parallel()
+	env := NewIntegrationTestEnv(t)
+
+	resp, err := NewTokenCreateTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetTokenName("ffff").
+		SetTokenSymbol("F").
+		SetTokenType(TokenTypeNonFungibleUnique).
+		SetTokenMetadata(initialMetadata).
+		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+		SetAdminKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeKey(env.Client.GetOperatorPublicKey()).
+		SetWipeKey(env.Client.GetOperatorPublicKey()).
+		SetKycKey(env.Client.GetOperatorPublicKey()).
+		SetSupplyKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeDefault(false).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	info, err := NewTokenInfoQuery().
+		SetTokenID(*receipt.TokenID).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		Execute(env.Client)
+	require.NoError(t, err)
+	assert.Equalf(t, initialMetadata, info.Metadata, "metadata did not match")
+
+	resp, err = NewTokenUpdateTransaction().
+		SetTokenID(*receipt.TokenID).
+		SetTokenMetadata([]byte{}).
+		Execute(env.Client)
+	assert.NoError(t, err)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	info, err = NewTokenInfoQuery().
+		SetTokenID(*receipt.TokenID).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		Execute(env.Client)
+	require.NoError(t, err)
+	assert.Equalf(t, []byte(nil), info.Metadata, "metadata did not match")
+
+	err = CloseIntegrationTestEnv(env, receipt.TokenID)
+	require.NoError(t, err)
+}
+
+func TestIntegrationTokenUpdateTransactionCannotUpdateMetadataWithoutKeyFungible(t *testing.T) {
+	t.Parallel()
+	env := NewIntegrationTestEnv(t)
+
+	metadataKey, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+	adminKey, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+
+	pubKey := metadataKey.PublicKey()
+
+	tx, err := NewTokenCreateTransaction().
+		SetTokenName("ffff").
+		SetTokenSymbol("F").
+		SetTokenMetadata(initialMetadata).
+		SetDecimals(3).
+		SetTokenType(TokenTypeFungibleCommon).
+		SetInitialSupply(1000000).
+		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+		SetAdminKey(adminKey).
+		SetMetadataKey(pubKey).
+		SetFreezeDefault(false).
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+	resp, err := tx.Sign(adminKey).Execute(env.Client)
+
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	resp, err = NewTokenUpdateTransaction().
+		SetTokenID(*receipt.TokenID).
+		SetTokenMetadata(newMetadata).
+		Execute(env.Client)
+
+	assert.NoError(t, err)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.ErrorContains(t, err, "INVALID_SIGNATURE")
+}
+
+func TestIntegrationTokenUpdateTransactionCannotUpdateMetadataWithoutKeyNFT(t *testing.T) {
+	t.Parallel()
+	env := NewIntegrationTestEnv(t)
+
+	metadataKey, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+	adminKey, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+
+	pubKey := metadataKey.PublicKey()
+
+	tx, err := NewTokenCreateTransaction().
+		SetTokenName("ffff").
+		SetTokenSymbol("F").
+		SetTokenMetadata(initialMetadata).
+		SetTokenType(TokenTypeNonFungibleUnique).
+		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+		SetAdminKey(adminKey).
+		SetSupplyKey(adminKey).
+		SetMetadataKey(pubKey).
+		SetFreezeDefault(false).
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+
+	resp, err := tx.Sign(adminKey).Execute(env.Client)
+	require.NoError(t, err)
+
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	resp, err = NewTokenUpdateTransaction().
+		SetTokenID(*receipt.TokenID).
+		SetTokenMetadata(newMetadata).
+		Execute(env.Client)
+
+	assert.NoError(t, err)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.ErrorContains(t, err, "INVALID_SIGNATURE")
+}
+
+func TestIntegrationTokenUpdateTransactionCannotUpdateImmutableFungibleToken(t *testing.T) {
+	t.Parallel()
+	env := NewIntegrationTestEnv(t)
+
+	resp, err := NewTokenCreateTransaction().
+		SetTokenName("ffff").
+		SetTokenSymbol("F").
+		SetTokenMetadata(initialMetadata).
+		SetDecimals(3).
+		SetTokenType(TokenTypeFungibleCommon).
+		SetInitialSupply(1000000).
+		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+		SetFreezeDefault(false).
+		Execute(env.Client)
+	require.NoError(t, err)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	resp, err = NewTokenUpdateTransaction().
+		SetTokenID(*receipt.TokenID).
+		SetTokenMetadata(newMetadata).
+		Execute(env.Client)
+	assert.NoError(t, err)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.ErrorContains(t, err, "TOKEN_IS_IMMUTABLE")
+}
+
+func TestIntegrationTokenUpdateTransactionCannotUpdateImmutableNFT(t *testing.T) {
+	t.Parallel()
+	env := NewIntegrationTestEnv(t)
+
+	resp, err := NewTokenCreateTransaction().
+		SetTokenName("ffff").
+		SetTokenSymbol("F").
+		SetTokenMetadata(initialMetadata).
+		SetSupplyKey(env.Client.GetOperatorPublicKey()).
+		SetTokenType(TokenTypeNonFungibleUnique).
+		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+		SetFreezeDefault(false).
+		Execute(env.Client)
+	require.NoError(t, err)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	resp, err = NewTokenUpdateTransaction().
+		SetTokenID(*receipt.TokenID).
+		SetTokenMetadata(newMetadata).
+		Execute(env.Client)
+	assert.NoError(t, err)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.ErrorContains(t, err, "TOKEN_IS_IMMUTABLE")
+}

@@ -64,8 +64,8 @@ func TestIntegrationTokenCreateTransactionMultipleKeys(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
-	keys := make([]PrivateKey, 5)
-	pubKeys := make([]PublicKey, 5)
+	keys := make([]PrivateKey, 6)
+	pubKeys := make([]PublicKey, 6)
 
 	for i := range keys {
 		newKey, err := PrivateKeyGenerateEd25519()
@@ -101,6 +101,7 @@ func TestIntegrationTokenCreateTransactionMultipleKeys(t *testing.T) {
 		SetWipeKey(pubKeys[2]).
 		SetKycKey(pubKeys[3]).
 		SetSupplyKey(pubKeys[4]).
+		SetMetadataKey(pubKeys[5]).
 		SetFreezeDefault(false).
 		Execute(env.Client)
 	require.NoError(t, err)
@@ -659,4 +660,56 @@ func TestIntegrationTokenAccountStillOwnsNfts(t *testing.T) {
 
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
+}
+
+func TestIntegrationTokenCreateTransactionMetadataKey(t *testing.T) {
+	t.Parallel()
+	env := NewIntegrationTestEnv(t)
+
+	newKey, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+
+	pubKey := newKey.PublicKey()
+
+	newBalance := NewHbar(2)
+
+	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
+
+	resp, err := NewAccountCreateTransaction().
+		SetKey(pubKey).
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetInitialBalance(newBalance).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	resp, err = NewTokenCreateTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetTokenName("ffff").
+		SetTokenSymbol("F").
+		SetDecimals(3).
+		SetInitialSupply(1000000).
+		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+		SetAdminKey(env.Client.GetOperatorPublicKey()).
+		SetMetadataKey(pubKey).
+		SetFreezeDefault(false).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	info, err := NewTokenInfoQuery().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetMaxQueryPayment(NewHbar(2)).
+		SetTokenID(*receipt.TokenID).
+		SetQueryPayment(NewHbar(1)).
+		Execute(env.Client)
+
+	require.NoError(t, err)
+	assert.Equal(t, pubKey, info.MetadataKey)
+
+	err = CloseIntegrationTestEnv(env, receipt.TokenID)
 }

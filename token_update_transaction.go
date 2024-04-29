@@ -54,7 +54,8 @@ type TokenUpdateTransaction struct {
 	treasuryAccountID  *AccountID
 	autoRenewAccountID *AccountID
 	tokenName          string
-	memo               string
+	memo               *string
+	metadata           []byte
 	tokenSymbol        string
 	adminKey           Key
 	kycKey             Key
@@ -91,6 +92,7 @@ type TokenUpdateTransaction struct {
 func NewTokenUpdateTransaction() *TokenUpdateTransaction {
 	tx := TokenUpdateTransaction{
 		Transaction: _NewTransaction(),
+		memo:        nil,
 	}
 
 	tx._SetDefaultMaxTransactionFee(NewHbar(30))
@@ -111,13 +113,24 @@ func _TokenUpdateTransactionFromProtobuf(tx Transaction, pb *services.Transactio
 	expirationTime := _TimeFromProtobuf(pb.GetTokenUpdate().GetExpiry())
 	autoRenew := _DurationFromProtobuf(pb.GetTokenUpdate().GetAutoRenewPeriod())
 
+	var memo *string
+	if m := pb.GetTokenUpdate().GetMemo(); m != nil {
+		memo = &m.Value
+	}
+
+	var metadata []byte
+	if m := pb.GetTokenUpdate().GetMetadata(); m != nil {
+		metadata = m.Value
+	}
+
 	return &TokenUpdateTransaction{
 		Transaction:        tx,
 		tokenID:            _TokenIDFromProtobuf(pb.GetTokenUpdate().GetToken()),
 		treasuryAccountID:  _AccountIDFromProtobuf(pb.GetTokenUpdate().GetTreasury()),
 		autoRenewAccountID: _AccountIDFromProtobuf(pb.GetTokenUpdate().GetAutoRenewAccount()),
 		tokenName:          pb.GetTokenUpdate().GetName(),
-		memo:               pb.GetTokenUpdate().GetMemo().Value,
+		memo:               memo,
+		metadata:           metadata,
 		tokenSymbol:        pb.GetTokenUpdate().GetSymbol(),
 		adminKey:           adminKey,
 		kycKey:             kycKey,
@@ -345,13 +358,26 @@ func (tx *TokenUpdateTransaction) GetExpirationTime() time.Time {
 // If set, the new memo to be associated with the token (UTF-8 encoding max 100 bytes)
 func (tx *TokenUpdateTransaction) SetTokenMemo(memo string) *TokenUpdateTransaction {
 	tx._RequireNotFrozen()
-	tx.memo = memo
+	tx.memo = &memo
 
 	return tx
 }
 
-func (tx *TokenUpdateTransaction) GeTokenMemo() string {
-	return tx.memo
+func (tx *TokenUpdateTransaction) GetTokenMemo() string {
+	return *tx.memo
+}
+
+// SetTokenMetadata sets the token metadata
+func (tx *TokenUpdateTransaction) SetTokenMetadata(metadata []byte) *TokenUpdateTransaction {
+	tx._RequireNotFrozen()
+	tx.metadata = metadata
+
+	return tx
+}
+
+// GetTokenMetadata returns the token metadata
+func (tx *TokenUpdateTransaction) GetTokenMetadata() []byte {
+	return tx.metadata
 }
 
 // ---- Required Interfaces ---- //
@@ -537,7 +563,10 @@ func (tx *TokenUpdateTransaction) buildProtoBody() *services.TokenUpdateTransact
 	body := &services.TokenUpdateTransactionBody{
 		Name:   tx.tokenName,
 		Symbol: tx.tokenSymbol,
-		Memo:   &wrapperspb.StringValue{Value: tx.memo},
+	}
+
+	if tx.memo != nil {
+		body.Memo = &wrapperspb.StringValue{Value: *tx.memo}
 	}
 
 	if tx.tokenID != nil {
@@ -590,6 +619,10 @@ func (tx *TokenUpdateTransaction) buildProtoBody() *services.TokenUpdateTransact
 
 	if tx.metadataKey != nil {
 		body.MetadataKey = tx.metadataKey._ToProtoKey()
+	}
+
+	if tx.metadata != nil {
+		body.Metadata = &wrapperspb.BytesValue{Value: tx.metadata}
 	}
 
 	return body
