@@ -11,7 +11,7 @@ type TokenUpdateNfts struct {
 	Transaction
 	tokenID       *TokenID
 	serialNumbers []int64
-	metadata      []byte
+	metadata      *[]byte
 }
 
 func NewTokenUpdateNftsTransaction() *TokenUpdateNfts {
@@ -22,15 +22,9 @@ func NewTokenUpdateNftsTransaction() *TokenUpdateNfts {
 
 func _NewTokenUpdateNftsTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *TokenUpdateNfts {
 	return &TokenUpdateNfts{
-		Transaction: tx,
-		tokenID:     _TokenIDFromProtobuf(pb.GetTokenUpdateNfts().GetToken()),
-		serialNumbers: func() []int64 {
-			var serialNumbers []int64
-			for _, serialNumber := range pb.GetTokenUpdateNfts().GetSerialNumbers() {
-				serialNumbers = append(serialNumbers, int64(serialNumber))
-			}
-			return serialNumbers
-		}(),
+		Transaction:   tx,
+		tokenID:       _TokenIDFromProtobuf(pb.GetTokenUpdateNfts().GetToken()),
+		serialNumbers: append([]int64{}, pb.GetTokenUpdateNfts().GetSerialNumbers()...),
 	}
 }
 
@@ -59,14 +53,14 @@ func (t *TokenUpdateNfts) SetSerialNumbers(serialNumbers []int64) *TokenUpdateNf
 }
 
 // Getter for metadata
-func (t *TokenUpdateNfts) GetMetadata() []byte {
+func (t *TokenUpdateNfts) GetMetadata() *[]byte {
 	return t.metadata
 }
 
 // Setter for metadata
 func (t *TokenUpdateNfts) SetMetadata(metadata []byte) *TokenUpdateNfts {
 	t._RequireNotFrozen()
-	t.metadata = metadata
+	t.metadata = &metadata
 	return t
 }
 
@@ -243,11 +237,13 @@ func (tx *TokenUpdateNfts) buildProtoBody() *services.TokenUpdateNftsTransaction
 	serialNumbers := make([]int64, 0)
 	if len(tx.serialNumbers) != 0 {
 		for _, serialNumber := range tx.serialNumbers {
-			serialNumbers = append(serialNumbers, int64(serialNumber))
+			serialNumbers = append(serialNumbers, serialNumber)
 			body.SerialNumbers = serialNumbers
 		}
 	}
-	body.Metadata = wrapperspb.Bytes(tx.metadata)
+	if tx.metadata != nil {
+		body.Metadata = wrapperspb.Bytes(*tx.metadata)
+	}
 	return body
 }
 

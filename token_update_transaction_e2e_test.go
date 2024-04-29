@@ -769,11 +769,14 @@ func TestIntegrationTokenUpdateTransactionCannotUpdateMetadataWithoutKeyNFT(t *t
 		SetTokenType(TokenTypeNonFungibleUnique).
 		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
 		SetAdminKey(adminKey).
+		SetSupplyKey(adminKey).
 		SetMetadataKey(pubKey).
 		SetFreezeDefault(false).
 		FreezeWith(env.Client)
 	require.NoError(t, err)
+
 	resp, err := tx.Sign(adminKey).Execute(env.Client)
+	require.NoError(t, err)
 
 	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)

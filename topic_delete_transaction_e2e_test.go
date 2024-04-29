@@ -111,12 +111,9 @@ func TestIntegrationTopicDeleteTransactionNoTopicID(t *testing.T) {
 	resp, err = NewTopicDeleteTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	require.NoError(t, err)
-
-	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
-	assert.Error(t, err)
+	require.Error(t, err)
 	if err != nil {
-		assert.Equal(t, "exceptional receipt status: INVALID_TOPIC_ID", err.Error())
+		assert.ErrorContains(t, err, "exceptional precheck status INVALID_TOPIC_ID")
 	}
 
 	err = CloseIntegrationTestEnv(env, nil)

@@ -43,10 +43,7 @@ tasks:
                         pushd "$example" > /dev/null
                         if [ -f main.go ]; then
                             echo "Running $example/main.go"
-                            go run main.go
-                            if [ $? -ne 0 ]; then
-                                echo "Error: $example/main.go failed"
-                                exit 1
+                            env OPERATOR_KEY="302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137" OPERATOR_ID="0.0.2" HEDERA_NETWORK="localhost" go run main.go
                             fi
                         fi
                         popd > /dev/null

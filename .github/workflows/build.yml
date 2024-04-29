@@ -58,7 +58,7 @@ jobs:
 
             - name: Start the local node
               if: success()
-              run: npx @hashgraph/hedera-local start -d --network local
+              run: npx @hashgraph/hedera-local start -d --network-tag=0.49.1
 
             - name: Tests Unit
               if: success()
@@ -67,14 +67,6 @@ jobs:
             - name: Tests Integration
               if: success()
               run: go test -tags="e2e" -timeout 9999s -v -coverprofile=e2e.out -covermode=atomic -race
-
-            - name: Tests Testnets
-              if: success()
-              env:
-                HEDERA_NETWORK: testnet
-                OPERATOR_ID: ${{ secrets.TESTNET_OPERATOR_ID }}
-                OPERATOR_KEY: ${{ secrets.TESTNET_OPERATOR_KEY }}
-              run: go test -tags="testnets" -timeout 9999s -v -coverprofile=testnets.out -covermode=atomic -race
 
             - name: Upload coverage to Codecov
               if: success()

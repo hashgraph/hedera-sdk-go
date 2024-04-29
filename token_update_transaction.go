@@ -113,14 +113,24 @@ func _TokenUpdateTransactionFromProtobuf(tx Transaction, pb *services.Transactio
 	expirationTime := _TimeFromProtobuf(pb.GetTokenUpdate().GetExpiry())
 	autoRenew := _DurationFromProtobuf(pb.GetTokenUpdate().GetAutoRenewPeriod())
 
+	var memo *string
+	if m := pb.GetTokenUpdate().GetMemo(); m != nil {
+		memo = &m.Value
+	}
+
+	var metadata []byte
+	if m := pb.GetTokenUpdate().GetMetadata(); m != nil {
+		metadata = m.Value
+	}
+
 	return &TokenUpdateTransaction{
 		Transaction:        tx,
 		tokenID:            _TokenIDFromProtobuf(pb.GetTokenUpdate().GetToken()),
 		treasuryAccountID:  _AccountIDFromProtobuf(pb.GetTokenUpdate().GetTreasury()),
 		autoRenewAccountID: _AccountIDFromProtobuf(pb.GetTokenUpdate().GetAutoRenewAccount()),
 		tokenName:          pb.GetTokenUpdate().GetName(),
-		memo:               &pb.GetTokenUpdate().GetMemo().Value,
-		metadata:           pb.GetTokenUpdate().GetMetadata().Value,
+		memo:               memo,
+		metadata:           metadata,
 		tokenSymbol:        pb.GetTokenUpdate().GetSymbol(),
 		adminKey:           adminKey,
 		kycKey:             kycKey,

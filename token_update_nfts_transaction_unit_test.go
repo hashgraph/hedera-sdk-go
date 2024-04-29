@@ -25,6 +25,7 @@ package hedera
 
 import (
 	"testing"
+	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
 	"github.com/stretchr/testify/assert"
@@ -78,6 +79,7 @@ func TestUnitTokenUpdateNftsTransactionValidateWrong(t *testing.T) {
 func TestUnitTokenUpdateNftsTransactionGet(t *testing.T) {
 	t.Parallel()
 
+	grpc := time.Second * 30
 	checksum := "dmqui"
 	tokenID := TokenID{Token: 3, checksum: &checksum}
 
@@ -97,9 +99,23 @@ func TestUnitTokenUpdateNftsTransactionGet(t *testing.T) {
 		SetSerialNumbers([]int64{1, 2, 3}).
 		SetTransactionID(transactionID).
 		SetNodeAccountIDs(nodeAccountID).
-		SetMetadata([]byte("metadata")).Freeze()
+		SetMetadata([]byte("metadata")).
+		SetTransactionMemo("").
+		SetTransactionValidDuration(60 * time.Second).
+		SetRegenerateTransactionID(false).
+		SetGrpcDeadline(&grpc).
+		SetMaxRetry(3).
+		SetMaxBackoff(time.Second * 30).
+		SetMinBackoff(time.Second * 10).
+		SetMaxTransactionFee(NewHbar(10)).
+		SetLogLevel(LoggerLevelInfo).
+		Freeze()
 
+	err = transaction.validateNetworkOnIDs(client)
 	require.NoError(t, err)
+	_, err = transaction.Schedule()
+	require.NoError(t, err)
+
 	require.NotNil(t, transaction.GetTokenID())
 	require.NotNil(t, transaction.GetSerialNumbers())
 	require.NotNil(t, transaction.GetMetadata())
