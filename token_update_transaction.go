@@ -63,6 +63,7 @@ type TokenUpdateTransaction struct {
 	scheduleKey        Key
 	supplyKey          Key
 	pauseKey           Key
+	metadataKey        Key
 	expirationTime     *time.Time
 	autoRenewPeriod    *time.Duration
 }
@@ -105,6 +106,7 @@ func _TokenUpdateTransactionFromProtobuf(tx Transaction, pb *services.Transactio
 	scheduleKey, _ := _KeyFromProtobuf(pb.GetTokenUpdate().GetFeeScheduleKey())
 	supplyKey, _ := _KeyFromProtobuf(pb.GetTokenUpdate().GetSupplyKey())
 	pauseKey, _ := _KeyFromProtobuf(pb.GetTokenUpdate().GetPauseKey())
+	metadataKey, _ := _KeyFromProtobuf(pb.GetTokenUpdate().GetMetadataKey())
 
 	expirationTime := _TimeFromProtobuf(pb.GetTokenUpdate().GetExpiry())
 	autoRenew := _DurationFromProtobuf(pb.GetTokenUpdate().GetAutoRenewPeriod())
@@ -124,6 +126,7 @@ func _TokenUpdateTransactionFromProtobuf(tx Transaction, pb *services.Transactio
 		scheduleKey:        scheduleKey,
 		supplyKey:          supplyKey,
 		pauseKey:           pauseKey,
+		metadataKey:        metadataKey,
 		expirationTime:     &expirationTime,
 		autoRenewPeriod:    &autoRenew,
 	}
@@ -210,6 +213,18 @@ func (tx *TokenUpdateTransaction) SetPauseKey(publicKey Key) *TokenUpdateTransac
 // GetPauseKey returns the Key which can pause and unpause the Token
 func (tx *TokenUpdateTransaction) GetPauseKey() Key {
 	return tx.pauseKey
+}
+
+// SetMetadataKey Set the Key which can update the metadata.
+func (tx *TokenUpdateTransaction) SetMetadataKey(key Key) *TokenUpdateTransaction {
+	tx._RequireNotFrozen()
+	tx.metadataKey = key
+	return tx
+}
+
+// GetMetadataKey returns the metadata key
+func (tx *TokenUpdateTransaction) GetMetadataKey() Key {
+	return tx.metadataKey
 }
 
 // SetKycKey Sets the new KYC key of the Token. If Token does not have currently a KYC key, transaction will
@@ -571,6 +586,10 @@ func (tx *TokenUpdateTransaction) buildProtoBody() *services.TokenUpdateTransact
 
 	if tx.pauseKey != nil {
 		body.PauseKey = tx.pauseKey._ToProtoKey()
+	}
+
+	if tx.metadataKey != nil {
+		body.MetadataKey = tx.metadataKey._ToProtoKey()
 	}
 
 	return body

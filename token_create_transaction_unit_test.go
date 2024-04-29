@@ -119,6 +119,7 @@ func TestUnitTokenCreateTransactionGet(t *testing.T) {
 		SetKycKey(newKey).
 		SetSupplyKey(newKey).
 		SetPauseKey(newKey).
+		SetMetadataKey(newKey).
 		SetExpirationTime(time.Now()).
 		SetFreezeDefault(false).
 		SetAutoRenewPeriod(60 * time.Second).
@@ -161,6 +162,7 @@ func TestUnitTokenCreateTransactionGet(t *testing.T) {
 	transaction.GetKycKey()
 	transaction.GetSupplyKey()
 	transaction.GetPauseKey()
+	transaction.GetMetadataKey()
 	transaction.GetExpirationTime()
 	transaction.GetMaxTransactionFee()
 	transaction.GetTransactionMemo()
@@ -217,6 +219,7 @@ func TestUnitTokenCreateTransactionNothingSet(t *testing.T) {
 	transaction.GetKycKey()
 	transaction.GetSupplyKey()
 	transaction.GetPauseKey()
+	transaction.GetMetadataKey()
 	transaction.GetExpirationTime()
 	transaction.GetMaxTransactionFee()
 	transaction.GetTransactionMemo()
@@ -236,6 +239,7 @@ func TestUnitTokenCreateTransactionNothingSet(t *testing.T) {
 	require.Nil(t, proto.FeeScheduleKey)
 	require.Nil(t, proto.PauseKey)
 	require.Nil(t, proto.SupplyKey)
+	require.Nil(t, proto.MetadataKey)
 	require.Nil(t, proto.Treasury)
 }
 
@@ -245,10 +249,10 @@ func TestUnitTokenCreateTransactionKeyCheck(t *testing.T) {
 	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
 	transactionID := TransactionIDGenerate(AccountID{Account: 324})
 
-	keys := make([]PrivateKey, 7)
+	keys := make([]PrivateKey, 8)
 	var err error
 
-	for i := 0; i < 7; i++ {
+	for i := 0; i < len(keys); i++ {
 		keys[i], err = PrivateKeyGenerateEd25519()
 		require.NoError(t, err)
 	}
@@ -263,6 +267,7 @@ func TestUnitTokenCreateTransactionKeyCheck(t *testing.T) {
 		SetSupplyKey(keys[4]).
 		SetPauseKey(keys[5]).
 		SetFeeScheduleKey(keys[6]).
+		SetMetadataKey(keys[7]).
 		Freeze()
 	require.NoError(t, err)
 
@@ -277,6 +282,7 @@ func TestUnitTokenCreateTransactionKeyCheck(t *testing.T) {
 	require.Equal(t, proto.SupplyKey.String(), keys[4]._ToProtoKey().String())
 	require.Equal(t, proto.PauseKey.String(), keys[5]._ToProtoKey().String())
 	require.Equal(t, proto.FeeScheduleKey.String(), keys[6]._ToProtoKey().String())
+	require.Equal(t, proto.MetadataKey.String(), keys[7]._ToProtoKey().String())
 }
 
 func TestUnitTokenCreateTransactionMock(t *testing.T) {
@@ -324,6 +330,7 @@ func TestUnitTokenCreateTransactionMock(t *testing.T) {
 		SetKycKey(newKey).
 		SetSupplyKey(newKey).
 		SetPauseKey(newKey).
+		SetMetadataKey(newKey).
 		FreezeWith(client)
 	require.NoError(t, err)
 
