@@ -85,6 +85,7 @@ type TokenCreateTransaction struct {
 	scheduleKey        Key
 	supplyKey          Key
 	pauseKey           Key
+	metadataKey        Key
 	initialSupply      uint64
 	freezeDefault      *bool
 	expirationTime     *time.Time
@@ -362,6 +363,18 @@ func (tx *TokenCreateTransaction) SetPauseKey(key Key) *TokenCreateTransaction {
 // GetPauseKey returns the pause key
 func (tx *TokenCreateTransaction) GetPauseKey() Key {
 	return tx.pauseKey
+}
+
+// SetMetadataKey Set the Key which can update the metadata.
+func (tx *TokenCreateTransaction) SetMetadataKey(key Key) *TokenCreateTransaction {
+	tx._RequireNotFrozen()
+	tx.metadataKey = key
+	return tx
+}
+
+// GetMetadataKey returns the metadata key
+func (tx *TokenCreateTransaction) GetMetadataKey() Key {
+	return tx.metadataKey
 }
 
 // SetCustomFees Set the custom fees to be assessed during a CryptoTransfer that transfers units of this token
@@ -698,6 +711,10 @@ func (tx *TokenCreateTransaction) buildProtoBody() *services.TokenCreateTransact
 
 	if tx.pauseKey != nil {
 		body.PauseKey = tx.pauseKey._ToProtoKey()
+	}
+
+	if tx.metadataKey != nil {
+		body.MetadataKey = tx.metadataKey._ToProtoKey()
 	}
 
 	if tx.freezeDefault != nil {
