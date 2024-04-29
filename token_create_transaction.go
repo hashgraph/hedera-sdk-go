@@ -78,6 +78,7 @@ type TokenCreateTransaction struct {
 	tokenSupplyType    TokenSupplyType
 	tokenType          TokenType
 	maxSupply          int64
+	metadata           []byte
 	adminKey           Key
 	kycKey             Key
 	freezeKey          Key
@@ -157,6 +158,7 @@ func _TokenCreateTransactionFromProtobuf(tx Transaction, pb *services.Transactio
 	scheduleKey, _ := _KeyFromProtobuf(pb.GetTokenCreation().GetFeeScheduleKey())
 	supplyKey, _ := _KeyFromProtobuf(pb.GetTokenCreation().GetSupplyKey())
 	pauseKey, _ := _KeyFromProtobuf(pb.GetTokenCreation().GetPauseKey())
+	metadataKey, _ := _KeyFromProtobuf(pb.GetTokenCreation().GetMetadataKey())
 
 	freezeDefault := pb.GetTokenCreation().GetFreezeDefault()
 
@@ -175,6 +177,7 @@ func _TokenCreateTransactionFromProtobuf(tx Transaction, pb *services.Transactio
 		tokenSupplyType:    TokenSupplyType(pb.GetTokenCreation().GetSupplyType()),
 		tokenType:          TokenType(pb.GetTokenCreation().GetTokenType()),
 		maxSupply:          pb.GetTokenCreation().GetMaxSupply(),
+		metadata:           pb.GetTokenCreation().GetMetadata(),
 		adminKey:           adminKey,
 		kycKey:             kycKey,
 		freezeKey:          freezeKey,
@@ -182,6 +185,7 @@ func _TokenCreateTransactionFromProtobuf(tx Transaction, pb *services.Transactio
 		scheduleKey:        scheduleKey,
 		supplyKey:          supplyKey,
 		pauseKey:           pauseKey,
+		metadataKey:        metadataKey,
 		initialSupply:      pb.GetTokenCreation().InitialSupply,
 		freezeDefault:      &freezeDefault,
 		expirationTime:     &expirationTime,
@@ -274,6 +278,18 @@ func (tx *TokenCreateTransaction) SetMaxSupply(maxSupply int64) *TokenCreateTran
 // GetMaxSupply returns the max supply
 func (tx *TokenCreateTransaction) GetMaxSupply() int64 {
 	return tx.maxSupply
+}
+
+// SetTokenMetadata Sets the metadata for the token
+func (tx *TokenCreateTransaction) SetTokenMetadata(metadata []byte) *TokenCreateTransaction {
+	tx._RequireNotFrozen()
+	tx.metadata = metadata
+	return tx
+}
+
+// GetTokenMetadata returns token class metadata
+func (tx *TokenCreateTransaction) GetTokenMetadata() []byte {
+	return tx.metadata
 }
 
 // SetTreasuryAccountID Sets the account which will act as a treasury for the token. This account will receive the specified initial supply
@@ -719,6 +735,10 @@ func (tx *TokenCreateTransaction) buildProtoBody() *services.TokenCreateTransact
 
 	if tx.freezeDefault != nil {
 		body.FreezeDefault = *tx.freezeDefault
+	}
+
+	if tx.metadata != nil {
+		body.Metadata = tx.metadata
 	}
 
 	return body

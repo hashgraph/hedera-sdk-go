@@ -83,7 +83,6 @@ func main() {
 
 	// Mint nfts
 	mintTransaction, _ := hedera.NewTokenMintTransaction().SetTokenID(nftTokenID).SetMetadatas(initialMetadataList).FreezeWith(client)
-
 	for _, v := range mintTransaction.GetMetadatas() {
 		fmt.Println("Set metadata: ", v)
 	}
@@ -135,7 +134,7 @@ func main() {
 		panic(fmt.Sprintf("%v : error getting receipt", err))
 	}
 
-	// Update nfts metadata
+	// update nfts metadata
 	metadataUpdateTransaction, err := hedera.NewTokenUpdateNftsTransaction().
 		SetTokenID(nftTokenID).
 		SetSerialNumbers(serials).

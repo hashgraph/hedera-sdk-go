@@ -55,6 +55,7 @@ type TokenInfo struct {
 	PauseKey            Key
 	PauseStatus         *bool
 	MetadataKey         Key
+	Metadata            []byte
 	LedgerID            LedgerID
 }
 
@@ -238,6 +239,11 @@ func _TokenInfoFromProtobuf(pb *services.TokenInfo) TokenInfo {
 		tokenID = *_TokenIDFromProtobuf(pb.TokenId)
 	}
 
+	var metadata []byte
+	if pb.Metadata != nil {
+		metadata = pb.Metadata
+	}
+
 	return TokenInfo{
 		TokenID:             tokenID,
 		Name:                pb.Name,
@@ -264,6 +270,7 @@ func _TokenInfoFromProtobuf(pb *services.TokenInfo) TokenInfo {
 		CustomFees:          customFees,
 		PauseKey:            pauseKey,
 		MetadataKey:         metadataKey,
+		Metadata:            metadata,
 		PauseStatus:         _PauseStatusFromProtobuf(pb.PauseStatus),
 		LedgerID:            LedgerID{pb.LedgerId},
 	}
@@ -327,6 +334,11 @@ func (tokenInfo *TokenInfo) _ToProtobuf() *services.TokenInfo {
 		}
 	}
 
+	var metadata []byte
+	if tokenInfo.Metadata != nil {
+		metadata = tokenInfo.Metadata
+	}
+
 	return &services.TokenInfo{
 		TokenId:             tokenInfo.TokenID._ToProtobuf(),
 		Name:                tokenInfo.Name,
@@ -353,6 +365,7 @@ func (tokenInfo *TokenInfo) _ToProtobuf() *services.TokenInfo {
 		CustomFees:          customFees,
 		PauseKey:            pauseKey,
 		MetadataKey:         metadataKey,
+		Metadata:            metadata,
 		PauseStatus:         *tokenInfo.PauseStatusToProtobuf(),
 		LedgerId:            tokenInfo.LedgerID.ToBytes(),
 	}

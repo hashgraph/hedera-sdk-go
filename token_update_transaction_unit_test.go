@@ -105,6 +105,7 @@ func TestUnitTokenUpdateTransactionGet(t *testing.T) {
 		SetTokenName("ffff").
 		SetTokenSymbol("F").
 		SetTokenMemo("fnord").
+		SetTokenMetadata([]byte{1, 2, 3}).
 		SetTreasuryAccountID(accountID).
 		SetTokenID(token).
 		SetAdminKey(newKey).
