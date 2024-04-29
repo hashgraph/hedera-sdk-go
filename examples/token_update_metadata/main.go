@@ -83,7 +83,7 @@ func updateMutableTokenMetadata(client *hedera.Client) {
 	// Update the token's metadata
 	tx1, err := hedera.NewTokenUpdateTransaction().
 		SetTokenID(*receipt.TokenID).
-		SetMetadata(newMetadata).
+		SetTokenMetadata(newMetadata).
 		FreezeWith(client)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error updating token", err))
@@ -153,7 +153,7 @@ func updateImmutableTokenMetadata(client *hedera.Client) {
 	// Update the token's metadata
 	tx, err := hedera.NewTokenUpdateTransaction().
 		SetTokenID(*receipt.TokenID).
-		SetMetadata(newMetadata).
+		SetTokenMetadata(newMetadata).
 		FreezeWith(client)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error updating token", err))
