@@ -122,7 +122,7 @@ func TestUnitTokenCreateTransactionGet(t *testing.T) {
 		SetSupplyKey(newKey).
 		SetPauseKey(newKey).
 		SetMetadataKey(newKey).
-		SetMetadata(testMetadata).
+		SetTokenMetadata(testMetadata).
 		SetExpirationTime(time.Now()).
 		SetFreezeDefault(false).
 		SetAutoRenewPeriod(60 * time.Second).
@@ -166,7 +166,7 @@ func TestUnitTokenCreateTransactionGet(t *testing.T) {
 	transaction.GetSupplyKey()
 	transaction.GetPauseKey()
 	transaction.GetMetadataKey()
-	transaction.GetMetadata()
+	transaction.GetTokenMetadata()
 	transaction.GetExpirationTime()
 	transaction.GetMaxTransactionFee()
 	transaction.GetTransactionMemo()
@@ -335,7 +335,7 @@ func TestUnitTokenCreateTransactionMock(t *testing.T) {
 		SetKycKey(newKey).
 		SetSupplyKey(newKey).
 		SetPauseKey(newKey).
-		SetMetadata(testMetadata).
+		SetTokenMetadata(testMetadata).
 		SetMetadataKey(newKey).
 		FreezeWith(client)
 	require.NoError(t, err)

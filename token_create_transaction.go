@@ -393,18 +393,6 @@ func (tx *TokenCreateTransaction) GetMetadataKey() Key {
 	return tx.metadataKey
 }
 
-// SetMetadata Sets the metadata for the token
-func (tx *TokenCreateTransaction) SetMetadata(metadata []byte) *TokenCreateTransaction {
-	tx._RequireNotFrozen()
-	tx.metadata = metadata
-	return tx
-}
-
-// GetMetadata returns the metadata
-func (tx *TokenCreateTransaction) GetMetadata() []byte {
-	return tx.metadata
-}
-
 // SetCustomFees Set the custom fees to be assessed during a CryptoTransfer that transfers units of this token
 func (tx *TokenCreateTransaction) SetCustomFees(customFee []Fee) *TokenCreateTransaction {
 	tx._RequireNotFrozen()

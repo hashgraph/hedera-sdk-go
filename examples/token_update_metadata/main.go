@@ -35,7 +35,7 @@ func main() {
 }
 
 func updateMutableTokenMetadata(client *hedera.Client) {
-
+	// Create admin key
 	adminKey, err := hedera.PrivateKeyGenerateEd25519()
 	if err != nil {
 		panic(fmt.Sprintf("%v : error creating admin key", err))
@@ -45,12 +45,13 @@ func updateMutableTokenMetadata(client *hedera.Client) {
 	var initialMetadata = []byte{1, 2, 3}
 	var newMetadata = []byte{3, 4, 5, 6}
 
+	// Create the token
 	tx, err := hedera.NewTokenCreateTransaction().
 		SetTokenName("ffff").
 		SetTokenSymbol("F").
 		SetDecimals(3).
 		SetTokenType(hedera.TokenTypeFungibleCommon). // The same flow can be executed with a TokenTypeNonFungibleUnique (i.e. HIP-765)
-		SetMetadata(initialMetadata).
+		SetTokenMetadata(initialMetadata).
 		SetInitialSupply(1000000).
 		SetTreasuryAccountID(client.GetOperatorAccountID()).
 		SetAdminKey(adminKey).
@@ -68,9 +69,9 @@ func updateMutableTokenMetadata(client *hedera.Client) {
 	if err != nil {
 		panic(fmt.Sprintf("%v : error creating token", err))
 	}
-
 	fmt.Println("created token: ", receipt.TokenID.String())
 
+	// Query the token info to get the metadata after creation
 	info, err := hedera.NewTokenInfoQuery().
 		SetTokenID(*receipt.TokenID).
 		Execute(client)
@@ -79,6 +80,7 @@ func updateMutableTokenMetadata(client *hedera.Client) {
 	}
 	fmt.Println("token's metadata after creation: ", info.Metadata)
 
+	// Update the token's metadata
 	tx1, err := hedera.NewTokenUpdateTransaction().
 		SetTokenID(*receipt.TokenID).
 		SetMetadata(newMetadata).
@@ -96,6 +98,7 @@ func updateMutableTokenMetadata(client *hedera.Client) {
 		panic(fmt.Sprintf("%v : error updating token", err))
 	}
 
+	// Query the token info to get the metadata after update
 	info, err = hedera.NewTokenInfoQuery().
 		SetTokenID(*receipt.TokenID).
 		Execute(client)
@@ -106,7 +109,7 @@ func updateMutableTokenMetadata(client *hedera.Client) {
 }
 
 func updateImmutableTokenMetadata(client *hedera.Client) {
-
+	// Create metadata key
 	metadataKey, err := hedera.PrivateKeyGenerateEd25519()
 	if err != nil {
 		panic(fmt.Sprintf("%v : error creating admin key", err))
@@ -116,12 +119,13 @@ func updateImmutableTokenMetadata(client *hedera.Client) {
 	var initialMetadata = []byte{1, 2, 3}
 	var newMetadata = []byte{3, 4, 5, 6}
 
+	// Create the token
 	resp, err := hedera.NewTokenCreateTransaction().
 		SetTokenName("ffff").
 		SetTokenSymbol("F").
 		SetDecimals(3).
 		SetTokenType(hedera.TokenTypeFungibleCommon). // The same flow can be executed with a TokenTypeNonFungibleUnique (i.e. HIP-765)
-		SetMetadata(initialMetadata).
+		SetTokenMetadata(initialMetadata).
 		SetInitialSupply(1000000).
 		SetTreasuryAccountID(client.GetOperatorAccountID()).
 		SetMetadataKey(metadataKey).
@@ -135,9 +139,9 @@ func updateImmutableTokenMetadata(client *hedera.Client) {
 	if err != nil {
 		panic(fmt.Sprintf("%v : error creating token", err))
 	}
-
 	fmt.Println("created token: ", receipt.TokenID.String())
 
+	// Query the token info to get the metadata after creation
 	info, err := hedera.NewTokenInfoQuery().
 		SetTokenID(*receipt.TokenID).
 		Execute(client)
@@ -146,6 +150,7 @@ func updateImmutableTokenMetadata(client *hedera.Client) {
 	}
 	fmt.Println("token's metadata after creation: ", info.Metadata)
 
+	// Update the token's metadata
 	tx, err := hedera.NewTokenUpdateTransaction().
 		SetTokenID(*receipt.TokenID).
 		SetMetadata(newMetadata).
@@ -163,6 +168,7 @@ func updateImmutableTokenMetadata(client *hedera.Client) {
 		panic(fmt.Sprintf("%v : error updating token", err))
 	}
 
+	// Query the token info to get the metadata after update
 	info, err = hedera.NewTokenInfoQuery().
 		SetTokenID(*receipt.TokenID).
 		Execute(client)

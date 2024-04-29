@@ -357,15 +357,15 @@ func (tx *TokenUpdateTransaction) GetTokenMemo() string {
 	return *tx.memo
 }
 
-// SetMetadata
-func (tx *TokenUpdateTransaction) SetMetadata(metadata []byte) *TokenUpdateTransaction {
+// SetTokenMetadata sets the token metadata
+func (tx *TokenUpdateTransaction) SetTokenMetadata(metadata []byte) *TokenUpdateTransaction {
 	tx._RequireNotFrozen()
 	tx.metadata = metadata
 
 	return tx
 }
 
-// GetTokenMetadata
+// GetTokenMetadata returns the token metadata
 func (tx *TokenUpdateTransaction) GetTokenMetadata() []byte {
 	return tx.metadata
 }

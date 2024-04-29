@@ -315,7 +315,7 @@ func TestIntegrationTokenUpdateTransactionFungibleMetadata(t *testing.T) {
 		SetTokenType(TokenTypeFungibleCommon).
 		SetInitialSupply(1000000).
 		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetMetadata(initialMetadata).
+		SetTokenMetadata(initialMetadata).
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
 		SetFreezeKey(env.Client.GetOperatorPublicKey()).
 		SetWipeKey(env.Client.GetOperatorPublicKey()).
@@ -337,7 +337,7 @@ func TestIntegrationTokenUpdateTransactionFungibleMetadata(t *testing.T) {
 
 	resp, err = NewTokenUpdateTransaction().
 		SetTokenID(*receipt.TokenID).
-		SetMetadata(newMetadata).
+		SetTokenMetadata(newMetadata).
 		Execute(env.Client)
 	assert.NoError(t, err)
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
@@ -364,7 +364,7 @@ func TestIntegrationTokenUpdateTransactionNFTMetadata(t *testing.T) {
 		SetTokenSymbol("F").
 		SetTokenType(TokenTypeNonFungibleUnique).
 		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetMetadata(initialMetadata).
+		SetTokenMetadata(initialMetadata).
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
 		SetFreezeKey(env.Client.GetOperatorPublicKey()).
 		SetWipeKey(env.Client.GetOperatorPublicKey()).
@@ -386,7 +386,7 @@ func TestIntegrationTokenUpdateTransactionNFTMetadata(t *testing.T) {
 
 	resp, err = NewTokenUpdateTransaction().
 		SetTokenID(*receipt.TokenID).
-		SetMetadata(newMetadata).
+		SetTokenMetadata(newMetadata).
 		Execute(env.Client)
 	assert.NoError(t, err)
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
@@ -415,7 +415,7 @@ func TestIntegrationTokenUpdateTransactionMetadataImmutableFunbigleToken(t *test
 	resp, err := NewTokenCreateTransaction().
 		SetTokenName("ffff").
 		SetTokenSymbol("F").
-		SetMetadata(initialMetadata).
+		SetTokenMetadata(initialMetadata).
 		SetDecimals(3).
 		SetTokenType(TokenTypeFungibleCommon).
 		SetInitialSupply(1000000).
@@ -439,7 +439,7 @@ func TestIntegrationTokenUpdateTransactionMetadataImmutableFunbigleToken(t *test
 
 	tx, err := NewTokenUpdateTransaction().
 		SetTokenID(*receipt.TokenID).
-		SetMetadata(newMetadata).
+		SetTokenMetadata(newMetadata).
 		FreezeWith(env.Client)
 	require.NoError(t, err)
 
@@ -467,7 +467,7 @@ func TestIntegrationTokenUpdateTransactionMetadataImmutableNFT(t *testing.T) {
 	resp, err := NewTokenCreateTransaction().
 		SetTokenName("ffff").
 		SetTokenSymbol("F").
-		SetMetadata(initialMetadata).
+		SetTokenMetadata(initialMetadata).
 		SetTokenType(TokenTypeNonFungibleUnique).
 		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
 		SetSupplyKey(env.Client.GetOperatorPublicKey()).
@@ -490,7 +490,7 @@ func TestIntegrationTokenUpdateTransactionMetadataImmutableNFT(t *testing.T) {
 
 	tx, err := NewTokenUpdateTransaction().
 		SetTokenID(*receipt.TokenID).
-		SetMetadata(newMetadata).
+		SetTokenMetadata(newMetadata).
 		FreezeWith(env.Client)
 	require.NoError(t, err)
 
@@ -520,7 +520,7 @@ func TestIntegrationTokenUpdateTransactionCannotUpdateMetadataFungible(t *testin
 		SetTokenSymbol("F").
 		SetDecimals(3).
 		SetTokenType(TokenTypeFungibleCommon).
-		SetMetadata(initialMetadata).
+		SetTokenMetadata(initialMetadata).
 		SetInitialSupply(1000000).
 		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
@@ -572,7 +572,7 @@ func TestIntegrationTokenUpdateTransactionCannotUpdateMetadataNFT(t *testing.T) 
 		SetTokenName("ffff").
 		SetTokenSymbol("F").
 		SetTokenType(TokenTypeNonFungibleUnique).
-		SetMetadata(initialMetadata).
+		SetTokenMetadata(initialMetadata).
 		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
 		SetFreezeKey(env.Client.GetOperatorPublicKey()).
@@ -622,7 +622,7 @@ func TestIntegrationTokenUpdateTransactionEraseMetadataFungibleToken(t *testing.
 		SetTokenSymbol("F").
 		SetDecimals(3).
 		SetTokenType(TokenTypeFungibleCommon).
-		SetMetadata(initialMetadata).
+		SetTokenMetadata(initialMetadata).
 		SetInitialSupply(1000000).
 		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
@@ -646,7 +646,7 @@ func TestIntegrationTokenUpdateTransactionEraseMetadataFungibleToken(t *testing.
 
 	resp, err = NewTokenUpdateTransaction().
 		SetTokenID(*receipt.TokenID).
-		SetMetadata([]byte{}).
+		SetTokenMetadata([]byte{}).
 		Execute(env.Client)
 	assert.NoError(t, err)
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
@@ -672,7 +672,7 @@ func TestIntegrationTokenUpdateTransactionEraseMetadataNFT(t *testing.T) {
 		SetTokenName("ffff").
 		SetTokenSymbol("F").
 		SetTokenType(TokenTypeNonFungibleUnique).
-		SetMetadata(initialMetadata).
+		SetTokenMetadata(initialMetadata).
 		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
 		SetFreezeKey(env.Client.GetOperatorPublicKey()).
@@ -695,7 +695,7 @@ func TestIntegrationTokenUpdateTransactionEraseMetadataNFT(t *testing.T) {
 
 	resp, err = NewTokenUpdateTransaction().
 		SetTokenID(*receipt.TokenID).
-		SetMetadata([]byte{}).
+		SetTokenMetadata([]byte{}).
 		Execute(env.Client)
 	assert.NoError(t, err)
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
@@ -726,7 +726,7 @@ func TestIntegrationTokenUpdateTransactionCannotUpdateMetadataWithoutKeyFungible
 	tx, err := NewTokenCreateTransaction().
 		SetTokenName("ffff").
 		SetTokenSymbol("F").
-		SetMetadata(initialMetadata).
+		SetTokenMetadata(initialMetadata).
 		SetDecimals(3).
 		SetTokenType(TokenTypeFungibleCommon).
 		SetInitialSupply(1000000).
@@ -743,7 +743,7 @@ func TestIntegrationTokenUpdateTransactionCannotUpdateMetadataWithoutKeyFungible
 
 	resp, err = NewTokenUpdateTransaction().
 		SetTokenID(*receipt.TokenID).
-		SetMetadata(newMetadata).
+		SetTokenMetadata(newMetadata).
 		Execute(env.Client)
 
 	assert.NoError(t, err)
@@ -765,7 +765,7 @@ func TestIntegrationTokenUpdateTransactionCannotUpdateMetadataWithoutKeyNFT(t *t
 	tx, err := NewTokenCreateTransaction().
 		SetTokenName("ffff").
 		SetTokenSymbol("F").
-		SetMetadata(initialMetadata).
+		SetTokenMetadata(initialMetadata).
 		SetTokenType(TokenTypeNonFungibleUnique).
 		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
 		SetAdminKey(adminKey).
@@ -780,7 +780,7 @@ func TestIntegrationTokenUpdateTransactionCannotUpdateMetadataWithoutKeyNFT(t *t
 
 	resp, err = NewTokenUpdateTransaction().
 		SetTokenID(*receipt.TokenID).
-		SetMetadata(newMetadata).
+		SetTokenMetadata(newMetadata).
 		Execute(env.Client)
 
 	assert.NoError(t, err)
@@ -795,7 +795,7 @@ func TestIntegrationTokenUpdateTransactionCannotUpdateImmutableFungibleToken(t *
 	resp, err := NewTokenCreateTransaction().
 		SetTokenName("ffff").
 		SetTokenSymbol("F").
-		SetMetadata(initialMetadata).
+		SetTokenMetadata(initialMetadata).
 		SetDecimals(3).
 		SetTokenType(TokenTypeFungibleCommon).
 		SetInitialSupply(1000000).
@@ -808,7 +808,7 @@ func TestIntegrationTokenUpdateTransactionCannotUpdateImmutableFungibleToken(t *
 
 	resp, err = NewTokenUpdateTransaction().
 		SetTokenID(*receipt.TokenID).
-		SetMetadata(newMetadata).
+		SetTokenMetadata(newMetadata).
 		Execute(env.Client)
 	assert.NoError(t, err)
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
@@ -822,7 +822,7 @@ func TestIntegrationTokenUpdateTransactionCannotUpdateImmutableNFT(t *testing.T)
 	resp, err := NewTokenCreateTransaction().
 		SetTokenName("ffff").
 		SetTokenSymbol("F").
-		SetMetadata(initialMetadata).
+		SetTokenMetadata(initialMetadata).
 		SetSupplyKey(env.Client.GetOperatorPublicKey()).
 		SetTokenType(TokenTypeNonFungibleUnique).
 		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
@@ -834,7 +834,7 @@ func TestIntegrationTokenUpdateTransactionCannotUpdateImmutableNFT(t *testing.T)
 
 	resp, err = NewTokenUpdateTransaction().
 		SetTokenID(*receipt.TokenID).
-		SetMetadata(newMetadata).
+		SetTokenMetadata(newMetadata).
 		Execute(env.Client)
 	assert.NoError(t, err)
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)

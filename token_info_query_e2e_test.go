@@ -48,7 +48,7 @@ func TestIntegrationTokenInfoQueryCanExecute(t *testing.T) {
 		SetKycKey(env.Client.GetOperatorPublicKey()).
 		SetSupplyKey(env.Client.GetOperatorPublicKey()).
 		SetMetadataKey(env.Client.GetOperatorPublicKey()).
-		SetMetadata([]byte{1, 2, 3}).
+		SetTokenMetadata([]byte{1, 2, 3}).
 		SetFreezeDefault(false).
 		Execute(env.Client)
 	require.NoError(t, err)
