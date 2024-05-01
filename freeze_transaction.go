@@ -217,7 +217,7 @@ func (tx *FreezeTransaction) SetTransactionID(transactionID TransactionID) *Free
 	return tx
 }
 
-// SetNodeAccountID sets the _Node AccountID for this FreezeTransaction.
+// SetNodeAccountIDs sets the _Node AccountID for this FreezeTransaction.
 func (tx *FreezeTransaction) SetNodeAccountIDs(nodeID []AccountID) *FreezeTransaction {
 	tx._RequireNotFrozen()
 	tx.Transaction.SetNodeAccountIDs(nodeID)

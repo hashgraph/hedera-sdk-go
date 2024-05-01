@@ -378,7 +378,7 @@ func (client *Client) SetMaxNodeReadmitTime(readmitTime time.Duration) {
 	client.network._SetMaxNodeReadmitPeriod(readmitTime)
 }
 
-// GetMaxNodeReadmitTime returns the maximum amount of time to wait before attempting to
+// GetMaxNodeReadmitPeriod returns the maximum amount of time to wait before attempting to
 // reconnect to a node that has been removed from the network.
 func (client *Client) GetMaxNodeReadmitPeriod() time.Duration {
 	return client.network._GetMaxNodeReadmitPeriod()
@@ -390,7 +390,7 @@ func (client *Client) SetMinNodeReadmitTime(readmitTime time.Duration) {
 	client.network._SetMinNodeReadmitPeriod(readmitTime)
 }
 
-// GetMinNodeReadmitTime returns the minimum amount of time to wait before attempting to
+// GetMinNodeReadmitPeriod returns the minimum amount of time to wait before attempting to
 // reconnect to a node that has been removed from the network.
 func (client *Client) GetMinNodeReadmitPeriod() time.Duration {
 	return client.network._GetMinNodeReadmitPeriod()
@@ -486,13 +486,13 @@ func (client *Client) SetMaxNodesPerTransaction(max int) {
 	client.network._SetMaxNodesPerTransaction(max)
 }
 
-// SetNetwork replaces all _Nodes in the Client with a new set of _Nodes.
+// SetMirrorNetwork replaces all _Nodes in the Client with a new set of _Nodes.
 // (e.g. for an Address Book update).
 func (client *Client) SetMirrorNetwork(mirrorNetwork []string) {
 	_ = client.mirrorNetwork._SetNetwork(mirrorNetwork)
 }
 
-// GetNetwork returns the mirror network node list.
+// GetMirrorNetwork returns the mirror network node list.
 func (client *Client) GetMirrorNetwork() []string {
 	return client.mirrorNetwork._GetNetwork()
 }
