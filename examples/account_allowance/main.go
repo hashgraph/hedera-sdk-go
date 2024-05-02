@@ -9,6 +9,7 @@ import (
 
 func main() {
 	var client *hedera.Client
+
 	var err error
 
 	// Retrieving network type from environment variable HEDERA_NETWORK
