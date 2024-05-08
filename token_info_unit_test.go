@@ -87,6 +87,9 @@ func setupTokenInfo() TokenInfo {
 	pausePK, _ := PrivateKeyGenerate()
 	pausePubK := pausePK.PublicKey()
 
+	metadataPK, _ := PrivateKeyGenerate()
+	metadataPubK := metadataPK.PublicKey()
+
 	feeSchedulePK, _ := PrivateKeyGenerate()
 	feeSchedulePubK := feeSchedulePK.PublicKey()
 
@@ -133,6 +136,8 @@ func setupTokenInfo() TokenInfo {
 		FeeScheduleKey:      feeSchedulePubK,
 		CustomFees:          customFees,
 		PauseKey:            pausePubK,
+		MetadataKey:         metadataPubK,
+		Metadata:            testMetadata,
 		PauseStatus:         &_false,
 		LedgerID:            *ledgerId,
 	}
@@ -162,6 +167,8 @@ func assertTokenInfo(t assert.TestingT, tokenInfo TokenInfo, actual TokenInfo) {
 	assert.Equal(t, tokenInfo.MaxSupply, actual.MaxSupply)
 	assert.Equal(t, tokenInfo.FeeScheduleKey, actual.FeeScheduleKey)
 	assert.Equal(t, tokenInfo.PauseKey, actual.PauseKey)
+	assert.Equal(t, tokenInfo.MetadataKey, actual.MetadataKey)
+	assert.Equal(t, tokenInfo.Metadata, actual.Metadata)
 	assert.Equal(t, tokenInfo.PauseStatus, actual.PauseStatus)
 	assert.Equal(t, tokenInfo.LedgerID, actual.LedgerID)
 }

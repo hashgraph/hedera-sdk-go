@@ -40,13 +40,13 @@ func TestIntegrationCantTransferOnBehalfOfSpenderWithoutAllowanceApproval(t *tes
 	spenderAccountId := spenderReceipt.AccountID
 	receiverKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
-	receiverCreate, err := NewAccountCreateTransaction().SetKey(receiverKey).SetInitialBalance(NewHbar(2)).Execute(env.Client)
+	receiverCreate, err := NewAccountCreateTransaction().SetKey(receiverKey).SetInitialBalance(NewHbar(2)).SetMaxAutomaticTokenAssociations(10).Execute(env.Client)
 	require.NoError(t, err)
 	receiverReceipt, err := receiverCreate.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 	receiverAccountId := receiverReceipt.AccountID
 	tokenCreate, err := NewTokenCreateTransaction().SetTokenName("ffff").SetTokenSymbol("F").SetTokenType(TokenTypeNonFungibleUnique).
-		SetTreasuryAccountID(env.OperatorID).SetKycKey(env.OperatorKey).SetFreezeKey(env.OperatorKey).
+		SetTreasuryAccountID(env.OperatorID).SetFreezeKey(env.OperatorKey).
 		SetWipeKey(env.OperatorKey).SetSupplyKey(env.OperatorKey).SetFreezeDefault(false).Execute(env.Client)
 	require.NoError(t, err)
 	tokenReceipt, err := tokenCreate.SetValidateStatus(true).GetReceipt(env.Client)

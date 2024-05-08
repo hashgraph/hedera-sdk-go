@@ -254,6 +254,7 @@ func _Execute(client *Client, e Executable) (interface{}, error) {
 		channel, err := node._GetChannel(txLogger)
 		if err != nil {
 			client.network._IncreaseBackoff(node)
+			errPersistent = err
 			continue
 		}
 
@@ -351,7 +352,7 @@ func _Execute(client *Client, e Executable) (interface{}, error) {
 	}
 
 	if errPersistent == nil {
-		errPersistent = errors.New("error")
+		errPersistent = errors.New("unknown error occurred after max attempts")
 	}
 
 	if e.isTransaction() {
