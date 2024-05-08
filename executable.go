@@ -352,7 +352,7 @@ func _Execute(client *Client, e Executable) (interface{}, error) {
 	}
 
 	if errPersistent == nil {
-		errPersistent = errors.New("unknown error occured after max attempts")
+		errPersistent = errors.New("unknown error occurred after max attempts")
 	}
 
 	if e.isTransaction() {
