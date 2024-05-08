@@ -50,23 +50,24 @@ import (
 //     CURRENT_TREASURY_STILL_OWNS_NFTS.
 type TokenUpdateTransaction struct {
 	Transaction
-	tokenID            *TokenID
-	treasuryAccountID  *AccountID
-	autoRenewAccountID *AccountID
-	tokenName          string
-	memo               *string
-	metadata           []byte
-	tokenSymbol        string
-	adminKey           Key
-	kycKey             Key
-	freezeKey          Key
-	wipeKey            Key
-	scheduleKey        Key
-	supplyKey          Key
-	pauseKey           Key
-	metadataKey        Key
-	expirationTime     *time.Time
-	autoRenewPeriod    *time.Duration
+	tokenID                  *TokenID
+	treasuryAccountID        *AccountID
+	autoRenewAccountID       *AccountID
+	tokenName                string
+	memo                     *string
+	metadata                 []byte
+	tokenSymbol              string
+	adminKey                 Key
+	kycKey                   Key
+	freezeKey                Key
+	wipeKey                  Key
+	scheduleKey              Key
+	supplyKey                Key
+	pauseKey                 Key
+	metadataKey              Key
+	tokenKeyVerificationMode TokenKeyValidation
+	expirationTime           *time.Time
+	autoRenewPeriod          *time.Duration
 }
 
 // NewTokenUpdateTransaction creates TokenUpdateTransaction which at consensus,
@@ -109,6 +110,7 @@ func _TokenUpdateTransactionFromProtobuf(tx Transaction, pb *services.Transactio
 	supplyKey, _ := _KeyFromProtobuf(pb.GetTokenUpdate().GetSupplyKey())
 	pauseKey, _ := _KeyFromProtobuf(pb.GetTokenUpdate().GetPauseKey())
 	metadataKey, _ := _KeyFromProtobuf(pb.GetTokenUpdate().GetMetadataKey())
+	keyVerificationMode := pb.GetTokenUpdate().GetKeyVerificationMode()
 
 	expirationTime := _TimeFromProtobuf(pb.GetTokenUpdate().GetExpiry())
 	autoRenew := _DurationFromProtobuf(pb.GetTokenUpdate().GetAutoRenewPeriod())
@@ -124,26 +126,36 @@ func _TokenUpdateTransactionFromProtobuf(tx Transaction, pb *services.Transactio
 	}
 
 	return &TokenUpdateTransaction{
-		Transaction:        tx,
-		tokenID:            _TokenIDFromProtobuf(pb.GetTokenUpdate().GetToken()),
-		treasuryAccountID:  _AccountIDFromProtobuf(pb.GetTokenUpdate().GetTreasury()),
-		autoRenewAccountID: _AccountIDFromProtobuf(pb.GetTokenUpdate().GetAutoRenewAccount()),
-		tokenName:          pb.GetTokenUpdate().GetName(),
-		memo:               memo,
-		metadata:           metadata,
-		tokenSymbol:        pb.GetTokenUpdate().GetSymbol(),
-		adminKey:           adminKey,
-		kycKey:             kycKey,
-		freezeKey:          freezeKey,
-		wipeKey:            wipeKey,
-		scheduleKey:        scheduleKey,
-		supplyKey:          supplyKey,
-		pauseKey:           pauseKey,
-		metadataKey:        metadataKey,
-		expirationTime:     &expirationTime,
-		autoRenewPeriod:    &autoRenew,
+		Transaction:              tx,
+		tokenID:                  _TokenIDFromProtobuf(pb.GetTokenUpdate().GetToken()),
+		treasuryAccountID:        _AccountIDFromProtobuf(pb.GetTokenUpdate().GetTreasury()),
+		autoRenewAccountID:       _AccountIDFromProtobuf(pb.GetTokenUpdate().GetAutoRenewAccount()),
+		tokenName:                pb.GetTokenUpdate().GetName(),
+		memo:                     memo,
+		metadata:                 metadata,
+		tokenSymbol:              pb.GetTokenUpdate().GetSymbol(),
+		adminKey:                 adminKey,
+		kycKey:                   kycKey,
+		freezeKey:                freezeKey,
+		wipeKey:                  wipeKey,
+		scheduleKey:              scheduleKey,
+		supplyKey:                supplyKey,
+		pauseKey:                 pauseKey,
+		metadataKey:              metadataKey,
+		tokenKeyVerificationMode: TokenKeyValidation(keyVerificationMode),
+		expirationTime:           &expirationTime,
+		autoRenewPeriod:          &autoRenew,
 	}
 }
+
+type TokenKeyValidation int32
+
+const (
+	// FULL_VALIDATION performs all token key validations.
+	FULL_VALIDATION TokenKeyValidation = iota
+	// NO_VALIDATION performs no validations at all for all passed token keys.
+	NO_VALIDATION
+)
 
 // SetTokenID Sets the Token to be updated
 func (tx *TokenUpdateTransaction) SetTokenID(tokenID TokenID) *TokenUpdateTransaction {
@@ -380,6 +392,18 @@ func (tx *TokenUpdateTransaction) GetTokenMetadata() []byte {
 	return tx.metadata
 }
 
+// SetKeyVerificationMode sets the token key verification mode
+func (tx *TokenUpdateTransaction) SetKeyVerificationMode(verificationMode TokenKeyValidation) *TokenUpdateTransaction {
+	tx._RequireNotFrozen()
+	tx.tokenKeyVerificationMode = verificationMode
+	return tx
+}
+
+// GetKeyVerificationMode returns the token metadata
+func (tx *TokenUpdateTransaction) GetKeyVerificationMode() TokenKeyValidation {
+	return tx.tokenKeyVerificationMode
+}
+
 // ---- Required Interfaces ---- //
 
 // Sign uses the provided privateKey to sign the transaction.
@@ -561,8 +585,9 @@ func (tx *TokenUpdateTransaction) buildScheduled() (*services.SchedulableTransac
 
 func (tx *TokenUpdateTransaction) buildProtoBody() *services.TokenUpdateTransactionBody {
 	body := &services.TokenUpdateTransactionBody{
-		Name:   tx.tokenName,
-		Symbol: tx.tokenSymbol,
+		Name:                tx.tokenName,
+		Symbol:              tx.tokenSymbol,
+		KeyVerificationMode: services.TokenKeyValidation(tx.tokenKeyVerificationMode),
 	}
 
 	if tx.memo != nil {
