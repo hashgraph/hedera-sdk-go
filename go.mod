@@ -6,7 +6,7 @@ require (
 	github.com/btcsuite/btcd/btcec/v2 v2.3.3
 	github.com/cenkalti/backoff/v4 v4.3.0
 	github.com/ethereum/go-ethereum v1.13.15
-	github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20240329142217-02f7fa55705d
+	github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20240507130336-6f8f530d2c86
 	github.com/json-iterator/go v1.1.12
 	github.com/pkg/errors v0.9.1
 	github.com/rs/zerolog v1.32.0

@@ -320,6 +320,7 @@ const (
 	StatusTokenHasNoMetadataKey                                    Status = 334
 	StatusMissingTokenMetadata                                     Status = 335
 	StatusMissingSerialNumbers                                     Status = 336
+	StatusTokenHasNoAdminKey                                       Status = 337
 )
 
 // String() returns a string representation of the status
@@ -915,6 +916,8 @@ func (status Status) String() string { // nolint
 		return "MISSING_TOKEN_METADATA"
 	case StatusMissingSerialNumbers:
 		return "MISSING_SERIAL_NUMBERS"
+	case StatusTokenHasNoAdminKey:
+		return "TOKEN_HAS_NO_ADMIN_KEY"
 	}
 
 	panic(fmt.Sprintf("unreachable: Status.String() switch statement is non-exhaustive. Status: %v", uint32(status)))
