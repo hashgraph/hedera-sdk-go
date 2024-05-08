@@ -9,32 +9,33 @@
 
 # Protection Rules for Github Configuration Files and Actions Workflows
 /.github/                                       @hashgraph/release-engineering @hashgraph/release-engineering-managers
+/.github/workflows/                             @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk-go-maintainers
 
 # Legacy Maven project files
-**/pom.xml                                      @hashgraph/release-engineering @hashgraph/release-engineering-managers
+**/pom.xml                                      @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk-go-maintainers
 
 # Gradle project files and inline plugins
-/gradle/                                        @hashgraph/release-engineering @hashgraph/release-engineering-managers
-gradlew                                         @hashgraph/release-engineering @hashgraph/release-engineering-managers
-gradlew.bat                                     @hashgraph/release-engineering @hashgraph/release-engineering-managers
-**/build-logic/                                 @hashgraph/release-engineering @hashgraph/release-engineering-managers
-**/gradle.*                                     @hashgraph/release-engineering @hashgraph/release-engineering-managers
-**/*.gradle.*                                   @hashgraph/release-engineering @hashgraph/release-engineering-managers
+/gradle/                                        @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk-go-maintainers
+gradlew                                         @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk-go-maintainers
+gradlew.bat                                     @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk-go-maintainers
+**/build-logic/                                 @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk-go-maintainers
+**/gradle.*                                     @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk-go-maintainers
+**/*.gradle.*                                   @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk-go-maintainers
 
 # Codacy Tool Configurations
-/config/                                        @hashgraph/release-engineering @hashgraph/release-engineering-managers
-.remarkrc                                       @hashgraph/release-engineering @hashgraph/release-engineering-managers
+/config/                                        @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk-go-maintainers
+.remarkrc                                       @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk-go-maintainers
 
 # Self-protection for root CODEOWNERS files (this file should not exist and should definitely require approval)
-/CODEOWNERS                                      @hashgraph/release-engineering @hashgraph/release-engineering-managers
+/CODEOWNERS                                     @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk-go-maintainers
 
 # Protect the repository root files
-/README.md                                      @hashgraph/release-engineering @hashgraph/release-engineering-managers
+/README.md                                      @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk-go-maintainers
 **/LICENSE                                      @hashgraph/release-engineering @hashgraph/release-engineering-managers
 
 # CodeCov configuration
-**/codecov.yml                                  @hashgraph/release-engineering @hashgraph/release-engineering-managers
+**/codecov.yml                                  @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk-go-maintainers
 
 # Git Ignore definitions
-**/.gitignore                                   @hashgraph/release-engineering @hashgraph/release-engineering-managers
-**/.gitignore.*                                 @hashgraph/release-engineering @hashgraph/release-engineering-managers
+**/.gitignore                                   @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk-go-maintainers
+**/.gitignore.*                                 @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk-go-maintainers
