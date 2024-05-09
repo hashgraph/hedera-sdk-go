@@ -1,5 +1,5 @@
 # Default code owners for entire repository
-*   @hashgraph/hedera-sdk-go-maintainers
+*                                               @hashgraph/hedera-sdk @hashgraph/hedera-sdk-go-maintainers @hashgraph/hedera-sdk-go-contributors
 
 #########################
 #####  Core Files  ######
@@ -9,33 +9,33 @@
 
 # Protection Rules for Github Configuration Files and Actions Workflows
 /.github/                                       @hashgraph/release-engineering @hashgraph/release-engineering-managers
-/.github/workflows/                             @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk-go-maintainers
+/.github/workflows/                             @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk @hashgraph/hedera-sdk-go-maintainers @hashgraph/hedera-sdk-go-contributors
 
 # Legacy Maven project files
-**/pom.xml                                      @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk-go-maintainers
+**/pom.xml                                      @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk @hashgraph/hedera-sdk-go-maintainers  @hashgraph/hedera-sdk-go-contributors
 
 # Gradle project files and inline plugins
-/gradle/                                        @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk-go-maintainers
-gradlew                                         @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk-go-maintainers
-gradlew.bat                                     @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk-go-maintainers
-**/build-logic/                                 @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk-go-maintainers
-**/gradle.*                                     @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk-go-maintainers
-**/*.gradle.*                                   @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk-go-maintainers
+/gradle/                                        @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk @hashgraph/hedera-sdk-go-maintainers  @hashgraph/hedera-sdk-go-contributors
+gradlew                                         @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk @hashgraph/hedera-sdk-go-maintainers  @hashgraph/hedera-sdk-go-contributors
+gradlew.bat                                     @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk @hashgraph/hedera-sdk-go-maintainers  @hashgraph/hedera-sdk-go-contributors
+**/build-logic/                                 @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk @hashgraph/hedera-sdk-go-maintainers  @hashgraph/hedera-sdk-go-contributors
+**/gradle.*                                     @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk @hashgraph/hedera-sdk-go-maintainers  @hashgraph/hedera-sdk-go-contributors
+**/*.gradle.*                                   @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk @hashgraph/hedera-sdk-go-maintainers  @hashgraph/hedera-sdk-go-contributors
 
 # Codacy Tool Configurations
-/config/                                        @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk-go-maintainers
-.remarkrc                                       @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk-go-maintainers
+/config/                                        @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk @hashgraph/hedera-sdk-go-maintainers  @hashgraph/hedera-sdk-go-contributors
+.remarkrc                                       @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk @hashgraph/hedera-sdk-go-maintainers  @hashgraph/hedera-sdk-go-contributors
 
 # Self-protection for root CODEOWNERS files (this file should not exist and should definitely require approval)
-/CODEOWNERS                                     @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk-go-maintainers
+/CODEOWNERS                                     @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk @hashgraph/hedera-sdk-go-maintainers  @hashgraph/hedera-sdk-go-contributors
 
 # Protect the repository root files
-/README.md                                      @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk-go-maintainers
+/README.md                                      @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk @hashgraph/hedera-sdk-go-maintainers  @hashgraph/hedera-sdk-go-contributors
 **/LICENSE                                      @hashgraph/release-engineering @hashgraph/release-engineering-managers
 
 # CodeCov configuration
-**/codecov.yml                                  @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk-go-maintainers
+**/codecov.yml                                  @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk @hashgraph/hedera-sdk-go-maintainers  @hashgraph/hedera-sdk-go-contributors
 
 # Git Ignore definitions
-**/.gitignore                                   @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk-go-maintainers
-**/.gitignore.*                                 @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk-go-maintainers
+**/.gitignore                                   @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk @hashgraph/hedera-sdk-go-maintainers  @hashgraph/hedera-sdk-go-contributors
+**/.gitignore.*                                 @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk @hashgraph/hedera-sdk-go-maintainers  @hashgraph/hedera-sdk-go-contributors
