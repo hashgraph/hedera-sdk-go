@@ -844,10 +844,13 @@ func TestIntegrationTokenUpdateTransactionCannotUpdateImmutableNFT(t *testing.T)
 	require.ErrorContains(t, err, "TOKEN_IS_IMMUTABLE")
 }
 
+const zeroKeyString = "0000000000000000000000000000000000000000000000000000000000000000"
+
 func TestIntegrationTokenUpdateTransactionUpdateAdminKeyToEmptyKeyList(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
+	// Create NFT with supply and admin keys
 	resp, err := NewTokenCreateTransaction().
 		SetTokenName("ffff").
 		SetTokenSymbol("F").
@@ -861,6 +864,7 @@ func TestIntegrationTokenUpdateTransactionUpdateAdminKeyToEmptyKeyList(t *testin
 	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
+	// Update admin key to empty key list
 	tx, err := NewTokenUpdateTransaction().
 		SetTokenID(*receipt.TokenID).
 		SetAdminKey(NewKeyList()).
@@ -880,9 +884,10 @@ func TestIntegrationTokenUpdateTransactionUpdateAdminKeyWithoutAlreadySetAdminKe
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
-	zeroAdminKey, err := PrivateKeyFromString("0000000000000000000000000000000000000000000000000000000000000000")
+	zeroAdminKey, err := PrivateKeyFromString(zeroKeyString)
 	require.NoError(t, err)
 
+	// Create NFT with no admin key
 	resp, err := NewTokenCreateTransaction().
 		SetTokenName("ffff").
 		SetTokenSymbol("F").
@@ -912,12 +917,13 @@ func TestIntegrationTokenUpdateTransactionUpdateAdminKeyWithoutSignFails(t *test
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
-	zeroAdminKey, err := PrivateKeyFromString("0000000000000000000000000000000000000000000000000000000000000000")
+	zeroAdminKey, err := PrivateKeyFromString(zeroKeyString)
 	require.NoError(t, err)
 
 	supplyKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
+	// Create NFT with supply and admin keys
 	resp, err := NewTokenCreateTransaction().
 		SetTokenName("ffff").
 		SetTokenSymbol("F").
@@ -931,6 +937,7 @@ func TestIntegrationTokenUpdateTransactionUpdateAdminKeyWithoutSignFails(t *test
 	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
+	// Update admin key
 	tx, err := NewTokenUpdateTransaction().
 		SetTokenID(*receipt.TokenID).
 		SetAdminKey(zeroAdminKey).
@@ -950,7 +957,7 @@ func TestIntegrationTokenUpdateTransactionUpdateSupplyKey(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
-	zeroSupplyKey, err := PrivateKeyFromString("0000000000000000000000000000000000000000000000000000000000000000")
+	zeroSupplyKey, err := PrivateKeyFromString(zeroKeyString)
 	require.NoError(t, err)
 
 	validSupplyKey, err := PrivateKeyGenerateEd25519()
@@ -959,6 +966,7 @@ func TestIntegrationTokenUpdateTransactionUpdateSupplyKey(t *testing.T) {
 	supplyKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
+	// Create NFT with admin and supply keys
 	resp, err := NewTokenCreateTransaction().
 		SetTokenName("ffff").
 		SetTokenSymbol("F").
@@ -972,6 +980,7 @@ func TestIntegrationTokenUpdateTransactionUpdateSupplyKey(t *testing.T) {
 	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
+	// Update supply key
 	tx, err := NewTokenUpdateTransaction().
 		SetTokenID(*receipt.TokenID).
 		SetSupplyKey(zeroSupplyKey).
@@ -986,6 +995,7 @@ func TestIntegrationTokenUpdateTransactionUpdateSupplyKey(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
+	// Update supply key
 	tx, err = NewTokenUpdateTransaction().
 		SetTokenID(*receipt.TokenID).
 		SetSupplyKey(validSupplyKey).
@@ -1011,6 +1021,7 @@ func TestIntegrationTokenUpdateTransactionUpdateSupplyKeyToEmptyKeylist(t *testi
 	supplyKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
+	// Create NFT with admin and supply keys
 	resp, err := NewTokenCreateTransaction().
 		SetTokenName("ffff").
 		SetTokenSymbol("F").
@@ -1024,6 +1035,7 @@ func TestIntegrationTokenUpdateTransactionUpdateSupplyKeyToEmptyKeylist(t *testi
 	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
+	// Update supply key
 	tx, err := NewTokenUpdateTransaction().
 		SetTokenID(*receipt.TokenID).
 		SetSupplyKey(NewKeyList()).
@@ -1051,4 +1063,202 @@ func TestIntegrationTokenUpdateTransactionUpdateSupplyKeyToEmptyKeylist(t *testi
 
 	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.ErrorContains(t, err, "exceptional receipt status: TOKEN_HAS_NO_SUPPLY_KEY")
+}
+
+func TestIntegrationTokenUpdateTransactionUpdateSupplyKeyFullValidationWithAdminKey(t *testing.T) {
+	t.Parallel()
+	env := NewIntegrationTestEnv(t)
+
+	validSupplyKey, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+
+	supplyKey, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+
+	// Create NFT with admin and supply keys
+	resp, err := NewTokenCreateTransaction().
+		SetTokenName("ffff").
+		SetTokenSymbol("F").
+		SetSupplyKey(supplyKey).
+		SetAdminKey(env.OperatorKey).
+		SetTokenType(TokenTypeNonFungibleUnique).
+		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+		SetFreezeDefault(false).
+		Execute(env.Client)
+	require.NoError(t, err)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	// Update supply key
+	tx, err := NewTokenUpdateTransaction().
+		SetTokenID(*receipt.TokenID).
+		SetSupplyKey(validSupplyKey).
+		SetKeyVerificationMode(FULL_VALIDATION).
+		FreezeWith(env.Client)
+	assert.NoError(t, err)
+
+	// Sign with the admin key
+	resp, err = tx.Sign(env.OperatorKey).Execute(env.Client)
+	assert.NoError(t, err)
+
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+}
+
+func TestIntegrationTokenUpdateTransactionUpdateSupplyKeyFullValidation(t *testing.T) {
+	t.Parallel()
+	env := NewIntegrationTestEnv(t)
+
+	validSupplyKey, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+
+	supplyKey, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+
+	// Create NFT with supply key
+	resp, err := NewTokenCreateTransaction().
+		SetTokenName("ffff").
+		SetTokenSymbol("F").
+		SetSupplyKey(supplyKey).
+		SetTokenType(TokenTypeNonFungibleUnique).
+		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+		SetFreezeDefault(false).
+		Execute(env.Client)
+	require.NoError(t, err)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	// Update supply key
+	tx, err := NewTokenUpdateTransaction().
+		SetTokenID(*receipt.TokenID).
+		SetSupplyKey(validSupplyKey).
+		SetKeyVerificationMode(FULL_VALIDATION).
+		FreezeWith(env.Client)
+	assert.NoError(t, err)
+
+	_, err = validSupplyKey.SignTransaction(&tx.Transaction)
+	assert.NoError(t, err)
+	_, err = supplyKey.SignTransaction(&tx.Transaction)
+	assert.NoError(t, err)
+
+	// Sign with the supply key and new supply key
+	resp, err = tx.Execute(env.Client)
+	assert.NoError(t, err)
+
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+}
+
+func TestIntegrationTokenUpdateTransactionUpdateSupplyKeyFullValidationFails(t *testing.T) {
+	t.Parallel()
+	env := NewIntegrationTestEnv(t)
+
+	validSupplyKey, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+
+	supplyKey, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+
+	// Create NFT with supply key
+	resp, err := NewTokenCreateTransaction().
+		SetTokenName("ffff").
+		SetTokenSymbol("F").
+		SetSupplyKey(supplyKey).
+		SetTokenType(TokenTypeNonFungibleUnique).
+		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+		SetFreezeDefault(false).
+		Execute(env.Client)
+	require.NoError(t, err)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	// Update supply key
+	tx, err := NewTokenUpdateTransaction().
+		SetTokenID(*receipt.TokenID).
+		SetSupplyKey(validSupplyKey).
+		SetKeyVerificationMode(FULL_VALIDATION).
+		FreezeWith(env.Client)
+	assert.NoError(t, err)
+
+	_, err = supplyKey.SignTransaction(&tx.Transaction)
+	assert.NoError(t, err)
+
+	//Sign with the old supply key, should fail
+	resp, err = tx.Execute(env.Client)
+	assert.NoError(t, err)
+
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.ErrorContains(t, err, "exceptional receipt status: INVALID_SIGNATURE")
+
+	// Update supply key
+	tx2, err := NewTokenUpdateTransaction().
+		SetTokenID(*receipt.TokenID).
+		SetSupplyKey(validSupplyKey).
+		SetKeyVerificationMode(FULL_VALIDATION).
+		FreezeWith(env.Client)
+	assert.NoError(t, err)
+
+	_, err = validSupplyKey.SignTransaction(&tx2.Transaction)
+	assert.NoError(t, err)
+
+	//Sign with the new supply key, should fail
+	resp, err = tx2.Execute(env.Client)
+	assert.NoError(t, err)
+
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.ErrorContains(t, err, "exceptional receipt status: INVALID_SIGNATURE")
+}
+
+func TestIntegrationTokenUpdateTransactionUpdateSupplyKeyWithInvalidKey(t *testing.T) {
+	t.Parallel()
+	env := NewIntegrationTestEnv(t)
+	var invalidKey _Ed25519PublicKey
+	randomBytes := make([]byte, 32)
+	keyData := [32]byte{
+		0x01, 0x23, 0x45, 0x67,
+		0x89, 0xab, 0xcd, 0xef,
+		0xfe, 0xdc, 0xba, 0x98,
+		0x76, 0x54, 0x32, 0x10,
+		0x00, 0x11, 0x22, 0x33,
+		0x44, 0x55, 0x66, 0x77,
+		0x88, 0x99, 0xaa, 0xbb,
+		0xcc, 0xdd, 0xee, 0xff,
+	}
+	randomBytes = keyData[:]
+	copy(invalidKey.keyData[:], randomBytes)
+	invalidSupplyKey := PublicKey{
+		ed25519PublicKey: &invalidKey,
+	}
+
+	supplyKey, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+
+	// Create NFT with supply key
+	resp, err := NewTokenCreateTransaction().
+		SetTokenName("ffff").
+		SetTokenSymbol("F").
+		SetSupplyKey(supplyKey).
+		SetTokenType(TokenTypeNonFungibleUnique).
+		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+		SetFreezeDefault(false).
+		Execute(env.Client)
+	require.NoError(t, err)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	// Update supply key
+	tx, err := NewTokenUpdateTransaction().
+		SetTokenID(*receipt.TokenID).
+		SetSupplyKey(invalidSupplyKey).
+		SetKeyVerificationMode(NO_VALIDATION).
+		FreezeWith(env.Client)
+	assert.NoError(t, err)
+
+	_, err = supplyKey.SignTransaction(&tx.Transaction)
+	assert.NoError(t, err)
+
+	//Sign with the old supply key
+	_, err = tx.Execute(env.Client)
+	assert.ErrorContains(t, err, "exceptional precheck status INVALID_SUPPLY_KEY")
+
 }
