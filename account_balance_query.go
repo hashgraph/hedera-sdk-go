@@ -121,7 +121,7 @@ func (q *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error) {
 		accountId = q.contractID.String()
 	}
 
-	err = fetchTokenBalances(obtainUrlForMirrorNode(client), accountId, &accountBalance)
+	err = fetchTokenBalances(ObtainUrlForMirrorNode(client), accountId, &accountBalance)
 	if err != nil {
 		return accountBalance, err
 	}
@@ -140,7 +140,7 @@ user would not get the up to date state of token relationships. This note is ONL
 is queried from the MirrorNode. Other query information arrives at the time of consensus response.
 */
 func fetchTokenBalances(network string, id string, accountBalance *AccountBalance) error {
-	response, err := accountBalanceMirrorNodeQuery(network, id)
+	response, err := AccountBalanceMirrorNodeQuery(network, id)
 	if err != nil {
 		return err
 	}
@@ -154,7 +154,6 @@ func fetchTokenBalances(network string, id string, accountBalance *AccountBalanc
 			}
 		}
 	}
-
 	return nil
 }
 

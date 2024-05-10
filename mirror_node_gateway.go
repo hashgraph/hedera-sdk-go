@@ -4,7 +4,7 @@ package hedera
  *
  * Hedera Go SDK
  *
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
+ * Copyright (C) 2020 - 2024 Hedera Hashgraph, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,32 +26,32 @@ import (
 )
 
 // Function to obtain the token relationships of the specified account
-func tokenReleationshipMirrorNodeQuery(network string, id string) (map[string]interface{}, error) {
-	tokenRelationshipUrl := buildUrl(network, "accounts", id, "tokens")
-	return makeGetRequest(tokenRelationshipUrl)
+func TokenReleationshipMirrorNodeQuery(network string, id string) (map[string]interface{}, error) {
+	tokenRelationshipUrl := BuildUrl(network, "accounts", id, "tokens")
+	return MakeGetRequest(tokenRelationshipUrl)
 }
 
 // Function to obtain account info for given account ID. Return the pure JSON response as mapping
-func accountInfoMirrorNodeQuery(network string, accountId string) (map[string]interface{}, error) {
-	accountInfoUrl := buildUrl(network, "accounts", accountId)
-	return makeGetRequest(accountInfoUrl)
+func AccountInfoMirrorNodeQuery(network string, accountId string) (map[string]interface{}, error) {
+	accountInfoUrl := BuildUrl(network, "accounts", accountId)
+	return MakeGetRequest(accountInfoUrl)
 }
 
 // Function to obtain balance of tokens for given account ID. Return the pure JSON response as mapping
-func accountBalanceMirrorNodeQuery(network string, accountId string) (map[string]interface{}, error) {
+func AccountBalanceMirrorNodeQuery(network string, accountId string) (map[string]interface{}, error) {
 	// accountInfoMirrorNodeQuery provides the needed data this function exists only for the convenience of naming
-	info, err := accountInfoMirrorNodeQuery(network, accountId)
+	info, err := AccountInfoMirrorNodeQuery(network, accountId)
 	return info["balance"].(map[string]interface{}), err
 }
 
 // Function to obtain balance of tokens for given contract ID. Return the pure JSON response as mapping
-func contractInfoMirrorNodeQuery(network string, contractId string) (map[string]interface{}, error) { // nolint
-	contractInfoUrl := buildUrl(network, "contracts", contractId)
-	return makeGetRequest(contractInfoUrl)
+func ContractInfoMirrorNodeQuery(network string, contractId string) (map[string]interface{}, error) { // nolint
+	contractInfoUrl := BuildUrl(network, "contracts", contractId)
+	return MakeGetRequest(contractInfoUrl)
 }
 
 // Make a GET HTTP request to provided URL and map it's json response to a generic `interface` map and return it
-func makeGetRequest(url string) (response map[string]interface{}, e error) {
+func MakeGetRequest(url string) (response map[string]interface{}, e error) {
 	// Make an HTTP request
 	resp, err := http.Get(url) //nolint
 
@@ -74,7 +74,7 @@ func makeGetRequest(url string) (response map[string]interface{}, e error) {
 }
 
 // Uses the client to deduce the current network as the network is ambiguous during Mirror Node calls
-func obtainUrlForMirrorNode(client *Client) string {
+func ObtainUrlForMirrorNode(client *Client) string {
 	const localNetwork = "127.0.0.1"
 	if client.GetMirrorNetwork()[0] == localNetwork+":5600" || client.GetMirrorNetwork()[0] == localNetwork+":443" {
 		return localNetwork + "5551"
@@ -85,7 +85,7 @@ func obtainUrlForMirrorNode(client *Client) string {
 
 // This function takes the current network(localhost,testnet,previewnet,mainnet) adds the current api version hardcore style
 // and concatenates further parameters for the call to MirrorNode
-func buildUrl(network string, params ...string) string {
+func BuildUrl(network string, params ...string) string {
 	url := "https://" + network + "/api/v1"
 	for _, arg := range params {
 		url += "/" + arg

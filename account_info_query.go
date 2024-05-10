@@ -21,7 +21,6 @@ package hedera
  */
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -62,7 +61,7 @@ func (q *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
 		return AccountInfo{}, err
 	}
 
-	err = fetchAccountInfoTokenRelationships(obtainUrlForMirrorNode(client), q.accountID.String(), &info)
+	err = fetchAccountInfoTokenRelationships(ObtainUrlForMirrorNode(client), q.accountID.String(), &info)
 	if err != nil {
 		return info, err
 	}
@@ -81,14 +80,13 @@ user would not get the up to date state of token relationships. This note is ONL
 is queried from the MirrorNode. Other query information arrives at the time of consensus response.
 */
 func fetchAccountInfoTokenRelationships(network string, id string, info *AccountInfo) error {
-	response, err := tokenReleationshipMirrorNodeQuery(network, id)
+	response, err := TokenReleationshipMirrorNodeQuery(network, id)
 	if err != nil {
 		return err
 	}
 
 	if tokens, ok := response["tokens"].([]interface{}); ok {
 		for _, token := range tokens {
-			fmt.Println(token)
 			tr, err := TokenRelationshipFromJson(token)
 			if err != nil {
 				return err
@@ -96,7 +94,6 @@ func fetchAccountInfoTokenRelationships(network string, id string, info *Account
 			info.TokenRelationships = append(info.TokenRelationships, tr)
 		}
 	}
-
 	return nil
 }
 
