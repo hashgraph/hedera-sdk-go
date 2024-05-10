@@ -246,7 +246,7 @@ func _Execute(client *Client, e Executable) (interface{}, error) {
 
 		if !node._IsHealthy() {
 			txLogger.Trace("node is unhealthy, waiting before continuing", "requestId", e.getLogID(e), "delay", node._Wait().String())
-			_DelayForAttempt(e.getLogID(e), backOff.NextBackOff(), attempt, txLogger)
+			_DelayForAttempt(e.getLogID(e), currentBackoff, attempt, txLogger)
 			continue
 		}
 
@@ -254,6 +254,7 @@ func _Execute(client *Client, e Executable) (interface{}, error) {
 		channel, err := node._GetChannel(txLogger)
 		if err != nil {
 			client.network._IncreaseBackoff(node)
+			errPersistent = err
 			continue
 		}
 
@@ -324,7 +325,7 @@ func _Execute(client *Client, e Executable) (interface{}, error) {
 		switch e.shouldRetry(e, resp) {
 		case executionStateRetry:
 			errPersistent = statusError
-			_DelayForAttempt(e.getLogID(e), backOff.NextBackOff(), attempt, txLogger)
+			_DelayForAttempt(e.getLogID(e), currentBackoff, attempt, txLogger)
 			continue
 		case executionStateExpired:
 			if e.isTransaction() {
@@ -351,7 +352,7 @@ func _Execute(client *Client, e Executable) (interface{}, error) {
 	}
 
 	if errPersistent == nil {
-		errPersistent = errors.New("error")
+		errPersistent = errors.New("unknown error occurred after max attempts")
 	}
 
 	if e.isTransaction() {

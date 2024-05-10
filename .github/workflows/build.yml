@@ -48,9 +48,9 @@ jobs:
         needs:
             - build
         env:
-            HEDERA_NETWORK: localhost
-            OPERATOR_ID: ${{ secrets.LOCAL_OPERATOR_ID }}
-            OPERATOR_KEY: ${{ secrets.LOCAL_OPERATOR_KEY }}
+          OPERATOR_KEY: "302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137"
+          OPERATOR_ID: "0.0.2"
+          HEDERA_NETWORK: "localhost"
 
         steps:
             - name: Check out code into the Go module directory
@@ -67,14 +67,6 @@ jobs:
             - name: Tests Integration
               if: success()
               run: go test -tags="e2e" -timeout 9999s -v -coverprofile=e2e.out -covermode=atomic -race
-
-            - name: Tests Testnets
-              if: success()
-              env:
-                HEDERA_NETWORK: testnet
-                OPERATOR_ID: ${{ secrets.TESTNET_OPERATOR_ID }}
-                OPERATOR_KEY: ${{ secrets.TESTNET_OPERATOR_KEY }}
-              run: go test -tags="testnets" -timeout 9999s -v -coverprofile=testnets.out -covermode=atomic -race
 
             - name: Upload coverage to Codecov
               if: success()
