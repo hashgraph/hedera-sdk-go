@@ -26,7 +26,7 @@ jobs:
         runs-on: [ self-hosted, Linux, medium, ephemeral ]
         steps:
             - name: Harden Runner
-              uses: step-security/harden-runner@63c24ba6bd7ba022e95695ff85de572c04a18142 # v2.7.0
+              uses: step-security/harden-runner@a4aa98b93cab29d9b1101a6143fb8bce00e2eac4 # v2.7.1
               with:
                 egress-policy: audit
 
@@ -36,13 +36,13 @@ jobs:
                 sudo apt-get install -y --no-install-recommends gcc libc6-dev libc-dev
 
             - name: Set up Go 1.19
-              uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
+              uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7 # v5.0.1
               with:
                   go-version: 1.19
               id: go
 
             - name: Check out code into the Go module directory
-              uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+              uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b # v4.1.5
 
             - name: Vet Examples
               run: go vet ./examples/...
@@ -54,7 +54,7 @@ jobs:
               run: go build -v .
 
             - name: Lint
-              uses: golangci/golangci-lint-action@3cfe3a4abbb849e10058ce4af15d205b6da42804 # v4.0.0
+              uses: golangci/golangci-lint-action@a4f60bb28d35aeee14e6880718e0c85ff1882e64 # v6.0.1
               with:
                   skip-cache: true
 
@@ -72,7 +72,7 @@ jobs:
 
         steps:
             - name: Harden Runner
-              uses: step-security/harden-runner@63c24ba6bd7ba022e95695ff85de572c04a18142 # v2.7.0
+              uses: step-security/harden-runner@a4aa98b93cab29d9b1101a6143fb8bce00e2eac4 # v2.7.1
               with:
                   egress-policy: audit
 
@@ -87,13 +87,13 @@ jobs:
                 sudo apt-get install -y --no-install-recommends gcc libc6-dev libc-dev
 
             - name: Set up Go 1.19
-              uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
+              uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7 # v5.0.1
               with:
                   go-version: 1.19
               id: go
 
             - name: Check out code into the Go module directory
-              uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+              uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b # v4.1.5
 
             - name: Start the local node
               if: success()
@@ -109,7 +109,7 @@ jobs:
 
             - name: Upload coverage to Codecov
               if: success()
-              uses: codecov/codecov-action@7afa10ed9b269c561c2336fd862446844e0cbf71 # v4.2.0
+              uses: codecov/codecov-action@5ecb98a3c6b747ed38dc09f787459979aebb39be # v4.3.1
               with:
                 token: ${{ secrets.CODECOV_TOKEN }}
                 files: ./unit.out,./e2e.out,./testnets.out
