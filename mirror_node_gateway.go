@@ -26,34 +26,38 @@ import (
 )
 
 // Function to obtain the token relationships of the specified account
-func TokenReleationshipMirrorNodeQuery(network string, id string) (map[string]interface{}, error) {
-	tokenRelationshipUrl := BuildUrl(network, "accounts", id, "tokens")
+func TokenReleationshipMirrorNodeQuery(networkUrl string, id string) (map[string]interface{}, error) {
+	tokenRelationshipUrl := BuildUrl(networkUrl, "accounts", id, "tokens")
 	return MakeGetRequest(tokenRelationshipUrl)
 }
 
 // Function to obtain account info for given account ID. Return the pure JSON response as mapping
-func AccountInfoMirrorNodeQuery(network string, accountId string) (map[string]interface{}, error) {
-	accountInfoUrl := BuildUrl(network, "accounts", accountId)
+func AccountInfoMirrorNodeQuery(networkUrl string, accountId string) (map[string]interface{}, error) {
+	accountInfoUrl := BuildUrl(networkUrl, "accounts", accountId)
 	return MakeGetRequest(accountInfoUrl)
 }
 
 // Function to obtain balance of tokens for given account ID. Return the pure JSON response as mapping
-func AccountBalanceMirrorNodeQuery(network string, accountId string) (map[string]interface{}, error) {
+func AccountBalanceMirrorNodeQuery(networkUrl string, accountId string) (map[string]interface{}, error) {
 	// accountInfoMirrorNodeQuery provides the needed data this function exists only for the convenience of naming
-	info, err := AccountInfoMirrorNodeQuery(network, accountId)
+	info, err := AccountInfoMirrorNodeQuery(networkUrl, accountId)
+	// check in case of empty tokenBalances
+	if len(info) == 0 {
+		return nil, nil
+	}
 	return info["balance"].(map[string]interface{}), err
 }
 
 // Function to obtain balance of tokens for given contract ID. Return the pure JSON response as mapping
-func ContractInfoMirrorNodeQuery(network string, contractId string) (map[string]interface{}, error) { // nolint
-	contractInfoUrl := BuildUrl(network, "contracts", contractId)
+func ContractInfoMirrorNodeQuery(networkUrl string, contractId string) (map[string]interface{}, error) { // nolint
+	contractInfoUrl := BuildUrl(networkUrl, "contracts", contractId)
 	return MakeGetRequest(contractInfoUrl)
 }
 
 // Make a GET HTTP request to provided URL and map it's json response to a generic `interface` map and return it
-func MakeGetRequest(url string) (response map[string]interface{}, e error) {
+func MakeGetRequest(networkUrl string) (response map[string]interface{}, e error) {
 	// Make an HTTP request
-	resp, err := http.Get(url) //nolint
+	resp, err := http.Get(networkUrl) //nolint
 
 	if err != nil {
 		return nil, err
@@ -74,21 +78,21 @@ func MakeGetRequest(url string) (response map[string]interface{}, e error) {
 }
 
 // Uses the client to deduce the current network as the network is ambiguous during Mirror Node calls
-func ObtainUrlForMirrorNode(client *Client) string {
+func FetchMirrorNodeUrlFromClient(client *Client) string {
 	const localNetwork = "127.0.0.1"
+	const apiVersion = "/api/v1"
 	if client.GetMirrorNetwork()[0] == localNetwork+":5600" || client.GetMirrorNetwork()[0] == localNetwork+":443" {
-		return localNetwork + "5551"
+		return "http://" + localNetwork + ":5551" + apiVersion
 	} else {
-		return client.GetMirrorNetwork()[0]
+		return "https://" + client.GetMirrorNetwork()[0] + apiVersion
 	}
 }
 
 // This function takes the current network(localhost,testnet,previewnet,mainnet) adds the current api version hardcore style
 // and concatenates further parameters for the call to MirrorNode
-func BuildUrl(network string, params ...string) string {
-	url := "https://" + network + "/api/v1"
+func BuildUrl(networkUrl string, params ...string) string {
 	for _, arg := range params {
-		url += "/" + arg
+		networkUrl += "/" + arg
 	}
-	return url
+	return networkUrl
 }

@@ -28,13 +28,12 @@ import (
  * limitations under the License.
  *
  */
-const mainnetMirrorNodeUrl = "mainnet-public.mirrornode.hedera.com"
-const testnetMirrorNodeUrl = "testnet.mirrornode.hedera.com"
-const previewnetMirrorNodeUrl = "previewnet.mirrornode.hedera.com"
-
 func TestBuildUrlReturnCorrectUrl(t *testing.T) {
-	url := "https://testnet.mirrornode.hedera.com/api/v1/accounts/0.0.7477022/tokens"
+	t.Parallel()
+	env := NewIntegrationTestEnv(t)
 
-	result := buildUrl("testnet.mirrornode.hedera.com", "accounts", "0.0.7477022", "tokens")
+	url := "http://127.0.0.1:5551/api/v1/accounts/0.0.7477022/tokens"
+
+	result := BuildUrl(FetchMirrorNodeUrlFromClient(env.Client), "accounts", "0.0.7477022", "tokens")
 	assert.Equal(t, url, result)
 }

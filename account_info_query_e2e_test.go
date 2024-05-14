@@ -25,6 +25,7 @@ package hedera
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 
@@ -52,6 +53,9 @@ func TestIntegrationAccountInfoQueryCanExecute(t *testing.T) {
 
 	accountID := *receipt.AccountID
 	require.NoError(t, err)
+
+	// sleep in order for mirror node information to update
+	time.Sleep(3 * time.Second)
 
 	info, err := NewAccountInfoQuery().
 		SetAccountID(accountID).
@@ -108,6 +112,9 @@ func TestIntegrationAccountInfoQueryGetCost(t *testing.T) {
 
 	accountID := *receipt.AccountID
 	require.NoError(t, err)
+
+	// sleep in order for mirror node information to update
+	time.Sleep(3 * time.Second)
 
 	accountInfo := NewAccountInfoQuery().
 		SetAccountID(accountID).
@@ -221,6 +228,9 @@ func TestIntegrationAccountInfoQuerySetBigMaxPayment(t *testing.T) {
 
 	accountID := *receipt.AccountID
 	require.NoError(t, err)
+
+	// sleep in order for mirror node information to update
+	time.Sleep(3 * time.Second)
 
 	accountInfo := NewAccountInfoQuery().
 		SetAccountID(accountID).

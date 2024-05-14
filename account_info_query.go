@@ -61,7 +61,7 @@ func (q *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
 		return AccountInfo{}, err
 	}
 
-	err = fetchAccountInfoTokenRelationships(ObtainUrlForMirrorNode(client), q.accountID.String(), &info)
+	err = fetchAccountInfoTokenRelationships(FetchMirrorNodeUrlFromClient(client), q.accountID.String(), &info)
 	if err != nil {
 		return info, err
 	}

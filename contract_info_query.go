@@ -81,7 +81,7 @@ func (q *ContractInfoQuery) Execute(client *Client) (ContractInfo, error) {
 		return ContractInfo{}, err
 	}
 
-	err = fetchContractInfoTokenRelationships(ObtainUrlForMirrorNode(client), q.contractID.String(), &info)
+	err = fetchContractInfoTokenRelationships(FetchMirrorNodeUrlFromClient(client), q.contractID.String(), &info)
 	if err != nil {
 		return info, err
 	}

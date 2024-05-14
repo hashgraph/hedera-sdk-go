@@ -24,10 +24,10 @@ import "github.com/pkg/errors"
 // TokenRelationship is the information about a token relationship
 type TokenRelationship struct {
 	TokenID              TokenID
-	Balance              uint64
+	Balance              float64
 	KycStatus            *bool
 	FreezeStatus         *bool
-	Decimals             uint32
+	Decimals             float64
 	AutomaticAssociation bool
 }
 
@@ -66,10 +66,10 @@ func TokenRelationshipFromJson(tokenObject interface{}) (*TokenRelationship, err
 
 	tokenRelationship := &TokenRelationship{
 		TokenID:              tokenId,
-		Balance:              uint64(tokenJSON["balance"].(float64)),
+		Balance:              float64(tokenJSON["balance"].(float64)),
 		KycStatus:            kycStatus,
 		FreezeStatus:         freezeStatus,
-		Decimals:             tokenJSON["decimals"].(uint32),
+		Decimals:             tokenJSON["decimals"].(float64),
 		AutomaticAssociation: tokenJSON["automatic_association"].(bool),
 	}
 	return tokenRelationship, nil

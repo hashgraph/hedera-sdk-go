@@ -121,7 +121,7 @@ func (q *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error) {
 		accountId = q.contractID.String()
 	}
 
-	err = fetchTokenBalances(ObtainUrlForMirrorNode(client), accountId, &accountBalance)
+	err = fetchTokenBalances(FetchMirrorNodeUrlFromClient(client), accountId, &accountBalance)
 	if err != nil {
 		return accountBalance, err
 	}

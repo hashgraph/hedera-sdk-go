@@ -25,6 +25,7 @@ package hedera
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 
@@ -69,6 +70,9 @@ func TestIntegrationContractInfoQueryCanExecute(t *testing.T) {
 
 	assert.NotNil(t, receipt.ContractID)
 	contractID := *receipt.ContractID
+
+	// sleep in order for mirror node information to update
+	time.Sleep(3 * time.Second)
 
 	info, err := NewContractInfoQuery().
 		SetContractID(contractID).
@@ -143,6 +147,9 @@ func TestIntegrationContractInfoQueryGetCost(t *testing.T) {
 
 	assert.NotNil(t, receipt.ContractID)
 	contractID := *receipt.ContractID
+
+	// sleep in order for mirror node information to update
+	time.Sleep(3 * time.Second)
 
 	contractInfo := NewContractInfoQuery().
 		SetContractID(contractID).
@@ -220,6 +227,9 @@ func TestIntegrationContractInfoQuerySetBigMaxPayment(t *testing.T) {
 
 	assert.NotNil(t, receipt.ContractID)
 	contractID := *receipt.ContractID
+
+	// sleep in order for mirror node information to update
+	time.Sleep(3 * time.Second)
 
 	contractInfo := NewContractInfoQuery().
 		SetContractID(contractID).
