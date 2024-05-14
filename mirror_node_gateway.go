@@ -19,43 +19,56 @@ package hedera
  * limitations under the License.
  *
  */
+
 import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 )
 
 // Function to obtain the token relationships of the specified account
 func TokenReleationshipMirrorNodeQuery(networkUrl string, id string) (map[string]interface{}, error) {
-	tokenRelationshipUrl := BuildUrl(networkUrl, "accounts", id, "tokens")
-	return MakeGetRequest(tokenRelationshipUrl)
+	tokenRelationshipUrl := buildUrlParams(networkUrl, "accounts", id, "tokens")
+	return makeGetRequest(tokenRelationshipUrl)
 }
 
 // Function to obtain account info for given account ID. Return the pure JSON response as mapping
 func AccountInfoMirrorNodeQuery(networkUrl string, accountId string) (map[string]interface{}, error) {
-	accountInfoUrl := BuildUrl(networkUrl, "accounts", accountId)
-	return MakeGetRequest(accountInfoUrl)
+	accountInfoUrl := buildUrlParams(networkUrl, "accounts", accountId)
+	return makeGetRequest(accountInfoUrl)
+}
+
+// Function to obtain balance of tokens for given contract ID. Return the pure JSON response as mapping
+func ContractInfoMirrorNodeQuery(networkUrl string, contractId string) (map[string]interface{}, error) { // nolint
+	contractInfoUrl := buildUrlParams(networkUrl, "contracts", contractId)
+	return makeGetRequest(contractInfoUrl)
 }
 
 // Function to obtain balance of tokens for given account ID. Return the pure JSON response as mapping
 func AccountBalanceMirrorNodeQuery(networkUrl string, accountId string) (map[string]interface{}, error) {
-	// accountInfoMirrorNodeQuery provides the needed data this function exists only for the convenience of naming
 	info, err := AccountInfoMirrorNodeQuery(networkUrl, accountId)
-	// check in case of empty tokenBalances
+	// in case of empty info we won't be able to map to string interface
 	if len(info) == 0 {
 		return nil, nil
 	}
 	return info["balance"].(map[string]interface{}), err
 }
 
-// Function to obtain balance of tokens for given contract ID. Return the pure JSON response as mapping
-func ContractInfoMirrorNodeQuery(networkUrl string, contractId string) (map[string]interface{}, error) { // nolint
-	contractInfoUrl := BuildUrl(networkUrl, "contracts", contractId)
-	return MakeGetRequest(contractInfoUrl)
+// Function to deduce the current network from the client as the network is ambiguous during Mirror Node calls
+func FetchMirrorNodeUrlFromClient(client *Client) string {
+	const localNetwork = "127.0.0.1"
+	const apiVersion = "/api/v1"
+	if strings.HasPrefix(client.GetMirrorNetwork()[0], localNetwork) {
+		return "http://" + localNetwork + ":5551" + apiVersion
+	} else {
+		// prefix is mainnet, testnet or previewnet
+		return "https://" + client.GetMirrorNetwork()[0] + apiVersion
+	}
 }
 
-// Make a GET HTTP request to provided URL and map it's json response to a generic `interface` map and return it
-func MakeGetRequest(networkUrl string) (response map[string]interface{}, e error) {
+// Make a GET HTTP request to provided URL and map it's JSON response to a generic `interface` map and return it
+func makeGetRequest(networkUrl string) (response map[string]interface{}, e error) {
 	// Make an HTTP request
 	resp, err := http.Get(networkUrl) //nolint
 
@@ -68,29 +81,17 @@ func MakeGetRequest(networkUrl string) (response map[string]interface{}, e error
 	defer resp.Body.Close()
 
 	// Decode the JSON response into a map
-	var resultMap map[string]interface{}
-	err = json.NewDecoder(resp.Body).Decode(&resultMap)
+	var responseMap map[string]interface{}
+	err = json.NewDecoder(resp.Body).Decode(&responseMap)
 	if err != nil {
 		return nil, err
 	}
 
-	return resultMap, nil
+	return responseMap, nil
 }
 
-// Uses the client to deduce the current network as the network is ambiguous during Mirror Node calls
-func FetchMirrorNodeUrlFromClient(client *Client) string {
-	const localNetwork = "127.0.0.1"
-	const apiVersion = "/api/v1"
-	if client.GetMirrorNetwork()[0] == localNetwork+":5600" || client.GetMirrorNetwork()[0] == localNetwork+":443" {
-		return "http://" + localNetwork + ":5551" + apiVersion
-	} else {
-		return "https://" + client.GetMirrorNetwork()[0] + apiVersion
-	}
-}
-
-// This function takes the current network(localhost,testnet,previewnet,mainnet) adds the current api version hardcore style
-// and concatenates further parameters for the call to MirrorNode
-func BuildUrl(networkUrl string, params ...string) string {
+// Function to build url parameters
+func buildUrlParams(networkUrl string, params ...string) string {
 	for _, arg := range params {
 		networkUrl += "/" + arg
 	}
