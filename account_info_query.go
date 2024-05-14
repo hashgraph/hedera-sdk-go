@@ -85,6 +85,8 @@ func fetchAccountInfoTokenRelationships(network string, id string, info *Account
 		return err
 	}
 
+	info.TokenRelationships = make([]*TokenRelationship, 0)
+
 	if tokens, ok := response["tokens"].([]interface{}); ok {
 		for _, token := range tokens {
 			tr, err := TokenRelationshipFromJson(token)

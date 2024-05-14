@@ -113,7 +113,7 @@ func (q *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error) {
 		return AccountBalance{}, err
 	}
 
-	accountBalance := _AccountBalanceFromProtobuf(resp.(*services.Response).GetCryptogetAccountBalance())
+	balance := _AccountBalanceFromProtobuf(resp.(*services.Response).GetCryptogetAccountBalance())
 
 	// accountId value could be either in q.accountID or q.contractID
 	accountId := q.accountID.String()
@@ -121,12 +121,12 @@ func (q *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error) {
 		accountId = q.contractID.String()
 	}
 
-	err = fetchTokenBalances(FetchMirrorNodeUrlFromClient(client), accountId, &accountBalance)
+	err = fetchTokenBalances(FetchMirrorNodeUrlFromClient(client), accountId, &balance)
 	if err != nil {
-		return accountBalance, err
+		return balance, err
 	}
 
-	return accountBalance, nil
+	return balance, nil
 }
 
 /*
@@ -139,18 +139,18 @@ consensus nodes. So if data related to token relationships is changed and a prop
 user would not get the up to date state of token relationships. This note is ONLY for token relationship data as it
 is queried from the MirrorNode. Other query information arrives at the time of consensus response.
 */
-func fetchTokenBalances(network string, id string, accountBalance *AccountBalance) error {
+func fetchTokenBalances(network string, id string, balance *AccountBalance) error {
 	response, err := AccountBalanceMirrorNodeQuery(network, id)
 	if err != nil {
 		return err
 	}
 
-	accountBalance.Tokens.balances = make(map[string]uint64)
+	balance.Tokens.balances = make(map[string]uint64)
 
 	if tokens, ok := response["tokens"].([]interface{}); ok {
 		for _, token := range tokens {
 			if tokenJSON, ok := token.(map[string]interface{}); ok {
-				accountBalance.Tokens.balances[tokenJSON["token_id"].(string)] = uint64(tokenJSON["balance"].(float64))
+				balance.Tokens.balances[tokenJSON["token_id"].(string)] = uint64(tokenJSON["balance"].(float64))
 			}
 		}
 	}
