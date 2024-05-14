@@ -151,7 +151,7 @@ func NewIntegrationTestEnv(t *testing.T) IntegrationTestEnv {
 	if os.Getenv("HEDERA_NETWORK") != "testnet" {
 		resp, err := NewAccountCreateTransaction().
 			SetKey(newKey.PublicKey()).
-			SetInitialBalance(NewHbar(150)).
+			SetInitialBalance(NewHbar(150000000)).
 			SetAutoRenewPeriod(time.Hour*24*81 + time.Minute*26 + time.Second*39).
 			Execute(env.Client)
 		if err != nil {
