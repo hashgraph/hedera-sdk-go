@@ -86,6 +86,12 @@ func TestIntegrationContractInfoQueryCanExecute(t *testing.T) {
 	assert.Equal(t, env.Client.GetOperatorPublicKey(), info.AdminKey)
 	assert.Equal(t, "hedera-sdk-go::TestContractInfoQuery_Execute", info.ContractMemo)
 
+	// Verify bytes marshalling
+	data := info.ToBytes()
+	assert.NotNil(t, info.ToBytes())
+	_, err = ContractInfoFromBytes(data)
+	require.NoError(t, err)
+
 	resp, err = NewContractDeleteTransaction().
 		SetContractID(contractID).
 		SetTransferAccountID(env.Client.GetOperatorAccountID()).
