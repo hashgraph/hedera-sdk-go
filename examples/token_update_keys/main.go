@@ -36,6 +36,13 @@ func main() {
 	// Setting the client operator ID and key
 	client.SetOperator(operatorAccountID, operatorKey)
 
+	// Create admin key
+	adminKey, err := hedera.PrivateKeyGenerateEd25519()
+	if err != nil {
+		panic(fmt.Sprintf("%v : error creating admin key", err))
+	}
+	fmt.Println("create wipe key: ", adminKey.String())
+
 	// Create supply key
 	supplyKey, err := hedera.PrivateKeyGenerateEd25519()
 	if err != nil {
@@ -61,20 +68,24 @@ func main() {
 		SetFreezeDefault(false).
 		SetSupplyKey(supplyKey).
 		SetWipeKey(wipeKey).
-		SetAdminKey(operatorKey).
-		Execute(client)
+		SetAdminKey(adminKey).
+		FreezeWith(client)
+	if err != nil {
+		panic(fmt.Sprintf("%v : error creating token", err))
+	}
+	resp, err := tx.Sign(adminKey).Execute(client)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error creating token", err))
 	}
 
-	receipt, err := tx.SetValidateStatus(true).GetReceipt(client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(client)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error creating token", err))
 	}
 	tokenID := receipt.TokenID
 	fmt.Println("created token: ", tokenID)
 
-	// Query the token info to get the supply key after creation
+	// Query the token info after creation
 	info, err := hedera.NewTokenInfoQuery().
 		SetTokenID(*receipt.TokenID).
 		Execute(client)
@@ -85,9 +96,9 @@ func main() {
 	fmt.Println("token's wipe key after creation: ", info.WipeKey)
 	fmt.Println("token's admin key after creation: ", info.AdminKey)
 
-	removeWipeKeyFullValidation(client, *receipt.TokenID, operatorKey)
-	updateSupplyKeyFullValidation(client, *receipt.TokenID, supplyKey)
-	updateSupplyKeyNoValidation(client, *receipt.TokenID, supplyKey)
+	removeWipeKeyFullValidation(client, *receipt.TokenID, adminKey)
+	newSupplyKey := updateSupplyKeyFullValidation(client, *receipt.TokenID, supplyKey)
+	removeSupplyKeyNoValidation(client, *receipt.TokenID, newSupplyKey)
 }
 
 // With "full" verification mode, our required key
@@ -95,6 +106,7 @@ func main() {
 //   - Admin key
 //   - A 2/2 list including the role key and its replacement key
 func removeWipeKeyFullValidation(client *hedera.Client, tokenID hedera.TokenID, adminKey hedera.PrivateKey) {
+	// Remove wipe key by setting it to a empty key list
 	tx, err := hedera.NewTokenUpdateTransaction().
 		SetTokenID(tokenID).
 		SetWipeKey(hedera.NewKeyList()).
@@ -112,6 +124,7 @@ func removeWipeKeyFullValidation(client *hedera.Client, tokenID hedera.TokenID, 
 		panic(fmt.Sprintf("%v : error updating token", err))
 	}
 
+	// Query the token info to get the wipe key after removal
 	info, err := hedera.NewTokenInfoQuery().
 		SetTokenID(tokenID).
 		Execute(client)
@@ -121,18 +134,21 @@ func removeWipeKeyFullValidation(client *hedera.Client, tokenID hedera.TokenID, 
 	fmt.Println("token's wipe key after removal: ", info.WipeKey)
 }
 
-func updateSupplyKeyFullValidation(client *hedera.Client, tokenID hedera.TokenID, oldSupplyKey hedera.PrivateKey) {
-	newValidKey, _ := hedera.GeneratePrivateKey()
+func updateSupplyKeyFullValidation(client *hedera.Client, tokenID hedera.TokenID, oldSupplyKey hedera.PrivateKey) hedera.PrivateKey {
+	newSupplyKey, _ := hedera.GeneratePrivateKey()
+
+	// Update  supply key by setting it to a new key
 	tx, err := hedera.NewTokenUpdateTransaction().
 		SetTokenID(tokenID).
-		SetSupplyKey(newValidKey.PublicKey()).
+		SetSupplyKey(newSupplyKey.PublicKey()).
 		SetKeyVerificationMode(hedera.FULL_VALIDATION).
 		FreezeWith(client)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error updating token", err))
 	}
 
-	_, err = newValidKey.SignTransaction(&tx.Transaction)
+	// Sign with old and new supply keys
+	_, err = newSupplyKey.SignTransaction(&tx.Transaction)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error signing tx", err))
 	}
@@ -150,6 +166,7 @@ func updateSupplyKeyFullValidation(client *hedera.Client, tokenID hedera.TokenID
 		panic(fmt.Sprintf("%v : error updating token", err))
 	}
 
+	// Query the token info to get the supply key after update
 	info, err := hedera.NewTokenInfoQuery().
 		SetTokenID(tokenID).
 		Execute(client)
@@ -157,19 +174,25 @@ func updateSupplyKeyFullValidation(client *hedera.Client, tokenID hedera.TokenID
 		panic(fmt.Sprintf("%v : error getting token info", err))
 	}
 	fmt.Println("token's supply key after update: ", info.SupplyKey)
+
+	return newSupplyKey
 }
 
-func updateSupplyKeyNoValidation(client *hedera.Client, tokenID hedera.TokenID, oldSupplyKey hedera.PrivateKey) {
-	newValidKey, _ := hedera.GeneratePrivateKey()
-	tx1, err := hedera.NewTokenUpdateTransaction().
+func removeSupplyKeyNoValidation(client *hedera.Client, tokenID hedera.TokenID, oldSupplyKey hedera.PrivateKey) {
+	zeroNewKey, _ := hedera.PublicKeyFromString("0000000000000000000000000000000000000000000000000000000000000000")
+
+	// Remove supply key by setting it to a zero key
+	tx, err := hedera.NewTokenUpdateTransaction().
 		SetTokenID(tokenID).
-		SetSupplyKey(newValidKey.PublicKey()).
+		SetSupplyKey(zeroNewKey).
 		SetKeyVerificationMode(hedera.NO_VALIDATION).
 		FreezeWith(client)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error updating token", err))
 	}
-	resp, err := tx1.Sign(oldSupplyKey).Execute(client)
+
+	// Sign with old supply key
+	resp, err := tx.Sign(oldSupplyKey).Execute(client)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error updating token", err))
 	}
@@ -178,11 +201,14 @@ func updateSupplyKeyNoValidation(client *hedera.Client, tokenID hedera.TokenID, 
 		panic(fmt.Sprintf("%v : error updating token", err))
 	}
 
+	// Query the token info to get the supply key after removal
 	info, err := hedera.NewTokenInfoQuery().
 		SetTokenID(tokenID).
 		Execute(client)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error getting token info", err))
 	}
-	fmt.Println("token's supply key after update: ", info.SupplyKey)
+
+	newSupplyKey := info.SupplyKey.(hedera.PublicKey)
+	fmt.Println("token's supply key after zero out: ", newSupplyKey.StringRaw())
 }

@@ -242,7 +242,7 @@ func TestIntegrationTokenUpdateTransactionUpdateKeysLowerPrivKeysUpdateThemselve
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
-	zeroNewKey, err := PrivateKeyFromString(zeroKeyString)
+	zeroNewKey, err := PublicKeyFromString(zeroKeyString)
 	require.NoError(t, err)
 
 	validNewKey, err := PrivateKeyGenerateEd25519()
@@ -265,12 +265,9 @@ func TestIntegrationTokenUpdateTransactionUpdateKeysLowerPrivKeysUpdateThemselve
 	}
 }
 
-func TestIntegrationTokenUpdateTransactionUpdateKeysLowerPrivKeysUpdateThemselvesFullValidation(t *testing.T) {
+func TestIntegrationTokenUpdateTransactionUpdateKeysLowerPrivilegeKeysUpdateThemselvesFullValidation(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
-
-	zeroNewKey, err := PrivateKeyFromString(zeroKeyString)
-	require.NoError(t, err)
 
 	validNewKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -284,11 +281,22 @@ func TestIntegrationTokenUpdateTransactionUpdateKeysLowerPrivKeysUpdateThemselve
 		require.NoError(t, err)
 	}
 
+}
+
+func TestIntegrationTokenUpdateTransactionUpdateKeysLowerPrivilegeKeysUpdateFullValidationFails(t *testing.T) {
+	t.Parallel()
+	env := NewIntegrationTestEnv(t)
+
+	zeroNewKey, err := PublicKeyFromString(zeroKeyString)
+	require.NoError(t, err)
+
+	initialKey := env.OperatorKey
+
 	// Zero out keys
 	for _, keyType := range []KeyType{WIPE_KEY, KYC_KEY, SUPPLY_KEY, FREEZE_KEY, FEE_SCHEDULE_KEY, PAUSE_KEY, METADATA_KEY} {
 		resp, _, err := createTokenWithKeysAndUpdateTokenKeyHelper(t, keyType, keyType, env.Client, zeroNewKey, initialKey, initialKey, FULL_VALIDATION)
 		_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
-		require.NoError(t, err)
+		require.ErrorContains(t, err, "exceptional receipt status: INVALID_SIGNATURE")
 	}
 }
 
@@ -310,10 +318,54 @@ func TestIntegrationTokenUpdateTransactionRemoveKeysWithoutAdminKeySignFails(t *
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
-	initialKey := env.OperatorKey
+	newKey, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+
+	initialKey, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+
+	wipeKey, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+
+	// Create NFT with wipe and supply keys
+	tx, err := NewTokenCreateTransaction().
+		SetTokenName("ffff").
+		SetTokenSymbol("F").
+		SetWipeKey(initialKey).
+		SetKycKey(initialKey).
+		SetSupplyKey(initialKey).
+		SetFreezeKey(initialKey).
+		SetFeeScheduleKey(initialKey).
+		SetPauseKey(initialKey).
+		SetMetadataKey(initialKey).
+		SetAdminKey(initialKey).
+		SetTokenType(TokenTypeNonFungibleUnique).
+		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+	resp, err := tx.Sign(initialKey).Execute(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	// Update supply key
+	tx1, err := NewTokenUpdateTransaction().
+		SetTokenID(*receipt.TokenID).
+		SetWipeKey(newKey).
+		SetKycKey(newKey).
+		SetSupplyKey(newKey).
+		SetFreezeKey(newKey).
+		SetFeeScheduleKey(newKey).
+		SetPauseKey(newKey).
+		SetMetadataKey(newKey).
+		SetAdminKey(newKey).
+		SetKeyVerificationMode(NO_VALIDATION).
+		FreezeWith(env.Client)
+	assert.NoError(t, err)
 
 	// Cannot remove keys without admin key signing
-	resp, _, err := createTokenWithKeysAndUpdateTokenKeyHelper(t, ALL, ALL, env.Client, NewKeyList(), initialKey, initialKey, NO_VALIDATION)
+	resp, err = tx1.Sign(wipeKey).Execute(env.Client)
+	assert.NoError(t, err)
+
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.ErrorContains(t, err, "exceptional receipt status: INVALID_SIGNATURE")
 }
