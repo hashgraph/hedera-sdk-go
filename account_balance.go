@@ -29,7 +29,7 @@ type AccountBalance struct {
 	// Deprecated: Use `AccountBalance.Tokens` instead
 	Token  map[TokenID]uint64
 	Tokens TokenBalanceMap
-	// Deprecated use a mirror node query
+	// Deprecated: use a mirror node query
 	TokenDecimals TokenDecimalMap
 }
 
