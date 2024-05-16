@@ -100,7 +100,7 @@ user would not get the up to date state of token relationships. This note is ONL
 is queried from the MirrorNode. Other query information arrives at the time of consensus response.
 */
 func fetchContractInfoTokenRelationships(network string, id string, info *ContractInfo) error {
-	response, err := TokenReleationshipMirrorNodeQuery(network, id)
+	response, err := TokenRelationshipMirrorNodeQuery(network, id)
 	if err != nil {
 		return err
 	}

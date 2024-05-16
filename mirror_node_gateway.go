@@ -28,7 +28,7 @@ import (
 )
 
 // Function to obtain the token relationships of the specified account
-func TokenReleationshipMirrorNodeQuery(networkUrl string, id string) (map[string]interface{}, error) {
+func TokenRelationshipMirrorNodeQuery(networkUrl string, id string) (map[string]interface{}, error) {
 	tokenRelationshipUrl := buildUrlParams(networkUrl, "accounts", id, "tokens")
 	return makeGetRequest(tokenRelationshipUrl)
 }
@@ -46,13 +46,13 @@ func ContractInfoMirrorNodeQuery(networkUrl string, contractId string) (map[stri
 }
 
 // Function to obtain balance of tokens for given account ID. Return the pure JSON response as mapping
-func AccountBalanceMirrorNodeQuery(networkUrl string, accountId string) (map[string]interface{}, error) {
-	info, err := AccountInfoMirrorNodeQuery(networkUrl, accountId)
+func AccountTokenBalanceMirrorNodeQuery(networkUrl string, accountId string) (map[string]interface{}, error) {
+	info, err := TokenRelationshipMirrorNodeQuery(networkUrl, accountId)
 	// in case of empty info we won't be able to map to string interface
 	if len(info) == 0 {
 		return nil, nil
 	}
-	return info["balance"].(map[string]interface{}), err
+	return info, err
 }
 
 // Function to deduce the current network from the client as the network is ambiguous during Mirror Node calls

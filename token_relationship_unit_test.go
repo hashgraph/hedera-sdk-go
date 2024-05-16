@@ -25,12 +25,12 @@ func TestTokenRelationshipFromJson(t *testing.T) {
 
 	// Assert that the returned token relationship is correct
 	assert.Equal(t, "0.0.12345", tokenRelationship.TokenID.String())
-	assert.Equal(t, 100.0, tokenRelationship.Balance)
+	assert.Equal(t, uint64(100), tokenRelationship.Balance)
 	assert.NotNil(t, tokenRelationship.KycStatus)
 	assert.True(t, *tokenRelationship.KycStatus)
 	assert.NotNil(t, tokenRelationship.FreezeStatus)
 	assert.True(t, *tokenRelationship.FreezeStatus)
-	assert.Equal(t, 8.0, tokenRelationship.Decimals)
+	assert.Equal(t, uint32(8), tokenRelationship.Decimals)
 	assert.True(t, tokenRelationship.AutomaticAssociation)
 }
 

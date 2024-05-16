@@ -19,15 +19,17 @@ package hedera
  * limitations under the License.
  *
  */
-import "github.com/pkg/errors"
+import (
+	"github.com/pkg/errors"
+)
 
 // TokenRelationship is the information about a token relationship
 type TokenRelationship struct {
 	TokenID              TokenID
-	Balance              float64
+	Balance              uint64
 	KycStatus            *bool
 	FreezeStatus         *bool
-	Decimals             float64
+	Decimals             uint32
 	AutomaticAssociation bool
 }
 
@@ -66,10 +68,10 @@ func TokenRelationshipFromJson(tokenObject interface{}) (*TokenRelationship, err
 
 	tokenRelationship := &TokenRelationship{
 		TokenID:              tokenId,
-		Balance:              float64(tokenJSON["balance"].(float64)),
+		Balance:              uint64(tokenJSON["balance"].(float64)),
 		KycStatus:            kycStatus,
 		FreezeStatus:         freezeStatus,
-		Decimals:             tokenJSON["decimals"].(float64),
+		Decimals:             uint32(tokenJSON["decimals"].(float64)),
 		AutomaticAssociation: tokenJSON["automatic_association"].(bool),
 	}
 	return tokenRelationship, nil

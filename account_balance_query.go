@@ -140,7 +140,7 @@ user would not get the up to date state of token relationships. This note is ONL
 is queried from the MirrorNode. Other query information arrives at the time of consensus response.
 */
 func fetchTokenBalances(network string, id string, balance *AccountBalance) error {
-	response, err := AccountBalanceMirrorNodeQuery(network, id)
+	response, err := AccountTokenBalanceMirrorNodeQuery(network, id)
 	if err != nil {
 		return err
 	}
@@ -151,6 +151,7 @@ func fetchTokenBalances(network string, id string, balance *AccountBalance) erro
 		for _, token := range tokens {
 			if tokenJSON, ok := token.(map[string]interface{}); ok {
 				balance.Tokens.balances[tokenJSON["token_id"].(string)] = uint64(tokenJSON["balance"].(float64))
+				balance.TokenDecimals.decimals[tokenJSON["token_id"].(string)] = uint64(tokenJSON["decimals"].(float64))
 			}
 		}
 	}
