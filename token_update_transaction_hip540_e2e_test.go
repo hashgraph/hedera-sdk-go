@@ -78,32 +78,19 @@ func TestIntegrationTokenUpdateTransactionUpdateKeysToEmptyKeyListMakesTokenImmu
 	verifyLowerPrivilegeKeysNil(t, tokenInfo)
 }
 
-func TestIntegrationTokenUpdateTransactionUpdateKeysToZeroKeyMakesTokenImmutable(t *testing.T) {
-	t.Skip("Not possible at the moment because we need to sign with the PK of the key we are updating which is the zero key and not possible")
+func TestIntegrationTokenUpdateTransactionUpdateKeysToZeroKeyFails(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
-
-	validNewKey, err := PrivateKeyGenerateEd25519()
-	require.NoError(t, err)
 
 	zeroNewKey, err := PublicKeyFromString(zeroKeyString)
 	require.NoError(t, err)
 
 	// Make token immutable
-	resp, tokenID, err := createTokenWithKeysAndUpdateTokenKeyHelper(t, ALL, ALL, env.Client, zeroNewKey, env.OperatorKey, env.OperatorKey, NO_VALIDATION)
+	resp, _, err := createTokenWithKeysAndUpdateTokenKeyHelper(t, ALL, ALL, env.Client, zeroNewKey, env.OperatorKey, env.OperatorKey, NO_VALIDATION)
 	require.NoError(t, err)
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
 
-	// Verify token is immutable
-	resp, err = updateTokenKeysHelper(t, tokenID, ADMIN_KEY, env.Client, validNewKey, env.OperatorKey, NO_VALIDATION)
-	require.NoError(t, err)
-	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
-	require.ErrorContains(t, err, "exceptional receipt status: TOKEN_IS_IMMUTABLE")
-
-	tokenInfo, err := NewTokenInfoQuery().SetTokenID(tokenID).Execute(env.Client)
-	verifyAdminKey(t, tokenInfo, zeroNewKey)
-	verifyLowerPrivilegeKeys(t, tokenInfo, zeroNewKey)
+	require.ErrorContains(t, err, "INVALID_SIGNATURE")
 }
 
 func TestIntegrationTokenUpdateTransactionUpdateLowerPrivilegeKeysWithAdminKeyFullValidation(t *testing.T) {

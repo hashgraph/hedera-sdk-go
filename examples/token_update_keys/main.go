@@ -99,6 +99,7 @@ func main() {
 	removeWipeKeyFullValidation(client, *receipt.TokenID, adminKey)
 	newSupplyKey := updateSupplyKeyFullValidation(client, *receipt.TokenID, supplyKey)
 	removeSupplyKeyNoValidation(client, *receipt.TokenID, newSupplyKey)
+	removeAdminKeyNoValidation(client, *receipt.TokenID, adminKey)
 }
 
 // With "full" verification mode, our required key
@@ -211,4 +212,36 @@ func removeSupplyKeyNoValidation(client *hedera.Client, tokenID hedera.TokenID, 
 
 	newSupplyKey := info.SupplyKey.(hedera.PublicKey)
 	fmt.Println("token's supply key after zero out: ", newSupplyKey.StringRaw())
+}
+
+func removeAdminKeyNoValidation(client *hedera.Client, tokenID hedera.TokenID, oldAdminKey hedera.PrivateKey) {
+	// Remove admin key by setting it to a zero key
+	tx, err := hedera.NewTokenUpdateTransaction().
+		SetTokenID(tokenID).
+		SetAdminKey(hedera.NewKeyList()).
+		SetKeyVerificationMode(hedera.NO_VALIDATION).
+		FreezeWith(client)
+	if err != nil {
+		panic(fmt.Sprintf("%v : error updating token", err))
+	}
+
+	// Sign with old supply key
+	resp, err := tx.Sign(oldAdminKey).Execute(client)
+	if err != nil {
+		panic(fmt.Sprintf("%v : error updating token", err))
+	}
+	_, err = resp.SetValidateStatus(true).GetReceipt(client)
+	if err != nil {
+		panic(fmt.Sprintf("%v : error updating token", err))
+	}
+
+	// Query the token info to get the admin key after removal
+	info, err := hedera.NewTokenInfoQuery().
+		SetTokenID(tokenID).
+		Execute(client)
+	if err != nil {
+		panic(fmt.Sprintf("%v : error getting token info", err))
+	}
+
+	fmt.Println("token's admin key after removal: ", info.AdminKey)
 }
