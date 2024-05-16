@@ -25,8 +25,10 @@ import (
 
 // TokenRelationship is the information about a token relationship
 type TokenRelationship struct {
-	TokenID              TokenID
-	Balance              uint64
+	TokenID TokenID
+	Balance uint64
+	// Deprecated
+	Symbol               string
 	KycStatus            *bool
 	FreezeStatus         *bool
 	Decimals             uint32
