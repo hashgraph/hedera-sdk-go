@@ -141,7 +141,7 @@ func (node *_MirrorNode) _GetConsensusServiceClient() (*mirror.ConsensusServiceC
 		security = grpc.WithTransportCredentials(insecure.NewCredentials()) //nolint
 	}
 
-	conn, err := grpc.NewClient(node._ManagedNode.address._String(), security, grpc.WithKeepaliveParams(kacp), grpc.WithBlock())
+	conn, err := grpc.NewClient(node._ManagedNode.address._String(), security, grpc.WithKeepaliveParams(kacp))
 	if err != nil {
 		return nil, errors.Wrapf(err, "error connecting to mirror at %s", node._ManagedNode.address._String())
 	}
@@ -176,7 +176,7 @@ func (node *_MirrorNode) _GetNetworkServiceClient() (*mirror.NetworkServiceClien
 		security = grpc.WithTransportCredentials(insecure.NewCredentials()) //nolint
 	}
 
-	conn, err := grpc.NewClient(node._ManagedNode.address._String(), security, grpc.WithKeepaliveParams(kacp), grpc.WithBlock())
+	conn, err := grpc.NewClient(node._ManagedNode.address._String(), security, grpc.WithKeepaliveParams(kacp))
 	if err != nil {
 		return nil, errors.Wrapf(err, "error connecting to mirror at %s", node._ManagedNode.address._String())
 	}
