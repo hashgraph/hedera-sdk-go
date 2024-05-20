@@ -30,8 +30,6 @@ import (
 	"sync"
 	"time"
 
-	"context"
-
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
@@ -187,9 +185,7 @@ func (node *_Node) _GetChannel(logger Logger) (*_Channel, error) {
 		}))
 	}
 
-	cont, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	conn, err = grpc.DialContext(cont, node._ManagedNode.address._String(), security, grpc.WithKeepaliveParams(kacp), grpc.WithBlock())
+	conn, err = grpc.NewClient(node._ManagedNode.address._String(), security, grpc.WithKeepaliveParams(kacp), grpc.WithBlock())
 	if err != nil {
 		return nil, status.Error(codes.ResourceExhausted, "dial timeout of 10sec exceeded")
 	}
