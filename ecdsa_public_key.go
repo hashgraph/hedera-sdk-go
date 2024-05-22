@@ -267,7 +267,8 @@ func (pk _ECDSAPublicKey) _VerifyTransaction(tx Transaction) bool {
 }
 
 func (pk _ECDSAPublicKey) _ToFullKey() []byte {
-	return elliptic.Marshal(crypto.S256(), pk.X, pk.Y)
+	// This functionality cannot be replicated with the new ecdh.P256().GenerateKey(), because that produces an ecdh.PrivateKey which cannot be converted to an ecdsa.PrivateKey.
+	return elliptic.Marshal(crypto.S256(), pk.X, pk.Y) // nolint
 }
 
 func (pk _ECDSAPublicKey) _ToEthereumAddress() string {
