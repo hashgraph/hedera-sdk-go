@@ -28,26 +28,26 @@ import (
 )
 
 // Function to obtain the token relationships of the specified account
-func TokenRelationshipMirrorNodeQuery(networkUrl string, id string) (map[string]interface{}, error) {
+func tokenRelationshipMirrorNodeQuery(networkUrl string, id string) (map[string]interface{}, error) {
 	tokenRelationshipUrl := buildUrlParams(networkUrl, "accounts", id, "tokens")
 	return makeGetRequest(tokenRelationshipUrl)
 }
 
 // Function to obtain account info for given account ID. Return the pure JSON response as mapping
-func AccountInfoMirrorNodeQuery(networkUrl string, accountId string) (map[string]interface{}, error) {
+func accountInfoMirrorNodeQuery(networkUrl string, accountId string) (map[string]interface{}, error) { // nolint
 	accountInfoUrl := buildUrlParams(networkUrl, "accounts", accountId)
 	return makeGetRequest(accountInfoUrl)
 }
 
 // Function to obtain balance of tokens for given contract ID. Return the pure JSON response as mapping
-func ContractInfoMirrorNodeQuery(networkUrl string, contractId string) (map[string]interface{}, error) { // nolint
+func contractInfoMirrorNodeQuery(networkUrl string, contractId string) (map[string]interface{}, error) { // nolint
 	contractInfoUrl := buildUrlParams(networkUrl, "contracts", contractId)
 	return makeGetRequest(contractInfoUrl)
 }
 
 // Function to obtain balance of tokens for given account ID. Return the pure JSON response as mapping
-func AccountTokenBalanceMirrorNodeQuery(networkUrl string, accountId string) (map[string]interface{}, error) {
-	info, err := TokenRelationshipMirrorNodeQuery(networkUrl, accountId)
+func accountTokenBalanceMirrorNodeQuery(networkUrl string, accountId string) (map[string]interface{}, error) {
+	info, err := tokenRelationshipMirrorNodeQuery(networkUrl, accountId)
 	// in case of empty info we won't be able to map to string interface
 	if len(info) == 0 {
 		return nil, nil
@@ -56,7 +56,7 @@ func AccountTokenBalanceMirrorNodeQuery(networkUrl string, accountId string) (ma
 }
 
 // Function to deduce the current network from the client as the network is ambiguous during Mirror Node calls
-func FetchMirrorNodeUrlFromClient(client *Client) string {
+func fetchMirrorNodeUrlFromClient(client *Client) string {
 	const localNetwork = "127.0.0.1"
 	const apiVersion = "/api/v1"
 	if strings.HasPrefix(client.GetMirrorNetwork()[0], localNetwork) {

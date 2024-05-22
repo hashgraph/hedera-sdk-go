@@ -81,7 +81,7 @@ func (q *ContractInfoQuery) Execute(client *Client) (ContractInfo, error) {
 		return ContractInfo{}, err
 	}
 
-	err = fetchContractInfoTokenRelationships(FetchMirrorNodeUrlFromClient(client), q.contractID.String(), &info)
+	err = fetchContractInfoTokenRelationships(fetchMirrorNodeUrlFromClient(client), q.contractID.String(), &info)
 	if err != nil {
 		return info, err
 	}
@@ -100,7 +100,7 @@ user would not get the up to date state of token relationships. This note is ONL
 is queried from the MirrorNode. Other query information arrives at the time of consensus response.
 */
 func fetchContractInfoTokenRelationships(network string, id string, info *ContractInfo) error {
-	response, err := TokenRelationshipMirrorNodeQuery(network, id)
+	response, err := tokenRelationshipMirrorNodeQuery(network, id)
 	if err != nil {
 		return err
 	}
