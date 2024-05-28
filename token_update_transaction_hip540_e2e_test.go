@@ -634,29 +634,29 @@ func createTokenWithKeysAndUpdateTokenKeyHelper(t *testing.T, createKeyType KeyT
 func updateTokenKeysHelper(t *testing.T, tokenID TokenID, updateKeyType KeyType, client *Client, newKey Key, signerKey PrivateKey, verificationMode TokenKeyValidation) (TransactionResponse, error) {
 	privateKey, _ := newKey.(PrivateKey)
 	// Update the key
-	tx2 := NewTokenUpdateTransaction().
+	tx := NewTokenUpdateTransaction().
 		SetTokenID(tokenID).
 		SetKeyVerificationMode(verificationMode)
 
 	switch updateKeyType {
 	case WIPE_KEY:
-		tx2.SetWipeKey(newKey)
+		tx.SetWipeKey(newKey)
 	case KYC_KEY:
-		tx2.SetKycKey(newKey)
+		tx.SetKycKey(newKey)
 	case SUPPLY_KEY:
-		tx2.SetSupplyKey(newKey)
+		tx.SetSupplyKey(newKey)
 	case FREEZE_KEY:
-		tx2.SetFreezeKey(newKey)
+		tx.SetFreezeKey(newKey)
 	case FEE_SCHEDULE_KEY:
-		tx2.SetFeeScheduleKey(newKey)
+		tx.SetFeeScheduleKey(newKey)
 	case PAUSE_KEY:
-		tx2.SetPauseKey(newKey)
+		tx.SetPauseKey(newKey)
 	case METADATA_KEY:
-		tx2.SetMetadataKey(newKey)
+		tx.SetMetadataKey(newKey)
 	case ADMIN_KEY:
-		tx2.SetAdminKey(newKey)
+		tx.SetAdminKey(newKey)
 	case LOWER_PRIVILEGE:
-		tx2.SetWipeKey(newKey).
+		tx.SetWipeKey(newKey).
 			SetKycKey(newKey).
 			SetSupplyKey(newKey).
 			SetFreezeKey(newKey).
@@ -664,7 +664,7 @@ func updateTokenKeysHelper(t *testing.T, tokenID TokenID, updateKeyType KeyType,
 			SetPauseKey(newKey).
 			SetMetadataKey(newKey)
 	case ALL:
-		tx2.SetWipeKey(newKey).
+		tx.SetWipeKey(newKey).
 			SetKycKey(newKey).
 			SetSupplyKey(newKey).
 			SetFreezeKey(newKey).
@@ -673,12 +673,12 @@ func updateTokenKeysHelper(t *testing.T, tokenID TokenID, updateKeyType KeyType,
 			SetMetadataKey(newKey).
 			SetAdminKey(newKey)
 	}
-	frozenTx, err := tx2.FreezeWith(client)
+	frozenTx, err := tx.FreezeWith(client)
 	assert.NoError(t, err)
 
 	if updateKeyType == ADMIN_KEY || updateKeyType == ALL || verificationMode == FULL_VALIDATION {
-		privateKey.SignTransaction(&tx2.Transaction)
-		signerKey.SignTransaction(&tx2.Transaction)
+		privateKey.SignTransaction(&tx.Transaction)
+		signerKey.SignTransaction(&tx.Transaction)
 		resp, err := frozenTx.Execute(client)
 		return resp, err
 
