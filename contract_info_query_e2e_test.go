@@ -25,6 +25,7 @@ package hedera
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 
@@ -70,6 +71,9 @@ func TestIntegrationContractInfoQueryCanExecute(t *testing.T) {
 	assert.NotNil(t, receipt.ContractID)
 	contractID := *receipt.ContractID
 
+	// sleep in order for mirror node information to update
+	time.Sleep(3 * time.Second)
+
 	info, err := NewContractInfoQuery().
 		SetContractID(contractID).
 		SetMaxQueryPayment(NewHbar(1)).
@@ -81,6 +85,12 @@ func TestIntegrationContractInfoQueryCanExecute(t *testing.T) {
 	assert.Equal(t, contractID, info.ContractID)
 	assert.Equal(t, env.Client.GetOperatorPublicKey(), info.AdminKey)
 	assert.Equal(t, "hedera-sdk-go::TestContractInfoQuery_Execute", info.ContractMemo)
+
+	// Verify bytes marshalling
+	data := info.ToBytes()
+	assert.NotNil(t, info.ToBytes())
+	_, err = ContractInfoFromBytes(data)
+	require.NoError(t, err)
 
 	resp, err = NewContractDeleteTransaction().
 		SetContractID(contractID).
@@ -143,6 +153,9 @@ func TestIntegrationContractInfoQueryGetCost(t *testing.T) {
 
 	assert.NotNil(t, receipt.ContractID)
 	contractID := *receipt.ContractID
+
+	// sleep in order for mirror node information to update
+	time.Sleep(3 * time.Second)
 
 	contractInfo := NewContractInfoQuery().
 		SetContractID(contractID).
@@ -220,6 +233,9 @@ func TestIntegrationContractInfoQuerySetBigMaxPayment(t *testing.T) {
 
 	assert.NotNil(t, receipt.ContractID)
 	contractID := *receipt.ContractID
+
+	// sleep in order for mirror node information to update
+	time.Sleep(3 * time.Second)
 
 	contractInfo := NewContractInfoQuery().
 		SetContractID(contractID).

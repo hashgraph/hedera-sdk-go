@@ -38,6 +38,7 @@ type ContractInfo struct {
 	Storage                       uint64
 	ContractMemo                  string
 	Balance                       uint64
+	TokenRelationships            []*TokenRelationship
 	LedgerID                      LedgerID
 	AutoRenewAccountID            *AccountID
 	MaxAutomaticTokenAssociations int32

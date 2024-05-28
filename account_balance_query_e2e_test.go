@@ -25,6 +25,7 @@ package hedera
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 
@@ -77,15 +78,17 @@ func TestIntegrationAccountBalanceQueryCanGetTokenBalance(t *testing.T) {
 
 	tokenID := receipt.TokenID
 
+	// sleep in order for mirror node information to update
+	time.Sleep(3 * time.Second)
+
 	balance, err := NewAccountBalanceQuery().
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetAccountID(env.Client.GetOperatorAccountID()).
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	assert.Equal(t, balance, balance)
-	// TODO: assert.Equal(t, uint64(1000000), balance.Tokens.Get(*tokenID))
-	// TODO: assert.Equal(t, uint64(3), balance.TokenDecimals.Get(*tokenID))
+	assert.Equal(t, uint64(1000000), balance.Tokens.Get(*tokenID))
+	assert.Equal(t, uint64(3), balance.TokenDecimals.Get(*tokenID))
 	err = CloseIntegrationTestEnv(env, tokenID)
 	require.NoError(t, err)
 }

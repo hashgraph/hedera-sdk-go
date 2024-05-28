@@ -77,6 +77,9 @@ func TestIntegrationAccountUpdateTransactionCanExecute(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
+	// sleep in order for mirror node information to update
+	time.Sleep(3 * time.Second)
+
 	info, err := NewAccountInfoQuery().
 		SetAccountID(accountID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
@@ -144,6 +147,9 @@ func TestIntegrationAccountUpdateTransactionNoSigning(t *testing.T) {
 
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
+
+	// sleep in order for mirror node information to update
+	time.Sleep(3 * time.Second)
 
 	info, err := NewAccountInfoQuery().
 		SetAccountID(accountID).

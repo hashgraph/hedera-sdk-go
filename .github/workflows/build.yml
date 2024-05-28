@@ -1,5 +1,12 @@
 name: PR Checks
 
+defaults:
+    run:
+        shell: bash
+
+permissions:
+    contents: read
+
 on:
     pull_request:
         branches:
@@ -16,16 +23,26 @@ concurrency:
 jobs:
     build:
         name: Build
-        runs-on: ubuntu-latest
+        runs-on: [ self-hosted, Linux, medium, ephemeral ]
         steps:
-            - name: Set up Go 1.19
-              uses: actions/setup-go@v3
+            - name: Harden Runner
+              uses: step-security/harden-runner@f086349bfa2bd1361f7909c78558e816508cdc10 # v2.8.0
               with:
-                  go-version: 1.19
+                egress-policy: audit
+
+            - name: Setup GCC
+              run: |
+                sudo apt-get update
+                sudo apt-get install -y --no-install-recommends gcc libc6-dev libc-dev
+
+            - name: Set up Go 1.20
+              uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7 # v5.0.1
+              with:
+                  go-version: "1.20"
               id: go
 
             - name: Check out code into the Go module directory
-              uses: actions/checkout@v3
+              uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
 
             - name: Vet Examples
               run: go vet ./examples/...
@@ -37,14 +54,16 @@ jobs:
               run: go build -v .
 
             - name: Lint
-              uses: golangci/golangci-lint-action@v3
+              uses: golangci/golangci-lint-action@a4f60bb28d35aeee14e6880718e0c85ff1882e64 # v6.0.1
               with:
                   skip-cache: true
+                  args: --timeout=5m
 
     test:
         name: Unit and Integration Tests
         if: success()
-        runs-on: ubuntu-latest
+        runs-on: [ self-hosted, Linux, medium, ephemeral ]
+
         needs:
             - build
         env:
@@ -53,12 +72,33 @@ jobs:
           HEDERA_NETWORK: "localhost"
 
         steps:
+            - name: Harden Runner
+              uses: step-security/harden-runner@f086349bfa2bd1361f7909c78558e816508cdc10 # v2.8.0
+              with:
+                  egress-policy: audit
+
+            - name: Setup NodeJS
+              uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+              with:
+                node-version: 18
+
+            - name: Setup GCC
+              run: |
+                sudo apt-get update
+                sudo apt-get install -y --no-install-recommends gcc libc6-dev libc-dev
+
+            - name: Set up Go 1.20
+              uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7 # v5.0.1
+              with:
+                  go-version: "1.20"
+              id: go
+
             - name: Check out code into the Go module directory
-              uses: actions/checkout@v3
+              uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
 
             - name: Start the local node
               if: success()
-              run: npx @hashgraph/hedera-local start -d --network local --network-tag=0.50.0-alpha.0
+              run: npx @hashgraph/hedera-local start -d --network-tag=0.50.0-alpha.2
 
             - name: Tests Unit
               if: success()
@@ -70,7 +110,7 @@ jobs:
 
             - name: Upload coverage to Codecov
               if: success()
-              uses: codecov/codecov-action@v3
+              uses: codecov/codecov-action@125fc84a9a348dbcf27191600683ec096ec9021c # v4.4.1
               with:
                 token: ${{ secrets.CODECOV_TOKEN }}
                 files: ./unit.out,./e2e.out,./testnets.out

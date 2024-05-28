@@ -25,6 +25,7 @@ package hedera
 
 import (
 	"encoding/hex"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -125,6 +126,9 @@ func TestIntegrationContractCreateTransactionNoAdminKey(t *testing.T) {
 
 	assert.NotNil(t, receipt.ContractID)
 	contractID := *receipt.ContractID
+
+	// sleep in order for mirror node information to update
+	time.Sleep(3 * time.Second)
 
 	info, err := NewContractInfoQuery().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
