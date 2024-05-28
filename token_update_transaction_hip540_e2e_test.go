@@ -49,10 +49,7 @@ const (
 	ALL
 	LOWER_PRIVILEGE
 	NONE
-	ALL_DIFFERENT_ADMIN_KEY
 )
-
-const zeroKeyString = "0000000000000000000000000000000000000000000000000000000000000000"
 
 func TestIntegrationTokenUpdateTransactionUpdateKeysToEmptyKeyListMakesTokenImmutable(t *testing.T) {
 	t.Parallel()
@@ -82,7 +79,7 @@ func TestIntegrationTokenUpdateTransactionUpdateKeysToZeroKeyFails(t *testing.T)
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
-	zeroNewKey, err := PublicKeyFromString(zeroKeyString)
+	zeroNewKey, err := PublicKeyFromString(ZERO_KEY_STRING)
 	require.NoError(t, err)
 
 	// Make token immutable
@@ -98,7 +95,7 @@ func TestIntegrationTokenUpdateTransactionUpdateLowerPrivilegeKeysWithAdminKeyFu
 	env := NewIntegrationTestEnv(t)
 
 	// Update lower privilege keys to zero key list with admin key
-	zeroKey, err := PublicKeyFromString(zeroKeyString)
+	zeroKey, err := PublicKeyFromString(ZERO_KEY_STRING)
 	require.NoError(t, err)
 
 	resp, tokenID, err := createTokenWithKeysAndUpdateTokenKeyHelper(t, ALL, LOWER_PRIVILEGE, env.Client, zeroKey, env.OperatorKey, env.OperatorKey, FULL_VALIDATION)
@@ -135,7 +132,7 @@ func TestIntegrationTokenUpdateTransactionUpdateLowerPrivilegeKeysWithAdminKeyNo
 	env := NewIntegrationTestEnv(t)
 
 	// Update lower privilege keys to zero key list with admin key
-	zeroKey, err := PublicKeyFromString(zeroKeyString)
+	zeroKey, err := PublicKeyFromString(ZERO_KEY_STRING)
 	require.NoError(t, err)
 
 	resp, tokenID, err := createTokenWithKeysAndUpdateTokenKeyHelper(t, ALL, LOWER_PRIVILEGE, env.Client, zeroKey, env.OperatorKey, env.OperatorKey, NO_VALIDATION)
@@ -198,7 +195,7 @@ func TestIntegrationTokenUpdateTransactionUpdateLowerPrivilegeKeysWithInvalidKey
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.ErrorContains(t, err, "INVALID_SIGNATURE")
 
-	zeroKey, err := PrivateKeyFromString(zeroKeyString)
+	zeroKey, err := PrivateKeyFromString(ZERO_KEY_STRING)
 	require.NoError(t, err)
 
 	// Cannot upadate token with some random key
@@ -229,7 +226,7 @@ func TestIntegrationTokenUpdateTransactionUpdateKeysLowerPrivKeysUpdateThemselve
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
-	zeroNewKey, err := PublicKeyFromString(zeroKeyString)
+	zeroNewKey, err := PublicKeyFromString(ZERO_KEY_STRING)
 	require.NoError(t, err)
 
 	validNewKey, err := PrivateKeyGenerateEd25519()
@@ -274,7 +271,7 @@ func TestIntegrationTokenUpdateTransactionUpdateKeysLowerPrivilegeKeysUpdateFull
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
-	zeroNewKey, err := PublicKeyFromString(zeroKeyString)
+	zeroNewKey, err := PublicKeyFromString(ZERO_KEY_STRING)
 	require.NoError(t, err)
 
 	initialKey := env.OperatorKey
@@ -610,15 +607,6 @@ func createTokenWithKeysAndUpdateTokenKeyHelper(t *testing.T, createKeyType KeyT
 			SetPauseKey(initialKey).
 			SetMetadataKey(initialKey).
 			SetAdminKey(initialKey)
-	case ALL_DIFFERENT_ADMIN_KEY:
-		tx.SetWipeKey(initialKey).
-			SetKycKey(initialKey).
-			SetSupplyKey(initialKey).
-			SetFreezeKey(initialKey).
-			SetFeeScheduleKey(initialKey).
-			SetPauseKey(initialKey).
-			SetMetadataKey(initialKey).
-			SetAdminKey(signerKey)
 	}
 	frozenTx, err := tx.FreezeWith(client)
 	require.NoError(t, err)

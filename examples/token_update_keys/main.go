@@ -180,7 +180,7 @@ func updateSupplyKeyFullValidation(client *hedera.Client, tokenID hedera.TokenID
 }
 
 func removeSupplyKeyNoValidation(client *hedera.Client, tokenID hedera.TokenID, oldSupplyKey hedera.PrivateKey) {
-	zeroNewKey, _ := hedera.PublicKeyFromString("0000000000000000000000000000000000000000000000000000000000000000")
+	zeroNewKey, _ := hedera.PublicKeyFromString(hedera.ZERO_KEY_STRING)
 
 	// Remove supply key by setting it to a zero key
 	tx, err := hedera.NewTokenUpdateTransaction().
