@@ -25,6 +25,7 @@ package hedera
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 
@@ -52,6 +53,9 @@ func TestIntegrationAccountInfoQueryCanExecute(t *testing.T) {
 
 	accountID := *receipt.AccountID
 	require.NoError(t, err)
+
+	// sleep in order for mirror node information to update
+	time.Sleep(3 * time.Second)
 
 	info, err := NewAccountInfoQuery().
 		SetAccountID(accountID).
@@ -108,6 +112,9 @@ func TestIntegrationAccountInfoQueryGetCost(t *testing.T) {
 
 	accountID := *receipt.AccountID
 	require.NoError(t, err)
+
+	// sleep in order for mirror node information to update
+	time.Sleep(3 * time.Second)
 
 	accountInfo := NewAccountInfoQuery().
 		SetAccountID(accountID).
@@ -222,6 +229,9 @@ func TestIntegrationAccountInfoQuerySetBigMaxPayment(t *testing.T) {
 	accountID := *receipt.AccountID
 	require.NoError(t, err)
 
+	// sleep in order for mirror node information to update
+	time.Sleep(3 * time.Second)
+
 	accountInfo := NewAccountInfoQuery().
 		SetAccountID(accountID).
 		SetMaxQueryPayment(NewHbar(1000000)).
@@ -329,4 +339,264 @@ func TestIntegrationAccountInfoQueryNoAccountID(t *testing.T) {
 
 	err = CloseIntegrationTestEnv(env, nil)
 	require.NoError(t, err)
+}
+
+func TestIntegrationAccountInfoQueryTokenRelationshipStatuses(t *testing.T) {
+	t.Parallel()
+	env := NewIntegrationTestEnv(t)
+
+	newKey, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+
+	newBalance := NewHbar(2)
+	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
+
+	resp, err := NewAccountCreateTransaction().
+		SetKey(newKey.PublicKey()).
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetMaxAutomaticTokenAssociations(10).
+		SetInitialBalance(newBalance).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	accountID := *receipt.AccountID
+	require.NoError(t, err)
+
+	resp, err = NewTokenCreateTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetTokenName("ffff").
+		SetTokenSymbol("F").
+		SetDecimals(3).
+		SetInitialSupply(1000000).
+		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+		SetAdminKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeKey(newKey).
+		SetWipeKey(newKey).
+		SetKycKey(newKey).
+		SetSupplyKey(newKey).
+		SetMetadataKey(newKey).
+		SetFreezeDefault(true).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	associateTxn, err := NewTokenAssociateTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetAccountID(accountID).
+		SetTokenIDs(*receipt.TokenID).
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+
+	resp, err = associateTxn.
+		Sign(newKey).
+		Execute(env.Client)
+	require.NoError(t, err)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	// sleep in order for mirror node information to update
+	time.Sleep(3 * time.Second)
+
+	info, err := NewAccountInfoQuery().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetAccountID(accountID).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	assert.Equal(t, accountID, info.AccountID)
+	assert.Equal(t, 1, len(info.TokenRelationships))
+	assert.Equal(t, true, *info.TokenRelationships[0].FreezeStatus)
+	assert.Equal(t, false, *info.TokenRelationships[0].KycStatus)
+
+	unfreezeTxn, err := NewTokenUnfreezeTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetAccountID(accountID).
+		SetTokenID(*receipt.TokenID).
+		FreezeWith(env.Client)
+
+	require.NoError(t, err)
+	resp, err = unfreezeTxn.
+		Sign(newKey).
+		Execute(env.Client)
+	require.NoError(t, err)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	kycUpdateTxn, err := NewTokenGrantKycTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetAccountID(accountID).
+		SetTokenID(*receipt.TokenID).
+		FreezeWith(env.Client)
+
+	require.NoError(t, err)
+	resp, err = kycUpdateTxn.
+		Sign(newKey).
+		Execute(env.Client)
+	require.NoError(t, err)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	// sleep in order for mirror node information to update
+	time.Sleep(3 * time.Second)
+
+	info, err = NewAccountInfoQuery().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetAccountID(accountID).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	assert.Equal(t, accountID, info.AccountID)
+	assert.Equal(t, 1, len(info.TokenRelationships))
+	assert.Equal(t, false, *info.TokenRelationships[0].FreezeStatus)
+	assert.Equal(t, true, *info.TokenRelationships[0].KycStatus)
+}
+
+func TestIntegrationAccountInfoQueryTokenRelationship(t *testing.T) {
+	t.Parallel()
+	env := NewIntegrationTestEnv(t)
+
+	newKey, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+
+	newBalance := NewHbar(2)
+	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
+
+	resp, err := NewAccountCreateTransaction().
+		SetKey(newKey.PublicKey()).
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetMaxAutomaticTokenAssociations(10).
+		SetInitialBalance(newBalance).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	accountID := *receipt.AccountID
+	require.NoError(t, err)
+
+	resp, err = NewTokenCreateTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetTokenName("ffff").
+		SetTokenSymbol("F").
+		SetDecimals(3).
+		SetInitialSupply(1000000).
+		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+		SetAdminKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeKey(newKey).
+		SetWipeKey(newKey).
+		SetKycKey(newKey).
+		SetSupplyKey(newKey).
+		SetMetadataKey(newKey).
+		SetFreezeDefault(false).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+	firstTokenID := *receipt.TokenID
+
+	associateTxn, err := NewTokenAssociateTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetAccountID(accountID).
+		SetTokenIDs(firstTokenID).
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+
+	resp, err = associateTxn.
+		Sign(newKey).
+		Execute(env.Client)
+	require.NoError(t, err)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	// sleep in order for mirror node information to update
+	time.Sleep(3 * time.Second)
+
+	info, err := NewAccountInfoQuery().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetAccountID(accountID).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	assert.Equal(t, 1, len(info.TokenRelationships))
+	assert.Equal(t, uint32(3), info.TokenRelationships[0].Decimals)
+
+	resp, err = NewTokenCreateTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetTokenName("ffff").
+		SetTokenSymbol("F").
+		SetDecimals(18).
+		SetInitialSupply(1000000).
+		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+		SetAdminKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeKey(newKey).
+		SetWipeKey(newKey).
+		SetKycKey(newKey).
+		SetSupplyKey(newKey).
+		SetMetadataKey(newKey).
+		SetFreezeDefault(false).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+	secondTokenID := *receipt.TokenID
+
+	associateTxn, err = NewTokenAssociateTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetAccountID(accountID).
+		SetTokenIDs(secondTokenID).
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+
+	resp, err = associateTxn.
+		Sign(newKey).
+		Execute(env.Client)
+	require.NoError(t, err)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	// sleep in order for mirror node information to update
+	time.Sleep(3 * time.Second)
+
+	info, err = NewAccountInfoQuery().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetAccountID(accountID).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	assert.Equal(t, 2, len(info.TokenRelationships))
+	assert.Equal(t, uint32(18), info.TokenRelationships[1].Decimals)
+
+	dissociateTxn, err := NewTokenDissociateTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetAccountID(accountID).
+		SetTokenIDs(secondTokenID, firstTokenID).
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+
+	resp, err = dissociateTxn.
+		Sign(newKey).
+		Execute(env.Client)
+	require.NoError(t, err)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	// sleep in order for mirror node information to update
+	time.Sleep(3 * time.Second)
+
+	info, err = NewAccountInfoQuery().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetAccountID(accountID).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	assert.Equal(t, accountID, info.AccountID)
+	assert.Equal(t, 0, len(info.TokenRelationships))
 }

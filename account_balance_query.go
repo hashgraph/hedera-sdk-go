@@ -113,7 +113,49 @@ func (q *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error) {
 		return AccountBalance{}, err
 	}
 
-	return _AccountBalanceFromProtobuf(resp.(*services.Response).GetCryptogetAccountBalance()), nil
+	balance := _AccountBalanceFromProtobuf(resp.(*services.Response).GetCryptogetAccountBalance())
+
+	// accountId value could be either in q.accountID or q.contractID
+	accountId := q.accountID.String()
+	if accountId == "" {
+		accountId = q.contractID.String()
+	}
+
+	err = fetchTokenBalances(fetchMirrorNodeUrlFromClient(client), accountId, &balance)
+	if err != nil {
+		return balance, err
+	}
+
+	return balance, nil
+}
+
+/*
+Helper function, which queries the mirror node and if the balance query has tokens, it iterates over the tokens and
+populates them in the appropriate AccountBalance tokens field.
+
+IMPORTANT: This function will fetch the state of the data in the Mirror Node at the moment of its execution. It
+is important to note that the Mirror Node currently needs 2-3 seconds to be updated with the latest data from the
+consensus nodes. So if data related to token relationships is changed and a proper timeout is not introduced the
+user would not get the up to date state of token relationships. This note is ONLY for token relationship data as it
+is queried from the MirrorNode. Other query information arrives at the time of consensus response.
+*/
+func fetchTokenBalances(network string, id string, balance *AccountBalance) error {
+	response, err := accountTokenBalanceMirrorNodeQuery(network, id)
+	if err != nil {
+		return err
+	}
+
+	balance.Tokens.balances = make(map[string]uint64)
+
+	if tokens, ok := response["tokens"].([]interface{}); ok {
+		for _, token := range tokens {
+			if tokenJSON, ok := token.(map[string]interface{}); ok {
+				balance.Tokens.balances[tokenJSON["token_id"].(string)] = uint64(tokenJSON["balance"].(float64))
+				balance.TokenDecimals.decimals[tokenJSON["token_id"].(string)] = uint64(tokenJSON["decimals"].(float64))
+			}
+		}
+	}
+	return nil
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this query.

@@ -4,10 +4,10 @@
 package hedera
 
 import (
-	"fmt"
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestIntegrationSerializeTransactionDeserializeAndAgainSerializeHasTheSameBytesFreezeBeforeSer(t *testing.T) {
@@ -34,8 +34,6 @@ func TestIntegrationSerializeTransactionDeserializeAndAgainSerializeHasTheSameBy
 
 	transaction := txFromBytes.(AccountCreateTransaction)
 	secondBytes, err := transaction.ToBytes()
-	fmt.Println(len(secondBytes))
-	fmt.Println(secondBytes)
 	require.NoError(t, err)
 
 	assert.Equal(t, firstBytes, secondBytes)

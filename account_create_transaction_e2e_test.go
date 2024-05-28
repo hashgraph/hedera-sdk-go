@@ -26,6 +26,7 @@ package hedera
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 
@@ -321,6 +322,9 @@ func TestIntegrationAccountCreateTransactionWithAliasFromAdminKey(t *testing.T) 
 
 	accountID := *receipt.AccountID
 
+	// sleep in order for mirror node information to update
+	time.Sleep(3 * time.Second)
+
 	info, err := NewAccountInfoQuery().
 		SetAccountID(accountID).
 		Execute(env.Client)
@@ -363,6 +367,9 @@ func TestIntegrationAccountCreateTransactionWithAliasFromAdminKeyWithReceiverSig
 	require.NoError(t, err)
 
 	accountID := *receipt.AccountID
+
+	// sleep in order for mirror node information to update
+	time.Sleep(3 * time.Second)
 
 	info, err := NewAccountInfoQuery().
 		SetAccountID(accountID).
@@ -441,6 +448,9 @@ func TestIntegrationAccountCreateTransactionWithAlias(t *testing.T) {
 
 	accountID := *receipt.AccountID
 
+	// sleep in order for mirror node information to update
+	time.Sleep(3 * time.Second)
+
 	info, err := NewAccountInfoQuery().
 		SetAccountID(accountID).
 		Execute(env.Client)
@@ -517,6 +527,9 @@ func TestIntegrationAccountCreateTransactionWithAliasWithReceiverSigRequired(t *
 	require.NoError(t, err)
 
 	accountID := *receipt.AccountID
+
+	// sleep in order for mirror node information to update
+	time.Sleep(3 * time.Second)
 
 	info, err := NewAccountInfoQuery().
 		SetAccountID(accountID).
