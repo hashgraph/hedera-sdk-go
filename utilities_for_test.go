@@ -161,8 +161,6 @@ func NewIntegrationTestEnv(t *testing.T) IntegrationTestEnv {
 		receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 		require.NoError(t, err)
 
-		// env.OriginalOperatorID = env.Client.GetOperatorAccountID()
-		// env.OriginalOperatorKey = env.Client.GetOperatorPublicKey()
 		env.OperatorID = *receipt.AccountID
 		env.OperatorKey = newKey
 		env.NodeAccountIDs = []AccountID{resp.NodeID}
