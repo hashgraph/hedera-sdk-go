@@ -89,6 +89,7 @@ func NewIntegrationTestEnv(t *testing.T) IntegrationTestEnv {
 		err = fmt.Errorf("Failed to construct client from environment variables")
 	}
 	require.NoError(t, err)
+	assert.NotNil(t, env.Client)
 
 	configOperatorID := os.Getenv("OPERATOR_ID")
 	configOperatorKey := os.Getenv("OPERATOR_KEY")
@@ -160,8 +161,8 @@ func NewIntegrationTestEnv(t *testing.T) IntegrationTestEnv {
 		receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 		require.NoError(t, err)
 
-		env.OriginalOperatorID = env.Client.GetOperatorAccountID()
-		env.OriginalOperatorKey = env.Client.GetOperatorPublicKey()
+		// env.OriginalOperatorID = env.Client.GetOperatorAccountID()
+		// env.OriginalOperatorKey = env.Client.GetOperatorPublicKey()
 		env.OperatorID = *receipt.AccountID
 		env.OperatorKey = newKey
 		env.NodeAccountIDs = []AccountID{resp.NodeID}
