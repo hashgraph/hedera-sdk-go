@@ -24,6 +24,7 @@ package hedera
  */
 
 import (
+	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -84,12 +85,11 @@ func NewIntegrationTestEnv(t *testing.T) IntegrationTestEnv {
 		env.Client = ClientForTestnet()
 	} else if os.Getenv("CONFIG_FILE") != "" {
 		env.Client, err = ClientFromConfigFile(os.Getenv("CONFIG_FILE"))
-		if err != nil {
-			panic(err)
-		}
 	} else {
-		panic("Failed to construct client from environment variables")
+		err = fmt.Errorf("Failed to construct client from environment variables")
 	}
+	require.NoError(t, err)
+	assert.NotNil(t, env.Client)
 
 	configOperatorID := os.Getenv("OPERATOR_ID")
 	configOperatorKey := os.Getenv("OPERATOR_KEY")
@@ -142,7 +142,8 @@ func NewIntegrationTestEnv(t *testing.T) IntegrationTestEnv {
 	_ = env.Client.SetNetwork(network)
 
 	if len(network) == 0 {
-		panic("failed to construct network; each node returned an error")
+		t.Log("failed to construct network; each node returned an error")
+		t.FailNow()
 	}
 
 	env.OriginalOperatorID = env.Client.GetOperatorAccountID()
@@ -154,17 +155,12 @@ func NewIntegrationTestEnv(t *testing.T) IntegrationTestEnv {
 			SetInitialBalance(NewHbar(150)).
 			SetAutoRenewPeriod(time.Hour*24*81 + time.Minute*26 + time.Second*39).
 			Execute(env.Client)
-		if err != nil {
-			panic(err)
-		}
+
+		require.NoError(t, err)
 
 		receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
-		if err != nil {
-			panic(err)
-		}
+		require.NoError(t, err)
 
-		env.OriginalOperatorID = env.Client.GetOperatorAccountID()
-		env.OriginalOperatorKey = env.Client.GetOperatorPublicKey()
 		env.OperatorID = *receipt.AccountID
 		env.OperatorKey = newKey
 		env.NodeAccountIDs = []AccountID{resp.NodeID}
@@ -196,6 +192,11 @@ func CloseIntegrationTestEnv(env IntegrationTestEnv, token *TokenID) error {
 		_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 		if err != nil {
 			return err
+		}
+
+		// Check if env.Client.operator is nil
+		if env.Client.operator == nil {
+			return fmt.Errorf("client operator is nil")
 		}
 
 		// This is needed, because we can't delete the account while still having tokens.
