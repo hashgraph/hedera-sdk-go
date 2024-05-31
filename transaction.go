@@ -476,6 +476,12 @@ func (tx *Transaction) IsFrozen() bool {
 	return tx.signedTransactions._Length() > 0
 }
 
+func (tx *Transaction) _RequireFrozen() {
+	if !tx.IsFrozen() {
+		tx.freezeError = errTransactionIsNotFrozen
+	}
+}
+
 func (tx *Transaction) _RequireNotFrozen() {
 	if tx.IsFrozen() {
 		tx.freezeError = errTransactionIsFrozen
@@ -866,6 +872,7 @@ func (tx *Transaction) signWithOperator(client *Client, e TransactionInterface) 
 	return tx.SignWith(client.operator.publicKey, client.operator.signer), nil
 }
 func (tx *Transaction) SignWith(publicKey PublicKey, signer TransactionSigner) TransactionInterface {
+	tx._RequireFrozen()
 	if !tx._KeyAlreadySigned(publicKey) {
 		tx._SignWith(publicKey, signer)
 	}

@@ -92,7 +92,10 @@ func TestIntegrationAddSignatureSerializeDeserializeAddAnotherSignatureExecute(t
 	assert.Equal(t, txFromBytes.signedTransactions._Length(), txBefore.signedTransactions._Length())
 	assert.Equal(t, txFromBytes.memo, txBefore.memo)
 
-	executed, err := txFromBytes.Sign(newKey).Execute(env.Client)
+	frozenTx, err := txFromBytes.FreezeWith(env.Client)
+	require.NoError(t, err)
+
+	executed, err := frozenTx.Sign(newKey).Execute(env.Client)
 	if err != nil {
 		panic(err)
 	}

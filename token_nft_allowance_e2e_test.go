@@ -106,7 +106,9 @@ func TestIntegrationCantTransferOnBehalfOfSpenderAfterRemovingTheAllowanceApprov
 	require.NoError(t, err)
 	tokenID := tokenReceipt.TokenID
 
-	_, err = NewTokenAssociateTransaction().SetTokenIDs(*tokenID).SetAccountID(*spenderAccountId).Sign(spenderKey).Execute(env.Client)
+	frozenTx, err := NewTokenAssociateTransaction().SetTokenIDs(*tokenID).SetAccountID(*spenderAccountId).FreezeWith(env.Client)
+	require.NoError(t, err)
+	_, err = frozenTx.Sign(spenderKey).Execute(env.Client)
 	require.NoError(t, err)
 
 	_, err = NewTokenAssociateTransaction().SetTokenIDs(*tokenID).SetAccountID(*receiverAccountId).Sign(receiverKey).Execute(env.Client)
@@ -259,7 +261,9 @@ func TestIntegrationAfterGivenAllowanceForAllSerialsCanGiveSingleSerialToOtherAc
 	require.NoError(t, err)
 	tokenID := tokenReceipt.TokenID
 
-	_, err = NewTokenAssociateTransaction().SetTokenIDs(*tokenID).SetAccountID(*spenderAccountId).Sign(spenderKey).Execute(env.Client)
+	frozenTx, err := NewTokenAssociateTransaction().SetTokenIDs(*tokenID).SetAccountID(*spenderAccountId).FreezeWith(env.Client)
+	require.NoError(t, err)
+	_, err = frozenTx.Sign(spenderKey).Execute(env.Client)
 	require.NoError(t, err)
 
 	_, err = NewTokenAssociateTransaction().SetTokenIDs(*tokenID).SetAccountID(*receiverAccountId).Sign(receiverKey).Execute(env.Client)

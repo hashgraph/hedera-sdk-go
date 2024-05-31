@@ -237,11 +237,14 @@ func updateNftMetadata(t *testing.T, env *IntegrationTestEnv, tokenID TokenID, s
 			SetSerialNumbers(serials).
 			SetMetadata(updatedMetadata)
 	} else {
-		tokenUpdateNftsTx = NewTokenUpdateNftsTransaction().
+		frozenTx, err := NewTokenUpdateNftsTransaction().
 			SetTokenID(tokenID).
 			SetSerialNumbers(serials).
 			SetMetadata(updatedMetadata).
-			Sign(*metadataKey)
+			FreezeWith(env.Client)
+		require.NoError(t, err)
+
+		tokenUpdateNftsTx = frozenTx.Sign(*metadataKey)
 	}
 
 	tx, err := tokenUpdateNftsTx.Execute(env.Client)
