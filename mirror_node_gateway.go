@@ -29,7 +29,6 @@ import (
 
 // Function to obtain the token relationships of the specified account
 func tokenRelationshipMirrorNodeQuery(networkUrl string, id string) (map[string]interface{}, error) {
-	fmt.Println("accountID:", id)
 	tokenRelationshipUrl := buildUrlParams(networkUrl, "accounts", id, "tokens")
 	return makeGetRequest(tokenRelationshipUrl)
 }

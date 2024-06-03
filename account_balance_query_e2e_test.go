@@ -203,3 +203,36 @@ func TestIntegrationAccountBalanceQueryNoAccountIDError(t *testing.T) {
 	err = CloseIntegrationTestEnv(env, nil)
 	require.NoError(t, err)
 }
+func TestIntegrationAccountBalanceQueryWorksWithHollowAccountAlias(t *testing.T) {
+	t.Parallel()
+	env := NewIntegrationTestEnv(t)
+
+	privateKey, err := PrivateKeyGenerateEcdsa()
+	require.NoError(t, err)
+
+	// Extract the ECDSA public key public key
+	publicKey := privateKey.PublicKey()
+	// Extract the Ethereum public address
+	aliasAccountId := *publicKey.ToAccountID(0, 0)
+	evmAddress := publicKey.ToEvmAddress()
+
+	evmAddressAccount, err := AccountIDFromEvmPublicAddress(evmAddress)
+	require.NoError(t, err)
+
+	// Transfer tokens using the `TransferTransaction` to the Etherum Account Address
+	tx, err := NewTransferTransaction().AddHbarTransfer(evmAddressAccount, NewHbar(4)).
+		AddHbarTransfer(env.OperatorID, NewHbar(-4)).Execute(env.Client)
+	require.NoError(t, err)
+
+	// Get the child receipt or child record to return the Hedera Account ID for the new account that was created
+	_, err = tx.GetReceiptQuery().SetIncludeChildren(true).Execute(env.Client)
+	require.NoError(t, err)
+
+	// Wait for mirror node to update
+	time.Sleep(3 * time.Second)
+	_, err = NewAccountBalanceQuery().SetAccountID(aliasAccountId).Execute(env.Client)
+	require.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	require.NoError(t, err)
+}
