@@ -52,7 +52,9 @@ func TestIntegrationCantTransferOnBehalfOfSpenderWithoutAllowanceApproval(t *tes
 	tokenReceipt, err := tokenCreate.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 	tokenID := tokenReceipt.TokenID
-	_, err = NewTokenAssociateTransaction().SetTokenIDs(*tokenID).SetAccountID(*spenderAccountId).Sign(spenderKey).Execute(env.Client)
+	frozenTxn, err := NewTokenAssociateTransaction().SetTokenIDs(*tokenID).SetAccountID(*spenderAccountId).FreezeWith(env.Client)
+	require.NoError(t, err)
+	_, err = frozenTxn.Sign(spenderKey).Execute(env.Client)
 	require.NoError(t, err)
 
 	mint, err := NewTokenMintTransaction().
@@ -66,9 +68,10 @@ func TestIntegrationCantTransferOnBehalfOfSpenderWithoutAllowanceApproval(t *tes
 	nft1 := NftID{TokenID: *tokenID, SerialNumber: serials[0]}
 	onBehalfOfTxId := TransactionIDGenerate(*spenderAccountId)
 
-	transfer, err := NewTransferTransaction().AddApprovedNftTransfer(nft1, env.OperatorID, *receiverAccountId, true).SetTransactionID(onBehalfOfTxId).Sign(spenderKey).Execute(env.Client)
+	frozenTransfer, err := NewTransferTransaction().AddApprovedNftTransfer(nft1, env.OperatorID, *receiverAccountId, true).SetTransactionID(onBehalfOfTxId).FreezeWith(env.Client)
 	require.NoError(t, err)
-	_, err = transfer.SetValidateStatus(true).GetReceipt(env.Client)
+	resp, err := frozenTransfer.Sign(spenderKey).Execute(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.Error(t, err)
 	require.Equal(t, "exceptional receipt status: SPENDER_DOES_NOT_HAVE_ALLOWANCE", err.Error())
 
@@ -188,10 +191,14 @@ func TestIntegrationCantRemoveSingleSerialNumberAllowanceWhenAllowanceIsForAllSe
 	require.NoError(t, err)
 	tokenID := tokenReceipt.TokenID
 
-	_, err = NewTokenAssociateTransaction().SetTokenIDs(*tokenID).SetAccountID(*spenderAccountId).Sign(spenderKey).Execute(env.Client)
+	frozenTxn, err := NewTokenAssociateTransaction().SetTokenIDs(*tokenID).SetAccountID(*spenderAccountId).FreezeWith(env.Client)
+	require.NoError(t, err)
+	_, err = frozenTxn.Sign(spenderKey).Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = NewTokenAssociateTransaction().SetTokenIDs(*tokenID).SetAccountID(*receiverAccountId).Sign(receiverKey).Execute(env.Client)
+	frozenTxn, err = NewTokenAssociateTransaction().SetTokenIDs(*tokenID).SetAccountID(*receiverAccountId).FreezeWith(env.Client)
+	require.NoError(t, err)
+	_, err = frozenTxn.Sign(receiverKey).Execute(env.Client)
 	require.NoError(t, err)
 
 	mint, err := NewTokenMintTransaction().SetTokenID(*tokenID).SetMetadata([]byte{0x01}).SetMetadata([]byte{0x02}).Execute(env.Client)
@@ -207,9 +214,10 @@ func TestIntegrationCantRemoveSingleSerialNumberAllowanceWhenAllowanceIsForAllSe
 	require.NoError(t, err)
 
 	onBehalfOfTransactionId := TransactionIDGenerate(*spenderAccountId)
-	transfer, err := NewTransferTransaction().AddApprovedNftTransfer(nft1, env.OperatorID, *receiverAccountId, true).SetTransactionID(onBehalfOfTransactionId).Sign(spenderKey).Execute(env.Client)
+	frozenTransfer, err := NewTransferTransaction().AddApprovedNftTransfer(nft1, env.OperatorID, *receiverAccountId, true).SetTransactionID(onBehalfOfTransactionId).FreezeWith(env.Client)
 	require.NoError(t, err)
-	_, err = transfer.SetValidateStatus(true).GetReceipt(env.Client)
+	resp, err := frozenTransfer.Sign(spenderKey).Execute(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	deleteTx, err := NewAccountAllowanceDeleteTransaction().DeleteAllTokenNftAllowances(nft2, &env.OperatorID).Execute(env.Client)
@@ -217,9 +225,10 @@ func TestIntegrationCantRemoveSingleSerialNumberAllowanceWhenAllowanceIsForAllSe
 	_, err = deleteTx.SetValidateStatus(true).GetReceipt(env.Client)
 
 	onBehalfOfTransactionId2 := TransactionIDGenerate(*spenderAccountId)
-	transfer2, err := NewTransferTransaction().AddApprovedNftTransfer(nft2, env.OperatorID, *receiverAccountId, true).SetTransactionID(onBehalfOfTransactionId2).Sign(spenderKey).Execute(env.Client)
+	frozenTransfer2, err := NewTransferTransaction().AddApprovedNftTransfer(nft2, env.OperatorID, *receiverAccountId, true).SetTransactionID(onBehalfOfTransactionId2).FreezeWith(env.Client)
 	require.NoError(t, err)
-	_, err = transfer2.SetValidateStatus(true).GetReceipt(env.Client)
+	resp, err = frozenTransfer2.Sign(spenderKey).Execute(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 
 	info, err := NewTokenNftInfoQuery().SetNftID(nft1).Execute(env.Client)
 	require.NoError(t, err)
@@ -272,8 +281,9 @@ func TestIntegrationAfterGivenAllowanceForAllSerialsCanGiveSingleSerialToOtherAc
 	_, err = frozenTx.Sign(spenderKey).Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = NewTokenAssociateTransaction().SetTokenIDs(*tokenID).SetAccountID(*receiverAccountId).Sign(receiverKey).Execute(env.Client)
+	frozenTxn, err := NewTokenAssociateTransaction().SetTokenIDs(*tokenID).SetAccountID(*receiverAccountId).FreezeWith(env.Client)
 	require.NoError(t, err)
+	_, err = frozenTxn.Sign(receiverKey).Execute(env.Client)
 
 	mint, err := NewTokenMintTransaction().SetTokenID(*tokenID).SetMetadata([]byte{0x01}).SetMetadata([]byte{0x02}).Execute(env.Client)
 	require.NoError(t, err)
@@ -301,15 +311,19 @@ func TestIntegrationAfterGivenAllowanceForAllSerialsCanGiveSingleSerialToOtherAc
 	env.Client.SetOperator(env.OperatorID, env.OperatorKey)
 
 	onBehalfOfTransactionId := TransactionIDGenerate(*delegateSpenderAccountId)
-	transfer, err := NewTransferTransaction().AddApprovedNftTransfer(nft1, env.OperatorID, *receiverAccountId, true).SetTransactionID(onBehalfOfTransactionId).Sign(delegateSpenderKey).Execute(env.Client)
+	frozenTransfer, err := NewTransferTransaction().AddApprovedNftTransfer(nft1, env.OperatorID, *receiverAccountId, true).SetTransactionID(onBehalfOfTransactionId).FreezeWith(env.Client)
 	require.NoError(t, err)
-	_, err = transfer.SetValidateStatus(true).GetReceipt(env.Client)
+	resp, err := frozenTransfer.Sign(delegateSpenderKey).Execute(env.Client)
+	require.NoError(t, err)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	onBehalfOfTransactionId2 := TransactionIDGenerate(*delegateSpenderAccountId)
-	transfer2, err := NewTransferTransaction().AddApprovedNftTransfer(nft2, env.OperatorID, *receiverAccountId, true).SetTransactionID(onBehalfOfTransactionId2).Sign(delegateSpenderKey).Execute(env.Client)
+	frozenTransfer2, err := NewTransferTransaction().AddApprovedNftTransfer(nft2, env.OperatorID, *receiverAccountId, true).SetTransactionID(onBehalfOfTransactionId2).FreezeWith(env.Client)
 	require.NoError(t, err)
-	_, err = transfer2.SetValidateStatus(true).GetReceipt(env.Client)
+	resp, err = frozenTransfer2.Sign(delegateSpenderKey).Execute(env.Client)
+	require.NoError(t, err)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.Error(t, err)
 	require.Equal(t, "exceptional receipt status: SPENDER_DOES_NOT_HAVE_ALLOWANCE", err.Error())
 
