@@ -61,7 +61,12 @@ func (q *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
 		return AccountInfo{}, err
 	}
 
-	err = fetchAccountInfoTokenRelationships(fetchMirrorNodeUrlFromClient(client), q.accountID.String(), &info)
+	if q.accountID.AliasKey != nil && q.accountID.AliasKey.ecdsaPublicKey != nil {
+		evmAlias := q.accountID.AliasKey.ToEvmAddress()
+		err = fetchAccountInfoTokenRelationships(fetchMirrorNodeUrlFromClient(client), evmAlias, &info)
+	} else {
+		err = fetchAccountInfoTokenRelationships(fetchMirrorNodeUrlFromClient(client), q.accountID.String(), &info)
+	}
 	if err != nil {
 		return info, err
 	}

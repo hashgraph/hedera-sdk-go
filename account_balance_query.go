@@ -121,7 +121,12 @@ func (q *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error) {
 		accountId = q.contractID.String()
 	}
 
-	err = fetchTokenBalances(fetchMirrorNodeUrlFromClient(client), accountId, &balance)
+	if q.accountID.AliasKey != nil && q.accountID.AliasKey.ecdsaPublicKey != nil {
+		evmAlias := q.accountID.AliasKey.ToEvmAddress()
+		err = fetchTokenBalances(fetchMirrorNodeUrlFromClient(client), evmAlias, &balance)
+	} else {
+		err = fetchTokenBalances(fetchMirrorNodeUrlFromClient(client), accountId, &balance)
+	}
 	if err != nil {
 		return balance, err
 	}

@@ -29,6 +29,7 @@ import (
 
 // Function to obtain the token relationships of the specified account
 func tokenRelationshipMirrorNodeQuery(networkUrl string, id string) (map[string]interface{}, error) {
+	fmt.Println("accountID:", id)
 	tokenRelationshipUrl := buildUrlParams(networkUrl, "accounts", id, "tokens")
 	return makeGetRequest(tokenRelationshipUrl)
 }
@@ -48,9 +49,10 @@ func contractInfoMirrorNodeQuery(networkUrl string, contractId string) (map[stri
 // Function to obtain balance of tokens for given account ID. Return the pure JSON response as mapping
 func accountTokenBalanceMirrorNodeQuery(networkUrl string, accountId string) (map[string]interface{}, error) {
 	info, err := tokenRelationshipMirrorNodeQuery(networkUrl, accountId)
+
 	// in case of empty info we won't be able to map to string interface
 	if len(info) == 0 {
-		return nil, nil
+		return nil, err
 	}
 	return info, err
 }
