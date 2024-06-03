@@ -856,7 +856,6 @@ func (tx *Transaction) Sign(privateKey PrivateKey) TransactionInterface {
 func (tx *Transaction) signWithOperator(client *Client, e TransactionInterface) (TransactionInterface, error) { // nolint
 	// If the transaction is not signed by the _Operator, we need
 	// to sign the transaction with the _Operator
-
 	if client == nil {
 		return nil, errNoClientProvided
 	} else if client.operator == nil {
@@ -872,7 +871,9 @@ func (tx *Transaction) signWithOperator(client *Client, e TransactionInterface) 
 	return tx.SignWith(client.operator.publicKey, client.operator.signer), nil
 }
 func (tx *Transaction) SignWith(publicKey PublicKey, signer TransactionSigner) TransactionInterface {
+	// We need to make sure the request is frozen
 	tx._RequireFrozen()
+
 	if !tx._KeyAlreadySigned(publicKey) {
 		tx._SignWith(publicKey, signer)
 	}
