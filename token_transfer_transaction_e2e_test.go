@@ -26,7 +26,6 @@ package hedera
 import (
 	"fmt"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -110,9 +109,6 @@ func TestIntegrationTokenTransferTransactionCanExecute(t *testing.T) {
 
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
-
-	// Wait for mirror node to import data
-	time.Sleep(3 * time.Second)
 
 	_, err = NewAccountBalanceQuery().
 		SetAccountID(env.Client.GetOperatorAccountID()).
