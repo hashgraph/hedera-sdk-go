@@ -25,7 +25,12 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 )
+
+const LOCAL_NETWORK = "127.0.0.1"
+const API_VERSION = "/api/v1"
+const PORT = ":5551"
 
 // Function to obtain the token relationships of the specified account
 func tokenRelationshipMirrorNodeQuery(networkUrl string, id string) (map[string]interface{}, error) {
@@ -58,28 +63,32 @@ func accountTokenBalanceMirrorNodeQuery(networkUrl string, accountId string) (ma
 
 // Function to deduce the current network from the client as the network is ambiguous during Mirror Node calls
 func fetchMirrorNodeUrlFromClient(client *Client) string {
-	const localNetwork = "127.0.0.1"
-	const apiVersion = "/api/v1"
-	if strings.HasPrefix(client.GetMirrorNetwork()[0], localNetwork) {
-		return "http://" + localNetwork + ":5551" + apiVersion
+	if strings.HasPrefix(client.GetMirrorNetwork()[0], LOCAL_NETWORK) {
+		return "http://" + LOCAL_NETWORK + PORT + API_VERSION
 	} else {
 		// prefix is mainnet, testnet or previewnet
-		return "https://" + client.GetMirrorNetwork()[0] + apiVersion
+		return "https://" + client.GetMirrorNetwork()[0] + API_VERSION
 	}
 }
 
 // Make a GET HTTP request to provided URL and map it's JSON response to a generic `interface` map and return it
 func makeGetRequest(networkUrl string) (response map[string]interface{}, e error) {
+	// This is needed because of Mirror Node update delay time
+	// Timeout for every query when using local network, for CI and testing consistency
+	if strings.Contains(networkUrl, LOCAL_NETWORK) {
+		time.Sleep(4 * time.Second)
+	}
+
 	// Make an HTTP request
 	resp, err := http.Get(networkUrl) //nolint
-
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
+
 	if resp.StatusCode >= 400 {
 		return nil, fmt.Errorf("HTTP request failed with status code: %d", resp.StatusCode)
 	}
-	defer resp.Body.Close()
 
 	// Decode the JSON response into a map
 	var responseMap map[string]interface{}

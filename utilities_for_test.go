@@ -119,53 +119,24 @@ func NewIntegrationTestEnv(t *testing.T) IntegrationTestEnv {
 	env.Client.SetDefaultMaxTransactionFee(NewHbar(50))
 	env.Client.SetDefaultMaxQueryPayment(NewHbar(50))
 
-	network := make(map[string]AccountID)
-
-	for key, value := range env.Client.GetNetwork() {
-		_, err = NewAccountBalanceQuery().
-			SetNodeAccountIDs([]AccountID{value}).
-			SetAccountID(value).
-			Execute(env.Client)
-
-		if err != nil {
-			println(err.Error())
-			continue
-		}
-
-		network[key] = value
-		if os.Getenv("HEDERA_NETWORK") == "testnet" {
-			env.NodeAccountIDs = []AccountID{value}
-		}
-		break
-	}
-
-	_ = env.Client.SetNetwork(network)
-
-	if len(network) == 0 {
-		t.Log("failed to construct network; each node returned an error")
-		t.FailNow()
-	}
-
 	env.OriginalOperatorID = env.Client.GetOperatorAccountID()
 	env.OriginalOperatorKey = env.Client.GetOperatorPublicKey()
-	//TODO: Revert after testnet is stable
-	if os.Getenv("HEDERA_NETWORK") != "testnet" {
-		resp, err := NewAccountCreateTransaction().
-			SetKey(newKey.PublicKey()).
-			SetInitialBalance(NewHbar(150)).
-			SetAutoRenewPeriod(time.Hour*24*81 + time.Minute*26 + time.Second*39).
-			Execute(env.Client)
 
-		require.NoError(t, err)
+	resp, err := NewAccountCreateTransaction().
+		SetKey(newKey.PublicKey()).
+		SetInitialBalance(NewHbar(150)).
+		SetAutoRenewPeriod(time.Hour*24*81 + time.Minute*26 + time.Second*39).
+		Execute(env.Client)
 
-		receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
-		require.NoError(t, err)
+	require.NoError(t, err)
 
-		env.OperatorID = *receipt.AccountID
-		env.OperatorKey = newKey
-		env.NodeAccountIDs = []AccountID{resp.NodeID}
-		env.Client.SetOperator(env.OperatorID, env.OperatorKey)
-	}
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	env.OperatorID = *receipt.AccountID
+	env.OperatorKey = newKey
+	env.NodeAccountIDs = []AccountID{resp.NodeID}
+	env.Client.SetOperator(env.OperatorID, env.OperatorKey)
 
 	return env
 }

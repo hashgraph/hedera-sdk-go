@@ -25,7 +25,6 @@ package hedera
 
 import (
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 
@@ -53,9 +52,6 @@ func TestIntegrationAccountInfoQueryCanExecute(t *testing.T) {
 
 	accountID := *receipt.AccountID
 	require.NoError(t, err)
-
-	// sleep in order for mirror node information to update
-	time.Sleep(3 * time.Second)
 
 	info, err := NewAccountInfoQuery().
 		SetAccountID(accountID).
@@ -112,9 +108,6 @@ func TestIntegrationAccountInfoQueryGetCost(t *testing.T) {
 
 	accountID := *receipt.AccountID
 	require.NoError(t, err)
-
-	// sleep in order for mirror node information to update
-	time.Sleep(3 * time.Second)
 
 	accountInfo := NewAccountInfoQuery().
 		SetAccountID(accountID).
@@ -228,9 +221,6 @@ func TestIntegrationAccountInfoQuerySetBigMaxPayment(t *testing.T) {
 
 	accountID := *receipt.AccountID
 	require.NoError(t, err)
-
-	// sleep in order for mirror node information to update
-	time.Sleep(3 * time.Second)
 
 	accountInfo := NewAccountInfoQuery().
 		SetAccountID(accountID).
@@ -399,9 +389,6 @@ func TestIntegrationAccountInfoQueryTokenRelationshipStatuses(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	// sleep in order for mirror node information to update
-	time.Sleep(3 * time.Second)
-
 	info, err := NewAccountInfoQuery().
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetAccountID(accountID).
@@ -440,9 +427,6 @@ func TestIntegrationAccountInfoQueryTokenRelationshipStatuses(t *testing.T) {
 	require.NoError(t, err)
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
-
-	// sleep in order for mirror node information to update
-	time.Sleep(3 * time.Second)
 
 	info, err = NewAccountInfoQuery().
 		SetNodeAccountIDs(env.NodeAccountIDs).
@@ -515,9 +499,6 @@ func TestIntegrationAccountInfoQueryTokenRelationship(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	// sleep in order for mirror node information to update
-	time.Sleep(3 * time.Second)
-
 	info, err := NewAccountInfoQuery().
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetAccountID(accountID).
@@ -562,9 +543,6 @@ func TestIntegrationAccountInfoQueryTokenRelationship(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	// sleep in order for mirror node information to update
-	time.Sleep(3 * time.Second)
-
 	info, err = NewAccountInfoQuery().
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetAccountID(accountID).
@@ -587,9 +565,6 @@ func TestIntegrationAccountInfoQueryTokenRelationship(t *testing.T) {
 	require.NoError(t, err)
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
-
-	// sleep in order for mirror node information to update
-	time.Sleep(3 * time.Second)
 
 	info, err = NewAccountInfoQuery().
 		SetNodeAccountIDs(env.NodeAccountIDs).
@@ -660,8 +635,6 @@ func TestIntegrationAccountInfoQueryWorksWithHollowAccountAlias(t *testing.T) {
 	_, err = nftTransferTransactionSubmit.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	// Wait for mirror node to update
-	time.Sleep(3 * time.Second)
 	_, err = NewAccountInfoQuery().
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetAccountID(*aliasAccountId).

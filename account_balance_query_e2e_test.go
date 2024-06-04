@@ -25,7 +25,6 @@ package hedera
 
 import (
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 
@@ -41,9 +40,6 @@ func TestIntegrationAccountBalanceQueryCanExecute(t *testing.T) {
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		Execute(env.Client)
 	require.NoError(t, err)
-
-	// Wait for mirror node to update
-	time.Sleep(3 * time.Second)
 
 	_, err = NewAccountBalanceQuery().
 		SetAccountID(env.OperatorID).
@@ -81,9 +77,6 @@ func TestIntegrationAccountBalanceQueryCanGetTokenBalance(t *testing.T) {
 
 	tokenID := receipt.TokenID
 
-	// sleep in order for mirror node information to update
-	time.Sleep(3 * time.Second)
-
 	balance, err := NewAccountBalanceQuery().
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetAccountID(env.Client.GetOperatorAccountID()).
@@ -100,9 +93,6 @@ func TestIntegrationAccountBalanceQueryCanGetTokenBalance(t *testing.T) {
 func TestIntegrationAccountBalanceQueryGetCost(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
-
-	// Wait for mirror node to update
-	time.Sleep(3 * time.Second)
 
 	balance := NewAccountBalanceQuery().
 		SetNodeAccountIDs(env.NodeAccountIDs).
@@ -123,9 +113,6 @@ func TestIntegrationAccountBalanceQuerySetBigMaxPayment(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
-	// Wait for mirror node to update
-	time.Sleep(3 * time.Second)
-
 	balance := NewAccountBalanceQuery().
 		SetMaxQueryPayment(NewHbar(10000)).
 		SetNodeAccountIDs(env.NodeAccountIDs).
@@ -145,9 +132,6 @@ func TestIntegrationAccountBalanceQuerySetSmallMaxPayment(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
-	// Wait for mirror node to update
-	time.Sleep(3 * time.Second)
-
 	balance := NewAccountBalanceQuery().
 		SetMaxQueryPayment(HbarFromTinybar(1)).
 		SetNodeAccountIDs(env.NodeAccountIDs).
@@ -166,9 +150,6 @@ func TestIntegrationAccountBalanceQuerySetSmallMaxPayment(t *testing.T) {
 func TestIntegrationAccountBalanceQueryCanSetQueryPayment(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
-
-	// Wait for mirror node to update
-	time.Sleep(3 * time.Second)
 
 	balance := NewAccountBalanceQuery().
 		SetMaxQueryPayment(NewHbar(10000)).
@@ -190,8 +171,6 @@ func TestIntegrationAccountBalanceQueryCostCanSetPaymentOneTinybar(t *testing.T)
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
-	// Wait for mirror node to update
-	time.Sleep(3 * time.Second)
 	balance := NewAccountBalanceQuery().
 		SetMaxQueryPayment(NewHbar(10000)).
 		SetQueryPayment(NewHbar(0)).
@@ -246,8 +225,6 @@ func TestIntegrationAccountBalanceQueryWorksWithHollowAccountAlias(t *testing.T)
 	_, err = tx.GetReceiptQuery().SetIncludeChildren(true).Execute(env.Client)
 	require.NoError(t, err)
 
-	// Wait for mirror node to update
-	time.Sleep(3 * time.Second)
 	_, err = NewAccountBalanceQuery().SetAccountID(aliasAccountId).Execute(env.Client)
 	require.NoError(t, err)
 

@@ -26,7 +26,6 @@ package hedera
 import (
 	"fmt"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 
@@ -111,9 +110,6 @@ func TestIntegrationTokenWipeTransactionCanExecute(t *testing.T) {
 
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
-
-	// Wait for mirror node to update
-	time.Sleep(3 * time.Second)
 
 	info, err := NewAccountBalanceQuery().
 		SetAccountID(accountID).

@@ -26,7 +26,6 @@ package hedera
 import (
 	"fmt"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 
@@ -69,9 +68,6 @@ func TestIntegrationContractUpdateTransactionCanExecute(t *testing.T) {
 
 	assert.NotNil(t, receipt.ContractID)
 	contractID := *receipt.ContractID
-
-	// sleep in order for mirror node information to update
-	time.Sleep(3 * time.Second)
 
 	info, err := NewContractInfoQuery().
 		SetContractID(contractID).
