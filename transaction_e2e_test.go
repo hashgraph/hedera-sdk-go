@@ -289,3 +289,21 @@ func DisabledTestTransactionFromBytes(t *testing.T) { // nolint
 		panic("Transaction was not a crypto transfer?")
 	}
 }
+
+func TestIntegrationTransactionFailsWhenSigningWithoutFreezing(t *testing.T) {
+	t.Parallel()
+	env := NewIntegrationTestEnv(t)
+
+	newKey, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+
+	tx := NewAccountCreateTransaction().
+		SetKey(newKey.PublicKey()).
+		SetNodeAccountIDs(env.NodeAccountIDs)
+
+	_, err = tx.Sign(newKey).Execute(env.Client)
+	require.ErrorContains(t, err, "transaction is not frozen")
+
+	err = CloseIntegrationTestEnv(env, nil)
+	require.NoError(t, err)
+}

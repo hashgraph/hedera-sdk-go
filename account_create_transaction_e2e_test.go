@@ -355,12 +355,14 @@ func TestIntegrationAccountCreateTransactionWithAliasFromAdminKeyWithReceiverSig
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	resp, err := NewAccountCreateTransaction().
+	frozenTxn, err := NewAccountCreateTransaction().
 		SetReceiverSignatureRequired(true).
 		SetKey(adminKey).
 		SetAlias(evmAddress).
-		Sign(adminKey).
-		Execute(env.Client)
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+
+	resp, err := frozenTxn.Sign(adminKey).Execute(env.Client)
 	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
@@ -436,9 +438,13 @@ func TestIntegrationAccountCreateTransactionWithAlias(t *testing.T) {
 	key, err := PrivateKeyGenerateEcdsa()
 	evmAddress := key.PublicKey().ToEvmAddress()
 
-	resp, err := NewAccountCreateTransaction().
+	tx, err := NewAccountCreateTransaction().
 		SetKey(adminKey).
 		SetAlias(evmAddress).
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+
+	resp, err := tx.
 		Sign(key).
 		Execute(env.Client)
 	require.NoError(t, err)
@@ -514,10 +520,14 @@ func TestIntegrationAccountCreateTransactionWithAliasWithReceiverSigRequired(t *
 	key, err := PrivateKeyGenerateEcdsa()
 	evmAddress := key.PublicKey().ToEvmAddress()
 
-	resp, err := NewAccountCreateTransaction().
+	frozenTxn, err := NewAccountCreateTransaction().
 		SetReceiverSignatureRequired(true).
 		SetKey(adminKey).
 		SetAlias(evmAddress).
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+
+	resp, err := frozenTxn.
 		Sign(key).
 		Sign(adminKey).
 		Execute(env.Client)
@@ -560,10 +570,14 @@ func TestIntegrationAccountCreateTransactionWithAliasWithReceiverSigRequiredWith
 	key, err := PrivateKeyGenerateEcdsa()
 	evmAddress := key.PublicKey().ToEvmAddress()
 
-	resp, err := NewAccountCreateTransaction().
+	frozenTxn, err := NewAccountCreateTransaction().
 		SetReceiverSignatureRequired(true).
 		SetKey(adminKey).
 		SetAlias(evmAddress).
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+
+	resp, err := frozenTxn.
 		Sign(key).
 		Execute(env.Client)
 	require.NoError(t, err)
