@@ -21,6 +21,7 @@ package hedera
  */
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -113,20 +114,11 @@ func (q *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error) {
 		return AccountBalance{}, err
 	}
 
-	balance := _AccountBalanceFromProtobuf(resp.(*services.Response).GetCryptogetAccountBalance())
+	protobufResponse := resp.(*services.Response).GetCryptogetAccountBalance()
+	balance := _AccountBalanceFromProtobuf(protobufResponse)
 
-	// accountId value could be either in q.accountID or q.contractID
-	accountId := q.accountID.String()
-	if accountId == "" {
-		accountId = q.contractID.String()
-	}
+	err = fetchTokenBalances(fetchMirrorNodeUrlFromClient(client), fmt.Sprint(protobufResponse.GetAccountID().GetAccountNum()), &balance)
 
-	if q.accountID.AliasKey != nil && q.accountID.AliasKey.ecdsaPublicKey != nil {
-		evmAlias := q.accountID.AliasKey.ToEvmAddress()
-		err = fetchTokenBalances(fetchMirrorNodeUrlFromClient(client), evmAlias, &balance)
-	} else {
-		err = fetchTokenBalances(fetchMirrorNodeUrlFromClient(client), accountId, &balance)
-	}
 	if err != nil {
 		return balance, err
 	}

@@ -42,6 +42,9 @@ func TestIntegrationAccountBalanceQueryCanExecute(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
+	// Wait for mirror node to update
+	time.Sleep(3 * time.Second)
+
 	_, err = NewAccountBalanceQuery().
 		SetAccountID(env.OperatorID).
 		SetNodeAccountIDs(env.NodeAccountIDs).
@@ -89,6 +92,7 @@ func TestIntegrationAccountBalanceQueryCanGetTokenBalance(t *testing.T) {
 
 	assert.Equal(t, uint64(1000000), balance.Tokens.Get(*tokenID))
 	assert.Equal(t, uint64(3), balance.TokenDecimals.Get(*tokenID))
+
 	err = CloseIntegrationTestEnv(env, tokenID)
 	require.NoError(t, err)
 }
@@ -96,6 +100,9 @@ func TestIntegrationAccountBalanceQueryCanGetTokenBalance(t *testing.T) {
 func TestIntegrationAccountBalanceQueryGetCost(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+
+	// Wait for mirror node to update
+	time.Sleep(3 * time.Second)
 
 	balance := NewAccountBalanceQuery().
 		SetNodeAccountIDs(env.NodeAccountIDs).
@@ -116,6 +123,9 @@ func TestIntegrationAccountBalanceQuerySetBigMaxPayment(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
+	// Wait for mirror node to update
+	time.Sleep(3 * time.Second)
+
 	balance := NewAccountBalanceQuery().
 		SetMaxQueryPayment(NewHbar(10000)).
 		SetNodeAccountIDs(env.NodeAccountIDs).
@@ -135,6 +145,9 @@ func TestIntegrationAccountBalanceQuerySetSmallMaxPayment(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
+	// Wait for mirror node to update
+	time.Sleep(3 * time.Second)
+
 	balance := NewAccountBalanceQuery().
 		SetMaxQueryPayment(HbarFromTinybar(1)).
 		SetNodeAccountIDs(env.NodeAccountIDs).
@@ -153,6 +166,9 @@ func TestIntegrationAccountBalanceQuerySetSmallMaxPayment(t *testing.T) {
 func TestIntegrationAccountBalanceQueryCanSetQueryPayment(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+
+	// Wait for mirror node to update
+	time.Sleep(3 * time.Second)
 
 	balance := NewAccountBalanceQuery().
 		SetMaxQueryPayment(NewHbar(10000)).
@@ -174,6 +190,8 @@ func TestIntegrationAccountBalanceQueryCostCanSetPaymentOneTinybar(t *testing.T)
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
+	// Wait for mirror node to update
+	time.Sleep(3 * time.Second)
 	balance := NewAccountBalanceQuery().
 		SetMaxQueryPayment(NewHbar(10000)).
 		SetQueryPayment(NewHbar(0)).
