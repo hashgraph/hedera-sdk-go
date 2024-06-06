@@ -21,6 +21,7 @@ package hedera
  */
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -56,12 +57,14 @@ func (q *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
 		return AccountInfo{}, err
 	}
 
-	info, err := _AccountInfoFromProtobuf(resp.GetCryptoGetInfo().AccountInfo)
+	protobufResponse := resp.GetCryptoGetInfo().AccountInfo
+	info, err := _AccountInfoFromProtobuf(protobufResponse)
 	if err != nil {
 		return AccountInfo{}, err
 	}
 
-	err = fetchAccountInfoTokenRelationships(fetchMirrorNodeUrlFromClient(client), q.accountID.String(), &info)
+	err = fetchAccountInfoTokenRelationships(fetchMirrorNodeUrlFromClient(client), fmt.Sprint(protobufResponse.AccountID.GetAccountNum()), &info)
+
 	if err != nil {
 		return info, err
 	}

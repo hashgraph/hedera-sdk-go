@@ -25,7 +25,6 @@ package hedera
 
 import (
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 
@@ -53,9 +52,6 @@ func TestIntegrationAccountInfoQueryCanExecute(t *testing.T) {
 
 	accountID := *receipt.AccountID
 	require.NoError(t, err)
-
-	// sleep in order for mirror node information to update
-	time.Sleep(3 * time.Second)
 
 	info, err := NewAccountInfoQuery().
 		SetAccountID(accountID).
@@ -112,9 +108,6 @@ func TestIntegrationAccountInfoQueryGetCost(t *testing.T) {
 
 	accountID := *receipt.AccountID
 	require.NoError(t, err)
-
-	// sleep in order for mirror node information to update
-	time.Sleep(3 * time.Second)
 
 	accountInfo := NewAccountInfoQuery().
 		SetAccountID(accountID).
@@ -228,9 +221,6 @@ func TestIntegrationAccountInfoQuerySetBigMaxPayment(t *testing.T) {
 
 	accountID := *receipt.AccountID
 	require.NoError(t, err)
-
-	// sleep in order for mirror node information to update
-	time.Sleep(3 * time.Second)
 
 	accountInfo := NewAccountInfoQuery().
 		SetAccountID(accountID).
@@ -399,9 +389,6 @@ func TestIntegrationAccountInfoQueryTokenRelationshipStatuses(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	// sleep in order for mirror node information to update
-	time.Sleep(3 * time.Second)
-
 	info, err := NewAccountInfoQuery().
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetAccountID(accountID).
@@ -440,9 +427,6 @@ func TestIntegrationAccountInfoQueryTokenRelationshipStatuses(t *testing.T) {
 	require.NoError(t, err)
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
-
-	// sleep in order for mirror node information to update
-	time.Sleep(3 * time.Second)
 
 	info, err = NewAccountInfoQuery().
 		SetNodeAccountIDs(env.NodeAccountIDs).
@@ -515,9 +499,6 @@ func TestIntegrationAccountInfoQueryTokenRelationship(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	// sleep in order for mirror node information to update
-	time.Sleep(3 * time.Second)
-
 	info, err := NewAccountInfoQuery().
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetAccountID(accountID).
@@ -562,9 +543,6 @@ func TestIntegrationAccountInfoQueryTokenRelationship(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	// sleep in order for mirror node information to update
-	time.Sleep(3 * time.Second)
-
 	info, err = NewAccountInfoQuery().
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetAccountID(accountID).
@@ -588,9 +566,6 @@ func TestIntegrationAccountInfoQueryTokenRelationship(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	// sleep in order for mirror node information to update
-	time.Sleep(3 * time.Second)
-
 	info, err = NewAccountInfoQuery().
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetAccountID(accountID).
@@ -599,4 +574,70 @@ func TestIntegrationAccountInfoQueryTokenRelationship(t *testing.T) {
 
 	assert.Equal(t, accountID, info.AccountID)
 	assert.Equal(t, 0, len(info.TokenRelationships))
+}
+
+func TestIntegrationAccountInfoQueryWorksWithHollowAccountAlias(t *testing.T) {
+	t.Parallel()
+	env := NewIntegrationTestEnv(t)
+
+	// Create NFT
+	cid := []string{"QmNPCiNA3Dsu3K5FxDPMG5Q3fZRwVTg14EXA92uqEeSRXn"}
+	// Creating the transaction for token creation
+	nftCreateTransaction, err := NewTokenCreateTransaction().
+		SetTokenName("HIP-542 Example Collection").SetTokenSymbol("HIP-542").
+		SetTokenType(TokenTypeNonFungibleUnique).SetDecimals(0).
+		SetInitialSupply(0).SetMaxSupply(int64(len(cid))).
+		SetTreasuryAccountID(env.OperatorID).SetSupplyType(TokenSupplyTypeFinite).
+		SetAdminKey(env.OperatorKey).SetFreezeKey(env.OperatorKey).SetWipeKey(env.OperatorKey).SetSupplyKey(env.OperatorKey).FreezeWith(env.Client)
+
+	// Sign the transaction with the operator key
+	nftSignTransaction := nftCreateTransaction.Sign(env.OperatorKey)
+	// Submit the transaction to the Hedera network
+	nftCreateSubmit, err := nftSignTransaction.Execute(env.Client)
+	require.NoError(t, err)
+
+	// Get transaction receipt information
+	nftCreateReceipt, err := nftCreateSubmit.GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	// Get token id from the transaction
+	nftTokenID := *nftCreateReceipt.TokenID
+
+	nftCollection := []TransactionReceipt{}
+
+	for _, s := range cid {
+		mintTransaction, err := NewTokenMintTransaction().SetTokenID(nftTokenID).SetMetadata([]byte(s)).FreezeWith(env.Client)
+		require.NoError(t, err)
+		mintTransactionSubmit, err := mintTransaction.Sign(env.OperatorKey).Execute(env.Client)
+		require.NoError(t, err)
+		receipt, err := mintTransactionSubmit.GetReceipt(env.Client)
+		require.NoError(t, err)
+		nftCollection = append(nftCollection, receipt)
+	}
+	exampleNftId := nftTokenID.Nft(nftCollection[0].SerialNumbers[0])
+
+	privateKey, err := PrivateKeyGenerateEcdsa()
+	require.NoError(t, err)
+
+	// Extract the ECDSA public key public key
+	publicKey := privateKey.PublicKey()
+	// Extract the Ethereum public address
+	aliasAccountId := publicKey.ToAccountID(0, 0)
+
+	nftTransferTransaction, err := NewTransferTransaction().AddNftTransfer(exampleNftId, env.OperatorID, *aliasAccountId).FreezeWith(env.Client)
+	require.NoError(t, err)
+
+	// Sign the transaction with the operator key
+	nftTransferTransactionSign := nftTransferTransaction.Sign(env.OperatorKey)
+	// Submit the transaction to the Hedera network
+	nftTransferTransactionSubmit, err := nftTransferTransactionSign.Execute(env.Client)
+	require.NoError(t, err)
+	_, err = nftTransferTransactionSubmit.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	_, err = NewAccountInfoQuery().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetAccountID(*aliasAccountId).
+		Execute(env.Client)
+	assert.NoError(t, err)
 }

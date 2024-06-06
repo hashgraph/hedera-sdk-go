@@ -25,7 +25,6 @@ package hedera
 
 import (
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 
@@ -78,9 +77,6 @@ func TestIntegrationAccountBalanceQueryCanGetTokenBalance(t *testing.T) {
 
 	tokenID := receipt.TokenID
 
-	// sleep in order for mirror node information to update
-	time.Sleep(3 * time.Second)
-
 	balance, err := NewAccountBalanceQuery().
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetAccountID(env.Client.GetOperatorAccountID()).
@@ -89,6 +85,7 @@ func TestIntegrationAccountBalanceQueryCanGetTokenBalance(t *testing.T) {
 
 	assert.Equal(t, uint64(1000000), balance.Tokens.Get(*tokenID))
 	assert.Equal(t, uint64(3), balance.TokenDecimals.Get(*tokenID))
+
 	err = CloseIntegrationTestEnv(env, tokenID)
 	require.NoError(t, err)
 }
@@ -199,6 +196,37 @@ func TestIntegrationAccountBalanceQueryNoAccountIDError(t *testing.T) {
 		Execute(env.Client)
 	assert.Error(t, err)
 	assert.True(t, err.Error() == "exceptional precheck status INVALID_ACCOUNT_ID")
+
+	err = CloseIntegrationTestEnv(env, nil)
+	require.NoError(t, err)
+}
+func TestIntegrationAccountBalanceQueryWorksWithHollowAccountAlias(t *testing.T) {
+	t.Parallel()
+	env := NewIntegrationTestEnv(t)
+
+	privateKey, err := PrivateKeyGenerateEcdsa()
+	require.NoError(t, err)
+
+	// Extract the ECDSA public key public key
+	publicKey := privateKey.PublicKey()
+	// Extract the Ethereum public address
+	aliasAccountId := *publicKey.ToAccountID(0, 0)
+	evmAddress := publicKey.ToEvmAddress()
+
+	evmAddressAccount, err := AccountIDFromEvmPublicAddress(evmAddress)
+	require.NoError(t, err)
+
+	// Transfer tokens using the `TransferTransaction` to the Etherum Account Address
+	tx, err := NewTransferTransaction().AddHbarTransfer(evmAddressAccount, NewHbar(4)).
+		AddHbarTransfer(env.OperatorID, NewHbar(-4)).Execute(env.Client)
+	require.NoError(t, err)
+
+	// Get the child receipt or child record to return the Hedera Account ID for the new account that was created
+	_, err = tx.GetReceiptQuery().SetIncludeChildren(true).Execute(env.Client)
+	require.NoError(t, err)
+
+	_, err = NewAccountBalanceQuery().SetAccountID(aliasAccountId).Execute(env.Client)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
 	require.NoError(t, err)
