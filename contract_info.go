@@ -38,6 +38,7 @@ type ContractInfo struct {
 	Storage                       uint64
 	ContractMemo                  string
 	Balance                       uint64
+	TokenRelationships            []*TokenRelationship
 	LedgerID                      LedgerID
 	AutoRenewAccountID            *AccountID
 	MaxAutomaticTokenAssociations int32
@@ -78,6 +79,11 @@ func _ContractInfoFromProtobuf(contractInfo *services.ContractGetInfoResponse_Co
 		stakingInfo = _StakingInfoFromProtobuf(contractInfo.StakingInfo)
 	}
 
+	var tokenRelationships []*TokenRelationship
+	if contractInfo.TokenRelationships != nil { // nolint
+		tokenRelationships = _TokenRelationshipsFromProtobuf(contractInfo.TokenRelationships) // nolint
+	}
+
 	return ContractInfo{
 		AccountID:                     accountID,
 		ContractID:                    contractID,
@@ -92,6 +98,7 @@ func _ContractInfoFromProtobuf(contractInfo *services.ContractGetInfoResponse_Co
 		AutoRenewAccountID:            autoRenewAccountID,
 		MaxAutomaticTokenAssociations: contractInfo.MaxAutomaticTokenAssociations,
 		StakingInfo:                   &stakingInfo,
+		TokenRelationships:            tokenRelationships,
 	}, nil
 }
 
