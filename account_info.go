@@ -43,12 +43,13 @@ type AccountInfo struct {
 	ExpirationTime                 time.Time
 	AutoRenewPeriod                time.Duration
 	LiveHashes                     []*LiveHash
-	TokenRelationships             []*TokenRelationship
-	AccountMemo                    string
-	OwnedNfts                      int64
-	MaxAutomaticTokenAssociations  uint32
-	AliasKey                       *PublicKey
-	LedgerID                       LedgerID
+	// Deprecated
+	TokenRelationships            []*TokenRelationship
+	AccountMemo                   string
+	OwnedNfts                     int64
+	MaxAutomaticTokenAssociations uint32
+	AliasKey                      *PublicKey
+	LedgerID                      LedgerID
 	// Deprecated
 	HbarAllowances []HbarAllowance
 	// Deprecated

@@ -98,7 +98,7 @@ jobs:
 
             - name: Start the local node
               if: success()
-              run: npx @hashgraph/hedera-local start -d --network-tag=0.50.0-alpha.2
+              run: npx @hashgraph/hedera-local start -d --network local
 
             - name: Tests Unit
               if: success()
