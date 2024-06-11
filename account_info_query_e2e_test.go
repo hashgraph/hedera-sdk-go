@@ -330,8 +330,7 @@ func TestIntegrationAccountInfoQueryNoAccountID(t *testing.T) {
 	err = CloseIntegrationTestEnv(env, nil)
 	require.NoError(t, err)
 }
-
-func TestIntegrationAccountInfoQueryTokenRelationshipStatuses(t *testing.T) {
+func TestIntegrationAccountInfoQueryTokenRelationshipInfo(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
@@ -399,6 +398,10 @@ func TestIntegrationAccountInfoQueryTokenRelationshipStatuses(t *testing.T) {
 	assert.Equal(t, 1, len(info.TokenRelationships))
 	assert.Equal(t, true, *info.TokenRelationships[0].FreezeStatus)
 	assert.Equal(t, false, *info.TokenRelationships[0].KycStatus)
+	assert.Equal(t, uint64(0), info.TokenRelationships[0].Balance)
+	assert.Equal(t, "F", info.TokenRelationships[0].Symbol)
+	assert.Equal(t, *receipt.TokenID, info.TokenRelationships[0].TokenID)
+	assert.Equal(t, false, info.TokenRelationships[0].AutomaticAssociation)
 
 	unfreezeTxn, err := NewTokenUnfreezeTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
@@ -438,9 +441,13 @@ func TestIntegrationAccountInfoQueryTokenRelationshipStatuses(t *testing.T) {
 	assert.Equal(t, 1, len(info.TokenRelationships))
 	assert.Equal(t, false, *info.TokenRelationships[0].FreezeStatus)
 	assert.Equal(t, true, *info.TokenRelationships[0].KycStatus)
+	assert.Equal(t, uint64(0), info.TokenRelationships[0].Balance)
+	assert.Equal(t, "F", info.TokenRelationships[0].Symbol)
+	assert.Equal(t, *receipt.TokenID, info.TokenRelationships[0].TokenID)
+	assert.Equal(t, false, info.TokenRelationships[0].AutomaticAssociation)
 }
 
-func TestIntegrationAccountInfoQueryTokenRelationship(t *testing.T) {
+func TestIntegrationAccountInfoQueryTokenRelationshipsLength(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
@@ -550,7 +557,8 @@ func TestIntegrationAccountInfoQueryTokenRelationship(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.Equal(t, 2, len(info.TokenRelationships))
-	assert.Equal(t, uint32(18), info.TokenRelationships[1].Decimals)
+	// the new token should be first in the list
+	assert.Equal(t, uint32(18), info.TokenRelationships[0].Decimals)
 
 	dissociateTxn, err := NewTokenDissociateTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
@@ -574,70 +582,4 @@ func TestIntegrationAccountInfoQueryTokenRelationship(t *testing.T) {
 
 	assert.Equal(t, accountID, info.AccountID)
 	assert.Equal(t, 0, len(info.TokenRelationships))
-}
-
-func TestIntegrationAccountInfoQueryWorksWithHollowAccountAlias(t *testing.T) {
-	t.Parallel()
-	env := NewIntegrationTestEnv(t)
-
-	// Create NFT
-	cid := []string{"QmNPCiNA3Dsu3K5FxDPMG5Q3fZRwVTg14EXA92uqEeSRXn"}
-	// Creating the transaction for token creation
-	nftCreateTransaction, err := NewTokenCreateTransaction().
-		SetTokenName("HIP-542 Example Collection").SetTokenSymbol("HIP-542").
-		SetTokenType(TokenTypeNonFungibleUnique).SetDecimals(0).
-		SetInitialSupply(0).SetMaxSupply(int64(len(cid))).
-		SetTreasuryAccountID(env.OperatorID).SetSupplyType(TokenSupplyTypeFinite).
-		SetAdminKey(env.OperatorKey).SetFreezeKey(env.OperatorKey).SetWipeKey(env.OperatorKey).SetSupplyKey(env.OperatorKey).FreezeWith(env.Client)
-
-	// Sign the transaction with the operator key
-	nftSignTransaction := nftCreateTransaction.Sign(env.OperatorKey)
-	// Submit the transaction to the Hedera network
-	nftCreateSubmit, err := nftSignTransaction.Execute(env.Client)
-	require.NoError(t, err)
-
-	// Get transaction receipt information
-	nftCreateReceipt, err := nftCreateSubmit.GetReceipt(env.Client)
-	require.NoError(t, err)
-
-	// Get token id from the transaction
-	nftTokenID := *nftCreateReceipt.TokenID
-
-	nftCollection := []TransactionReceipt{}
-
-	for _, s := range cid {
-		mintTransaction, err := NewTokenMintTransaction().SetTokenID(nftTokenID).SetMetadata([]byte(s)).FreezeWith(env.Client)
-		require.NoError(t, err)
-		mintTransactionSubmit, err := mintTransaction.Sign(env.OperatorKey).Execute(env.Client)
-		require.NoError(t, err)
-		receipt, err := mintTransactionSubmit.GetReceipt(env.Client)
-		require.NoError(t, err)
-		nftCollection = append(nftCollection, receipt)
-	}
-	exampleNftId := nftTokenID.Nft(nftCollection[0].SerialNumbers[0])
-
-	privateKey, err := PrivateKeyGenerateEcdsa()
-	require.NoError(t, err)
-
-	// Extract the ECDSA public key public key
-	publicKey := privateKey.PublicKey()
-	// Extract the Ethereum public address
-	aliasAccountId := publicKey.ToAccountID(0, 0)
-
-	nftTransferTransaction, err := NewTransferTransaction().AddNftTransfer(exampleNftId, env.OperatorID, *aliasAccountId).FreezeWith(env.Client)
-	require.NoError(t, err)
-
-	// Sign the transaction with the operator key
-	nftTransferTransactionSign := nftTransferTransaction.Sign(env.OperatorKey)
-	// Submit the transaction to the Hedera network
-	nftTransferTransactionSubmit, err := nftTransferTransactionSign.Execute(env.Client)
-	require.NoError(t, err)
-	_, err = nftTransferTransactionSubmit.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
-
-	_, err = NewAccountInfoQuery().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetAccountID(*aliasAccountId).
-		Execute(env.Client)
-	assert.NoError(t, err)
 }

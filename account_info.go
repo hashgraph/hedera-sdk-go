@@ -101,6 +101,11 @@ func _AccountInfoFromProtobuf(pb *services.CryptoGetInfoResponse_AccountInfo) (A
 		stakingInfo = _StakingInfoFromProtobuf(pb.StakingInfo)
 	}
 
+	var tokenRelationships []*TokenRelationship
+	if pb.TokenRelationships != nil { // nolint
+		tokenRelationships = _TokenRelationshipsFromProtobuf(pb.TokenRelationships) // nolint
+	}
+
 	return AccountInfo{
 		AccountID:                      accountID,
 		ContractAccountID:              pb.ContractAccountID,
@@ -115,6 +120,7 @@ func _AccountInfoFromProtobuf(pb *services.CryptoGetInfoResponse_AccountInfo) (A
 		AccountMemo:                    pb.Memo,
 		AutoRenewPeriod:                _DurationFromProtobuf(pb.AutoRenewPeriod),
 		LiveHashes:                     liveHashes,
+		TokenRelationships:             tokenRelationships,
 		OwnedNfts:                      pb.OwnedNfts,
 		MaxAutomaticTokenAssociations:  uint32(pb.MaxAutomaticTokenAssociations),
 		AliasKey:                       alias,
