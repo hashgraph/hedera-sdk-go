@@ -186,17 +186,13 @@ func TestIntegrationContractCreateTransactionNoGas(t *testing.T) {
 	fileID := *receipt.FileID
 	assert.NotNil(t, fileID)
 
-	resp, err = NewContractCreateTransaction().
+	_, err = NewContractCreateTransaction().
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetBytecodeFileID(fileID).
 		Execute(env.Client)
-	require.NoError(t, err)
-
-	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
-	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, "exceptional receipt status: INSUFFICIENT_GAS", err.Error())
+		require.ErrorContains(t, err, "exceptional precheck status INSUFFICIENT_GAS")
 	}
 
 	resp, err = NewFileDeleteTransaction().

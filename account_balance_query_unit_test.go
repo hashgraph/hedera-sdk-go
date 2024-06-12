@@ -136,8 +136,6 @@ func TestUnitAccountBalanceQueryCoverage(t *testing.T) {
 }
 
 func TestUnitAccountBalanceQueryMock(t *testing.T) {
-	// TODO: Skip this test as mocking a query which fetches data from the Mirror Node has to be further discussed.
-	t.Skip()
 	t.Parallel()
 
 	responses := [][]interface{}{
