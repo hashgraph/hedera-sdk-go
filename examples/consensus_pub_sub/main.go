@@ -95,7 +95,7 @@ func main() {
 		}
 
 		// Sleep to make sure everything propagates
-		time.Sleep(2000)
+		time.Sleep(5 * time.Second)
 	}
 
 	// Clean up by deleting the topic, etc

@@ -114,7 +114,7 @@ func main() {
 
 	// Wait for the message
 	for {
-		if !wait || uint64(time.Since(start).Seconds()) > 30 {
+		if !wait || uint64(time.Since(start).Seconds()) > 60 {
 			break
 		}
 
@@ -137,7 +137,7 @@ func main() {
 	}
 
 	if wait {
-		panic("Message was not received within 30 seconds")
+		panic("Message was not received within 60 seconds")
 	}
 }
 
