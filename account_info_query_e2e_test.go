@@ -25,7 +25,6 @@ package hedera
 
 import (
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 
@@ -53,9 +52,6 @@ func TestIntegrationAccountInfoQueryCanExecute(t *testing.T) {
 
 	accountID := *receipt.AccountID
 	require.NoError(t, err)
-
-	// sleep in order for mirror node information to update
-	time.Sleep(3 * time.Second)
 
 	info, err := NewAccountInfoQuery().
 		SetAccountID(accountID).
@@ -112,9 +108,6 @@ func TestIntegrationAccountInfoQueryGetCost(t *testing.T) {
 
 	accountID := *receipt.AccountID
 	require.NoError(t, err)
-
-	// sleep in order for mirror node information to update
-	time.Sleep(3 * time.Second)
 
 	accountInfo := NewAccountInfoQuery().
 		SetAccountID(accountID).
@@ -229,9 +222,6 @@ func TestIntegrationAccountInfoQuerySetBigMaxPayment(t *testing.T) {
 	accountID := *receipt.AccountID
 	require.NoError(t, err)
 
-	// sleep in order for mirror node information to update
-	time.Sleep(3 * time.Second)
-
 	accountInfo := NewAccountInfoQuery().
 		SetAccountID(accountID).
 		SetMaxQueryPayment(NewHbar(1000000)).
@@ -340,8 +330,7 @@ func TestIntegrationAccountInfoQueryNoAccountID(t *testing.T) {
 	err = CloseIntegrationTestEnv(env, nil)
 	require.NoError(t, err)
 }
-
-func TestIntegrationAccountInfoQueryTokenRelationshipStatuses(t *testing.T) {
+func TestIntegrationAccountInfoQueryTokenRelationshipInfo(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
@@ -399,9 +388,6 @@ func TestIntegrationAccountInfoQueryTokenRelationshipStatuses(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	// sleep in order for mirror node information to update
-	time.Sleep(3 * time.Second)
-
 	info, err := NewAccountInfoQuery().
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetAccountID(accountID).
@@ -412,6 +398,10 @@ func TestIntegrationAccountInfoQueryTokenRelationshipStatuses(t *testing.T) {
 	assert.Equal(t, 1, len(info.TokenRelationships))
 	assert.Equal(t, true, *info.TokenRelationships[0].FreezeStatus)
 	assert.Equal(t, false, *info.TokenRelationships[0].KycStatus)
+	assert.Equal(t, uint64(0), info.TokenRelationships[0].Balance)
+	assert.Equal(t, "F", info.TokenRelationships[0].Symbol)
+	assert.Equal(t, *receipt.TokenID, info.TokenRelationships[0].TokenID)
+	assert.Equal(t, false, info.TokenRelationships[0].AutomaticAssociation)
 
 	unfreezeTxn, err := NewTokenUnfreezeTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
@@ -441,9 +431,6 @@ func TestIntegrationAccountInfoQueryTokenRelationshipStatuses(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	// sleep in order for mirror node information to update
-	time.Sleep(3 * time.Second)
-
 	info, err = NewAccountInfoQuery().
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetAccountID(accountID).
@@ -454,9 +441,13 @@ func TestIntegrationAccountInfoQueryTokenRelationshipStatuses(t *testing.T) {
 	assert.Equal(t, 1, len(info.TokenRelationships))
 	assert.Equal(t, false, *info.TokenRelationships[0].FreezeStatus)
 	assert.Equal(t, true, *info.TokenRelationships[0].KycStatus)
+	assert.Equal(t, uint64(0), info.TokenRelationships[0].Balance)
+	assert.Equal(t, "F", info.TokenRelationships[0].Symbol)
+	assert.Equal(t, *receipt.TokenID, info.TokenRelationships[0].TokenID)
+	assert.Equal(t, false, info.TokenRelationships[0].AutomaticAssociation)
 }
 
-func TestIntegrationAccountInfoQueryTokenRelationship(t *testing.T) {
+func TestIntegrationAccountInfoQueryTokenRelationshipsLength(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
@@ -515,9 +506,6 @@ func TestIntegrationAccountInfoQueryTokenRelationship(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	// sleep in order for mirror node information to update
-	time.Sleep(3 * time.Second)
-
 	info, err := NewAccountInfoQuery().
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetAccountID(accountID).
@@ -562,9 +550,6 @@ func TestIntegrationAccountInfoQueryTokenRelationship(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	// sleep in order for mirror node information to update
-	time.Sleep(3 * time.Second)
-
 	info, err = NewAccountInfoQuery().
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetAccountID(accountID).
@@ -572,7 +557,8 @@ func TestIntegrationAccountInfoQueryTokenRelationship(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.Equal(t, 2, len(info.TokenRelationships))
-	assert.Equal(t, uint32(18), info.TokenRelationships[1].Decimals)
+	// the new token should be first in the list
+	assert.Equal(t, uint32(18), info.TokenRelationships[0].Decimals)
 
 	dissociateTxn, err := NewTokenDissociateTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
@@ -587,9 +573,6 @@ func TestIntegrationAccountInfoQueryTokenRelationship(t *testing.T) {
 	require.NoError(t, err)
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
-
-	// sleep in order for mirror node information to update
-	time.Sleep(3 * time.Second)
 
 	info, err = NewAccountInfoQuery().
 		SetNodeAccountIDs(env.NodeAccountIDs).

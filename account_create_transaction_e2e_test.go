@@ -26,7 +26,6 @@ package hedera
 import (
 	"fmt"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 
@@ -322,9 +321,6 @@ func TestIntegrationAccountCreateTransactionWithAliasFromAdminKey(t *testing.T) 
 
 	accountID := *receipt.AccountID
 
-	// sleep in order for mirror node information to update
-	time.Sleep(3 * time.Second)
-
 	info, err := NewAccountInfoQuery().
 		SetAccountID(accountID).
 		Execute(env.Client)
@@ -355,21 +351,20 @@ func TestIntegrationAccountCreateTransactionWithAliasFromAdminKeyWithReceiverSig
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	resp, err := NewAccountCreateTransaction().
+	frozenTxn, err := NewAccountCreateTransaction().
 		SetReceiverSignatureRequired(true).
 		SetKey(adminKey).
 		SetAlias(evmAddress).
-		Sign(adminKey).
-		Execute(env.Client)
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+
+	resp, err := frozenTxn.Sign(adminKey).Execute(env.Client)
 	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	accountID := *receipt.AccountID
-
-	// sleep in order for mirror node information to update
-	time.Sleep(3 * time.Second)
 
 	info, err := NewAccountInfoQuery().
 		SetAccountID(accountID).
@@ -436,9 +431,13 @@ func TestIntegrationAccountCreateTransactionWithAlias(t *testing.T) {
 	key, err := PrivateKeyGenerateEcdsa()
 	evmAddress := key.PublicKey().ToEvmAddress()
 
-	resp, err := NewAccountCreateTransaction().
+	tx, err := NewAccountCreateTransaction().
 		SetKey(adminKey).
 		SetAlias(evmAddress).
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+
+	resp, err := tx.
 		Sign(key).
 		Execute(env.Client)
 	require.NoError(t, err)
@@ -447,9 +446,6 @@ func TestIntegrationAccountCreateTransactionWithAlias(t *testing.T) {
 	require.NoError(t, err)
 
 	accountID := *receipt.AccountID
-
-	// sleep in order for mirror node information to update
-	time.Sleep(3 * time.Second)
 
 	info, err := NewAccountInfoQuery().
 		SetAccountID(accountID).
@@ -514,10 +510,14 @@ func TestIntegrationAccountCreateTransactionWithAliasWithReceiverSigRequired(t *
 	key, err := PrivateKeyGenerateEcdsa()
 	evmAddress := key.PublicKey().ToEvmAddress()
 
-	resp, err := NewAccountCreateTransaction().
+	frozenTxn, err := NewAccountCreateTransaction().
 		SetReceiverSignatureRequired(true).
 		SetKey(adminKey).
 		SetAlias(evmAddress).
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+
+	resp, err := frozenTxn.
 		Sign(key).
 		Sign(adminKey).
 		Execute(env.Client)
@@ -527,9 +527,6 @@ func TestIntegrationAccountCreateTransactionWithAliasWithReceiverSigRequired(t *
 	require.NoError(t, err)
 
 	accountID := *receipt.AccountID
-
-	// sleep in order for mirror node information to update
-	time.Sleep(3 * time.Second)
 
 	info, err := NewAccountInfoQuery().
 		SetAccountID(accountID).
@@ -560,10 +557,14 @@ func TestIntegrationAccountCreateTransactionWithAliasWithReceiverSigRequiredWith
 	key, err := PrivateKeyGenerateEcdsa()
 	evmAddress := key.PublicKey().ToEvmAddress()
 
-	resp, err := NewAccountCreateTransaction().
+	frozenTxn, err := NewAccountCreateTransaction().
 		SetReceiverSignatureRequired(true).
 		SetKey(adminKey).
 		SetAlias(evmAddress).
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+
+	resp, err := frozenTxn.
 		Sign(key).
 		Execute(env.Client)
 	require.NoError(t, err)

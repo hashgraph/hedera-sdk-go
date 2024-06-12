@@ -66,17 +66,12 @@ func TestIntegrationContractIDCanPopulateAccountNumber(t *testing.T) {
 
 	require.NotNil(t, receipt.ContractID)
 
-	// sleep in order for mirror node information to update
-	time.Sleep(3 * time.Second)
-
 	contractID := *receipt.ContractID
 	info, err := NewContractInfoQuery().SetContractID(contractID).Execute(env.Client)
 	require.NoError(t, err)
-
 	idMirror, err := ContractIDFromEvmAddress(0, 0, info.ContractAccountID)
 	require.NoError(t, err)
 	time.Sleep(5 * time.Second)
-
 	err = idMirror.PopulateContract(env.Client)
 	require.NoError(t, err)
 	require.Equal(t, contractID.Contract, idMirror.Contract)

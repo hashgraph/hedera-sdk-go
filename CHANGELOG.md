@@ -1,3 +1,36 @@
+## v2.38.1
+
+### Changed
+
+-  `AccountBalanceQuery`, `AccountInfoQuery`, and `ContractInfoQuery` get all the data from consensus nodes again
+
+## v2.38.0
+
+### Added
+
+-   `AccountBalanceQuery`, `AccountInfoQuery`, and `ContractInfoQuery` get part of the data from the Mirror Node REST API (HIP-367)
+-   Fungible Token Metadata Field (HIP-646)
+-   NFT Collection Token Metadata Field (HIP-765)
+
+### Fixed
+
+-   Raise an error if the transaction is not frozen while signing
+-   Undeprecate `AccountBalance.TokenDecimals`, `AccountInfo.TokenRelationships`
+-   Account alias for hollow account Mirror Node Queries 
+
+### Deprecated
+
+-   `TokenRelationship.Symbol`, use `TokenInfo.Symbol` instead
+
+## v2.37.0
+
+### Added
+
+-   METADATA key and possibility to update NFT metadata (HIP-657)
+-   Fungible Token Metadata Field (HIP-646)
+-   NFT Collection Token Metadata Field (HIP-765)
+-   updated protobufs
+
 ## v2.36.0
 
 ### Added
