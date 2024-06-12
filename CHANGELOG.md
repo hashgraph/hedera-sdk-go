@@ -1,3 +1,9 @@
+## v2.39.0
+
+### Added
+
+-  Implemented HIP-540: Change or remove existing keys from a token
+
 ## v2.38.1
 
 ### Changed
