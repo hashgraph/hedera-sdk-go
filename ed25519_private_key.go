@@ -416,10 +416,3 @@ func (sk _Ed25519PrivateKey) _SignTransaction(tx *Transaction) ([]byte, error) {
 
 	return signature, nil
 }
-
-/**
- *  SDK needs to provide  a way to set an unusable key such as an Ed25519 all-zeros
- *  key, since it is (presumably) impossible to find the 32-byte string whose SHA-512 hash begins with 32 bytes
- *  of zeros. We recommend using all-zeros to clearly advertise any unusable keys.
- */
-const ZERO_KEY_STRING = "0000000000000000000000000000000000000000000000000000000000000000"

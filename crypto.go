@@ -91,6 +91,15 @@ type PublicKey struct {
 	ed25519PublicKey *_Ed25519PublicKey
 }
 
+/**
+ *  SDK needs to provide  a way to set an unusable key such as an Ed25519 all-zeros
+ *  key, since it is (presumably) impossible to find the 32-byte string whose SHA-512 hash begins with 32 bytes
+ *  of zeros. We recommend using all-zeros to clearly advertise any unusable keys.
+ */
+func UnusableKey() (PublicKey, error) {
+	return PublicKeyFromString("0000000000000000000000000000000000000000000000000000000000000000")
+}
+
 // PrivateKeyGenerateEcdsa Generates a new ECDSASecp256K1 key
 func PrivateKeyGenerateEcdsa() (PrivateKey, error) {
 	key, err := _GenerateECDSAPrivateKey()
