@@ -191,6 +191,7 @@ func TestIntegrationContractCreateTransactionNoGas(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetBytecodeFileID(fileID).
 		Execute(env.Client)
+	assert.Error(t, err)
 	if err != nil {
 		require.ErrorContains(t, err, "exceptional precheck status INSUFFICIENT_GAS")
 	}

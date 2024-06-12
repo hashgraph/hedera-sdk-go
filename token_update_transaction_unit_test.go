@@ -115,6 +115,7 @@ func TestUnitTokenUpdateTransactionGet(t *testing.T) {
 		SetSupplyKey(newKey).
 		SetPauseKey(newKey).
 		SetMetadataKey(newKey).
+		SetKeyVerificationMode(NO_VALIDATION).
 		SetExpirationTime(time.Now()).
 		SetAutoRenewPeriod(60 * time.Second).
 		SetAutoRenewAccount(accountID).
@@ -149,6 +150,7 @@ func TestUnitTokenUpdateTransactionGet(t *testing.T) {
 	transaction.GetSupplyKey()
 	transaction.GetPauseKey()
 	transaction.GetMetadataKey()
+	transaction.GetKeyVerificationMode()
 	transaction.GetExpirationTime()
 	transaction.GetMaxTransactionFee()
 	transaction.GetTransactionMemo()
@@ -202,6 +204,7 @@ func TestUnitTokenUpdateTransactionNothingSet(t *testing.T) {
 	transaction.GetSupplyKey()
 	transaction.GetPauseKey()
 	transaction.GetMetadataKey()
+	transaction.GetKeyVerificationMode()
 	transaction.GetExpirationTime()
 	transaction.GetMaxTransactionFee()
 	transaction.GetTransactionMemo()
