@@ -79,7 +79,7 @@ func TestIntegrationTokenUpdateTransactionUpdateKeysToZeroKeyFails(t *testing.T)
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
-	zeroNewKey, err := UnusableKey()
+	zeroNewKey, err := ZeroKey()
 	require.NoError(t, err)
 
 	// Make token immutable
@@ -95,7 +95,7 @@ func TestIntegrationTokenUpdateTransactionUpdateLowerPrivilegeKeysWithAdminKeyFu
 	env := NewIntegrationTestEnv(t)
 
 	// Update lower privilege keys to zero key list with admin key
-	zeroKey, err := UnusableKey()
+	zeroKey, err := ZeroKey()
 	require.NoError(t, err)
 
 	resp, tokenID, err := createTokenWithKeysAndUpdateTokenKeyHelper(t, ALL, LOWER_PRIVILEGE, env.Client, zeroKey, env.OperatorKey, env.OperatorKey, FULL_VALIDATION)
@@ -132,7 +132,7 @@ func TestIntegrationTokenUpdateTransactionUpdateLowerPrivilegeKeysWithAdminKeyNo
 	env := NewIntegrationTestEnv(t)
 
 	// Update lower privilege keys to zero key list with admin key
-	zeroKey, err := UnusableKey()
+	zeroKey, err := ZeroKey()
 	require.NoError(t, err)
 
 	resp, tokenID, err := createTokenWithKeysAndUpdateTokenKeyHelper(t, ALL, LOWER_PRIVILEGE, env.Client, zeroKey, env.OperatorKey, env.OperatorKey, NO_VALIDATION)
@@ -195,7 +195,7 @@ func TestIntegrationTokenUpdateTransactionUpdateLowerPrivilegeKeysWithInvalidKey
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.ErrorContains(t, err, "INVALID_SIGNATURE")
 
-	zeroKey, err := UnusableKey()
+	zeroKey, err := ZeroKey()
 	require.NoError(t, err)
 
 	// Cannot upadate token with some random key
@@ -227,7 +227,7 @@ func TestIntegrationTokenUpdateTransactionUpdateKeysLowerPrivKeysUpdateThemselve
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
-	zeroNewKey, err := UnusableKey()
+	zeroNewKey, err := ZeroKey()
 	require.NoError(t, err)
 
 	validNewKey, err := PrivateKeyGenerateEd25519()
@@ -272,7 +272,7 @@ func TestIntegrationTokenUpdateTransactionUpdateKeysLowerPrivilegeKeysUpdateFull
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
-	zeroNewKey, err := UnusableKey()
+	zeroNewKey, err := ZeroKey()
 	require.NoError(t, err)
 
 	initialKey := env.OperatorKey

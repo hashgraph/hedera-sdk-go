@@ -96,7 +96,7 @@ type PublicKey struct {
  *  key, since it is (presumably) impossible to find the 32-byte string whose SHA-512 hash begins with 32 bytes
  *  of zeros. We recommend using all-zeros to clearly advertise any unusable keys.
  */
-func UnusableKey() (PublicKey, error) {
+func ZeroKey() (PublicKey, error) {
 	return PublicKeyFromString("0000000000000000000000000000000000000000000000000000000000000000")
 }
 
