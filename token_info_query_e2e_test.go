@@ -299,7 +299,6 @@ func TestIntegrationTokenInfoQueryNoPayment(t *testing.T) {
 }
 
 func TestIntegrationTokenInfoQueryNoTokenID(t *testing.T) {
-	t.Skip("Skipping test as it is not working with the modularized code ")
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
