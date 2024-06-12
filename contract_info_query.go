@@ -81,42 +81,7 @@ func (q *ContractInfoQuery) Execute(client *Client) (ContractInfo, error) {
 		return ContractInfo{}, err
 	}
 
-	err = fetchContractInfoTokenRelationships(fetchMirrorNodeUrlFromClient(client), q.contractID.String(), &info)
-	if err != nil {
-		return info, err
-	}
-
 	return info, nil
-}
-
-/*
-Helper function, which queries the mirror node and if the query result has token relations, it iterates over the token
-relationships and populates the appropriate field in ContractInfo object
-
-IMPORTANT: This function will fetch the state of the data in the Mirror Node at the moment of its execution. It
-is important to note that the Mirror Node currently needs 2-3 seconds to be updated with the latest data from the
-consensus nodes. So if data related to token relationships is changed and a proper timeout is not introduced the
-user would not get the up to date state of token relationships. This note is ONLY for token relationship data as it
-is queried from the MirrorNode. Other query information arrives at the time of consensus response.
-*/
-func fetchContractInfoTokenRelationships(network string, id string, info *ContractInfo) error {
-	response, err := tokenRelationshipMirrorNodeQuery(network, id)
-	if err != nil {
-		return err
-	}
-
-	info.TokenRelationships = make([]*TokenRelationship, 0)
-
-	if tokens, ok := response["tokens"].([]interface{}); ok {
-		for _, token := range tokens {
-			tr, err := TokenRelationshipFromJson(token)
-			if err != nil {
-				return err
-			}
-			info.TokenRelationships = append(info.TokenRelationships, tr)
-		}
-	}
-	return nil
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.

@@ -1,3 +1,9 @@
+## v2.38.1
+
+### Changed
+
+-  `AccountBalanceQuery`, `AccountInfoQuery`, and `ContractInfoQuery` get all the data from consensus nodes again
+
 ## v2.38.0
 
 ### Added
