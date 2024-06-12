@@ -34,19 +34,12 @@ func main() {
 	// by this account and be signed by this key
 	client.SetOperator(operatorAccountID, operatorKey)
 
-	// generate a submit key to use with the topic
-	submitKey, err := hedera.GeneratePrivateKey()
-	if err != nil {
-		panic(fmt.Sprintf("%v : error generating PrivateKey", err))
-	}
-
 	// Make a new topic ID to use
 	transactionResponse, err := hedera.NewTopicCreateTransaction().
 		// Memo is not required
 		SetTransactionMemo("go sdk example create_pub_sub_chunked/main.go").
 		// Access control for TopicSubmitMessage.
 		// If unspecified, no access control is performed, all submissions are allowed.
-		SetSubmitKey(submitKey).
 		// Access control for UpdateTopicTransaction/DeleteTopicTransaction.
 		// Anyone can increase the topic's expirationTime via UpdateTopicTransaction, regardless of the adminKey.
 		// If no adminKey is specified, UpdateTopicTransaction may only be used to extend the topic's expirationTime,
@@ -80,6 +73,9 @@ func main() {
 		// For which topic ID
 		SetTopicID(topicID).
 		SetStartTime(time.Unix(0, 0)).
+		SetCompletionHandler(func() {
+			wait = false
+		}).
 		Subscribe(client, func(message hedera.TopicMessage) {
 			if string(message.Contents) == bigContents {
 				wait = false
@@ -93,7 +89,7 @@ func main() {
 	}
 
 	// Prepare a message send transaction that requires a submit key from "somewhere else"
-	transaction, err := hedera.NewTopicMessageSubmitTransaction().
+	_, err = hedera.NewTopicMessageSubmitTransaction().
 		SetNodeAccountIDs([]hedera.AccountID{transactionResponse.NodeID}).
 		// The message we are sending
 		SetMessage([]byte(bigContents)).
@@ -101,45 +97,10 @@ func main() {
 		// 10 is default
 		SetMaxChunks(15).
 		SetTopicID(topicID).
-		// sign with the operator or "sender" of the message
-		// this is the party who will be charged the transaction fee
-		SignWithOperator(client)
+		Execute(client)
+
 	if err != nil {
 		panic(fmt.Sprintf("%v : error signing with operator", err))
-	}
-
-	// Serialize to bytes so it can be signed "somewhere else" by the submit key
-	transactionBytes, err := transaction.ToBytes()
-	if err != nil {
-		panic(fmt.Sprintf("%v : error serializing topic submit transaction to bytes", err))
-	}
-
-	// Now pretend we sent those bytes across the network
-	// parse them into a transaction so we can sign with the submit key
-	transactionFromBytes, err := hedera.TransactionFromBytes(transactionBytes)
-	if err != nil {
-		panic(fmt.Sprintf("%v : error deserializing topic submit transaction", err))
-	}
-
-	// Interface{} back to TopicMessageSubmitTransaction
-	switch temp := transactionFromBytes.(type) {
-	case hedera.TopicMessageSubmitTransaction:
-		transaction = &temp
-	}
-
-	// Sign with that submit key
-	transaction.Sign(submitKey)
-
-	// Now actually submit the transaction
-	transactionResponse, err = transaction.Execute(client)
-
-	// Wait a bit to propagate
-	for {
-		if !wait || uint64(time.Since(start).Seconds()) > 30 {
-			break
-		}
-
-		time.Sleep(2500)
 	}
 
 	// Get the receipt to ensure there were no errors
@@ -150,6 +111,15 @@ func main() {
 
 	println("TransactionID to check if successfully sent:", transactionResponse.TransactionID.String())
 	println("status:", receipt.Status.String())
+
+	// Wait for the message
+	for {
+		if !wait || uint64(time.Since(start).Seconds()) > 30 {
+			break
+		}
+
+		time.Sleep(1 * time.Second)
+	}
 
 	// Clean up, deleting the topic ID
 	transactionResponse, err = hedera.NewTopicDeleteTransaction().
