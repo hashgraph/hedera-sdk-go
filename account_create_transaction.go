@@ -446,7 +446,7 @@ func (tx *AccountCreateTransaction) buildProtoBody() *services.CryptoCreateTrans
 		InitialBalance:                tx.initialBalance,
 		ReceiverSigRequired:           tx.receiverSignatureRequired,
 		Memo:                          tx.memo,
-		MaxAutomaticTokenAssociations: int32(tx.maxAutomaticTokenAssociations),
+		MaxAutomaticTokenAssociations: tx.maxAutomaticTokenAssociations,
 		DeclineReward:                 tx.declineReward,
 		Alias:                         tx.alias,
 	}

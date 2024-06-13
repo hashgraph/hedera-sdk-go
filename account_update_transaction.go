@@ -456,7 +456,7 @@ func (tx *AccountUpdateTransaction) build() *services.TransactionBody {
 		},
 	}
 
-	body.MaxAutomaticTokenAssociations = &wrapperspb.Int32Value{Value: int32(tx.maxAutomaticTokenAssociations)}
+	body.MaxAutomaticTokenAssociations = &wrapperspb.Int32Value{Value: tx.maxAutomaticTokenAssociations}
 
 	return &pb
 }
@@ -476,7 +476,7 @@ func (tx *AccountUpdateTransaction) buildProtoBody() *services.CryptoUpdateTrans
 		},
 		Memo:                          &wrapperspb.StringValue{Value: tx.memo},
 		DeclineReward:                 &wrapperspb.BoolValue{Value: tx.declineReward},
-		MaxAutomaticTokenAssociations: &wrapperspb.Int32Value{Value: int32(tx.maxAutomaticTokenAssociations)},
+		MaxAutomaticTokenAssociations: &wrapperspb.Int32Value{Value: tx.maxAutomaticTokenAssociations},
 	}
 
 	if tx.autoRenewPeriod != nil {
