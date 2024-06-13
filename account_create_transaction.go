@@ -44,7 +44,7 @@ type AccountCreateTransaction struct {
 	autoRenewPeriod               *time.Duration
 	memo                          string
 	receiverSignatureRequired     bool
-	maxAutomaticTokenAssociations uint32
+	maxAutomaticTokenAssociations int32
 	stakedAccountID               *AccountID
 	stakedNodeID                  *int64
 	declineReward                 bool
@@ -85,7 +85,7 @@ func _AccountCreateTransactionFromProtobuf(tx Transaction, pb *services.Transact
 		autoRenewPeriod:               &renew,
 		memo:                          pb.GetCryptoCreateAccount().GetMemo(),
 		receiverSignatureRequired:     pb.GetCryptoCreateAccount().ReceiverSigRequired,
-		maxAutomaticTokenAssociations: uint32(pb.GetCryptoCreateAccount().MaxAutomaticTokenAssociations),
+		maxAutomaticTokenAssociations: pb.GetCryptoCreateAccount().MaxAutomaticTokenAssociations,
 		stakedAccountID:               stakeAccountID,
 		stakedNodeID:                  stakedNodeID,
 		declineReward:                 pb.GetCryptoCreateAccount().GetDeclineReward(),
@@ -126,14 +126,14 @@ func (tx *AccountCreateTransaction) GetInitialBalance() Hbar {
 // SetMaxAutomaticTokenAssociations
 // Set the maximum number of tokens that an Account can be implicitly associated with. Defaults to 0
 // and up to a maximum value of 1000.
-func (tx *AccountCreateTransaction) SetMaxAutomaticTokenAssociations(max uint32) *AccountCreateTransaction {
+func (tx *AccountCreateTransaction) SetMaxAutomaticTokenAssociations(max int32) *AccountCreateTransaction {
 	tx._RequireNotFrozen()
 	tx.maxAutomaticTokenAssociations = max
 	return tx
 }
 
 // GetMaxAutomaticTokenAssociations returns the maximum number of tokens that an Account can be implicitly associated with.
-func (tx *AccountCreateTransaction) GetMaxAutomaticTokenAssociations() uint32 {
+func (tx *AccountCreateTransaction) GetMaxAutomaticTokenAssociations() int32 {
 	return tx.maxAutomaticTokenAssociations
 }
 
