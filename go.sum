@@ -581,9 +581,8 @@ github.com/googleapis/google-cloud-go-testing v0.0.0-20200911160855-bcd43fbb19e8
 github.com/grpc-ecosystem/grpc-gateway v1.16.0/go.mod h1:BDjrQk3hbvj6Nolgz8mAMFbcEtjT1g+wF4CSlocrBnw=
 github.com/grpc-ecosystem/grpc-gateway/v2 v2.7.0/go.mod h1:hgWBS7lorOAVIJEQMi4ZsPv9hVvWI6+ch50m39Pf2Ks=
 github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.3/go.mod h1:o//XUCC/F+yRGJoPO/VU0GSB0f8Nhgmxx0VIRUvaC0w=
-github.com/hashgraph/hedera-protobufs v0.47.0/go.mod h1:siUeoFchsJQxkl0vf/6cIaUmpRz1Trw/ulqv1QVLrgA=
-github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20240507130336-6f8f530d2c86 h1:gKeks7qkUA0t0jgy0TyXxSQaRvOw54eGIDinXwxqsdw=
-github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20240507130336-6f8f530d2c86/go.mod h1:VQ+eKqZF12DH8iT8LaQ8uAdbRgIIGOStsu1J9V6nd50=
+github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20240613101214-39d5b1374695 h1:b/rVBVIUaomx6kxnrr5ZMwBVYVLFcZ/KCRXl18iWg5U=
+github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20240613101214-39d5b1374695/go.mod h1:vN4EAg6FOvgRjeqR7tYBqv9lxT0wqImRh/FVxBUHOkM=
 github.com/hashicorp/golang-lru v0.5.0/go.mod h1:/m3WP610KZHVQ1SGc6re/UDhFvYD7pJ4Ao+sR/qLZy8=
 github.com/hashicorp/golang-lru v0.5.1/go.mod h1:/m3WP610KZHVQ1SGc6re/UDhFvYD7pJ4Ao+sR/qLZy8=
 github.com/holiman/uint256 v1.2.4 h1:jUc4Nk8fm9jZabQuqr2JzednajVmBpC+oiTiXZJEApU=
