@@ -93,11 +93,7 @@ func createAccountHelper(t *testing.T, env *IntegrationTestEnv, maxAutoAssociati
 	return *receipt.AccountID, newKey
 }
 
-func createAccountWithInvalidMaxAutoAssociationsHelper(t *testing.T, env *IntegrationTestEnv, maxAutoAssociations int32) {
-}
-
 // Limited max auto association tests
-
 func TestLimitedMaxAutoAssociationsFungibleTokensFlow(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
@@ -600,8 +596,8 @@ func TestUnlimitedMaxAutoAssociationsAllowsToTransferFromNFTs(t *testing.T) {
 
 	// approve the spender
 	approve, err := NewAccountAllowanceApproveTransaction().
-		AddAllTokenNftApproval(tokenID1, spender).
-		AddAllTokenNftApproval(tokenID2, spender).
+		AddAllTokenNftApproval(nftID1, spender).
+		AddAllTokenNftApproval(nftID1, spender).
 		Execute(env.Client)
 	require.NoError(t, err)
 
