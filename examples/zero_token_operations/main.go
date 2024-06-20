@@ -123,7 +123,7 @@ func main() {
 		panic(err)
 	}
 
-	// TODO
+	// TODO there is currently possible bug in services causing this operation to fail, should be investigated
 	// _, err = helper.ExecuteSteps(0, 5, client)
 	// if err != nil {
 	// 	panic(fmt.Sprintf("%v : error in helper", err))

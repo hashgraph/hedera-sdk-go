@@ -191,10 +191,10 @@ func main() {
 	// step 15 approves an NFT allowance with operator as the owner and Alice as the spender
 	// step 16 burn some NFTs
 
-	// TODO
+	// TODO there is currently possible bug in services causing this operation to fail, should be investigated
 	// _, err = contractHelper.
 	// 	ExecuteSteps( /* from step */ 0 /* to step */, 16, client)
-	if err != nil {
-		panic(fmt.Sprintf("%v : error executing steps", err))
-	}
+	// if err != nil {
+	// 	panic(fmt.Sprintf("%v : error executing steps", err))
+	// }
 }
