@@ -29,9 +29,6 @@ import (
  *
  */
 
-// Helpers
-const hexData = `608060405234801561001057600080fd5b50336000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055506101cb806100606000396000f3fe608060405260043610610046576000357c01000000000000000000000000000000000000000000000000000000009004806341c0e1b51461004b578063cfae321714610062575b600080fd5b34801561005757600080fd5b506100606100f2565b005b34801561006e57600080fd5b50610077610162565b6040518080602001828103825283818151815260200191508051906020019080838360005b838110156100b757808201518184015260208101905061009c565b50505050905090810190601f1680156100e45780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b6000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff161415610160573373ffffffffffffffffffffffffffffffffffffffff16ff5b565b60606040805190810160405280600d81526020017f48656c6c6f2c20776f726c64210000000000000000000000000000000000000081525090509056fea165627a7a72305820ae96fb3af7cde9c0abfe365272441894ab717f816f07f41f07b1cbede54e256e0029`
-
 var initialMetadataList = [][]byte{{1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}}
 
 func createNftHelper(t *testing.T, env *IntegrationTestEnv) TokenID {
@@ -100,6 +97,7 @@ func TestLimitedMaxAutoAssociationsFungibleTokensFlow(t *testing.T) {
 
 	// create token1 with 1 mil supply
 	tokenID1 := createFungibleTokenHelper(t, &env)
+
 	// create token2 with 1 mil supply
 	tokenID2 := createFungibleTokenHelper(t, &env)
 
@@ -119,9 +117,6 @@ func TestLimitedMaxAutoAssociationsFungibleTokensFlow(t *testing.T) {
 
 	_, err = accountUpdate.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
-	// contract create with 1 max auto associations
-	// contract update with 1 max auto associations
-	// contract create flow with 1 max auto associations
 
 	// transfer token1 to all some tokens
 	tokenTransferTransaction, err := NewTransferTransaction().
@@ -184,64 +179,6 @@ func TestLimitedMaxAutoAssociationsNFTsFlow(t *testing.T) {
 
 	_, err = accountUpdate.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
-	// contract create with 1 max auto associations
-	// hexBytecode, err := hex.DecodeString(hexData)
-	// require.NoError(t, err)
-
-	// contractCreate, err := NewContractCreateTransaction().
-	// 	SetAdminKey(env.Client.GetOperatorPublicKey()).
-	// 	SetMaxAutomaticTokenAssociations(1).
-	// 	SetGas(10000000).
-	// 	SetBytecode(hexBytecode).
-	// 	Execute(env.Client)
-	// require.NoError(t, err)
-
-	// receipt, err = contractCreate.SetValidateStatus(true).GetReceipt(env.Client)
-	// require.NoError(t, err)
-
-	// contractID1, err := AccountIDFromString(receipt.ContractID.String())
-	// require.NoError(t, err)
-	// // contract update with 1 max auto associations
-
-	// contractCreate, err = NewContractCreateTransaction().
-	// 	SetAdminKey(env.Client.GetOperatorPublicKey()).
-	// 	SetMaxAutomaticTokenAssociations(100).
-	// 	SetGas(10000000).
-	// 	SetBytecode(hexBytecode).
-	// 	Execute(env.Client)
-	// require.NoError(t, err)
-
-	// receipt, err = contractCreate.SetValidateStatus(true).GetReceipt(env.Client)
-	// require.NoError(t, err)
-
-	// contractID2, err := AccountIDFromString(receipt.ContractID.String())
-	// require.NoError(t, err)
-
-	// contractUpdate, err := NewContractUpdateTransaction().
-	// 	SetContractID(*receipt.ContractID).
-	// 	SetMaxAutomaticTokenAssociations(1).
-	// 	Execute(env.Client)
-	// require.NoError(t, err)
-
-	// _, err = contractUpdate.SetValidateStatus(true).GetReceipt(env.Client)
-	// require.NoError(t, err)
-
-	// // contract create flow with 1 max auto associations
-	// contractCreateFlow, err := NewContractCreateFlow().
-	// 	SetBytecode(hexBytecode).
-	// 	SetAdminKey(env.Client.GetOperatorPublicKey()).
-	// 	SetMaxAutomaticTokenAssociations(1).
-	// 	SetGas(200000).
-	// 	SetConstructorParameters(NewContractFunctionParameters().AddString("hello from hedera")).
-	// 	SetContractMemo("[e2e::ContractCreateFlow]").
-	// 	Execute(env.Client)
-	// require.NoError(t, err)
-
-	// receipt, err = contractCreateFlow.SetValidateStatus(true).GetReceipt(env.Client)
-	// require.NoError(t, err)
-
-	// contractCreateFlowID, err := AccountIDFromString(receipt.ContractID.String())
-	// require.NoError(t, err)
 
 	// transfer nft1 to all, 2 for each
 	tokenTransferTransaction, err := NewTransferTransaction().
@@ -275,13 +212,13 @@ func TestLimitedMaxAutoAssociationsNFTsFlow(t *testing.T) {
 }
 
 // HIP-904 Unlimited max auto association tests
-
 func TestUnlimitedMaxAutoAssociationsExecutes(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	// account create with unlimited max auto associations
 	createAccountHelper(t, &env, -1)
+
 	// account update with unlimited max auto associations
 	accountID, newKey := createAccountHelper(t, &env, 100)
 	accountUpdateFrozen, err := NewAccountUpdateTransaction().
@@ -295,11 +232,6 @@ func TestUnlimitedMaxAutoAssociationsExecutes(t *testing.T) {
 
 	_, err = accountUpdate.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
-	// contract create
-	// contract update
-	// contract create flow
-
-	// all should execute
 }
 
 func TestUnlimitedMaxAutoAssociationsAllowsToTransferFungibleTokens(t *testing.T) {
@@ -308,6 +240,7 @@ func TestUnlimitedMaxAutoAssociationsAllowsToTransferFungibleTokens(t *testing.T
 
 	// create token1 with 1 mil supply
 	tokenID1 := createFungibleTokenHelper(t, &env)
+
 	// create token2 with 1 mil supply
 	tokenID2 := createFungibleTokenHelper(t, &env)
 
@@ -326,10 +259,6 @@ func TestUnlimitedMaxAutoAssociationsAllowsToTransferFungibleTokens(t *testing.T
 
 	_, err = accountUpdate.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
-
-	// contract create
-	// contract update
-	// contract create flow
 
 	// transfer to both accounts some token1 tokens
 	tokenTransferTransaction, err := NewTransferTransaction().
@@ -381,10 +310,6 @@ func TestUnlimitedMaxAutoAssociationsAllowsToTransferFungibleTokensWithDecimals(
 	_, err = accountUpdate.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	// contract create
-	// contract update
-	// contract create flow
-
 	// transfer to both accounts some token1 tokens
 	tokenTransferTransaction, err := NewTransferTransaction().
 		AddTokenTransferWithDecimals(tokenID1, env.Client.GetOperatorAccountID(), -1000, 10).
@@ -413,11 +338,13 @@ func TestUnlimitedMaxAutoAssociationsAllowsToTransferFungibleTokensWithDecimals(
 func TestUnlimitedMaxAutoAssociationsAllowsToTransferFromFungibleTokens(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+
 	// create spender account which will be approved to spend
 	spender, spenderKey := createAccountHelper(t, &env, 10)
 
 	// create token1 with 1 mil supply
 	tokenID1 := createFungibleTokenHelper(t, &env)
+
 	// create token2 with 1 mil supply
 	tokenID2 := createFungibleTokenHelper(t, &env)
 
@@ -436,10 +363,6 @@ func TestUnlimitedMaxAutoAssociationsAllowsToTransferFromFungibleTokens(t *testi
 
 	_, err = accountUpdate.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
-
-	// contract create
-	// contract update
-	// contract create flow
 
 	// approve the spender
 	approve, err := NewAccountAllowanceApproveTransaction().
@@ -478,8 +401,6 @@ func TestUnlimitedMaxAutoAssociationsAllowsToTransferFromFungibleTokens(t *testi
 
 	_, err = tokenTransferTransaction.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
-
-	// all should execute
 }
 
 func TestUnlimitedMaxAutoAssociationsAllowsToTransferNFTs(t *testing.T) {
@@ -518,10 +439,6 @@ func TestUnlimitedMaxAutoAssociationsAllowsToTransferNFTs(t *testing.T) {
 
 	_, err = accountUpdate.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
-
-	// contract create
-	// contract update
-	// contract create flow
 
 	// transfer nft1 to both accounts, 2 for each
 	tokenTransferTransaction, err := NewTransferTransaction().
@@ -590,10 +507,6 @@ func TestUnlimitedMaxAutoAssociationsAllowsToTransferFromNFTs(t *testing.T) {
 	_, err = accountUpdate.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	// contract create
-	// contract update
-	// contract create flow
-
 	// approve the spender
 	approve, err := NewAccountAllowanceApproveTransaction().
 		AddAllTokenNftApproval(nftID1, spender).
@@ -631,15 +544,13 @@ func TestUnlimitedMaxAutoAssociationsAllowsToTransferFromNFTs(t *testing.T) {
 
 	_, err = tokenTransferTransaction.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
-
-	// all should execute
 }
 
 func TestUnlimitedMaxAutoAssociationsFailsWithInvalid(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
-	// account create with -2 and with -1000
+	// account create with -2 and with -1000 max auto associations
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
@@ -665,7 +576,7 @@ func TestUnlimitedMaxAutoAssociationsFailsWithInvalid(t *testing.T) {
 	_, err = accountCreate.SetValidateStatus(true).GetReceipt(env.Client)
 	require.ErrorContains(t, err, "INVALID_MAX_AUTOMATIC_ASSOCIATIONS")
 
-	// account update with - 2 and with -1000
+	// account update with - 2 and with -1000, should fail
 	accountID, newKey := createAccountHelper(t, &env, 100)
 	accountUpdateFrozen, err := NewAccountUpdateTransaction().
 		SetMaxAutomaticTokenAssociations(-2).
@@ -686,10 +597,4 @@ func TestUnlimitedMaxAutoAssociationsFailsWithInvalid(t *testing.T) {
 	accountUpdate, err = accountUpdateFrozen.Sign(newKey).Execute(env.Client)
 	_, err = accountUpdate.SetValidateStatus(true).GetReceipt(env.Client)
 	require.ErrorContains(t, err, "INVALID_MAX_AUTOMATIC_ASSOCIATIONS")
-
-	// contract create with -2 and with -1000
-	// contract update with -2 and with -1000
-	// contract create flow with -2 and with -1000
-
-	// all fails with invalid max auto associations
 }
