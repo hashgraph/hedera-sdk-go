@@ -135,7 +135,7 @@ func TestIntegrationTopicMessageQueryCanExecute(t *testing.T) {
 			break
 		}
 
-		time.Sleep(2500)
+		time.Sleep(3 * time.Second)
 	}
 
 	resp, err = NewTopicDeleteTransaction().
@@ -200,7 +200,7 @@ func TestIntegrationTopicMessageQueryNoTopicID(t *testing.T) {
 			break
 		}
 
-		time.Sleep(2500)
+		time.Sleep(3 * time.Second)
 	}
 
 	resp, err = NewTopicDeleteTransaction().
@@ -265,7 +265,7 @@ func TestIntegrationTopicMessageQueryNoMessage(t *testing.T) {
 			break
 		}
 
-		time.Sleep(2500)
+		time.Sleep(3 * time.Second)
 	}
 
 	resp, err = NewTopicDeleteTransaction().
@@ -335,7 +335,7 @@ func TestIntegrationTopicMessageQueryNoStartTime(t *testing.T) {
 			break
 		}
 
-		time.Sleep(2500)
+		time.Sleep(3 * time.Second)
 	}
 
 	resp, err = NewTopicDeleteTransaction().
