@@ -39,11 +39,13 @@ tasks:
         cmds:
             - |
               for example in examples/*; do
+                 dir_name=$(basename "$example")
+                  # Skip the consensus_pub_sub_chunked directory
+                  if [ "$dir_name" == "consensus_pub_sub_chunked" ]; then
+                      echo "Skipping $example"
+                      continue
+                  fi
                   if [ -d "$example" ]; then
-                      # Skip the consensus_pub_sub_chunked directory
-                      if [ "$example" == "examples/consensus_pub_sub_chunked" ]; then
-                          continue
-                      fi
 
                       pushd "$example" > /dev/null
                       if [ -f main.go ]; then
