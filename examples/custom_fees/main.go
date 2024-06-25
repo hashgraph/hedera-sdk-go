@@ -457,14 +457,18 @@ func main() {
 	_, _ = resp.GetReceipt(client)
 
 	accDelete, _ := hedera.NewAccountDeleteTransaction().
+		SetTransactionID(hedera.TransactionIDGenerate(charlieId)).
+		SetTransferAccountID(client.GetOperatorAccountID()).
 		SetAccountID(charlieId).
 		FreezeWith(client)
 
 	accDelete.Sign(charlieKey)
-	resp, _ = accDelete.Execute(client)
+	resp, err = accDelete.Execute(client)
 	_, _ = resp.GetReceipt(client)
 
 	accDelete, _ = hedera.NewAccountDeleteTransaction().
+		SetTransactionID(hedera.TransactionIDGenerate(bobId)).
+		SetTransferAccountID(client.GetOperatorAccountID()).
 		SetAccountID(bobId).
 		FreezeWith(client)
 
@@ -473,6 +477,8 @@ func main() {
 	_, _ = resp.GetReceipt(client)
 
 	accDelete, _ = hedera.NewAccountDeleteTransaction().
+		SetTransactionID(hedera.TransactionIDGenerate(aliceId)).
+		SetTransferAccountID(client.GetOperatorAccountID()).
 		SetAccountID(aliceId).
 		FreezeWith(client)
 

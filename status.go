@@ -321,6 +321,15 @@ const (
 	StatusMissingTokenMetadata                                     Status = 335
 	StatusMissingSerialNumbers                                     Status = 336
 	StatusTokenHasNoAdminKey                                       Status = 337
+	StatusNodeDeleted                                              Status = 338
+	StatusInvalidNodeId                                            Status = 339
+	StatusInvalidGossipEndpoint                                    Status = 340
+	StatusInvalidNodeAccountId                                     Status = 341
+	StatusInvalidNodeDescription                                   Status = 342
+	StatusInvalidServiceEndpoint                                   Status = 343
+	StatusInvalidGossipCaeCertificate                              Status = 344
+	StatusInvalidGrpcCertificate                                   Status = 345
+	StatusInvalidMaxAutoAssociations                               Status = 346
 )
 
 // String() returns a string representation of the status
@@ -918,6 +927,24 @@ func (status Status) String() string { // nolint
 		return "MISSING_SERIAL_NUMBERS"
 	case StatusTokenHasNoAdminKey:
 		return "TOKEN_HAS_NO_ADMIN_KEY"
+	case StatusNodeDeleted:
+		return "NODE_DELETED"
+	case StatusInvalidNodeId:
+		return "INVALID_NODE_ID"
+	case StatusInvalidGossipEndpoint:
+		return "INVALID_GOSSIP_ENDPOINT"
+	case StatusInvalidNodeAccountId:
+		return "INVALID_NODE_ACCOUNT_ID"
+	case StatusInvalidNodeDescription:
+		return "INVALID_NODE_DESCRIPTION"
+	case StatusInvalidServiceEndpoint:
+		return "INVALID_SERVICE_ENDPOINT"
+	case StatusInvalidGossipCaeCertificate:
+		return "INVALID_GOSSIP_CAE_CERTIFICATE"
+	case StatusInvalidGrpcCertificate:
+		return "INVALID_GRPC_CERTIFICATE"
+	case StatusInvalidMaxAutoAssociations:
+		return "INVALID_MAX_AUTO_ASSOCIATIONS"
 	}
 
 	panic(fmt.Sprintf("unreachable: Status.String() switch statement is non-exhaustive. Status: %v", uint32(status)))

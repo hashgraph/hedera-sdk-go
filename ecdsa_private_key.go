@@ -308,6 +308,7 @@ func (sk _ECDSAPrivateKey) _ToProtoKey() *services.Key {
 	return sk._PublicKey()._ToProtoKey()
 }
 
+// _SignTransaction signes the transaction and adds the signature to the transaction
 func (sk _ECDSAPrivateKey) _SignTransaction(tx *Transaction) ([]byte, error) {
 	tx._RequireOneNodeAccountID()
 

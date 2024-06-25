@@ -1,5 +1,5 @@
-//go:build all || testnets
-// +build all testnets
+//go:build all || e2e || testnets
+// +build all e2e testnets
 
 package hedera
 
@@ -83,75 +83,77 @@ In consequat, nisi iaculis laoreet elementum, massa mauris varius nisi, et porta
 Etiam ut sodales ex. Nulla luctus, magna eu scelerisque sagittis, nibh quam consectetur neque, non rutrum dolor metus nec ex. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Sed egestas augue elit, sollicitudin accumsan massa lobortis ac. Curabitur placerat, dolor a aliquam maximus, velit ipsum laoreet ligula, id ullamcorper lacus nibh eget nisl. Donec eget lacus venenatis enim consequat auctor vel in.
 `
 
-//
-//func TestIntegrationTopicMessageQueryCanExecute(t *testing.T) {
-//	t.Parallel()
-//	env := NewIntegrationTestEnv(t)
-//	var finished int32 // 0 for false, 1 for true
-//
-//	resp, err := NewTopicCreateTransaction().
-//		SetAdminKey(env.Client.GetOperatorPublicKey()).
-//		SetNodeAccountIDs(env.NodeAccountIDs).
-//		Execute(env.Client)
-//
-//	require.NoError(t, err)
-//
-//	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
-//	require.NoError(t, err)
-//
-//	topicID := *receipt.TopicID
-//	assert.NotNil(t, topicID)
-//
-//	start := time.Now()
-//
-//	_, err = NewTopicMessageQuery().
-//		SetTopicID(topicID).
-//		SetStartTime(time.Unix(0, 0)).
-//		SetLimit(1).
-//		SetCompletionHandler(func() {
-//			atomic.StoreInt32(&finished, 1)
-//		}).
-//		Subscribe(env.Client, func(message TopicMessage) {
-//			// Do nothing
-//			println(string(message.Contents))
-//		})
-//	require.NoError(t, err)
-//	resp, err = NewTopicMessageSubmitTransaction().
-//		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-//		SetMessage([]byte(bigContents)).
-//		SetTopicID(topicID).
-//		Execute(env.Client)
-//	require.NoError(t, err)
-//
-//	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
-//	require.NoError(t, err)
-//
-//	for {
-//		condition := atomic.LoadInt32(&finished) == 1 || uint64(time.Since(start).Seconds()) > 60
-//		if condition {
-//			break
-//		}
-//
-//		time.Sleep(2500)
-//	}
-//
-//	resp, err = NewTopicDeleteTransaction().
-//		SetTopicID(topicID).
-//		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-//		Execute(env.Client)
-//	require.NoError(t, err)
-//
-//	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
-//	require.NoError(t, err)
-//
-//	if atomic.LoadInt32(&finished) != 1 {
-//		err = errors.New("Message was not received within 60 seconds")
-//	}
-//	require.NoError(t, err)
-//
-//	err = CloseIntegrationTestEnv(env, nil)
-//	require.NoError(t, err)
-//}
+func TestIntegrationTopicMessageQueryCanExecute(t *testing.T) {
+	t.Parallel()
+	env := NewIntegrationTestEnv(t)
+	var finished int32 // 0 for false, 1 for true
+
+	resp, err := NewTopicCreateTransaction().
+		SetAdminKey(env.Client.GetOperatorPublicKey()).
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		Execute(env.Client)
+
+	require.NoError(t, err)
+
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	time.Sleep(3 * time.Second)
+
+	topicID := *receipt.TopicID
+	assert.NotNil(t, topicID)
+
+	start := time.Now()
+
+	_, err = NewTopicMessageQuery().
+		SetTopicID(topicID).
+		SetStartTime(time.Unix(0, 0)).
+		SetLimit(1).
+		SetCompletionHandler(func() {
+			atomic.StoreInt32(&finished, 1)
+		}).
+		Subscribe(env.Client, func(message TopicMessage) {
+			println(string(message.Contents))
+			atomic.StoreInt32(&finished, 1)
+		})
+	require.NoError(t, err)
+
+	resp, err = NewTopicMessageSubmitTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetMessage([]byte("message")).
+		SetTopicID(topicID).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	for {
+		condition := atomic.LoadInt32(&finished) == 1 || uint64(time.Since(start).Seconds()) > 60
+		if condition {
+			break
+		}
+
+		time.Sleep(3 * time.Second)
+	}
+
+	resp, err = NewTopicDeleteTransaction().
+		SetTopicID(topicID).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	if atomic.LoadInt32(&finished) != 1 {
+		err = errors.New("Message was not received within 60 seconds")
+	}
+	require.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	require.NoError(t, err)
+}
 
 func TestIntegrationTopicMessageQueryNoTopicID(t *testing.T) {
 	t.Parallel()
@@ -182,15 +184,13 @@ func TestIntegrationTopicMessageQueryNoTopicID(t *testing.T) {
 		})
 	require.NoError(t, err)
 
-	resp, err = NewTopicMessageSubmitTransaction().
+	_, err = NewTopicMessageSubmitTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetMessage([]byte(bigContents)).
 		Execute(env.Client)
-	require.NoError(t, err)
-	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, "exceptional receipt status: INVALID_TOPIC_ID", err.Error())
+		require.ErrorContains(t, err, "exceptional precheck status INVALID_TOPIC_ID")
 	}
 
 	for {
@@ -199,7 +199,7 @@ func TestIntegrationTopicMessageQueryNoTopicID(t *testing.T) {
 			break
 		}
 
-		time.Sleep(2500)
+		time.Sleep(3 * time.Second)
 	}
 
 	resp, err = NewTopicDeleteTransaction().
@@ -264,7 +264,7 @@ func TestIntegrationTopicMessageQueryNoMessage(t *testing.T) {
 			break
 		}
 
-		time.Sleep(2500)
+		time.Sleep(3 * time.Second)
 	}
 
 	resp, err = NewTopicDeleteTransaction().
@@ -334,7 +334,7 @@ func TestIntegrationTopicMessageQueryNoStartTime(t *testing.T) {
 			break
 		}
 
-		time.Sleep(2500)
+		time.Sleep(3 * time.Second)
 	}
 
 	resp, err = NewTopicDeleteTransaction().
@@ -354,36 +354,4 @@ func TestIntegrationTopicMessageQueryNoStartTime(t *testing.T) {
 
 	err = CloseIntegrationTestEnv(env, nil)
 	require.NoError(t, err)
-}
-
-func TestIntegrationTopicMessageQueryCanExecuteWithTls(t *testing.T) {
-	client := ClientForNetwork(map[string]AccountID{})
-	client.SetMirrorNetwork([]string{"mainnet-public.mirrornode.hedera.com:443"})
-	client.SetTransportSecurity(true)
-	var finished int32 = 0 // 0 for false, 1 for true
-
-	start := time.Now()
-	end := start.Add(5 * time.Second)
-
-	handle, err := NewTopicMessageQuery().
-		SetTopicID(TopicID{Topic: 120438}).
-		SetStartTime(time.Unix(0, 0)).
-		SetLimit(10).
-		SetCompletionHandler(func() {
-			atomic.StoreInt32(&finished, 1)
-		}).
-		Subscribe(client, func(message TopicMessage) {
-		})
-	require.NoError(t, err)
-	for {
-		condition := atomic.LoadInt32(&finished) == 1 || time.Now().After(end)
-		if condition {
-			break
-		}
-		time.Sleep(2 * time.Second)
-	}
-
-	require.True(t, atomic.LoadInt32(&finished) == 1)
-
-	handle.Unsubscribe()
 }

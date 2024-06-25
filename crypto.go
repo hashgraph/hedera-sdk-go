@@ -91,6 +91,15 @@ type PublicKey struct {
 	ed25519PublicKey *_Ed25519PublicKey
 }
 
+/**
+ *  SDK needs to provide  a way to set an unusable key such as an Ed25519 all-zeros
+ *  key, since it is (presumably) impossible to find the 32-byte string whose SHA-512 hash begins with 32 bytes
+ *  of zeros. We recommend using all-zeros to clearly advertise any unusable keys.
+ */
+func ZeroKey() (PublicKey, error) {
+	return PublicKeyFromString("0000000000000000000000000000000000000000000000000000000000000000")
+}
+
 // PrivateKeyGenerateEcdsa Generates a new ECDSASecp256K1 key
 func PrivateKeyGenerateEcdsa() (PrivateKey, error) {
 	key, err := _GenerateECDSAPrivateKey()
@@ -831,6 +840,7 @@ func (pk PublicKey) _ToSignaturePairProtobuf(signature []byte) *services.Signatu
 	return &services.SignaturePair{}
 }
 
+// SignTransaction signes the transaction and adds the signature to the transaction
 func (sk PrivateKey) SignTransaction(tx *Transaction) ([]byte, error) {
 	if sk.ecdsaPrivateKey != nil {
 		b, err := sk.ecdsaPrivateKey._SignTransaction(tx)
