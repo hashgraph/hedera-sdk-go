@@ -113,7 +113,6 @@ func TestIntegrationTopicMessageQueryCanExecute(t *testing.T) {
 			atomic.StoreInt32(&finished, 1)
 		}).
 		Subscribe(env.Client, func(message TopicMessage) {
-			// Do nothing
 			println(string(message.Contents))
 			atomic.StoreInt32(&finished, 1)
 		})
