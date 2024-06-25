@@ -3,9 +3,10 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"os"
+
 	"github.com/hashgraph/hedera-sdk-go/v2"
 	"github.com/hashgraph/hedera-sdk-go/v2/examples/contract_helper"
-	"os"
 )
 
 type Contract struct {
@@ -93,11 +94,15 @@ func main() {
 
 	helper := contract_helper.NewContractHelper([]byte(contract.Bytecode), *params, client)
 	helper.SetPayableAmountForStep(0, hedera.NewHbar(20)).AddSignerForStep(1, alicePrivateKey)
-	
+
 	keyList := hedera.KeyListWithThreshold(1).Add(myPrivateKey.PublicKey()).Add(helper.ContractID)
-	tx, err := hedera.NewAccountUpdateTransaction().SetAccountID(myAccountId).SetKey(keyList).Sign(myPrivateKey).Execute(client)
+	frozenTxn, err := hedera.NewAccountUpdateTransaction().SetAccountID(myAccountId).SetKey(keyList).FreezeWith(client)
 	if err != nil {
-		panic(fmt.Sprintf("%v : error updating alice's account", err))
+		panic(err)
+	}
+	tx, err := frozenTxn.Sign(myPrivateKey).Execute(client)
+	if err != nil {
+		panic(err)
 	}
 	_, err = tx.GetReceipt(client)
 	if err != nil {
@@ -105,7 +110,11 @@ func main() {
 	}
 	keyList = hedera.KeyListWithThreshold(1).Add(alicePrivateKey.PublicKey()).Add(helper.ContractID)
 
-	tx, err = hedera.NewAccountUpdateTransaction().SetAccountID(aliceAccountId).SetKey(keyList).Sign(alicePrivateKey).Execute(client)
+	frozenTxn, err = hedera.NewAccountUpdateTransaction().SetAccountID(aliceAccountId).SetKey(keyList).FreezeWith(client)
+	if err != nil {
+		panic(fmt.Sprintf("%v : error updating alice's account", err))
+	}
+	tx, err = frozenTxn.Sign(alicePrivateKey).Execute(client)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error updating alice's account", err))
 	}
@@ -114,10 +123,11 @@ func main() {
 		panic(err)
 	}
 
-	_, err = helper.ExecuteSteps(0, 5, client)
-	if err != nil {
-		panic(fmt.Sprintf("%v : error in helper", err))
-	}
+	// TODO there is currently possible bug in services causing this operation to fail, should be investigated
+	// _, err = helper.ExecuteSteps(0, 5, client)
+	// if err != nil {
+	// 	panic(fmt.Sprintf("%v : error in helper", err))
+	// }
 	transactionResponse, err := hedera.NewTokenCreateTransaction().
 		SetTokenName("Black Sea LimeChain Token").
 		SetTokenSymbol("BSL").

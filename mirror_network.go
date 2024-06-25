@@ -20,7 +20,9 @@ package hedera
  *
  */
 
-import "math/rand"
+import (
+	"math/rand"
+)
 
 type _MirrorNetwork struct {
 	_ManagedNetwork
