@@ -565,3 +565,47 @@ func TestToStandardECDSAsecp256k1PrivateKey2(t *testing.T) {
 	assert.Equal(t, key6.PublicKey().StringRaw(), test6PublicKey)
 	assert.Equal(t, hex.EncodeToString(key6.ecdsaPrivateKey.chainCode), test6ChainCode)
 }
+
+func TestToStandardECDSAsecp256k1PrivateKeyCustomDPath(t *testing.T) {
+	const (
+		DPATH_1       = "m/44'/60'/0'/0/0"
+		PASSPHRASE_1  = ""
+		CHAIN_CODE_1  = "58a9ee31eaf7499abc01952b44dbf0a2a5d6447512367f09d99381c9605bf9e8"
+		PRIVATE_KEY_1 = "78f9545e40025cf7da9126a4d6a861ae34031d1c74c3404df06110c9fde371ad"
+		PUBLIC_KEY_1  = "02a8f4c22eea66617d4f119e3a951b93f584949bbfee90bd555305402da6c4e569"
+		DPATH_2       = "m/44'/60'/0'/0/1"
+		PASSPHRASE_2  = ""
+		CHAIN_CODE_2  = "6dcfc7a4914bd0e75b94a2f38afee8c247b34810202a2c64fe599ee1b88afdc9"
+		PRIVATE_KEY_2 = "77ca263661ebdd5a8b33c224aeff5e7bf67eedacee68a1699d97ee8929d7b130"
+		PUBLIC_KEY_2  = "03e84c9be9be53ad722038cc1943e79df27e5c1d31088adb4f0e62444f4dece683"
+		DPATH_3       = "m/44'/60'/0'/0/2"
+		PASSPHRASE_3  = ""
+		CHAIN_CODE_3  = "c8c798d2b3696be1e7a29d1cea205507eedc2057006b9ef1cde1b4e346089e17"
+		PRIVATE_KEY_3 = "31c24292eac951279b659c335e44a2e812d0f1a228b1d4d87034874d376e605a"
+		PUBLIC_KEY_3  = "0207ff3faf4055c1aa7a5ad94d6ff561fac35b9ae695ef486706243667d2b4d10e"
+	)
+
+	mnemonic, err := MnemonicFromString(mnemonic24WordString)
+	require.NoError(t, err)
+
+	// m/44'/60'/0'/0/0
+	key1, err := mnemonic.ToStandardECDSAsecp256k1PrivateKeyCustomDerivationPath(PASSPHRASE_1, DPATH_1)
+	require.NoError(t, err)
+	assert.Equal(t, hex.EncodeToString(key1.ecdsaPrivateKey.chainCode), CHAIN_CODE_1)
+	assert.Equal(t, key1.StringRaw(), PRIVATE_KEY_1)
+	assert.Contains(t, key1.PublicKey().StringRaw(), PUBLIC_KEY_1)
+
+	// m/44'/60'/0'/0/1
+	key2, err := mnemonic.ToStandardECDSAsecp256k1PrivateKeyCustomDerivationPath(PASSPHRASE_2, DPATH_2)
+	require.NoError(t, err)
+	assert.Equal(t, hex.EncodeToString(key2.ecdsaPrivateKey.chainCode), CHAIN_CODE_2)
+	assert.Equal(t, key2.StringRaw(), PRIVATE_KEY_2)
+	assert.Contains(t, key2.PublicKey().StringRaw(), PUBLIC_KEY_2)
+
+	// m/44'/60'/0'/0/2
+	key3, err := mnemonic.ToStandardECDSAsecp256k1PrivateKeyCustomDerivationPath(PASSPHRASE_3, DPATH_3)
+	require.NoError(t, err)
+	assert.Equal(t, hex.EncodeToString(key3.ecdsaPrivateKey.chainCode), CHAIN_CODE_3)
+	assert.Equal(t, key3.StringRaw(), PRIVATE_KEY_3)
+	assert.Contains(t, key3.PublicKey().StringRaw(), PUBLIC_KEY_3)
+}
