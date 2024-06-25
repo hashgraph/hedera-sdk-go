@@ -115,7 +115,11 @@ func main() {
 	}
 	keyList = hedera.KeyListWithThreshold(1).Add(alicePublicKey).Add(contractHelper.ContractID)
 
-	tx, err = hedera.NewAccountUpdateTransaction().SetAccountID(aliceAccountID).SetKey(keyList).Sign(alicePrivateKey).Execute(client)
+	frozenTxn, err := hedera.NewAccountUpdateTransaction().SetAccountID(aliceAccountID).SetKey(keyList).FreezeWith(client)
+	if err != nil {
+		panic(fmt.Sprintf("%v : error updating alice's account", err))
+	}
+	tx, err = frozenTxn.Sign(alicePrivateKey).Execute(client)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error updating alice's account", err))
 	}
@@ -129,7 +133,11 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		tx, err := hedera.NewTokenUpdateTransaction().SetTokenID(id).SetAdminKey(keyList).SetSupplyKey(keyList).Sign(alicePrivateKey).Execute(client)
+		frozenTxn, err := hedera.NewTokenUpdateTransaction().SetTokenID(id).SetAdminKey(keyList).SetSupplyKey(keyList).FreezeWith(client)
+		if err != nil {
+			panic(err)
+		}
+		tx, err := frozenTxn.Sign(alicePrivateKey).Execute(client)
 		if err != nil {
 			panic(err)
 		}
@@ -182,10 +190,11 @@ func main() {
 	// step 14 transfers some NFTs to Alice
 	// step 15 approves an NFT allowance with operator as the owner and Alice as the spender
 	// step 16 burn some NFTs
-	
-	_, err = contractHelper.
-		ExecuteSteps( /* from step */ 0 /* to step */, 16, client)
-	if err != nil {
-		panic(fmt.Sprintf("%v : error executing steps", err))
-	}
+
+	// TODO there is currently possible bug in services causing this operation to fail, should be investigated
+	// _, err = contractHelper.
+	// 	ExecuteSteps( /* from step */ 0 /* to step */, 16, client)
+	// if err != nil {
+	// 	panic(fmt.Sprintf("%v : error executing steps", err))
+	// }
 }

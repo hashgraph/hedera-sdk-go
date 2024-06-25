@@ -56,8 +56,13 @@ func main() {
 	evmAddress := publicKey.ToEvmAddress()
 
 	// Use the `AccountCreateTransaction` and set the EVM address field to the Ethereum public address
-	response, err := hedera.NewAccountCreateTransaction().SetReceiverSignatureRequired(true).SetInitialBalance(hedera.HbarFromTinybar(100)).
-		SetKey(adminKey).SetAlias(evmAddress).Sign(adminKey).Sign(privateKey).Execute(client)
+	frozenTxn, err := hedera.NewAccountCreateTransaction().SetReceiverSignatureRequired(true).SetInitialBalance(hedera.HbarFromTinybar(100)).
+		SetKey(adminKey).SetAlias(evmAddress).FreezeWith(client)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	response, err := frozenTxn.Sign(adminKey).Sign(privateKey).Execute(client)
 	if err != nil {
 		panic(err.Error())
 	}

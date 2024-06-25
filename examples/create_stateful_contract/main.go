@@ -105,7 +105,7 @@ func main() {
 	contractTransactionID, err := hedera.NewContractCreateTransaction().
 		// Set gas to create the contract
 		// Failing to set this to a sufficient amount will result in "INSUFFICIENT_GAS" status
-		SetGas(100000).
+		SetGas(200000).
 		// Failing to set parameters when required will result in "CONTRACT_REVERT_EXECUTED" status
 		SetConstructorParameters(contractFunctionParams).
 		// The contract bytecode must be set to the file ID containing the contract bytecode

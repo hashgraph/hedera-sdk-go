@@ -24,6 +24,8 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"math/big"
+	"regexp"
+	"strconv"
 	"strings"
 
 	"crypto/sha512"
@@ -310,7 +312,74 @@ func (m Mnemonic) ToStandardEd25519PrivateKey(passPhrase string, index uint32) (
 	}, nil
 }
 
+// calculateDerivationPathValues converts a derivation path string to an array of integers
+func calculateDerivationPathValues(derivationPath string) ([]uint32, error) {
+	re := regexp.MustCompile(`m/(\d+'?)/(\d+'?)/(\d+'?)/(\d+'?)/(\d+'?)`)
+	matches := re.FindStringSubmatch(derivationPath)
+	if len(matches) != 6 {
+		return nil, fmt.Errorf("invalid derivation path format")
+	}
+
+	values := make([]uint32, 5)
+	for i, match := range matches[1:] {
+		if strings.HasSuffix(match, "'") {
+			match = strings.TrimSuffix(match, "'")
+			value, err := strconv.Atoi(match)
+			if err != nil {
+				return nil, err
+			}
+			values[i] = ToHardenedIndex(uint32(value))
+		} else {
+			value, err := strconv.Atoi(match)
+			if err != nil {
+				return nil, err
+			}
+			values[i] = uint32(value)
+		}
+	}
+
+	return values, nil
+}
+
+func (m Mnemonic) toStandardECDSAsecp256k1PrivateKeyImpl(passPhrase string, derivationPathValues []uint32) (PrivateKey, error) {
+	seed := m._ToSeed(passPhrase)
+	derivedKey, err := _ECDSAPrivateKeyFromSeed(seed)
+	if err != nil {
+		return PrivateKey{}, err
+	}
+
+	keyBytes, chainCode := derivedKey.keyData.D.Bytes(), derivedKey.chainCode
+	for _, i := range derivationPathValues {
+		keyBytes, chainCode, err = _DeriveECDSAChildKey(keyBytes, chainCode, i)
+		if err != nil {
+			return PrivateKey{}, err
+		}
+	}
+
+	privateKey, err := _ECDSAPrivateKeyFromBytes(keyBytes)
+	if err != nil {
+		return PrivateKey{}, err
+	}
+
+	privateKey.chainCode = chainCode
+
+	return PrivateKey{
+		ecdsaPrivateKey: privateKey,
+	}, nil
+}
+
 // ToStandardECDSAsecp256k1PrivateKey converts a mnemonic to a standard ecdsa secp256k1 private key
+func (m Mnemonic) ToStandardECDSAsecp256k1PrivateKeyCustomDerivationPath(passPhrase string, derivationPath string) (PrivateKey, error) {
+	derivationPathValues, err := calculateDerivationPathValues(derivationPath)
+	if err != nil {
+		return PrivateKey{}, err
+	}
+
+	return m.toStandardECDSAsecp256k1PrivateKeyImpl(passPhrase, derivationPathValues)
+}
+
+// ToStandardECDSAsecp256k1PrivateKey converts a mnemonic to a standard ecdsa secp256k1 private key
+// Uses the default derivation path of `m/44'/3030'/0'/0/${index}`
 func (m Mnemonic) ToStandardECDSAsecp256k1PrivateKey(passPhrase string, index uint32) (PrivateKey, error) {
 	seed := m._ToSeed(passPhrase)
 	derivedKey, err := _ECDSAPrivateKeyFromSeed(seed)

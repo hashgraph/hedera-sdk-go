@@ -202,7 +202,7 @@ func ClientForName(name string) (*Client, error) {
 	case "local", "localhost":
 		network := make(map[string]AccountID)
 		network["127.0.0.1:50213"] = AccountID{Account: 3}
-		mirror := []string{"127.0.0.1:433"}
+		mirror := []string{"127.0.0.1:5600"}
 		client := ClientForNetwork(network)
 		client.SetMirrorNetwork(mirror)
 		return client, nil

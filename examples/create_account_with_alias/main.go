@@ -29,9 +29,8 @@ func main() {
 		panic(fmt.Sprintf("%v : error converting string to PrivateKey", err))
 	}
 
-	// Setting the client operator ID and key 
+	// Setting the client operator ID and key
 	client.SetOperator(operatorAccountID, operatorKey)
-
 
 	// ## Example
 	// Create a ECDSA private key
@@ -52,8 +51,12 @@ func main() {
 	evmAddress := publicKey.ToEvmAddress()
 
 	// Use the `AccountCreateTransaction` and set the EVM address field to the Ethereum public address
-	response, err := hedera.NewAccountCreateTransaction().SetInitialBalance(hedera.HbarFromTinybar(100)).
-		SetKey(operatorKey).SetAlias(evmAddress).Sign(privateKey).Execute(client)
+	frozenTxn, err := hedera.NewAccountCreateTransaction().SetInitialBalance(hedera.HbarFromTinybar(100)).
+		SetKey(operatorKey).SetAlias(evmAddress).FreezeWith(client)
+	if err != nil {
+		println(err.Error())
+	}
+	response, err := frozenTxn.Sign(privateKey).Execute(client)
 	if err != nil {
 		println(err.Error())
 	}
