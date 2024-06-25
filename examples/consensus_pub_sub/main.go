@@ -58,6 +58,8 @@ func main() {
 
 	fmt.Printf("topicID: %v\n", topicID)
 
+	time.Sleep(3 * time.Second)
+
 	start := time.Now()
 
 	// Setup a mirror client to print out messages as we receive them
@@ -93,10 +95,8 @@ func main() {
 		}
 
 		// Sleep to make sure everything propagates
-		time.Sleep(2000)
+		time.Sleep(5 * time.Second)
 	}
-
-	println()
 
 	// Clean up by deleting the topic, etc
 	transactionResponse, err = hedera.NewTopicDeleteTransaction().
