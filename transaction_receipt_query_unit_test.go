@@ -115,6 +115,54 @@ func TestUnitTransactionReceiptQueryNothingSet(t *testing.T) {
 	balance.GetQueryPayment()
 	balance.GetMaxQueryPayment()
 }
+
+func TestUnitTransactionPlatformNotActiveGracefulHandling(t *testing.T) {
+	t.Parallel()
+
+	responses := [][]interface{}{{
+		&services.TransactionResponse{
+			NodeTransactionPrecheckCode: services.ResponseCodeEnum_OK,
+		},
+		&services.Response{
+			Response: &services.Response_TransactionGetReceipt{
+				TransactionGetReceipt: &services.TransactionGetReceiptResponse{
+					Header: &services.ResponseHeader{
+						Cost:         0,
+						ResponseType: services.ResponseType_ANSWER_ONLY,
+					},
+					Receipt: &services.TransactionReceipt{
+						Status: services.ResponseCodeEnum_PLATFORM_NOT_ACTIVE,
+					},
+				},
+			},
+		},
+		&services.Response{
+			Response: &services.Response_TransactionGetReceipt{
+				TransactionGetReceipt: &services.TransactionGetReceiptResponse{
+					Header: &services.ResponseHeader{
+						Cost:         0,
+						ResponseType: services.ResponseType_ANSWER_ONLY,
+					},
+					Receipt: &services.TransactionReceipt{
+						Status: services.ResponseCodeEnum_SUCCESS,
+					},
+				},
+			},
+		},
+	}}
+	client, server := NewMockClientAndServer(responses)
+	defer server.Close()
+	tx, err := NewTransferTransaction().
+		SetNodeAccountIDs([]AccountID{{Account: 3}}).
+		AddHbarTransfer(AccountID{Account: 2}, HbarFromTinybar(-1)).
+		AddHbarTransfer(AccountID{Account: 3}, HbarFromTinybar(1)).
+		Execute(client)
+	client.SetMaxAttempts(2)
+	require.NoError(t, err)
+	_, err = tx.SetValidateStatus(true).GetReceipt(client)
+	require.NoError(t, err)
+}
+
 func TestUnitTransactionReceiptNotFound(t *testing.T) {
 	t.Parallel()
 
@@ -163,6 +211,7 @@ func TestUnitTransactionReceiptNotFound(t *testing.T) {
 	require.Equal(t, "exceptional precheck status RECEIPT_NOT_FOUND", err.Error())
 	require.Equal(t, StatusReceiptNotFound, receipt.Status)
 }
+
 func TestUnitTransactionReceiptUknown(t *testing.T) {
 	t.Parallel()
 
