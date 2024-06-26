@@ -1,3 +1,14 @@
+## v2.40.0
+
+### Added
+
+-  Implemented custom derivation paths in Menmonic ECDSA private key derivation 
+
+### Fixed
+
+-  Revisited and fix failing examples
+-  Gracefully handle `PlatformNotActive` status code
+
 ## v2.39.0
 
 ### Added
