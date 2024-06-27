@@ -178,9 +178,9 @@ func (tx *TokenRejectTransaction) build() *services.TransactionBody {
 		Memo:                     tx.Transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(tx.GetTransactionValidDuration()),
 		TransactionID:            tx.transactionID._ToProtobuf(),
-		Data: &services.TransactionBody_TokenCreation{
-			TokenCreation: tx.buildProtoBody(),
-		},
+		// Data:                     &services.TransactionBody_TokenCreation{
+		// TokenCreation: tx.buildProtoBody(),
+		// },
 	}
 }
 
@@ -188,15 +188,15 @@ func (tx *TokenRejectTransaction) buildScheduled() (*services.SchedulableTransac
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Memo:           tx.Transaction.memo,
-		Data: &services.SchedulableTransactionBody_TokenCreation{
-			TokenCreation: tx.buildProtoBody(),
-		},
+		// Data:           &services.SchedulableTransactionBody_TokenCreation{
+		// TokenCreation: tx.buildProtoBody(),
+		// },
 	}, nil
 }
 
-func (tx *TokenRejectTransaction) buildProtoBody() *services.TokenRejectTransaction {
-	return nil
-}
+// func (tx *TokenRejectTransaction) buildProtoBody() *services.TokenRejectTransaction {
+// 	return nil
+// }
 
 func (tx *TokenRejectTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
