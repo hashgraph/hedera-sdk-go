@@ -134,6 +134,19 @@ func TestUnitTransactionRecordPlatformNotActiveGracefulHandling(t *testing.T) {
 			Response: &services.Response_TransactionGetReceipt{
 				TransactionGetReceipt: &services.TransactionGetReceiptResponse{
 					Header: &services.ResponseHeader{
+						Cost:         1234,
+						ResponseType: services.ResponseType_COST_ANSWER,
+					},
+					Receipt: &services.TransactionReceipt{
+						Status: services.ResponseCodeEnum_SUCCESS,
+					},
+				},
+			},
+		},
+		&services.Response{
+			Response: &services.Response_TransactionGetReceipt{
+				TransactionGetReceipt: &services.TransactionGetReceiptResponse{
+					Header: &services.ResponseHeader{
 						Cost:         0,
 						ResponseType: services.ResponseType_ANSWER_ONLY,
 					},
@@ -147,8 +160,7 @@ func TestUnitTransactionRecordPlatformNotActiveGracefulHandling(t *testing.T) {
 			Response: &services.Response_TransactionGetRecord{
 				TransactionGetRecord: &services.TransactionGetRecordResponse{
 					Header: &services.ResponseHeader{
-						Cost:         0,
-						ResponseType: services.ResponseType_ANSWER_ONLY,
+						ResponseType: services.ResponseType_COST_ANSWER,
 					},
 					TransactionRecord: &services.TransactionRecord{
 						Receipt: &services.TransactionReceipt{
@@ -162,8 +174,8 @@ func TestUnitTransactionRecordPlatformNotActiveGracefulHandling(t *testing.T) {
 			Response: &services.Response_TransactionGetRecord{
 				TransactionGetRecord: &services.TransactionGetRecordResponse{
 					Header: &services.ResponseHeader{
-						Cost:         0,
-						ResponseType: services.ResponseType_ANSWER_ONLY,
+						Cost:         1234,
+						ResponseType: services.ResponseType_COST_ANSWER,
 					},
 					TransactionRecord: &services.TransactionRecord{
 						Receipt: &services.TransactionReceipt{
@@ -224,6 +236,19 @@ func TestUnitTransactionRecordReceiptNotFound(t *testing.T) {
 	responses := [][]interface{}{{
 		&services.TransactionResponse{
 			NodeTransactionPrecheckCode: services.ResponseCodeEnum_OK,
+		},
+		&services.Response{
+			Response: &services.Response_TransactionGetReceipt{
+				TransactionGetReceipt: &services.TransactionGetReceiptResponse{
+					Header: &services.ResponseHeader{
+						Cost:         0,
+						ResponseType: services.ResponseType_ANSWER_ONLY,
+					},
+					Receipt: &services.TransactionReceipt{
+						Status: services.ResponseCodeEnum_RECEIPT_NOT_FOUND,
+					},
+				},
+			},
 		},
 		&services.Response{
 			Response: &services.Response_TransactionGetReceipt{

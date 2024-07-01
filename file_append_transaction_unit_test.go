@@ -220,6 +220,19 @@ func TestUnitFileAppendTransactionBigContentsMock(t *testing.T) {
 
 	var previousTransactionID string
 
+	cost := &services.Response{
+		Response: &services.Response_TransactionGetReceipt{
+			TransactionGetReceipt: &services.TransactionGetReceiptResponse{
+				Header: &services.ResponseHeader{
+					Cost:         1234,
+					ResponseType: services.ResponseType_COST_ANSWER,
+				},
+				Receipt: &services.TransactionReceipt{
+					Status: services.ResponseCodeEnum_SUCCESS,
+				},
+			},
+		},
+	}
 	receipt := &services.Response{
 		Response: &services.Response_TransactionGetReceipt{
 			TransactionGetReceipt: &services.TransactionGetReceiptResponse{
@@ -280,7 +293,7 @@ func TestUnitFileAppendTransactionBigContentsMock(t *testing.T) {
 		}
 	}
 	responses := [][]interface{}{{
-		call, receipt, call, receipt, call, receipt, call, receipt, call, receipt, call, receipt, call,
+		call, cost, receipt, call, cost, receipt, call, cost, receipt, call, cost, receipt, call, cost, receipt, call, cost, receipt, call,
 	}}
 
 	client, server := NewMockClientAndServer(responses)
