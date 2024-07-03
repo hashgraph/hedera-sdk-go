@@ -49,13 +49,13 @@ func createNftHelper(t *testing.T, env *IntegrationTestEnv) TokenID {
 	return *receipt.TokenID
 }
 
-func createFungibleTokenHelper(t *testing.T, env *IntegrationTestEnv) TokenID {
+func createFungibleTokenHelper(decimals uint, t *testing.T, env *IntegrationTestEnv) TokenID {
 	tokenCreate, err := NewTokenCreateTransaction().
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetTokenName("ffff").
 		SetTokenSymbol("F").
 		SetTokenMemo("asdf").
-		SetDecimals(3).
+		SetDecimals(decimals).
 		SetInitialSupply(1_000_000).
 		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
@@ -96,10 +96,10 @@ func TestLimitedMaxAutoAssociationsFungibleTokensFlow(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	// create token1 with 1 mil supply
-	tokenID1 := createFungibleTokenHelper(t, &env)
+	tokenID1 := createFungibleTokenHelper(3, t, &env)
 
 	// create token2 with 1 mil supply
-	tokenID2 := createFungibleTokenHelper(t, &env)
+	tokenID2 := createFungibleTokenHelper(3, t, &env)
 
 	// account create with 1 max auto associations
 	accountID1, _ := createAccountHelper(t, &env, 1)
@@ -239,10 +239,10 @@ func TestUnlimitedMaxAutoAssociationsAllowsToTransferFungibleTokens(t *testing.T
 	env := NewIntegrationTestEnv(t)
 
 	// create token1 with 1 mil supply
-	tokenID1 := createFungibleTokenHelper(t, &env)
+	tokenID1 := createFungibleTokenHelper(3, t, &env)
 
 	// create token2 with 1 mil supply
-	tokenID2 := createFungibleTokenHelper(t, &env)
+	tokenID2 := createFungibleTokenHelper(3, t, &env)
 
 	// account create with unlimited max auto associations
 	accountID1, _ := createAccountHelper(t, &env, -1)
@@ -290,9 +290,9 @@ func TestUnlimitedMaxAutoAssociationsAllowsToTransferFungibleTokensWithDecimals(
 	env := NewIntegrationTestEnv(t)
 
 	// create token1 with 1 mil supply
-	tokenID1 := createFungibleTokenHelper(t, &env)
+	tokenID1 := createFungibleTokenHelper(10, t, &env)
 	// create token2 with 1 mil supply
-	tokenID2 := createFungibleTokenHelper(t, &env)
+	tokenID2 := createFungibleTokenHelper(10, t, &env)
 
 	// account create
 	accountID1, _ := createAccountHelper(t, &env, -1)
@@ -343,10 +343,10 @@ func TestUnlimitedMaxAutoAssociationsAllowsToTransferFromFungibleTokens(t *testi
 	spender, spenderKey := createAccountHelper(t, &env, 10)
 
 	// create token1 with 1 mil supply
-	tokenID1 := createFungibleTokenHelper(t, &env)
+	tokenID1 := createFungibleTokenHelper(3, t, &env)
 
 	// create token2 with 1 mil supply
-	tokenID2 := createFungibleTokenHelper(t, &env)
+	tokenID2 := createFungibleTokenHelper(3, t, &env)
 
 	// account create with unlimited max auto associations
 	accountID1, _ := createAccountHelper(t, &env, -1)
@@ -554,27 +554,21 @@ func TestUnlimitedMaxAutoAssociationsFailsWithInvalid(t *testing.T) {
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
-	accountCreate, err := NewAccountCreateTransaction().
+	_, err = NewAccountCreateTransaction().
 		SetKey(newKey).
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetInitialBalance(NewHbar(0)).
 		SetMaxAutomaticTokenAssociations(-2).
 		Execute(env.Client)
-	require.NoError(t, err)
+	require.ErrorContains(t, err, "INVALID_MAX_AUTO_ASSOCIATIONS")
 
-	_, err = accountCreate.SetValidateStatus(true).GetReceipt(env.Client)
-	require.ErrorContains(t, err, "INVALID_MAX_AUTOMATIC_ASSOCIATIONS")
-
-	accountCreate, err = NewAccountCreateTransaction().
+	_, err = NewAccountCreateTransaction().
 		SetKey(newKey).
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetInitialBalance(NewHbar(0)).
 		SetMaxAutomaticTokenAssociations(-1000).
 		Execute(env.Client)
-	require.NoError(t, err)
-
-	_, err = accountCreate.SetValidateStatus(true).GetReceipt(env.Client)
-	require.ErrorContains(t, err, "INVALID_MAX_AUTOMATIC_ASSOCIATIONS")
+	require.ErrorContains(t, err, "INVALID_MAX_AUTO_ASSOCIATIONS")
 
 	// account update with - 2 and with -1000, should fail
 	accountID, newKey := createAccountHelper(t, &env, 100)
@@ -584,9 +578,11 @@ func TestUnlimitedMaxAutoAssociationsFailsWithInvalid(t *testing.T) {
 		FreezeWith(env.Client)
 	require.NoError(t, err)
 
-	accountUpdate, err := accountUpdateFrozen.Sign(newKey).Execute(env.Client)
-	_, err = accountUpdate.SetValidateStatus(true).GetReceipt(env.Client)
-	require.ErrorContains(t, err, "INVALID_MAX_AUTOMATIC_ASSOCIATIONS")
+	tx, err := accountUpdateFrozen.Sign(newKey).Execute(env.Client)
+	require.NoError(t, err)
+
+	_, err = tx.SetValidateStatus(true).GetReceipt(env.Client)
+	require.ErrorContains(t, err, "INVALID_MAX_AUTO_ASSOCIATIONS")
 
 	accountUpdateFrozen, err = NewAccountUpdateTransaction().
 		SetMaxAutomaticTokenAssociations(-1000).
@@ -594,7 +590,9 @@ func TestUnlimitedMaxAutoAssociationsFailsWithInvalid(t *testing.T) {
 		FreezeWith(env.Client)
 	require.NoError(t, err)
 
-	accountUpdate, err = accountUpdateFrozen.Sign(newKey).Execute(env.Client)
-	_, err = accountUpdate.SetValidateStatus(true).GetReceipt(env.Client)
-	require.ErrorContains(t, err, "INVALID_MAX_AUTOMATIC_ASSOCIATIONS")
+	tx, err = accountUpdateFrozen.Sign(newKey).Execute(env.Client)
+	require.NoError(t, err)
+
+	_, err = tx.SetValidateStatus(true).GetReceipt(env.Client)
+	require.ErrorContains(t, err, "INVALID_MAX_AUTO_ASSOCIATIONS")
 }
