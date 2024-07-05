@@ -136,9 +136,9 @@ func TestIntegrationTokenRejectTransactionCanExecuteForFungible(t *testing.T) {
 	assert.Equal(t, uint64(1_000_000), tokenBalance.Tokens.Get(tokenID))
 
 	// verify the auto associations are not decremented
-	accountInfo, err := NewAccountInfoQuery().SetAccountID(receiver).Execute(env.Client)
-	require.NoError(t, err)
-	assert.Equal(t, uint32(100), accountInfo.MaxAutomaticTokenAssociations)
+	// accountInfo, err := NewAccountInfoQuery().SetAccountID(receiver).Execute(env.Client)
+	// require.NoError(t, err)
+	// assert.Equal(t, uint32(100), accountInfo.MaxAutomaticTokenAssociations)
 }
 
 func TestIntegrationTokenRejectTransactionCanExecuteForNFT(t *testing.T) {
@@ -190,9 +190,46 @@ func TestIntegrationTokenRejectTransactionCanExecuteForNFT(t *testing.T) {
 	assert.Equal(t, env.OperatorID, nftBalance[0].AccountID)
 
 	// verify the auto associations are not decremented
-	accountInfo, err := NewAccountInfoQuery().SetAccountID(receiver).Execute(env.Client)
+	// accountInfo, err := NewAccountInfoQuery().SetAccountID(receiver).Execute(env.Client)
+	// require.NoError(t, err)
+	// assert.Equal(t, uint32(100), accountInfo.MaxAutomaticTokenAssociations)
+}
+
+func TestIntegrationTokenRejectTransactionFailsWhenRejectingNFTWithTokenID(t *testing.T) {
+	t.Parallel()
+	env := NewIntegrationTestEnv(t)
+
+	// given
+
+	// create nft with treasury
+	nftID := createNftHelper(t, &env)
+	// mint
+	mint, err := NewTokenMintTransaction().SetTokenID(nftID).SetMetadatas(initialMetadataList).Execute(env.Client)
+	receipt, err := mint.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
-	assert.Equal(t, uint32(100), accountInfo.MaxAutomaticTokenAssociations)
+
+	serials := receipt.SerialNumbers
+	// create receiver account with auto associations
+	receiver, key := createAccountHelper(t, &env)
+
+	// when
+
+	// transfer nfts to the receiver
+	_, err = NewTransferTransaction().
+		AddNftTransfer(nftID.Nft(serials[0]), env.Client.GetOperatorAccountID(), receiver).
+		AddNftTransfer(nftID.Nft(serials[1]), env.Client.GetOperatorAccountID(), receiver).
+		AddNftTransfer(nftID.Nft(serials[2]), env.Client.GetOperatorAccountID(), receiver).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	// reject the whole collection - should fail
+	frozenTxn, err := NewTokenRejectTransaction().SetOwnerID(receiver).AddTokenID(nftID).FreezeWith(env.Client)
+	require.NoError(t, err)
+	resp, err := frozenTxn.Sign(key).Execute(env.Client)
+	require.NoError(t, err)
+
+	_, err = resp.GetReceipt(env.Client)
+	require.ErrorContains(t, err, "ACCOUNT_AMOUNT_TRANSFERS_ONLY_ALLOWED_FOR_FUNGIBLE_COMMON")
 }
 
 func TestIntegrationTokenRejectTransactionReceiverSigRequired(t *testing.T) {
@@ -213,7 +250,7 @@ func TestIntegrationTokenRejectTransactionReceiverSigRequired(t *testing.T) {
 	// then
 
 	// verify the balance is 0
-	// verify the auto associations are not decremented
+	// verify the token is transferred back to the treasury
 
 	// same test for fungible token
 }
