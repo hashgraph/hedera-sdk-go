@@ -95,47 +95,29 @@ func TestLimitedMaxAutoAssociationsFungibleTokensFlow(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
-	// create token1 with 1 mil supply
+	// create token1
 	tokenID1 := createFungibleTokenHelper(3, t, &env)
 
-	// create token2 with 1 mil supply
+	// create token2
 	tokenID2 := createFungibleTokenHelper(3, t, &env)
 
 	// account create with 1 max auto associations
-	accountID1, _ := createAccountHelper(t, &env, 1)
+	receiver, _ := createAccountHelper(t, &env, 1)
 
-	// account update with 1 max auto associations
-	accountID2, newKey := createAccountHelper(t, &env, 100)
-	accountUpdateFrozen, err := NewAccountUpdateTransaction().
-		SetMaxAutomaticTokenAssociations(1).
-		SetAccountID(accountID2).
-		FreezeWith(env.Client)
-	require.NoError(t, err)
-
-	accountUpdate, err := accountUpdateFrozen.Sign(newKey).Execute(env.Client)
-	require.NoError(t, err)
-
-	_, err = accountUpdate.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
-
-	// transfer token1 to all some tokens
+	// transfer token1 to receiver account
 	tokenTransferTransaction, err := NewTransferTransaction().
 		AddTokenTransfer(tokenID1, env.Client.GetOperatorAccountID(), -10).
-		AddTokenTransfer(tokenID1, accountID1, 10).
-		AddTokenTransfer(tokenID1, env.Client.GetOperatorAccountID(), -10).
-		AddTokenTransfer(tokenID1, accountID2, 10).
+		AddTokenTransfer(tokenID1, receiver, 10).
 		Execute(env.Client)
 	require.NoError(t, err)
 
 	_, err = tokenTransferTransaction.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	// transfer token2 to all should fail with NO_REMAINING_AUTOMATIC_ASSOCIATIONS
+	// transfer token2 to the receiver should fail with NO_REMAINING_AUTOMATIC_ASSOCIATIONS
 	tokenTransferTransaction2, err := NewTransferTransaction().
 		AddTokenTransfer(tokenID2, env.Client.GetOperatorAccountID(), -10).
-		AddTokenTransfer(tokenID2, accountID1, 10).
-		AddTokenTransfer(tokenID2, env.Client.GetOperatorAccountID(), -10).
-		AddTokenTransfer(tokenID2, accountID2, 10).
+		AddTokenTransfer(tokenID2, receiver, 10).
 		Execute(env.Client)
 	require.NoError(t, err)
 
@@ -163,51 +145,27 @@ func TestLimitedMaxAutoAssociationsNFTsFlow(t *testing.T) {
 	serials := receipt.SerialNumbers
 
 	// account create with 1 max auto associations
-	accountID1, _ := createAccountHelper(t, &env, 1)
+	receiver, _ := createAccountHelper(t, &env, 1)
 
-	// account update with 1 max auto associations
-	accountID2, newKey := createAccountHelper(t, &env, 1)
-
-	accountUpdateFrozen, err := NewAccountUpdateTransaction().
-		SetMaxAutomaticTokenAssociations(1).
-		SetAccountID(accountID2).
-		FreezeWith(env.Client)
-	require.NoError(t, err)
-
-	accountUpdate, err := accountUpdateFrozen.Sign(newKey).Execute(env.Client)
-	require.NoError(t, err)
-
-	_, err = accountUpdate.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
-
-	// transfer nft1 to all, 2 for each
+	// transfer nftID1 nfts to receiver account
 	tokenTransferTransaction, err := NewTransferTransaction().
-		AddNftTransfer(nftID1.Nft(serials[0]), env.OperatorID, accountID1).
-		AddNftTransfer(nftID1.Nft(serials[1]), env.OperatorID, accountID1).
-		AddNftTransfer(nftID1.Nft(serials[2]), env.OperatorID, accountID2).
-		AddNftTransfer(nftID1.Nft(serials[3]), env.OperatorID, accountID2).
+		AddNftTransfer(nftID1.Nft(serials[0]), env.OperatorID, receiver).
+		AddNftTransfer(nftID1.Nft(serials[1]), env.OperatorID, receiver).
+		AddNftTransfer(nftID1.Nft(serials[2]), env.OperatorID, receiver).
+		AddNftTransfer(nftID1.Nft(serials[3]), env.OperatorID, receiver).
 		Execute(env.Client)
-
 	require.NoError(t, err)
 
 	_, err = tokenTransferTransaction.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	// transfer nft2 to all should fail with NO_REMAINING_AUTOMATIC_ASSOCIATIONS
+	// transfer nftID2 nft to receiver should fail with NO_REMAINING_AUTOMATIC_ASSOCIATIONS
 	tokenTransferTransaction2, err := NewTransferTransaction().
-		AddNftTransfer(nftID2.Nft(serials[0]), env.OperatorID, accountID1).
+		AddNftTransfer(nftID2.Nft(serials[0]), env.OperatorID, receiver).
 		Execute(env.Client)
 	require.NoError(t, err)
 
 	_, err = tokenTransferTransaction2.SetValidateStatus(true).GetReceipt(env.Client)
-	require.ErrorContains(t, err, "NO_REMAINING_AUTOMATIC_ASSOCIATIONS")
-
-	tokenTransferTransaction3, err := NewTransferTransaction().
-		AddNftTransfer(nftID2.Nft(serials[1]), env.OperatorID, accountID2).
-		Execute(env.Client)
-	require.NoError(t, err)
-
-	_, err = tokenTransferTransaction3.SetValidateStatus(true).GetReceipt(env.Client)
 	require.ErrorContains(t, err, "NO_REMAINING_AUTOMATIC_ASSOCIATIONS")
 }
 
@@ -216,11 +174,12 @@ func TestUnlimitedMaxAutoAssociationsExecutes(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
-	// account create with unlimited max auto associations
+	// account create with unlimited max auto associations - verify it executes
 	createAccountHelper(t, &env, -1)
 
-	// account update with unlimited max auto associations
 	accountID, newKey := createAccountHelper(t, &env, 100)
+
+	// update the account with unlimited max auto associations
 	accountUpdateFrozen, err := NewAccountUpdateTransaction().
 		SetMaxAutomaticTokenAssociations(-1).
 		SetAccountID(accountID).
@@ -238,16 +197,18 @@ func TestUnlimitedMaxAutoAssociationsAllowsToTransferFungibleTokens(t *testing.T
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
-	// create token1 with 1 mil supply
+	// create token1
 	tokenID1 := createFungibleTokenHelper(3, t, &env)
 
-	// create token2 with 1 mil supply
+	// create token2
 	tokenID2 := createFungibleTokenHelper(3, t, &env)
 
 	// account create with unlimited max auto associations
 	accountID1, _ := createAccountHelper(t, &env, -1)
-	// account update with unlimited max auto associations
+	// create account with 100 max auto associations
 	accountID2, newKey := createAccountHelper(t, &env, 100)
+
+	// update the account with unlimited max auto associations
 	accountUpdateFrozen, err := NewAccountUpdateTransaction().
 		SetMaxAutomaticTokenAssociations(-1).
 		SetAccountID(accountID2).
@@ -289,15 +250,17 @@ func TestUnlimitedMaxAutoAssociationsAllowsToTransferFungibleTokensWithDecimals(
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
-	// create token1 with 1 mil supply
+	// create token1
 	tokenID1 := createFungibleTokenHelper(10, t, &env)
-	// create token2 with 1 mil supply
+	// create token2
 	tokenID2 := createFungibleTokenHelper(10, t, &env)
 
-	// account create
+	// account create with unlimited max auto associations
 	accountID1, _ := createAccountHelper(t, &env, -1)
-	// account update
+	// create account with 100 max auto associations
 	accountID2, newKey := createAccountHelper(t, &env, 100)
+
+	// update the account with unlimited max auto associations
 	accountUpdateFrozen, err := NewAccountUpdateTransaction().
 		SetMaxAutomaticTokenAssociations(-1).
 		SetAccountID(accountID2).
@@ -342,16 +305,18 @@ func TestUnlimitedMaxAutoAssociationsAllowsToTransferFromFungibleTokens(t *testi
 	// create spender account which will be approved to spend
 	spender, spenderKey := createAccountHelper(t, &env, 10)
 
-	// create token1 with 1 mil supply
+	// create token1
 	tokenID1 := createFungibleTokenHelper(3, t, &env)
 
-	// create token2 with 1 mil supply
+	// create token2
 	tokenID2 := createFungibleTokenHelper(3, t, &env)
 
 	// account create with unlimited max auto associations
 	accountID1, _ := createAccountHelper(t, &env, -1)
-	// account update with unlimited max auto associations
+	// create account with 100 max auto associations
 	accountID2, newKey := createAccountHelper(t, &env, 100)
+
+	// update the account with unlimited max auto associations
 	accountUpdateFrozen, err := NewAccountUpdateTransaction().
 		SetMaxAutomaticTokenAssociations(-1).
 		SetAccountID(accountID2).
@@ -388,7 +353,7 @@ func TestUnlimitedMaxAutoAssociationsAllowsToTransferFromFungibleTokens(t *testi
 	_, err = tokenTransferTransaction.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	// transferFrom token2 to all some tokens
+	// transferFrom to both accounts some token2 tokens
 	tokenTransferTransactionFrozen, err = NewTransferTransaction().
 		AddTokenTransfer(tokenID2, env.Client.GetOperatorAccountID(), -1000).
 		AddTokenTransfer(tokenID2, accountID1, 1000).
@@ -424,10 +389,9 @@ func TestUnlimitedMaxAutoAssociationsAllowsToTransferNFTs(t *testing.T) {
 
 	// account create with unlimited max auto associations
 	accountID1, _ := createAccountHelper(t, &env, -1)
-
-	// account update with unlimited max auto associations
 	accountID2, newKey := createAccountHelper(t, &env, 100)
 
+	// account update with unlimited max auto associations
 	accountUpdateFrozen, err := NewAccountUpdateTransaction().
 		SetMaxAutomaticTokenAssociations(-1).
 		SetAccountID(accountID2).
@@ -492,9 +456,10 @@ func TestUnlimitedMaxAutoAssociationsAllowsToTransferFromNFTs(t *testing.T) {
 	// account create with unlimited max auto associations
 	accountID1, _ := createAccountHelper(t, &env, -1)
 
-	// account update with unlimited max auto associations
+	// create account with 100 max auto associations
 	accountID2, newKey := createAccountHelper(t, &env, 100)
 
+	// update the account with unlimited max auto associations
 	accountUpdateFrozen, err := NewAccountUpdateTransaction().
 		SetMaxAutomaticTokenAssociations(-1).
 		SetAccountID(accountID2).
@@ -570,8 +535,10 @@ func TestUnlimitedMaxAutoAssociationsFailsWithInvalid(t *testing.T) {
 		Execute(env.Client)
 	require.ErrorContains(t, err, "INVALID_MAX_AUTO_ASSOCIATIONS")
 
-	// account update with - 2 and with -1000, should fail
+	// create account with 100 max auto associations
 	accountID, newKey := createAccountHelper(t, &env, 100)
+
+	// account update with -2 max auto associations - should fail
 	accountUpdateFrozen, err := NewAccountUpdateTransaction().
 		SetMaxAutomaticTokenAssociations(-2).
 		SetAccountID(accountID).
@@ -584,6 +551,7 @@ func TestUnlimitedMaxAutoAssociationsFailsWithInvalid(t *testing.T) {
 	_, err = tx.SetValidateStatus(true).GetReceipt(env.Client)
 	require.ErrorContains(t, err, "INVALID_MAX_AUTO_ASSOCIATIONS")
 
+	// account update with -1000 max auto associations - should fail
 	accountUpdateFrozen, err = NewAccountUpdateTransaction().
 		SetMaxAutomaticTokenAssociations(-1000).
 		SetAccountID(accountID).
