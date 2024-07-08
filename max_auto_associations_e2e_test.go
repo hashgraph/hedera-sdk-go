@@ -6,6 +6,7 @@ package hedera
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -169,6 +170,77 @@ func TestLimitedMaxAutoAssociationsNFTsFlow(t *testing.T) {
 	require.ErrorContains(t, err, "NO_REMAINING_AUTOMATIC_ASSOCIATIONS")
 }
 
+func TestLimitedMaxAutoAssociationsFungibleTokensWithManualAssociate(t *testing.T) {
+	t.Parallel()
+	env := NewIntegrationTestEnv(t)
+
+	// create token1
+	tokenID1 := createFungibleTokenHelper(3, t, &env)
+
+	// account create with 0 max auto associations
+	receiver, key := createAccountHelper(t, &env, 0)
+
+	frozenAssociateTxn, err := NewTokenAssociateTransaction().SetAccountID(receiver).AddTokenID(tokenID1).FreezeWith(env.Client)
+	require.NoError(t, err)
+	resp, err := frozenAssociateTxn.Sign(key).Execute(env.Client)
+	require.NoError(t, err)
+
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	// transfer token1 to receiver account
+	tokenTransferTransaction, err := NewTransferTransaction().
+		AddTokenTransfer(tokenID1, env.Client.GetOperatorAccountID(), -10).
+		AddTokenTransfer(tokenID1, receiver, 10).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	_, err = tokenTransferTransaction.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	// verify the balance of the receiver is 10
+	tokenBalance, err := NewAccountBalanceQuery().SetAccountID(receiver).Execute(env.Client)
+	require.NoError(t, err)
+	assert.Equal(t, uint64(10), tokenBalance.Tokens.Get(tokenID1))
+}
+
+func TestLimitedMaxAutoAssociationsNFTsManualAssociate(t *testing.T) {
+	t.Parallel()
+	env := NewIntegrationTestEnv(t)
+
+	// create NFT collection and mint 10
+	nftID1 := createNftHelper(t, &env)
+
+	mint, err := NewTokenMintTransaction().SetTokenID(nftID1).SetMetadatas(initialMetadataList).Execute(env.Client)
+	receipt, err := mint.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	serials := receipt.SerialNumbers
+
+	// account create with 1 max auto associations
+	receiver, key := createAccountHelper(t, &env, 0)
+
+	frozenAssociateTxn, err := NewTokenAssociateTransaction().SetAccountID(receiver).AddTokenID(nftID1).FreezeWith(env.Client)
+	require.NoError(t, err)
+	resp, err := frozenAssociateTxn.Sign(key).Execute(env.Client)
+	require.NoError(t, err)
+
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	// transfer nftID1 nfts to receiver account
+	tokenTransferTransaction, err := NewTransferTransaction().
+		AddNftTransfer(nftID1.Nft(serials[0]), env.OperatorID, receiver).
+		AddNftTransfer(nftID1.Nft(serials[1]), env.OperatorID, receiver).
+		AddNftTransfer(nftID1.Nft(serials[2]), env.OperatorID, receiver).
+		AddNftTransfer(nftID1.Nft(serials[3]), env.OperatorID, receiver).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	_, err = tokenTransferTransaction.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+}
+
 // HIP-904 Unlimited max auto association tests
 func TestUnlimitedMaxAutoAssociationsExecutes(t *testing.T) {
 	t.Parallel()
@@ -221,7 +293,7 @@ func TestUnlimitedMaxAutoAssociationsAllowsToTransferFungibleTokens(t *testing.T
 	_, err = accountUpdate.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	// transfer to both accounts some token1 tokens
+	// transfer to both receivers some token1 tokens
 	tokenTransferTransaction, err := NewTransferTransaction().
 		AddTokenTransfer(tokenID1, env.Client.GetOperatorAccountID(), -1000).
 		AddTokenTransfer(tokenID1, accountID1, 1000).
@@ -233,7 +305,7 @@ func TestUnlimitedMaxAutoAssociationsAllowsToTransferFungibleTokens(t *testing.T
 	_, err = tokenTransferTransaction.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	// transfer to both accounts some token2 tokens
+	// transfer to both receivers some token2 tokens
 	tokenTransferTransaction, err = NewTransferTransaction().
 		AddTokenTransfer(tokenID2, env.Client.GetOperatorAccountID(), -1000).
 		AddTokenTransfer(tokenID2, accountID1, 1000).
@@ -244,6 +316,17 @@ func TestUnlimitedMaxAutoAssociationsAllowsToTransferFungibleTokens(t *testing.T
 
 	_, err = tokenTransferTransaction.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
+
+	// verify the balance of the receivers is 1000
+	tokenBalance, err := NewAccountBalanceQuery().SetAccountID(accountID1).Execute(env.Client)
+	require.NoError(t, err)
+	assert.Equal(t, uint64(1000), tokenBalance.Tokens.Get(tokenID1))
+	assert.Equal(t, uint64(1000), tokenBalance.Tokens.Get(tokenID2))
+
+	tokenBalance, err = NewAccountBalanceQuery().SetAccountID(accountID2).Execute(env.Client)
+	require.NoError(t, err)
+	assert.Equal(t, uint64(1000), tokenBalance.Tokens.Get(tokenID1))
+	assert.Equal(t, uint64(1000), tokenBalance.Tokens.Get(tokenID2))
 }
 
 func TestUnlimitedMaxAutoAssociationsAllowsToTransferFungibleTokensWithDecimals(t *testing.T) {
@@ -256,46 +339,25 @@ func TestUnlimitedMaxAutoAssociationsAllowsToTransferFungibleTokensWithDecimals(
 	tokenID2 := createFungibleTokenHelper(10, t, &env)
 
 	// account create with unlimited max auto associations
-	accountID1, _ := createAccountHelper(t, &env, -1)
-	// create account with 100 max auto associations
-	accountID2, newKey := createAccountHelper(t, &env, 100)
+	accountID, _ := createAccountHelper(t, &env, -1)
 
-	// update the account with unlimited max auto associations
-	accountUpdateFrozen, err := NewAccountUpdateTransaction().
-		SetMaxAutomaticTokenAssociations(-1).
-		SetAccountID(accountID2).
-		FreezeWith(env.Client)
-	require.NoError(t, err)
-
-	accountUpdate, err := accountUpdateFrozen.Sign(newKey).Execute(env.Client)
-	require.NoError(t, err)
-
-	_, err = accountUpdate.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
-
-	// transfer to both accounts some token1 tokens
+	// transfer some token1 and token2 tokens
 	tokenTransferTransaction, err := NewTransferTransaction().
 		AddTokenTransferWithDecimals(tokenID1, env.Client.GetOperatorAccountID(), -1000, 10).
-		AddTokenTransferWithDecimals(tokenID1, accountID1, 1000, 10).
-		AddTokenTransferWithDecimals(tokenID1, env.Client.GetOperatorAccountID(), -1000, 10).
-		AddTokenTransferWithDecimals(tokenID1, accountID2, 1000, 10).
+		AddTokenTransferWithDecimals(tokenID1, accountID, 1000, 10).
+		AddTokenTransferWithDecimals(tokenID2, env.Client.GetOperatorAccountID(), -1000, 10).
+		AddTokenTransferWithDecimals(tokenID2, accountID, 1000, 10).
 		Execute(env.Client)
 	require.NoError(t, err)
 
 	_, err = tokenTransferTransaction.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	// transfer to both accounts some token2 tokens
-	tokenTransferTransaction, err = NewTransferTransaction().
-		AddTokenTransferWithDecimals(tokenID2, env.Client.GetOperatorAccountID(), -1000, 10).
-		AddTokenTransferWithDecimals(tokenID2, accountID1, 1000, 10).
-		AddTokenTransferWithDecimals(tokenID2, env.Client.GetOperatorAccountID(), -1000, 10).
-		AddTokenTransferWithDecimals(tokenID2, accountID2, 1000, 10).
-		Execute(env.Client)
+	// verify the balance of the receiver is 1000
+	tokenBalance, err := NewAccountBalanceQuery().SetAccountID(accountID).Execute(env.Client)
 	require.NoError(t, err)
-
-	_, err = tokenTransferTransaction.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
+	assert.Equal(t, uint64(1000), tokenBalance.Tokens.Get(tokenID1))
+	assert.Equal(t, uint64(1000), tokenBalance.Tokens.Get(tokenID2))
 }
 
 func TestUnlimitedMaxAutoAssociationsAllowsToTransferFromFungibleTokens(t *testing.T) {
@@ -312,22 +374,7 @@ func TestUnlimitedMaxAutoAssociationsAllowsToTransferFromFungibleTokens(t *testi
 	tokenID2 := createFungibleTokenHelper(3, t, &env)
 
 	// account create with unlimited max auto associations
-	accountID1, _ := createAccountHelper(t, &env, -1)
-	// create account with 100 max auto associations
-	accountID2, newKey := createAccountHelper(t, &env, 100)
-
-	// update the account with unlimited max auto associations
-	accountUpdateFrozen, err := NewAccountUpdateTransaction().
-		SetMaxAutomaticTokenAssociations(-1).
-		SetAccountID(accountID2).
-		FreezeWith(env.Client)
-	require.NoError(t, err)
-
-	accountUpdate, err := accountUpdateFrozen.Sign(newKey).Execute(env.Client)
-	require.NoError(t, err)
-
-	_, err = accountUpdate.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
+	accountID, _ := createAccountHelper(t, &env, -1)
 
 	// approve the spender
 	approve, err := NewAccountAllowanceApproveTransaction().
@@ -339,12 +386,12 @@ func TestUnlimitedMaxAutoAssociationsAllowsToTransferFromFungibleTokens(t *testi
 	_, err = approve.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	// transferFrom to both accounts some token1 tokens
+	// transferFrom some token1 and token2 tokens
 	tokenTransferTransactionFrozen, err := NewTransferTransaction().
 		AddTokenTransfer(tokenID1, env.Client.GetOperatorAccountID(), -1000).
-		AddTokenTransfer(tokenID1, accountID1, 1000).
-		AddTokenTransfer(tokenID1, env.Client.GetOperatorAccountID(), -1000).
-		AddTokenTransfer(tokenID1, accountID2, 1000).
+		AddTokenTransfer(tokenID1, accountID, 1000).
+		AddTokenTransfer(tokenID2, env.Client.GetOperatorAccountID(), -1000).
+		AddTokenTransfer(tokenID2, accountID, 1000).
 		FreezeWith(env.Client)
 	require.NoError(t, err)
 
@@ -353,19 +400,11 @@ func TestUnlimitedMaxAutoAssociationsAllowsToTransferFromFungibleTokens(t *testi
 	_, err = tokenTransferTransaction.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	// transferFrom to both accounts some token2 tokens
-	tokenTransferTransactionFrozen, err = NewTransferTransaction().
-		AddTokenTransfer(tokenID2, env.Client.GetOperatorAccountID(), -1000).
-		AddTokenTransfer(tokenID2, accountID1, 1000).
-		AddTokenTransfer(tokenID2, env.Client.GetOperatorAccountID(), -1000).
-		AddTokenTransfer(tokenID2, accountID2, 1000).
-		FreezeWith(env.Client)
+	// verify the balance of the receiver is 1000
+	tokenBalance, err := NewAccountBalanceQuery().SetAccountID(accountID).Execute(env.Client)
 	require.NoError(t, err)
-
-	tokenTransferTransaction, err = tokenTransferTransactionFrozen.Sign(spenderKey).Execute(env.Client)
-
-	_, err = tokenTransferTransaction.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
+	assert.Equal(t, uint64(1000), tokenBalance.Tokens.Get(tokenID1))
+	assert.Equal(t, uint64(1000), tokenBalance.Tokens.Get(tokenID2))
 }
 
 func TestUnlimitedMaxAutoAssociationsAllowsToTransferNFTs(t *testing.T) {
@@ -404,7 +443,7 @@ func TestUnlimitedMaxAutoAssociationsAllowsToTransferNFTs(t *testing.T) {
 	_, err = accountUpdate.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	// transfer nft1 to both accounts, 2 for each
+	// transfer nft1 to both receivers, 2 for each
 	tokenTransferTransaction, err := NewTransferTransaction().
 		AddNftTransfer(nftID1.Nft(serials[0]), env.OperatorID, accountID1).
 		AddNftTransfer(nftID1.Nft(serials[1]), env.OperatorID, accountID1).
@@ -417,7 +456,10 @@ func TestUnlimitedMaxAutoAssociationsAllowsToTransferNFTs(t *testing.T) {
 	_, err = tokenTransferTransaction.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	// transfer nft2 to both accounts, 2 for each
+	_, err = tokenTransferTransaction.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	// transfer nft2 to both receivers, 2 for each
 	tokenTransferTransaction, err = NewTransferTransaction().
 		AddNftTransfer(nftID2.Nft(serials[0]), env.OperatorID, accountID1).
 		AddNftTransfer(nftID2.Nft(serials[1]), env.OperatorID, accountID1).
@@ -429,6 +471,17 @@ func TestUnlimitedMaxAutoAssociationsAllowsToTransferNFTs(t *testing.T) {
 
 	_, err = tokenTransferTransaction.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
+
+	// verify the balance of the receivers is 2
+	tokenBalance, err := NewAccountBalanceQuery().SetAccountID(accountID1).Execute(env.Client)
+	require.NoError(t, err)
+	assert.Equal(t, uint64(2), tokenBalance.Tokens.Get(nftID1))
+	assert.Equal(t, uint64(2), tokenBalance.Tokens.Get(nftID2))
+
+	tokenBalance, err = NewAccountBalanceQuery().SetAccountID(accountID2).Execute(env.Client)
+	require.NoError(t, err)
+	assert.Equal(t, uint64(2), tokenBalance.Tokens.Get(nftID1))
+	assert.Equal(t, uint64(2), tokenBalance.Tokens.Get(nftID2))
 }
 
 func TestUnlimitedMaxAutoAssociationsAllowsToTransferFromNFTs(t *testing.T) {
@@ -454,23 +507,7 @@ func TestUnlimitedMaxAutoAssociationsAllowsToTransferFromNFTs(t *testing.T) {
 	serials := receipt.SerialNumbers
 
 	// account create with unlimited max auto associations
-	accountID1, _ := createAccountHelper(t, &env, -1)
-
-	// create account with 100 max auto associations
-	accountID2, newKey := createAccountHelper(t, &env, 100)
-
-	// update the account with unlimited max auto associations
-	accountUpdateFrozen, err := NewAccountUpdateTransaction().
-		SetMaxAutomaticTokenAssociations(-1).
-		SetAccountID(accountID2).
-		FreezeWith(env.Client)
-	require.NoError(t, err)
-
-	accountUpdate, err := accountUpdateFrozen.Sign(newKey).Execute(env.Client)
-	require.NoError(t, err)
-
-	_, err = accountUpdate.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
+	accountID, _ := createAccountHelper(t, &env, -1)
 
 	// approve the spender
 	approve, err := NewAccountAllowanceApproveTransaction().
@@ -482,12 +519,12 @@ func TestUnlimitedMaxAutoAssociationsAllowsToTransferFromNFTs(t *testing.T) {
 	_, err = approve.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	// transferFrom nft1 to all, 2 for each
+	// transferFrom some nft1 nfts
 	tokenTransferTransactionFrozen, err := NewTransferTransaction().
-		AddNftTransfer(nftID1.Nft(serials[0]), env.OperatorID, accountID1).
-		AddNftTransfer(nftID1.Nft(serials[1]), env.OperatorID, accountID1).
-		AddNftTransfer(nftID1.Nft(serials[2]), env.OperatorID, accountID2).
-		AddNftTransfer(nftID1.Nft(serials[3]), env.OperatorID, accountID2).
+		AddNftTransfer(nftID1.Nft(serials[0]), env.OperatorID, accountID).
+		AddNftTransfer(nftID1.Nft(serials[1]), env.OperatorID, accountID).
+		AddNftTransfer(nftID2.Nft(serials[0]), env.OperatorID, accountID).
+		AddNftTransfer(nftID2.Nft(serials[1]), env.OperatorID, accountID).
 		FreezeWith(env.Client)
 	require.NoError(t, err)
 
@@ -496,19 +533,11 @@ func TestUnlimitedMaxAutoAssociationsAllowsToTransferFromNFTs(t *testing.T) {
 	_, err = tokenTransferTransaction.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	// transferFrom nft2 to all, 2 for each
-	tokenTransferTransactionFrozen, err = NewTransferTransaction().
-		AddNftTransfer(nftID2.Nft(serials[0]), env.OperatorID, accountID1).
-		AddNftTransfer(nftID2.Nft(serials[1]), env.OperatorID, accountID1).
-		AddNftTransfer(nftID2.Nft(serials[2]), env.OperatorID, accountID2).
-		AddNftTransfer(nftID2.Nft(serials[3]), env.OperatorID, accountID2).
-		FreezeWith(env.Client)
+	// verify the balance of the receiver is 2
+	tokenBalance, err := NewAccountBalanceQuery().SetAccountID(accountID).Execute(env.Client)
 	require.NoError(t, err)
-
-	tokenTransferTransaction, err = tokenTransferTransactionFrozen.Sign(spenderKey).Execute(env.Client)
-
-	_, err = tokenTransferTransaction.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
+	assert.Equal(t, uint64(2), tokenBalance.Tokens.Get(nftID1))
+	assert.Equal(t, uint64(2), tokenBalance.Tokens.Get(nftID2))
 }
 
 func TestUnlimitedMaxAutoAssociationsFailsWithInvalid(t *testing.T) {
