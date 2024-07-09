@@ -26,6 +26,23 @@ import (
  *
  */
 
+/**
+ * A transaction body to "reject" undesired tokens.<br/>
+ * This transaction will transfer one or more tokens or token
+ * balances held by the requesting account to the treasury
+ * for each token type.
+ * <p>
+ * Each transfer MUST be one of the following:
+ * <ul>
+ *   <li>A single non-fungible/unique token.</li>
+ *   <li>The full balance held for a fungible/common
+ *       token type.</li>
+ * </ul>
+ * When complete, the requesting account SHALL NOT hold the
+ * rejected tokens.<br/>
+ * Custom fees and royalties defined for the tokens rejected
+ * SHALL NOT be charged for this transaction.
+ */
 type TokenRejectTransaction struct {
 	Transaction
 	ownerID  *AccountID
