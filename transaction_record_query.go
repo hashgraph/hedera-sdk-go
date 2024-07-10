@@ -250,7 +250,7 @@ func (q *TransactionRecordQuery) shouldRetry(_ Executable, response interface{})
 	status := Status(response.(*services.Response).GetTransactionGetRecord().GetHeader().GetNodeTransactionPrecheckCode())
 
 	switch status {
-	case StatusPlatformTransactionNotCreated, StatusBusy, StatusUnknown, StatusReceiptNotFound, StatusRecordNotFound:
+	case StatusPlatformTransactionNotCreated, StatusBusy, StatusUnknown, StatusReceiptNotFound, StatusRecordNotFound, StatusPlatformNotActive:
 		return executionStateRetry
 	case StatusOk:
 		if response.(*services.Response).GetTransactionGetRecord().GetHeader().ResponseType == services.ResponseType_COST_ANSWER {
@@ -263,7 +263,7 @@ func (q *TransactionRecordQuery) shouldRetry(_ Executable, response interface{})
 	status = Status(response.(*services.Response).GetTransactionGetRecord().GetTransactionRecord().GetReceipt().GetStatus())
 
 	switch status {
-	case StatusBusy, StatusUnknown, StatusOk, StatusReceiptNotFound, StatusRecordNotFound:
+	case StatusBusy, StatusUnknown, StatusOk, StatusReceiptNotFound, StatusRecordNotFound, StatusPlatformNotActive:
 		return executionStateRetry
 	case StatusSuccess:
 		return executionStateFinished

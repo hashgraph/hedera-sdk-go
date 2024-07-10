@@ -1,3 +1,20 @@
+## v2.41.0
+
+### Added
+
+-  Modified `AccountUpdateTransaction` to allow `maxAutomaticTokenAssociations` to support `-1` as a valid value
+
+## v2.40.0
+
+### Added
+
+-  Implemented custom derivation paths in Menmonic ECDSA private key derivation 
+
+### Fixed
+
+-  Revisited and fix failing examples
+-  Gracefully handle `PlatformNotActive` status code
+
 ## v2.39.0
 
 ### Added
