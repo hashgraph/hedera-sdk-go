@@ -43,7 +43,7 @@ type AccountUpdateTransaction struct {
 	memo                          string
 	receiverSignatureRequired     bool
 	expirationTime                *time.Time
-	maxAutomaticTokenAssociations uint32
+	maxAutomaticTokenAssociations int32
 	aliasKey                      *PublicKey
 	stakedAccountID               *AccountID
 	stakedNodeID                  *int64
@@ -96,7 +96,7 @@ func _AccountUpdateTransactionFromProtobuf(tx Transaction, pb *services.Transact
 		memo:                          pb.GetCryptoUpdateAccount().GetMemo().Value,
 		receiverSignatureRequired:     receiverSignatureRequired,
 		expirationTime:                &expiration,
-		maxAutomaticTokenAssociations: uint32(pb.GetCryptoUpdateAccount().MaxAutomaticTokenAssociations.GetValue()),
+		maxAutomaticTokenAssociations: pb.GetCryptoUpdateAccount().MaxAutomaticTokenAssociations.GetValue(),
 		stakedAccountID:               stakeNodeAccountID,
 		stakedNodeID:                  &stakedNodeID,
 		declineReward:                 pb.GetCryptoUpdateAccount().GetDeclineReward().GetValue(),
@@ -198,13 +198,13 @@ func (tx *AccountUpdateTransaction) GetDeclineStakingReward() bool {
 // SetMaxAutomaticTokenAssociations
 // Sets the maximum number of tokens that an Account can be implicitly associated with. Up to a 1000
 // including implicit and explicit associations.
-func (tx *AccountUpdateTransaction) SetMaxAutomaticTokenAssociations(max uint32) *AccountUpdateTransaction {
+func (tx *AccountUpdateTransaction) SetMaxAutomaticTokenAssociations(max int32) *AccountUpdateTransaction {
 	tx._RequireNotFrozen()
 	tx.maxAutomaticTokenAssociations = max
 	return tx
 }
 
-func (tx *AccountUpdateTransaction) GetMaxAutomaticTokenAssociations() uint32 {
+func (tx *AccountUpdateTransaction) GetMaxAutomaticTokenAssociations() int32 {
 	return tx.maxAutomaticTokenAssociations
 }
 
@@ -456,7 +456,7 @@ func (tx *AccountUpdateTransaction) build() *services.TransactionBody {
 		},
 	}
 
-	body.MaxAutomaticTokenAssociations = &wrapperspb.Int32Value{Value: int32(tx.maxAutomaticTokenAssociations)}
+	body.MaxAutomaticTokenAssociations = &wrapperspb.Int32Value{Value: tx.maxAutomaticTokenAssociations}
 
 	return &pb
 }
@@ -476,7 +476,7 @@ func (tx *AccountUpdateTransaction) buildProtoBody() *services.CryptoUpdateTrans
 		},
 		Memo:                          &wrapperspb.StringValue{Value: tx.memo},
 		DeclineReward:                 &wrapperspb.BoolValue{Value: tx.declineReward},
-		MaxAutomaticTokenAssociations: &wrapperspb.Int32Value{Value: int32(tx.maxAutomaticTokenAssociations)},
+		MaxAutomaticTokenAssociations: &wrapperspb.Int32Value{Value: tx.maxAutomaticTokenAssociations},
 	}
 
 	if tx.autoRenewPeriod != nil {
