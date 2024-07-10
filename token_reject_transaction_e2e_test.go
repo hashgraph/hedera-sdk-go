@@ -30,79 +30,16 @@ import (
  *
  */
 
-var initialMetadataList = [][]byte{{1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}}
-
-func createNftHelper(t *testing.T, env *IntegrationTestEnv) TokenID {
-	tokenCreate, err := NewTokenCreateTransaction().
-		SetTokenName("Example Collection").SetTokenSymbol("ABC").
-		SetTokenType(TokenTypeNonFungibleUnique).SetDecimals(0).
-		SetInitialSupply(0).SetMaxSupply(10).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).SetSupplyType(TokenSupplyTypeFinite).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeKey(env.Client.GetOperatorPublicKey()).
-		SetPauseKey(env.Client.GetOperatorPublicKey()).
-		SetSupplyKey(env.Client.GetOperatorPublicKey()).
-		SetMetadataKey(env.Client.GetOperatorPublicKey()).
-		Execute(env.Client)
-
-	require.NoError(t, err)
-	receipt, err := tokenCreate.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
-	return *receipt.TokenID
-}
-
-func createFungibleTokenHelper(t *testing.T, env *IntegrationTestEnv) TokenID {
-	tokenCreate, err := NewTokenCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetTokenMemo("asdf").
-		SetDecimals(18).
-		SetInitialSupply(1_000_000).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeKey(env.Client.GetOperatorPublicKey()).
-		SetPauseKey(env.Client.GetOperatorPublicKey()).
-		SetWipeKey(env.Client.GetOperatorPublicKey()).
-		SetSupplyKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeDefault(false).
-		Execute(env.Client)
-	require.NoError(t, err)
-
-	receipt, err := tokenCreate.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
-
-	return *receipt.TokenID
-
-}
-
-func createAccountHelper(t *testing.T, env *IntegrationTestEnv) (AccountID, PrivateKey) {
-	newKey, err := PrivateKeyGenerateEd25519()
-	require.NoError(t, err)
-
-	accountCreate, err := NewAccountCreateTransaction().
-		SetKey(newKey).
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetInitialBalance(NewHbar(1)).
-		SetMaxAutomaticTokenAssociations(100).
-		Execute(env.Client)
-	require.NoError(t, err)
-
-	receipt, err := accountCreate.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
-	return *receipt.AccountID, newKey
-}
-
 func TestIntegrationTokenRejectTransactionCanExecuteForFungibleToken(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	// create fungible tokens with treasury
-	tokenID1 := createFungibleTokenHelper(t, &env)
-	tokenID2 := createFungibleTokenHelper(t, &env)
+	tokenID1 := createFungibleTokenHelper(18, t, &env)
+	tokenID2 := createFungibleTokenHelper(18, t, &env)
 
 	// create receiver account with auto associations
-	receiver, key := createAccountHelper(t, &env)
+	receiver, key := createAccountHelper(t, &env, 100)
 
 	// transfer fts to the receiver
 	tx, err := NewTransferTransaction().
@@ -161,7 +98,7 @@ func TestIntegrationTokenRejectTransactionCanExecuteForNFT(t *testing.T) {
 	serials := receipt.SerialNumbers
 
 	// create receiver account with auto associations
-	receiver, key := createAccountHelper(t, &env)
+	receiver, key := createAccountHelper(t, &env, 100)
 
 	// transfer nfts to the receiver
 	tx, err := NewTransferTransaction().
@@ -204,8 +141,8 @@ func TestIntegrationTokenRejectTransactionCanExecuteForFTAndNFTAtTheSameTime(t *
 	env := NewIntegrationTestEnv(t)
 
 	// create fungible tokens with treasury
-	tokenID1 := createFungibleTokenHelper(t, &env)
-	tokenID2 := createFungibleTokenHelper(t, &env)
+	tokenID1 := createFungibleTokenHelper(18, t, &env)
+	tokenID2 := createFungibleTokenHelper(18, t, &env)
 
 	// create nft collections with treasury
 	nftID1 := createNftHelper(t, &env)
@@ -224,7 +161,7 @@ func TestIntegrationTokenRejectTransactionCanExecuteForFTAndNFTAtTheSameTime(t *
 	serials := receipt.SerialNumbers
 
 	// create receiver account with auto associations
-	receiver, key := createAccountHelper(t, &env)
+	receiver, key := createAccountHelper(t, &env, 100)
 
 	// transfer fts to the receiver
 	tx1, err := NewTransferTransaction().
@@ -331,7 +268,7 @@ func TestIntegrationTokenRejectTransactionReceiverSigRequired(t *testing.T) {
 	serials := receipt.SerialNumbers
 
 	// create receiver account with auto associations
-	receiver, key := createAccountHelper(t, &env)
+	receiver, key := createAccountHelper(t, &env, 100)
 
 	// transfer nft to the receiver
 	frozenTransfer, err := NewTransferTransaction().
@@ -439,7 +376,7 @@ func TestIntegrationTokenRejectTransactionTokenFrozen(t *testing.T) {
 	serials := receipt.SerialNumbers
 
 	// create receiver account with auto associations
-	receiver, key := createAccountHelper(t, &env)
+	receiver, key := createAccountHelper(t, &env, 100)
 
 	// transfer nft to the receiver
 	tx, err := NewTransferTransaction().
@@ -471,7 +408,7 @@ func TestIntegrationTokenRejectTransactionTokenFrozen(t *testing.T) {
 	// same test with fungible token
 
 	// create fungible token with treasury
-	tokenID := createFungibleTokenHelper(t, &env)
+	tokenID := createFungibleTokenHelper(18, t, &env)
 
 	// transfer ft to the receiver
 	tx, err = NewTransferTransaction().
@@ -517,7 +454,7 @@ func TestIntegrationTokenRejectTransactionTokenPaused(t *testing.T) {
 	serials := receipt.SerialNumbers
 
 	// create receiver account with auto associations
-	receiver, key := createAccountHelper(t, &env)
+	receiver, key := createAccountHelper(t, &env, 100)
 
 	// transfer nft to the receiver
 	tx, err := NewTransferTransaction().
@@ -549,7 +486,7 @@ func TestIntegrationTokenRejectTransactionTokenPaused(t *testing.T) {
 	// same test with fungible token
 
 	// create fungible token with treasury
-	tokenID := createFungibleTokenHelper(t, &env)
+	tokenID := createFungibleTokenHelper(18, t, &env)
 
 	// transfer ft to the receiver
 	tx, err = NewTransferTransaction().
@@ -583,11 +520,11 @@ func TestIntegrationTokenRejectTransactionRemovesAllowance(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	// create fungible token with treasury
-	tokenID := createFungibleTokenHelper(t, &env)
+	tokenID := createFungibleTokenHelper(18, t, &env)
 	// create receiver account with auto associations
-	receiver, key := createAccountHelper(t, &env)
+	receiver, key := createAccountHelper(t, &env, 100)
 	// create spender account to be approved
-	spender, spenderKey := createAccountHelper(t, &env)
+	spender, spenderKey := createAccountHelper(t, &env, 100)
 
 	// transfer ft to the receiver
 	tx, err := NewTransferTransaction().
@@ -729,7 +666,7 @@ func TestIntegrationTokenRejectTransactionFailsWhenRejectingNFTWithTokenID(t *te
 	serials := receipt.SerialNumbers
 
 	// create receiver account with auto associations
-	receiver, key := createAccountHelper(t, &env)
+	receiver, key := createAccountHelper(t, &env, 100)
 
 	// transfer nfts to the receiver
 	tx, err := NewTransferTransaction().
@@ -756,10 +693,10 @@ func TestIntegrationTokenRejectTransactionFailsWithTokenReferenceRepeated(t *tes
 	env := NewIntegrationTestEnv(t)
 
 	// create fungible token with treasury
-	tokenID := createFungibleTokenHelper(t, &env)
+	tokenID := createFungibleTokenHelper(18, t, &env)
 
 	// create receiver account with auto associations
-	receiver, key := createAccountHelper(t, &env)
+	receiver, key := createAccountHelper(t, &env, 100)
 
 	// transfer ft to the receiver
 	tx, err := NewTransferTransaction().
@@ -812,9 +749,9 @@ func TestIntegrationTokenRejectTransactionFailsWhenOwnerHasNoBalance(t *testing.
 	env := NewIntegrationTestEnv(t)
 
 	// create fungible token with treasury
-	tokenID := createFungibleTokenHelper(t, &env)
+	tokenID := createFungibleTokenHelper(18, t, &env)
 	// create receiver account with auto associations
-	receiver, key := createAccountHelper(t, &env)
+	receiver, key := createAccountHelper(t, &env, 100)
 
 	// skip the transfer
 	// associate the receiver
@@ -876,7 +813,7 @@ func TestIntegrationTokenRejectTransactionFailsTreasuryRejects(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	// create fungible token with treasury
-	tokenID := createFungibleTokenHelper(t, &env)
+	tokenID := createFungibleTokenHelper(18, t, &env)
 
 	// skip the transfer
 	// reject the token with the treasury - should fail with ACCOUNT_IS_TREASURY
@@ -934,10 +871,10 @@ func TestIntegrationTokenRejectTransactionFailsWithReferenceSizeExceeded(t *test
 	env := NewIntegrationTestEnv(t)
 
 	// create receiver account with auto associations
-	receiver, key := createAccountHelper(t, &env)
+	receiver, key := createAccountHelper(t, &env, 100)
 
 	// create fungible token with treasury
-	tokenID := createFungibleTokenHelper(t, &env)
+	tokenID := createFungibleTokenHelper(18, t, &env)
 
 	// create nft with treasury
 	nftID := createNftHelper(t, &env)
@@ -992,10 +929,10 @@ func TestIntegrationTokenRejectTransactionFailsWithInvalidSignature(t *testing.T
 	env := NewIntegrationTestEnv(t)
 
 	// create fungible token with treasury
-	tokenID := createFungibleTokenHelper(t, &env)
+	tokenID := createFungibleTokenHelper(18, t, &env)
 
 	// create receiver account with auto associations
-	receiver, _ := createAccountHelper(t, &env)
+	receiver, _ := createAccountHelper(t, &env, 100)
 
 	// craete helper key
 	otherKey, err := PrivateKeyGenerateEd25519()
