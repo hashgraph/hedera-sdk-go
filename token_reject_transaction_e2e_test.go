@@ -112,7 +112,7 @@ func TestIntegrationTokenRejectTransactionCanExecuteForFungibleToken(t *testing.
 		AddTokenTransfer(tokenID2, receiver, 10).
 		Execute(env.Client)
 	require.NoError(t, err)
-	_, err = tx.GetReceipt(env.Client)
+	_, err = tx.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	// reject the token
@@ -159,6 +159,7 @@ func TestIntegrationTokenRejectTransactionCanExecuteForNFT(t *testing.T) {
 	require.NoError(t, err)
 
 	serials := receipt.SerialNumbers
+
 	// create receiver account with auto associations
 	receiver, key := createAccountHelper(t, &env)
 
@@ -170,7 +171,7 @@ func TestIntegrationTokenRejectTransactionCanExecuteForNFT(t *testing.T) {
 		AddNftTransfer(nftID2.Nft(serials[1]), env.Client.GetOperatorAccountID(), receiver).
 		Execute(env.Client)
 	require.NoError(t, err)
-	_, err = tx.GetReceipt(env.Client)
+	_, err = tx.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	// reject one of the nfts
@@ -328,6 +329,7 @@ func TestIntegrationTokenRejectTransactionReceiverSigRequired(t *testing.T) {
 	require.NoError(t, err)
 
 	serials := receipt.SerialNumbers
+
 	// create receiver account with auto associations
 	receiver, key := createAccountHelper(t, &env)
 
@@ -385,7 +387,6 @@ func TestIntegrationTokenRejectTransactionReceiverSigRequired(t *testing.T) {
 
 	receipt, err = tokenCreate.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
-
 	tokenID := *receipt.TokenID
 
 	// transfer ft to the receiver
@@ -426,8 +427,6 @@ func TestIntegrationTokenRejectTransactionTokenFrozen(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
-	// given
-
 	// create nft with treasury
 	nftID := createNftHelper(t, &env)
 
@@ -438,10 +437,9 @@ func TestIntegrationTokenRejectTransactionTokenFrozen(t *testing.T) {
 	require.NoError(t, err)
 
 	serials := receipt.SerialNumbers
+
 	// create receiver account with auto associations
 	receiver, key := createAccountHelper(t, &env)
-
-	// when
 
 	// transfer nft to the receiver
 	tx, err := NewTransferTransaction().
@@ -449,7 +447,7 @@ func TestIntegrationTokenRejectTransactionTokenFrozen(t *testing.T) {
 		AddNftTransfer(nftID.Nft(serials[1]), env.Client.GetOperatorAccountID(), receiver).
 		Execute(env.Client)
 	require.NoError(t, err)
-	_, err = tx.GetReceipt(env.Client)
+	_, err = tx.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	// freeze the token
@@ -457,8 +455,6 @@ func TestIntegrationTokenRejectTransactionTokenFrozen(t *testing.T) {
 	require.NoError(t, err)
 	_, err = tokenFreeze.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
-
-	// then
 
 	// reject the token - should fail with ACCOUNT_FROZEN_FOR_TOKEN
 	frozenTxn, err := NewTokenRejectTransaction().
@@ -483,7 +479,7 @@ func TestIntegrationTokenRejectTransactionTokenFrozen(t *testing.T) {
 		AddTokenTransfer(tokenID, receiver, 10).
 		Execute(env.Client)
 	require.NoError(t, err)
-	_, err = tx.GetReceipt(env.Client)
+	_, err = tx.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	// freeze the token
@@ -509,8 +505,6 @@ func TestIntegrationTokenRejectTransactionTokenPaused(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
-	// given
-
 	// create nft with treasury
 	nftID := createNftHelper(t, &env)
 
@@ -521,10 +515,9 @@ func TestIntegrationTokenRejectTransactionTokenPaused(t *testing.T) {
 	require.NoError(t, err)
 
 	serials := receipt.SerialNumbers
+
 	// create receiver account with auto associations
 	receiver, key := createAccountHelper(t, &env)
-
-	// when
 
 	// transfer nft to the receiver
 	tx, err := NewTransferTransaction().
@@ -532,7 +525,7 @@ func TestIntegrationTokenRejectTransactionTokenPaused(t *testing.T) {
 		AddNftTransfer(nftID.Nft(serials[1]), env.Client.GetOperatorAccountID(), receiver).
 		Execute(env.Client)
 	require.NoError(t, err)
-	_, err = tx.GetReceipt(env.Client)
+	_, err = tx.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	// pause the token
@@ -540,8 +533,6 @@ func TestIntegrationTokenRejectTransactionTokenPaused(t *testing.T) {
 	require.NoError(t, err)
 	_, err = tokenPause.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
-
-	// then
 
 	// reject the token - should fail with TOKEN_IS_PAUSED
 	frozenTxn, err := NewTokenRejectTransaction().
@@ -555,6 +546,8 @@ func TestIntegrationTokenRejectTransactionTokenPaused(t *testing.T) {
 	_, err = resp.GetReceipt(env.Client)
 	require.ErrorContains(t, err, "TOKEN_IS_PAUSED")
 
+	// same test with fungible token
+
 	// create fungible token with treasury
 	tokenID := createFungibleTokenHelper(t, &env)
 
@@ -564,7 +557,7 @@ func TestIntegrationTokenRejectTransactionTokenPaused(t *testing.T) {
 		AddTokenTransfer(tokenID, receiver, 10).
 		Execute(env.Client)
 	require.NoError(t, err)
-	_, err = tx.GetReceipt(env.Client)
+	_, err = tx.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	// pause the token
@@ -589,8 +582,6 @@ func TestIntegrationTokenRejectTransactionRemovesAllowance(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
-	// given
-
 	// create fungible token with treasury
 	tokenID := createFungibleTokenHelper(t, &env)
 	// create receiver account with auto associations
@@ -598,15 +589,13 @@ func TestIntegrationTokenRejectTransactionRemovesAllowance(t *testing.T) {
 	// create spender account to be approved
 	spender, spenderKey := createAccountHelper(t, &env)
 
-	// when
-
 	// transfer ft to the receiver
 	tx, err := NewTransferTransaction().
 		AddTokenTransfer(tokenID, env.Client.GetOperatorAccountID(), -10).
 		AddTokenTransfer(tokenID, receiver, 10).
 		Execute(env.Client)
 	require.NoError(t, err)
-	_, err = tx.GetReceipt(env.Client)
+	_, err = tx.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	// approve allowance to the spender
@@ -643,8 +632,6 @@ func TestIntegrationTokenRejectTransactionRemovesAllowance(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	// then
-
 	// verify the allowance - should be 0 , because the receiver is no longer the owner
 	env.Client.SetOperator(spender, spenderKey)
 	frozenTx, err = NewTransferTransaction().
@@ -652,95 +639,80 @@ func TestIntegrationTokenRejectTransactionRemovesAllowance(t *testing.T) {
 		AddTokenTransfer(tokenID, spender, 5).FreezeWith(env.Client)
 	tx, err = frozenTx.Sign(spenderKey).Execute(env.Client)
 	require.NoError(t, err)
-	_, err = tx.GetReceipt(env.Client)
+	_, err = tx.SetValidateStatus(true).GetReceipt(env.Client)
 	require.ErrorContains(t, err, "SPENDER_DOES_NOT_HAVE_ALLOWANCE")
 	env.Client.SetOperator(env.OperatorID, env.OperatorKey)
 
 	// same test for nft
-}
 
-func TestIntegrationTokenRejectTransactionFailsWithTokenReferenceRepeated(t *testing.T) {
-	t.Parallel()
-	//env := NewIntegrationTestEnv(t)
+	// create nft with treasury
+	nftID := createNftHelper(t, &env)
 
-	// given
+	// mint
+	mint, err := NewTokenMintTransaction().SetTokenID(nftID).SetMetadatas(initialMetadataList).Execute(env.Client)
+	receipt, err := mint.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
 
-	// create fungible token with treasury
-	// create receiver account with auto associations
+	serials := receipt.SerialNumbers
 
-	// when
+	// transfer nfts to the receiver
+	tx, err = NewTransferTransaction().
+		AddNftTransfer(nftID.Nft(serials[0]), env.Client.GetOperatorAccountID(), receiver).
+		AddNftTransfer(nftID.Nft(serials[1]), env.Client.GetOperatorAccountID(), receiver).
+		AddNftTransfer(nftID.Nft(serials[2]), env.Client.GetOperatorAccountID(), receiver).
+		AddNftTransfer(nftID.Nft(serials[3]), env.Client.GetOperatorAccountID(), receiver).
+		Execute(env.Client)
+	require.NoError(t, err)
+	_, err = tx.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
 
-	// transfer ft to the receiver
+	// approve allowance to the spender
+	frozenApprove, err = NewAccountAllowanceApproveTransaction().
+		ApproveTokenNftAllowance(nftID.Nft(serials[0]), receiver, spender).
+		ApproveTokenNftAllowance(nftID.Nft(serials[1]), receiver, spender).
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+	approve, err = frozenApprove.Sign(key).Execute(env.Client)
+	require.NoError(t, err)
+	_, err = approve.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	// verify the spender has allowance
+	env.Client.SetOperator(spender, spenderKey)
+	frozenTx, err = NewTransferTransaction().
+		AddApprovedNftTransfer(nftID.Nft(serials[0]), receiver, spender, true).
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+	transfer, err = frozenTx.SignWith(spenderKey.PublicKey(), spenderKey.Sign).Execute(env.Client)
+	require.NoError(t, err)
+	_, err = transfer.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	env.Client.SetOperator(env.OperatorID, env.OperatorKey)
+
 	// reject the token
+	frozenTxn, err = NewTokenRejectTransaction().
+		SetOwnerID(receiver).
+		SetNftIDs(nftID.Nft(serials[1]), nftID.Nft(serials[2])).
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+	resp, err = frozenTxn.Sign(key).Execute(env.Client)
+	require.NoError(t, err)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
 
-	// then
+	// verify the allowance - should be 0 , because the receiver is no longer the owner
+	env.Client.SetOperator(spender, spenderKey)
+	frozenTx, err = NewTransferTransaction().
+		AddApprovedNftTransfer(nftID.Nft(serials[1]), receiver, spender, true).
+		AddApprovedNftTransfer(nftID.Nft(serials[2]), receiver, spender, true).
+		FreezeWith(env.Client)
+	tx, err = frozenTx.Sign(spenderKey).Execute(env.Client)
+	require.NoError(t, err)
+	_, err = tx.SetValidateStatus(true).GetReceipt(env.Client)
+	require.ErrorContains(t, err, "SPENDER_DOES_NOT_HAVE_ALLOWANCE")
+	env.Client.SetOperator(env.OperatorID, env.OperatorKey)
 
-	// duplicate the reject - should fail with TOKEN_REFERENCE_REPEATED
-
-	// same test for nft
-}
-
-func TestIntegrationTokenRejectTransactionFailsWhenOwnerHasNoBalance(t *testing.T) {
-	t.Parallel()
-	//env := NewIntegrationTestEnv(t)
-
-	// given
-
-	// create fungible token with treasury
-	// create receiver account with auto associations
-
-	// when
-
-	// skip the transfer
-	// reject the token - should fail with INSUFFICIENT_TOKEN_BALANCE
-
-	// same test for nft
-}
-
-func TestIntegrationTokenRejectTransactionFailsTreasuryRejects(t *testing.T) {
-	t.Parallel()
-	//env := NewIntegrationTestEnv(t)
-
-	// given
-
-	// create fungible token with treasury
-
-	// when
-
-	// skip the transfer
-	// reject the token with the treasury - should fail with ACCOUNT_IS_TREASURY
-
-	// same test for nft
-}
-
-func TestIntegrationTokenRejectTransactionFailsWithInvalidOwner(t *testing.T) {
-	t.Parallel()
-	//env := NewIntegrationTestEnv(t)
-
-	// given
-
-	// create fungible token with treasury
-
-	// when
-
-	// reject the token with invalid owner - should fail with INVALID_OWNER_ID
-
-	// same test for nft
-}
-
-func TestIntegrationTokenRejectTransactionFailsWithInvalidToken(t *testing.T) {
-	t.Parallel()
-	//env := NewIntegrationTestEnv(t)
-
-	// given
-
-	// create receiver account with auto associations
-
-	// when
-
-	// reject the token with invalid token - should fail with INVALID_TOKEN_ID
-
-	// same test for nft
 }
 
 func TestIntegrationTokenRejectTransactionFailsWhenRejectingNFTWithTokenID(t *testing.T) {
@@ -755,15 +727,18 @@ func TestIntegrationTokenRejectTransactionFailsWhenRejectingNFTWithTokenID(t *te
 	require.NoError(t, err)
 
 	serials := receipt.SerialNumbers
+
 	// create receiver account with auto associations
 	receiver, key := createAccountHelper(t, &env)
 
 	// transfer nfts to the receiver
-	_, err = NewTransferTransaction().
+	tx, err := NewTransferTransaction().
 		AddNftTransfer(nftID.Nft(serials[0]), env.Client.GetOperatorAccountID(), receiver).
 		AddNftTransfer(nftID.Nft(serials[1]), env.Client.GetOperatorAccountID(), receiver).
 		AddNftTransfer(nftID.Nft(serials[2]), env.Client.GetOperatorAccountID(), receiver).
 		Execute(env.Client)
+	require.NoError(t, err)
+	_, err = tx.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	// reject the whole collection - should fail
@@ -774,4 +749,275 @@ func TestIntegrationTokenRejectTransactionFailsWhenRejectingNFTWithTokenID(t *te
 
 	_, err = resp.GetReceipt(env.Client)
 	require.ErrorContains(t, err, "ACCOUNT_AMOUNT_TRANSFERS_ONLY_ALLOWED_FOR_FUNGIBLE_COMMON")
+}
+
+func TestIntegrationTokenRejectTransactionFailsWithTokenReferenceRepeated(t *testing.T) {
+	t.Parallel()
+	env := NewIntegrationTestEnv(t)
+
+	// create fungible token with treasury
+	tokenID := createFungibleTokenHelper(t, &env)
+
+	// create receiver account with auto associations
+	receiver, key := createAccountHelper(t, &env)
+
+	// transfer ft to the receiver
+	tx, err := NewTransferTransaction().
+		AddTokenTransfer(tokenID, env.Client.GetOperatorAccountID(), -10).
+		AddTokenTransfer(tokenID, receiver, 10).
+		Execute(env.Client)
+	require.NoError(t, err)
+	_, err = tx.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	// reject the token with duplicate token id - should fail with TOKEN_REFERENCE_REPEATED
+	frozenTxn, err := NewTokenRejectTransaction().
+		SetOwnerID(receiver).
+		SetTokenIDs(tokenID, tokenID).
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+	_, err = frozenTxn.Sign(key).Execute(env.Client)
+	require.ErrorContains(t, err, "TOKEN_REFERENCE_REPEATED")
+
+	// same test for nft
+
+	// create nft with treasury
+	nftID := createNftHelper(t, &env)
+
+	// mint
+	mint, err := NewTokenMintTransaction().SetTokenID(nftID).SetMetadatas(initialMetadataList).Execute(env.Client)
+	require.NoError(t, err)
+	receipt, err := mint.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	serials := receipt.SerialNumbers
+
+	// transfer nft to the receiver
+	tx, err = NewTransferTransaction().
+		AddNftTransfer(nftID.Nft(serials[0]), env.Client.GetOperatorAccountID(), receiver).
+		Execute(env.Client)
+	require.NoError(t, err)
+	_, err = tx.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	// reject the nft with duplicate nft id - should fail with TOKEN_REFERENCE_REPEATED
+	frozenTxn, err = NewTokenRejectTransaction().SetOwnerID(receiver).SetNftIDs(nftID.Nft(serials[0]), nftID.Nft(serials[0])).FreezeWith(env.Client)
+	require.NoError(t, err)
+	_, err = frozenTxn.Sign(key).Execute(env.Client)
+	require.ErrorContains(t, err, "TOKEN_REFERENCE_REPEATED")
+}
+
+func TestIntegrationTokenRejectTransactionFailsWhenOwnerHasNoBalance(t *testing.T) {
+	t.Parallel()
+	env := NewIntegrationTestEnv(t)
+
+	// create fungible token with treasury
+	tokenID := createFungibleTokenHelper(t, &env)
+	// create receiver account with auto associations
+	receiver, key := createAccountHelper(t, &env)
+
+	// skip the transfer
+	// associate the receiver
+	frozenAssociate, err := NewTokenAssociateTransaction().
+		SetAccountID(receiver).
+		AddTokenID(tokenID).FreezeWith(env.Client)
+	require.NoError(t, err)
+	_, err = frozenAssociate.Sign(key).Execute(env.Client)
+	require.NoError(t, err)
+
+	// reject the token - should fail with INSUFFICIENT_TOKEN_BALANCE
+	frozenTxn, err := NewTokenRejectTransaction().
+		SetOwnerID(receiver).
+		SetTokenIDs(tokenID).
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+	tx, err := frozenTxn.Sign(key).Execute(env.Client)
+	require.NoError(t, err)
+	_, err = tx.SetValidateStatus(true).GetReceipt(env.Client)
+	require.ErrorContains(t, err, "INSUFFICIENT_TOKEN_BALANCE")
+
+	// same test for nft
+
+	// create nft with treasury
+	nftID := createNftHelper(t, &env)
+
+	// mint
+	mint, err := NewTokenMintTransaction().SetTokenID(nftID).SetMetadatas(initialMetadataList).Execute(env.Client)
+	require.NoError(t, err)
+	receipt, err := mint.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	serials := receipt.SerialNumbers
+
+	// skip the transfer
+	// associate the receiver
+	frozenAssociate, err = NewTokenAssociateTransaction().
+		SetAccountID(receiver).
+		AddTokenID(nftID).FreezeWith(env.Client)
+	require.NoError(t, err)
+	_, err = frozenAssociate.Sign(key).Execute(env.Client)
+	require.NoError(t, err)
+
+	// reject the nft - should fail with INSUFFICIENT_TOKEN_BALANCE
+	frozenTxn, err = NewTokenRejectTransaction().
+		SetOwnerID(receiver).
+		SetNftIDs(nftID.Nft(serials[0])).
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+	tx, err = frozenTxn.Sign(key).Execute(env.Client)
+	require.NoError(t, err)
+	_, err = tx.SetValidateStatus(true).GetReceipt(env.Client)
+	require.ErrorContains(t, err, "INVALID_OWNER_ID")
+
+}
+
+func TestIntegrationTokenRejectTransactionFailsTreasuryRejects(t *testing.T) {
+	t.Parallel()
+	env := NewIntegrationTestEnv(t)
+
+	// create fungible token with treasury
+	tokenID := createFungibleTokenHelper(t, &env)
+
+	// skip the transfer
+	// reject the token with the treasury - should fail with ACCOUNT_IS_TREASURY
+	frozenTxn, err := NewTokenRejectTransaction().
+		SetOwnerID(env.OperatorID).
+		SetTokenIDs(tokenID).
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+	tx, err := frozenTxn.Sign(env.OperatorKey).Execute(env.Client)
+	require.NoError(t, err)
+	_, err = tx.SetValidateStatus(true).GetReceipt(env.Client)
+	require.ErrorContains(t, err, "ACCOUNT_IS_TREASURY")
+
+	// same test for nft
+
+	// create nft with treasury
+	nftID := createNftHelper(t, &env)
+
+	// mint
+	mint, err := NewTokenMintTransaction().SetTokenID(nftID).SetMetadatas(initialMetadataList).Execute(env.Client)
+	require.NoError(t, err)
+	receipt, err := mint.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	serials := receipt.SerialNumbers
+
+	// skip the transfer
+	// reject the nft with the treasury - should fail with ACCOUNT_IS_TREASURY
+	frozenTxn, err = NewTokenRejectTransaction().
+		SetOwnerID(env.OperatorID).
+		SetNftIDs(nftID.Nft(serials[0])).
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+	tx, err = frozenTxn.Sign(env.OperatorKey).Execute(env.Client)
+	require.NoError(t, err)
+	_, err = tx.SetValidateStatus(true).GetReceipt(env.Client)
+	require.ErrorContains(t, err, "ACCOUNT_IS_TREASURY")
+}
+
+func TestIntegrationTokenRejectTransactionFailsWithInvalidToken(t *testing.T) {
+	t.Parallel()
+	env := NewIntegrationTestEnv(t)
+
+	// reject the token with invalid token - should fail with INVALID_TOKEN_ID
+	frozenTxn, err := NewTokenRejectTransaction().
+		SetOwnerID(env.OperatorID).
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+	_, err = frozenTxn.Sign(env.OperatorKey).Execute(env.Client)
+	require.ErrorContains(t, err, "EMPTY_TOKEN_REFERENCE_LIST")
+}
+
+func TestIntegrationTokenRejectTransactionFailsWithReferenceSizeExceeded(t *testing.T) {
+	t.Parallel()
+	env := NewIntegrationTestEnv(t)
+
+	// create receiver account with auto associations
+	receiver, key := createAccountHelper(t, &env)
+
+	// create fungible token with treasury
+	tokenID := createFungibleTokenHelper(t, &env)
+
+	// create nft with treasury
+	nftID := createNftHelper(t, &env)
+
+	// mint
+	mint, err := NewTokenMintTransaction().SetTokenID(nftID).SetMetadatas(initialMetadataList).Execute(env.Client)
+	require.NoError(t, err)
+	receipt, err := mint.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	serials := receipt.SerialNumbers
+
+	// transfer the tokens to the receiver
+	tx, err := NewTransferTransaction().
+		AddTokenTransfer(tokenID, env.Client.GetOperatorAccountID(), -10).
+		AddTokenTransfer(tokenID, receiver, 10).
+		AddNftTransfer(nftID.Nft(serials[0]), env.Client.GetOperatorAccountID(), receiver).
+		AddNftTransfer(nftID.Nft(serials[1]), env.Client.GetOperatorAccountID(), receiver).
+		AddNftTransfer(nftID.Nft(serials[2]), env.Client.GetOperatorAccountID(), receiver).
+		AddNftTransfer(nftID.Nft(serials[3]), env.Client.GetOperatorAccountID(), receiver).
+		AddNftTransfer(nftID.Nft(serials[4]), env.Client.GetOperatorAccountID(), receiver).
+		AddNftTransfer(nftID.Nft(serials[5]), env.Client.GetOperatorAccountID(), receiver).
+		AddNftTransfer(nftID.Nft(serials[6]), env.Client.GetOperatorAccountID(), receiver).
+		AddNftTransfer(nftID.Nft(serials[7]), env.Client.GetOperatorAccountID(), receiver).
+		AddNftTransfer(nftID.Nft(serials[8]), env.Client.GetOperatorAccountID(), receiver).
+		AddNftTransfer(nftID.Nft(serials[9]), env.Client.GetOperatorAccountID(), receiver).
+		Execute(env.Client)
+	require.NoError(t, err)
+	_, err = tx.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	// reject the token with 11 token references - should fail with TOKEN_ID_LIST_SIZE_LIMIT_EXCEEDED
+	frozenTxn, err := NewTokenRejectTransaction().
+		SetOwnerID(receiver).
+		SetTokenIDs(tokenID).
+		SetNftIDs(nftID.Nft(serials[0]), nftID.Nft(serials[1]),
+			nftID.Nft(serials[2]), nftID.Nft(serials[3]),
+			nftID.Nft(serials[4]), nftID.Nft(serials[5]),
+			nftID.Nft(serials[6]), nftID.Nft(serials[7]),
+			nftID.Nft(serials[8]), nftID.Nft(serials[9])).
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+	tx, err = frozenTxn.Sign(key).Execute(env.Client)
+	require.NoError(t, err)
+	_, err = tx.SetValidateStatus(true).GetReceipt(env.Client)
+	require.ErrorContains(t, err, "TOKEN_REFERENCE_LIST_SIZE_LIMIT_EXCEEDED")
+
+}
+
+func TestIntegrationTokenRejectTransactionFailsWithInvalidSignature(t *testing.T) {
+	t.Parallel()
+	env := NewIntegrationTestEnv(t)
+
+	// create fungible token with treasury
+	tokenID := createFungibleTokenHelper(t, &env)
+
+	// create receiver account with auto associations
+	receiver, _ := createAccountHelper(t, &env)
+
+	// craete helper key
+	otherKey, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+
+	// transfer ft to the receiver
+	tx, err := NewTransferTransaction().
+		AddTokenTransfer(tokenID, env.Client.GetOperatorAccountID(), -10).
+		AddTokenTransfer(tokenID, receiver, 10).
+		Execute(env.Client)
+	require.NoError(t, err)
+	_, err = tx.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	// reject the token with different key - should fail with INVALID_SIGNATURE
+	frozenTxn, err := NewTokenRejectTransaction().
+		SetOwnerID(receiver).
+		SetTokenIDs(tokenID).
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+	tx, err = frozenTxn.Sign(otherKey).Execute(env.Client)
+	require.NoError(t, err)
+	_, err = tx.SetValidateStatus(true).GetReceipt(env.Client)
+	require.ErrorContains(t, err, "INVALID_SIGNATURE")
 }
