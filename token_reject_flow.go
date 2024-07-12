@@ -131,12 +131,13 @@ func (tx *TokenRejectFlow) SetGrpcDeadline(deadline *time.Duration) *TokenReject
 }
 
 func (tx *TokenRejectFlow) Freeze() (*TokenRejectFlow, error) {
-	return tx.FreezeWith(nil), nil
+	return tx.FreezeWith(nil)
 }
 
-func (tx *TokenRejectFlow) FreezeWith(client *Client) *TokenRejectFlow {
+func (tx *TokenRejectFlow) FreezeWith(client *Client) (*TokenRejectFlow, error) {
+	_, err := tx.Transaction.freezeWith(client, tx)
 	tx.freezeWithClient = client
-	return tx
+	return tx, err
 }
 
 // SetMaxTransactionFee sets the max transaction fee for this TokenRejectFlow.

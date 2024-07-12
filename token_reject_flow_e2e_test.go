@@ -62,7 +62,7 @@ func TestIntegrationTokenRejectFlowCanExecuteForFungibleToken(t *testing.T) {
 	require.NoError(t, err)
 
 	// reject the token + dissociate
-	frozenTxn := NewTokenRejectFlow().
+	frozenTxn, err := NewTokenRejectFlow().
 		SetOwnerID(receiver).
 		SetTokenIDs(tokenID1, tokenID2).
 		FreezeWith(env.Client)
@@ -147,7 +147,7 @@ func TestIntegrationTokenRejectFlowCanExecuteForNFT(t *testing.T) {
 	require.NoError(t, err)
 
 	// reject the token + dissociate
-	frozenTxn := NewTokenRejectFlow().
+	frozenTxn, err := NewTokenRejectFlow().
 		SetOwnerID(receiver).
 		SetNftIDs(nftID1.Nft(serials[0]), nftID1.Nft(serials[1]), nftID2.Nft(serials[0]), nftID2.Nft(serials[1])).
 		FreezeWith(env.Client)
