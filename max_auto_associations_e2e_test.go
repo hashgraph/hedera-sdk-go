@@ -42,6 +42,7 @@ func createNftHelper(t *testing.T, env *IntegrationTestEnv) TokenID {
 		SetFreezeKey(env.Client.GetOperatorPublicKey()).
 		SetSupplyKey(env.Client.GetOperatorPublicKey()).
 		SetMetadataKey(env.Client.GetOperatorPublicKey()).
+		SetPauseKey(env.Client.GetOperatorPublicKey()).
 		Execute(env.Client)
 
 	require.NoError(t, err)
@@ -61,6 +62,7 @@ func createFungibleTokenHelper(decimals uint, t *testing.T, env *IntegrationTest
 		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
 		SetFreezeKey(env.Client.GetOperatorPublicKey()).
+		SetPauseKey(env.Client.GetOperatorPublicKey()).
 		SetWipeKey(env.Client.GetOperatorPublicKey()).
 		SetSupplyKey(env.Client.GetOperatorPublicKey()).
 		SetFreezeDefault(false).

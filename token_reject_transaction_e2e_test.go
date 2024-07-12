@@ -795,7 +795,7 @@ func TestIntegrationTokenRejectTransactionFailsWhenOwnerHasNoBalance(t *testing.
 	_, err = frozenAssociate.Sign(key).Execute(env.Client)
 	require.NoError(t, err)
 
-	// reject the nft - should fail with INSUFFICIENT_TOKEN_BALANCE
+	// reject the nft - should fail with INVALID_OWNER_ID
 	frozenTxn, err = NewTokenRejectTransaction().
 		SetOwnerID(receiver).
 		SetNftIDs(nftID.Nft(serials[0])).
@@ -857,7 +857,7 @@ func TestIntegrationTokenRejectTransactionFailsWithInvalidToken(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
-	// reject the token with invalid token - should fail with INVALID_TOKEN_ID
+	// reject the token with invalid token - should fail with EMPTY_TOKEN_REFERENCE_LIST
 	frozenTxn, err := NewTokenRejectTransaction().
 		SetOwnerID(env.OperatorID).
 		FreezeWith(env.Client)
@@ -906,7 +906,7 @@ func TestIntegrationTokenRejectTransactionFailsWithReferenceSizeExceeded(t *test
 	_, err = tx.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	// reject the token with 11 token references - should fail with TOKEN_ID_LIST_SIZE_LIMIT_EXCEEDED
+	// reject the token with 11 token references - should fail with TOKEN_REFERENCE_LIST_SIZE_LIMIT_EXCEEDED
 	frozenTxn, err := NewTokenRejectTransaction().
 		SetOwnerID(receiver).
 		SetTokenIDs(tokenID).
