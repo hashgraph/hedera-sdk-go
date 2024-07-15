@@ -113,15 +113,6 @@ func _NftIDFromProtobuf(pb *services.NftID) NftID {
 	}
 }
 
-func _NftIDsFromTokenReferenceProtobuf(rejections []*services.TokenReference) []NftID {
-	nftIDs := make([]NftID, 0)
-
-	for _, v := range rejections {
-		nftIDs = append(nftIDs, _NftIDFromProtobuf(v.GetNft()))
-	}
-	return nftIDs
-}
-
 func (id NftID) _IsZero() bool {
 	return id.TokenID._IsZero() && id.SerialNumber == 0
 }

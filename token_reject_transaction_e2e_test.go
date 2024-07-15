@@ -61,7 +61,7 @@ func TestIntegrationTokenRejectTransactionCanExecuteForFungibleToken(t *testing.
 	resp, err := frozenTxn.Sign(key).Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	// verify the balance of the receiver is 0
@@ -117,7 +117,7 @@ func TestIntegrationTokenRejectTransactionCanExecuteForNFT(t *testing.T) {
 	resp, err := frozenTxn.Sign(key).Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	// verify the balance is decremented by 1
@@ -171,7 +171,7 @@ func TestIntegrationTokenRejectTransactionCanExecuteForFTAndNFTAtTheSameTime(t *
 		AddTokenTransfer(tokenID2, receiver, 10).
 		Execute(env.Client)
 	require.NoError(t, err)
-	_, err = tx1.GetReceipt(env.Client)
+	_, err = tx1.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	// transfer nfts to the receiver
@@ -182,7 +182,7 @@ func TestIntegrationTokenRejectTransactionCanExecuteForFTAndNFTAtTheSameTime(t *
 		AddNftTransfer(nftID2.Nft(serials[1]), env.Client.GetOperatorAccountID(), receiver).
 		Execute(env.Client)
 	require.NoError(t, err)
-	_, err = tx2.GetReceipt(env.Client)
+	_, err = tx2.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	// reject the token
@@ -195,7 +195,7 @@ func TestIntegrationTokenRejectTransactionCanExecuteForFTAndNFTAtTheSameTime(t *
 	resp, err := frozenTxn.Sign(key).Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	// verify the balance of the receiver
@@ -277,7 +277,7 @@ func TestIntegrationTokenRejectTransactionReceiverSigRequired(t *testing.T) {
 		FreezeWith(env.Client)
 	require.NoError(t, err)
 	transfer, err := frozenTransfer.Sign(treasuryKey).Execute(env.Client)
-	_, err = transfer.GetReceipt(env.Client)
+	_, err = transfer.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	// reject the token
@@ -289,7 +289,7 @@ func TestIntegrationTokenRejectTransactionReceiverSigRequired(t *testing.T) {
 	resp, err := frozenTxn.Sign(key).Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	// verify the balance is decremented by 1
@@ -345,7 +345,7 @@ func TestIntegrationTokenRejectTransactionReceiverSigRequired(t *testing.T) {
 	resp, err = frozenTxn.Sign(key).Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	// verify the balance of the receiver is 0
@@ -402,7 +402,7 @@ func TestIntegrationTokenRejectTransactionTokenFrozen(t *testing.T) {
 	resp, err := frozenTxn.Sign(key).Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.ErrorContains(t, err, "ACCOUNT_FROZEN_FOR_TOKEN")
 
 	// same test with fungible token
@@ -433,7 +433,7 @@ func TestIntegrationTokenRejectTransactionTokenFrozen(t *testing.T) {
 	resp, err = frozenTxn.Sign(key).Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.ErrorContains(t, err, "ACCOUNT_FROZEN_FOR_TOKEN")
 
 }
@@ -480,7 +480,7 @@ func TestIntegrationTokenRejectTransactionTokenPaused(t *testing.T) {
 	resp, err := frozenTxn.Sign(key).Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.ErrorContains(t, err, "TOKEN_IS_PAUSED")
 
 	// same test with fungible token
@@ -511,7 +511,7 @@ func TestIntegrationTokenRejectTransactionTokenPaused(t *testing.T) {
 	resp, err = frozenTxn.Sign(key).Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.ErrorContains(t, err, "TOKEN_IS_PAUSED")
 }
 
@@ -684,7 +684,7 @@ func TestIntegrationTokenRejectTransactionFailsWhenRejectingNFTWithTokenID(t *te
 	resp, err := frozenTxn.Sign(key).Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.ErrorContains(t, err, "ACCOUNT_AMOUNT_TRANSFERS_ONLY_ALLOWED_FOR_FUNGIBLE_COMMON")
 }
 

@@ -80,7 +80,7 @@ func createAccountHelper(t *testing.T, env *IntegrationTestEnv, maxAutoAssociati
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
-	accountCreate1, err := NewAccountCreateTransaction().
+	accountCreate, err := NewAccountCreateTransaction().
 		SetKey(newKey).
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetInitialBalance(NewHbar(3)).
@@ -88,7 +88,7 @@ func createAccountHelper(t *testing.T, env *IntegrationTestEnv, maxAutoAssociati
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := accountCreate1.SetValidateStatus(true).GetReceipt(env.Client)
+	receipt, err := accountCreate.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 	return *receipt.AccountID, newKey
 }

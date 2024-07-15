@@ -109,21 +109,3 @@ func TestUnitTokenIDProtobuf(t *testing.T) {
 
 	require.Equal(t, id, *pbFrom)
 }
-func TestUnitTokenIDProtobufReference(t *testing.T) {
-	t.Parallel()
-	id, err := TokenIDFromString("0.0.434")
-	require.NoError(t, err)
-
-	tokenReference := &services.TokenReference_FungibleToken{
-		FungibleToken: id._ToProtobuf(),
-	}
-	pb := &services.TokenReference{
-		TokenIdentifier: tokenReference,
-	}
-
-	rejections := []*services.TokenReference{pb}
-
-	pbFrom := _TokenIDsFromTokenReferenceProtobuf(rejections)
-
-	require.Equal(t, id, pbFrom[0])
-}

@@ -58,12 +58,20 @@ func NewTokenRejectTransaction() *TokenRejectTransaction {
 }
 
 func _TokenRejectTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *TokenRejectTransaction {
-	return &TokenRejectTransaction{
+	rejectTransaction := &TokenRejectTransaction{
 		Transaction: tx,
 		ownerID:     _AccountIDFromProtobuf(pb.GetTokenReject().Owner),
-		tokenIDs:    _TokenIDsFromTokenReferenceProtobuf(pb.GetTokenReject().Rejections),
-		nftIDs:      _NftIDsFromTokenReferenceProtobuf(pb.GetTokenReject().Rejections),
 	}
+
+	for _, rejection := range pb.GetTokenReject().Rejections {
+		if rejection.GetFungibleToken() != nil {
+			rejectTransaction.AddTokenID(*_TokenIDFromProtobuf(rejection.GetFungibleToken()))
+		} else if rejection.GetNft() != nil {
+			rejectTransaction.AddNftID(_NftIDFromProtobuf(rejection.GetNft()))
+		}
+	}
+
+	return rejectTransaction
 }
 
 // SetOwnerID Sets the account which owns the tokens to be rejected
@@ -311,28 +319,24 @@ func (tx *TokenRejectTransaction) buildProtoBody() *services.TokenRejectTransact
 		body.Owner = tx.ownerID._ToProtobuf()
 	}
 
-	if len(tx.tokenIDs) > 0 {
-		for _, tokenID := range tx.tokenIDs {
-			tokenReference := &services.TokenReference_FungibleToken{
-				FungibleToken: tokenID._ToProtobuf(),
-			}
-
-			body.Rejections = append(body.Rejections, &services.TokenReference{
-				TokenIdentifier: tokenReference,
-			})
+	for _, tokenID := range tx.tokenIDs {
+		tokenReference := &services.TokenReference_FungibleToken{
+			FungibleToken: tokenID._ToProtobuf(),
 		}
+
+		body.Rejections = append(body.Rejections, &services.TokenReference{
+			TokenIdentifier: tokenReference,
+		})
 	}
 
-	if len(tx.nftIDs) > 0 {
-		for _, nftID := range tx.nftIDs {
-			tokenReference := &services.TokenReference_Nft{
-				Nft: nftID._ToProtobuf(),
-			}
-
-			body.Rejections = append(body.Rejections, &services.TokenReference{
-				TokenIdentifier: tokenReference,
-			})
+	for _, nftID := range tx.nftIDs {
+		tokenReference := &services.TokenReference_Nft{
+			Nft: nftID._ToProtobuf(),
 		}
+
+		body.Rejections = append(body.Rejections, &services.TokenReference{
+			TokenIdentifier: tokenReference,
+		})
 	}
 
 	return body

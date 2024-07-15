@@ -61,15 +61,6 @@ func (id *TokenID) _ToProtobuf() *services.TokenID {
 	}
 }
 
-func _TokenIDsFromTokenReferenceProtobuf(rejections []*services.TokenReference) []TokenID {
-	tokenIDs := make([]TokenID, 0)
-
-	for _, v := range rejections {
-		tokenIDs = append(tokenIDs, *_TokenIDFromProtobuf(v.GetFungibleToken()))
-	}
-	return tokenIDs
-}
-
 // String returns a string representation of the TokenID formatted as `Shard.Realm.TokenID` (for example "0.0.3")
 func (id TokenID) String() string {
 	return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Token)
