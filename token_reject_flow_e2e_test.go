@@ -182,3 +182,56 @@ func TestIntegrationTokenRejectFlowCanExecuteForNFT(t *testing.T) {
 	_, err = tx.SetValidateStatus(true).GetReceipt(env.Client)
 	require.ErrorContains(t, err, "TOKEN_NOT_ASSOCIATED_TO_ACCOUNT")
 }
+
+func TestIntegrationTokenRejectFlowFailsWhenNotRejectingAllNFTs(t *testing.T) {
+	t.Parallel()
+	env := NewIntegrationTestEnv(t)
+
+	// create nft collections with treasury
+	nftID1 := createNftHelper(t, &env)
+	nftID2 := createNftHelper(t, &env)
+
+	// mint
+	mint, err := NewTokenMintTransaction().SetTokenID(nftID1).SetMetadatas(initialMetadataList).Execute(env.Client)
+	require.NoError(t, err)
+	receipt, err := mint.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+	mint, err = NewTokenMintTransaction().SetTokenID(nftID2).SetMetadatas(initialMetadataList).Execute(env.Client)
+	require.NoError(t, err)
+	receipt, err = mint.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	serials := receipt.SerialNumbers
+
+	// create receiver account
+	receiver, key := createAccountHelper(t, &env, 0)
+
+	// associate the tokens with the receiver
+	frozenAssociateTxn, err := NewTokenAssociateTransaction().SetAccountID(receiver).AddTokenID(nftID1).AddTokenID(nftID2).FreezeWith(env.Client)
+	require.NoError(t, err)
+	resp, err := frozenAssociateTxn.Sign(key).Execute(env.Client)
+	require.NoError(t, err)
+
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	// transfer nfts to the receiver
+	tx, err := NewTransferTransaction().
+		AddNftTransfer(nftID1.Nft(serials[0]), env.Client.GetOperatorAccountID(), receiver).
+		AddNftTransfer(nftID1.Nft(serials[1]), env.Client.GetOperatorAccountID(), receiver).
+		AddNftTransfer(nftID2.Nft(serials[0]), env.Client.GetOperatorAccountID(), receiver).
+		AddNftTransfer(nftID2.Nft(serials[1]), env.Client.GetOperatorAccountID(), receiver).
+		Execute(env.Client)
+	require.NoError(t, err)
+	_, err = tx.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	// reject the token + dissociate
+	frozenTxn, err := NewTokenRejectFlow().
+		SetOwnerID(receiver).
+		SetNftIDs(nftID1.Nft(serials[0]), nftID1.Nft(serials[1]), nftID2.Nft(serials[0])).
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+	resp, err = frozenTxn.Sign(key).Execute(env.Client)
+	require.ErrorContains(t, err, "ACCOUNT_STILL_OWNS_NFTS")
+}
