@@ -42,6 +42,7 @@ func createNftHelper(t *testing.T, env *IntegrationTestEnv) TokenID {
 		SetFreezeKey(env.Client.GetOperatorPublicKey()).
 		SetSupplyKey(env.Client.GetOperatorPublicKey()).
 		SetMetadataKey(env.Client.GetOperatorPublicKey()).
+		SetPauseKey(env.Client.GetOperatorPublicKey()).
 		Execute(env.Client)
 
 	require.NoError(t, err)
@@ -61,6 +62,7 @@ func createFungibleTokenHelper(decimals uint, t *testing.T, env *IntegrationTest
 		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
 		SetFreezeKey(env.Client.GetOperatorPublicKey()).
+		SetPauseKey(env.Client.GetOperatorPublicKey()).
 		SetWipeKey(env.Client.GetOperatorPublicKey()).
 		SetSupplyKey(env.Client.GetOperatorPublicKey()).
 		SetFreezeDefault(false).
@@ -78,7 +80,7 @@ func createAccountHelper(t *testing.T, env *IntegrationTestEnv, maxAutoAssociati
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
-	accountCreate1, err := NewAccountCreateTransaction().
+	accountCreate, err := NewAccountCreateTransaction().
 		SetKey(newKey).
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetInitialBalance(NewHbar(3)).
@@ -86,7 +88,7 @@ func createAccountHelper(t *testing.T, env *IntegrationTestEnv, maxAutoAssociati
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := accountCreate1.SetValidateStatus(true).GetReceipt(env.Client)
+	receipt, err := accountCreate.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 	return *receipt.AccountID, newKey
 }

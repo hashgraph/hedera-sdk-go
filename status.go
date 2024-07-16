@@ -330,6 +330,19 @@ const (
 	StatusInvalidGossipCaeCertificate                              Status = 344
 	StatusInvalidGrpcCertificate                                   Status = 345
 	StatusInvalidMaxAutoAssociations                               Status = 346
+	StatusMaxNodesCreated                                          Status = 347
+	StatusIpFQDNCannotBeSetForSameEndpoint                         Status = 348
+	StatusGossipEndpointCannotHaveFQDN                             Status = 349
+	StatusFQDNSizeTooLarge                                         Status = 350
+	StatusInvalidEndpoint                                          Status = 351
+	StatusGossipEndpointsExceededLimit                             Status = 352
+	StatusTokenReferenceRepeated                                   Status = 353
+	StatusInvalidOwnerID                                           Status = 354
+	StatusTokenReferenceListSizeLimitExceeded                      Status = 355
+	StatusInvalidIPV4Address                                       Status = 356
+	StatusServiceEndpointsExceededLimit                            Status = 357
+	StatusEmptyTokenReferenceList                                  Status = 358
+	StatusUpdateNodeAccountNotAllowed                              Status = 359
 )
 
 // String() returns a string representation of the status
@@ -945,6 +958,32 @@ func (status Status) String() string { // nolint
 		return "INVALID_GRPC_CERTIFICATE"
 	case StatusInvalidMaxAutoAssociations:
 		return "INVALID_MAX_AUTO_ASSOCIATIONS"
+	case StatusMaxNodesCreated:
+		return "MAX_NODES_CREATED"
+	case StatusIpFQDNCannotBeSetForSameEndpoint:
+		return "IP_FQDN_CANNOT_BE_SET_FOR_SAME_ENDPOINT"
+	case StatusGossipEndpointCannotHaveFQDN:
+		return "GOSSIP_ENDPOINT_CANNOT_HAVE_FQDN"
+	case StatusFQDNSizeTooLarge:
+		return "FQDN_SIZE_TOO_LARGE"
+	case StatusInvalidEndpoint:
+		return "INVALID_ENDPOINT"
+	case StatusGossipEndpointsExceededLimit:
+		return "GOSSIP_ENDPOINTS_EXCEEDED_LIMIT"
+	case StatusTokenReferenceRepeated:
+		return "TOKEN_REFERENCE_REPEATED"
+	case StatusInvalidOwnerID:
+		return "INVALID_OWNER_ID"
+	case StatusTokenReferenceListSizeLimitExceeded:
+		return "TOKEN_REFERENCE_LIST_SIZE_LIMIT_EXCEEDED"
+	case StatusInvalidIPV4Address:
+		return "INVALID_IPV4_ADDRESS"
+	case StatusServiceEndpointsExceededLimit:
+		return "SERVICE_ENDPOINTS_EXCEEDED_LIMIT"
+	case StatusEmptyTokenReferenceList:
+		return "EMPTY_TOKEN_REFERENCE_LIST"
+	case StatusUpdateNodeAccountNotAllowed:
+		return "UPDATE_NODE_ACCOUNT_NOT_ALLOWED"
 	}
 
 	panic(fmt.Sprintf("unreachable: Status.String() switch statement is non-exhaustive. Status: %v", uint32(status)))

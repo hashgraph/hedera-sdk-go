@@ -1,0 +1,237 @@
+//go:build all || e2e
+// +build all e2e
+
+package hedera
+
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+)
+
+/*-
+ *
+ * Hedera Go SDK
+ *
+ * Copyright (C) 2020 - 2024 Hedera Hashgraph, LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
+func TestIntegrationTokenRejectFlowCanExecuteForFungibleToken(t *testing.T) {
+	t.Parallel()
+	env := NewIntegrationTestEnv(t)
+
+	// create fungible tokens with treasury
+	tokenID1 := createFungibleTokenHelper(18, t, &env)
+	tokenID2 := createFungibleTokenHelper(18, t, &env)
+
+	// create receiver account with 0 auto associations
+	receiver, key := createAccountHelper(t, &env, 0)
+
+	// associate the tokens with the receiver
+	frozenAssociateTxn, err := NewTokenAssociateTransaction().SetAccountID(receiver).AddTokenID(tokenID1).AddTokenID(tokenID2).FreezeWith(env.Client)
+	require.NoError(t, err)
+	resp, err := frozenAssociateTxn.Sign(key).Execute(env.Client)
+	require.NoError(t, err)
+
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	// transfer fts to the receiver
+	tx, err := NewTransferTransaction().
+		AddTokenTransfer(tokenID1, env.Client.GetOperatorAccountID(), -10).
+		AddTokenTransfer(tokenID1, receiver, 10).
+		AddTokenTransfer(tokenID2, env.Client.GetOperatorAccountID(), -10).
+		AddTokenTransfer(tokenID2, receiver, 10).
+		Execute(env.Client)
+	require.NoError(t, err)
+	_, err = tx.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	// reject the token + dissociate
+	frozenTxn, err := NewTokenRejectFlow().
+		SetOwnerID(receiver).
+		SetTokenIDs(tokenID1, tokenID2).
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+	resp, err = frozenTxn.Sign(key).Execute(env.Client)
+	require.NoError(t, err)
+
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	// verify the balance of the receiver is 0
+	tokenBalance, err := NewAccountBalanceQuery().SetAccountID(receiver).Execute(env.Client)
+	require.NoError(t, err)
+	assert.Zero(t, tokenBalance.Tokens.Get(tokenID1))
+	assert.Zero(t, tokenBalance.Tokens.Get(tokenID2))
+
+	// verify the tokens are transferred back to the treasury
+	tokenBalance, err = NewAccountBalanceQuery().SetAccountID(env.OperatorID).Execute(env.Client)
+	require.NoError(t, err)
+	assert.Equal(t, uint64(1_000_000), tokenBalance.Tokens.Get(tokenID1))
+	assert.Equal(t, uint64(1_000_000), tokenBalance.Tokens.Get(tokenID2))
+
+	// verify the tokens are not associated with the receiver
+	tx, err = NewTransferTransaction().
+		AddTokenTransfer(tokenID1, env.Client.GetOperatorAccountID(), -10).
+		AddTokenTransfer(tokenID1, receiver, 10).
+		Execute(env.Client)
+	require.NoError(t, err)
+	_, err = tx.SetValidateStatus(true).GetReceipt(env.Client)
+	require.ErrorContains(t, err, "TOKEN_NOT_ASSOCIATED_TO_ACCOUNT")
+
+	tx, err = NewTransferTransaction().
+		AddTokenTransfer(tokenID2, env.Client.GetOperatorAccountID(), -10).
+		AddTokenTransfer(tokenID2, receiver, 10).
+		Execute(env.Client)
+	require.NoError(t, err)
+	_, err = tx.SetValidateStatus(true).GetReceipt(env.Client)
+	require.ErrorContains(t, err, "TOKEN_NOT_ASSOCIATED_TO_ACCOUNT")
+}
+
+func TestIntegrationTokenRejectFlowCanExecuteForNFT(t *testing.T) {
+	t.Parallel()
+	env := NewIntegrationTestEnv(t)
+
+	// create nft collections with treasury
+	nftID1 := createNftHelper(t, &env)
+	nftID2 := createNftHelper(t, &env)
+
+	// mint
+	mint, err := NewTokenMintTransaction().SetTokenID(nftID1).SetMetadatas(initialMetadataList).Execute(env.Client)
+	require.NoError(t, err)
+	receipt, err := mint.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+	mint, err = NewTokenMintTransaction().SetTokenID(nftID2).SetMetadatas(initialMetadataList).Execute(env.Client)
+	require.NoError(t, err)
+	receipt, err = mint.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	serials := receipt.SerialNumbers
+
+	// create receiver account
+	receiver, key := createAccountHelper(t, &env, 0)
+
+	// associate the tokens with the receiver
+	frozenAssociateTxn, err := NewTokenAssociateTransaction().SetAccountID(receiver).AddTokenID(nftID1).AddTokenID(nftID2).FreezeWith(env.Client)
+	require.NoError(t, err)
+	resp, err := frozenAssociateTxn.Sign(key).Execute(env.Client)
+	require.NoError(t, err)
+
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	// transfer nfts to the receiver
+	tx, err := NewTransferTransaction().
+		AddNftTransfer(nftID1.Nft(serials[0]), env.Client.GetOperatorAccountID(), receiver).
+		AddNftTransfer(nftID1.Nft(serials[1]), env.Client.GetOperatorAccountID(), receiver).
+		AddNftTransfer(nftID2.Nft(serials[0]), env.Client.GetOperatorAccountID(), receiver).
+		AddNftTransfer(nftID2.Nft(serials[1]), env.Client.GetOperatorAccountID(), receiver).
+		Execute(env.Client)
+	require.NoError(t, err)
+	_, err = tx.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	// reject the token + dissociate
+	frozenTxn, err := NewTokenRejectFlow().
+		SetOwnerID(receiver).
+		SetNftIDs(nftID1.Nft(serials[0]), nftID1.Nft(serials[1]), nftID2.Nft(serials[0]), nftID2.Nft(serials[1])).
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+	resp, err = frozenTxn.Sign(key).Execute(env.Client)
+	require.NoError(t, err)
+
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	// verify the balance is decremented by 2
+	tokenBalance, err := NewAccountBalanceQuery().SetAccountID(receiver).Execute(env.Client)
+	require.NoError(t, err)
+	assert.Equal(t, uint64(0), tokenBalance.Tokens.Get(nftID1))
+	assert.Equal(t, uint64(0), tokenBalance.Tokens.Get(nftID2))
+
+	// verify the token is transferred back to the treasury
+	nftBalance, err := NewTokenNftInfoQuery().SetNftID(nftID1.Nft(serials[1])).Execute(env.Client)
+	require.NoError(t, err)
+	assert.Equal(t, env.OperatorID, nftBalance[0].AccountID)
+
+	nftBalance, err = NewTokenNftInfoQuery().SetNftID(nftID2.Nft(serials[1])).Execute(env.Client)
+	require.NoError(t, err)
+	assert.Equal(t, env.OperatorID, nftBalance[0].AccountID)
+
+	// verify the tokens are not associated with the receiver
+	tx, err = NewTransferTransaction().
+		AddNftTransfer(nftID1.Nft(serials[0]), env.Client.GetOperatorAccountID(), receiver).
+		AddNftTransfer(nftID1.Nft(serials[1]), env.Client.GetOperatorAccountID(), receiver).
+		Execute(env.Client)
+	require.NoError(t, err)
+	_, err = tx.SetValidateStatus(true).GetReceipt(env.Client)
+	require.ErrorContains(t, err, "TOKEN_NOT_ASSOCIATED_TO_ACCOUNT")
+}
+
+func TestIntegrationTokenRejectFlowFailsWhenNotRejectingAllNFTs(t *testing.T) {
+	t.Parallel()
+	env := NewIntegrationTestEnv(t)
+
+	// create nft collections with treasury
+	nftID1 := createNftHelper(t, &env)
+	nftID2 := createNftHelper(t, &env)
+
+	// mint
+	mint, err := NewTokenMintTransaction().SetTokenID(nftID1).SetMetadatas(initialMetadataList).Execute(env.Client)
+	require.NoError(t, err)
+	receipt, err := mint.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+	mint, err = NewTokenMintTransaction().SetTokenID(nftID2).SetMetadatas(initialMetadataList).Execute(env.Client)
+	require.NoError(t, err)
+	receipt, err = mint.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	serials := receipt.SerialNumbers
+
+	// create receiver account
+	receiver, key := createAccountHelper(t, &env, 0)
+
+	// associate the tokens with the receiver
+	frozenAssociateTxn, err := NewTokenAssociateTransaction().SetAccountID(receiver).AddTokenID(nftID1).AddTokenID(nftID2).FreezeWith(env.Client)
+	require.NoError(t, err)
+	resp, err := frozenAssociateTxn.Sign(key).Execute(env.Client)
+	require.NoError(t, err)
+
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	// transfer nfts to the receiver
+	tx, err := NewTransferTransaction().
+		AddNftTransfer(nftID1.Nft(serials[0]), env.Client.GetOperatorAccountID(), receiver).
+		AddNftTransfer(nftID1.Nft(serials[1]), env.Client.GetOperatorAccountID(), receiver).
+		AddNftTransfer(nftID2.Nft(serials[0]), env.Client.GetOperatorAccountID(), receiver).
+		AddNftTransfer(nftID2.Nft(serials[1]), env.Client.GetOperatorAccountID(), receiver).
+		Execute(env.Client)
+	require.NoError(t, err)
+	_, err = tx.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	// reject the token + dissociate
+	frozenTxn, err := NewTokenRejectFlow().
+		SetOwnerID(receiver).
+		SetNftIDs(nftID1.Nft(serials[0]), nftID1.Nft(serials[1]), nftID2.Nft(serials[0])).
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+	resp, err = frozenTxn.Sign(key).Execute(env.Client)
+	require.ErrorContains(t, err, "ACCOUNT_STILL_OWNS_NFTS")
+}
