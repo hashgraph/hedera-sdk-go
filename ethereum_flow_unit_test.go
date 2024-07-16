@@ -72,22 +72,7 @@ func TestUnitEthereumFlowMock(t *testing.T) {
 		}
 	}
 	responses := [][]interface{}{{
-		call,
-		&services.Response{
-			Response: &services.Response_TransactionGetReceipt{
-				TransactionGetReceipt: &services.TransactionGetReceiptResponse{
-					Header: &services.ResponseHeader{
-						Cost:                        1234,
-						NodeTransactionPrecheckCode: services.ResponseCodeEnum_OK,
-						ResponseType:                services.ResponseType_COST_ANSWER,
-					},
-					Receipt: &services.TransactionReceipt{
-						Status: services.ResponseCodeEnum_SUCCESS,
-					},
-				},
-			},
-		},
-		&services.Response{
+		call, &services.Response{
 			Response: &services.Response_TransactionGetReceipt{
 				TransactionGetReceipt: &services.TransactionGetReceiptResponse{
 					Header: &services.ResponseHeader{
@@ -157,22 +142,7 @@ func TestUnitEthereumFlowMockEthereumDateBytes(t *testing.T) {
 		}
 	}
 	responses := [][]interface{}{{
-		call,
-		&services.Response{
-			Response: &services.Response_TransactionGetReceipt{
-				TransactionGetReceipt: &services.TransactionGetReceiptResponse{
-					Header: &services.ResponseHeader{
-						Cost:                        1234,
-						NodeTransactionPrecheckCode: services.ResponseCodeEnum_OK,
-						ResponseType:                services.ResponseType_COST_ANSWER,
-					},
-					Receipt: &services.TransactionReceipt{
-						Status: services.ResponseCodeEnum_SUCCESS,
-					},
-				},
-			},
-		},
-		&services.Response{
+		call, &services.Response{
 			Response: &services.Response_TransactionGetReceipt{
 				TransactionGetReceipt: &services.TransactionGetReceiptResponse{
 					Header: &services.ResponseHeader{

@@ -90,11 +90,8 @@ func TestUnitAccountCreateTransactionMock(t *testing.T) {
 			Response: &services.Response_TransactionGetReceipt{
 				TransactionGetReceipt: &services.TransactionGetReceiptResponse{
 					Header: &services.ResponseHeader{
-						Cost:         1234,
+						Cost:         0,
 						ResponseType: services.ResponseType_COST_ANSWER,
-					},
-					Receipt: &services.TransactionReceipt{
-						Status: services.ResponseCodeEnum_SUCCESS,
 					},
 				},
 			},

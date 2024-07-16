@@ -128,32 +128,6 @@ func TestUnitTransactionPlatformNotActiveGracefulHandling(t *testing.T) {
 				TransactionGetReceipt: &services.TransactionGetReceiptResponse{
 					Header: &services.ResponseHeader{
 						Cost:         0,
-						ResponseType: services.ResponseType_COST_ANSWER,
-					},
-					Receipt: &services.TransactionReceipt{
-						Status: services.ResponseCodeEnum_PLATFORM_NOT_ACTIVE,
-					},
-				},
-			},
-		},
-		&services.Response{
-			Response: &services.Response_TransactionGetReceipt{
-				TransactionGetReceipt: &services.TransactionGetReceiptResponse{
-					Header: &services.ResponseHeader{
-						Cost:         1234,
-						ResponseType: services.ResponseType_COST_ANSWER,
-					},
-					Receipt: &services.TransactionReceipt{
-						Status: services.ResponseCodeEnum_SUCCESS,
-					},
-				},
-			},
-		},
-		&services.Response{
-			Response: &services.Response_TransactionGetReceipt{
-				TransactionGetReceipt: &services.TransactionGetReceiptResponse{
-					Header: &services.ResponseHeader{
-						Cost:         0,
 						ResponseType: services.ResponseType_ANSWER_ONLY,
 					},
 					Receipt: &services.TransactionReceipt{
@@ -263,19 +237,6 @@ func TestUnitTransactionReceiptUknown(t *testing.T) {
 			Response: &services.Response_TransactionGetReceipt{
 				TransactionGetReceipt: &services.TransactionGetReceiptResponse{
 					Header: &services.ResponseHeader{
-						Cost:         1234,
-						ResponseType: services.ResponseType_COST_ANSWER,
-					},
-					Receipt: &services.TransactionReceipt{
-						Status: services.ResponseCodeEnum_SUCCESS,
-					},
-				},
-			},
-		},
-		&services.Response{
-			Response: &services.Response_TransactionGetReceipt{
-				TransactionGetReceipt: &services.TransactionGetReceiptResponse{
-					Header: &services.ResponseHeader{
 						Cost:         0,
 						ResponseType: services.ResponseType_ANSWER_ONLY,
 					},
@@ -306,19 +267,6 @@ func TestUnitTransactionReceiptToJson(t *testing.T) {
 	responses := [][]interface{}{{
 		&services.TransactionResponse{
 			NodeTransactionPrecheckCode: services.ResponseCodeEnum_OK,
-		},
-		&services.Response{
-			Response: &services.Response_TransactionGetReceipt{
-				TransactionGetReceipt: &services.TransactionGetReceiptResponse{
-					Header: &services.ResponseHeader{
-						Cost:         1234,
-						ResponseType: services.ResponseType_COST_ANSWER,
-					},
-					Receipt: &services.TransactionReceipt{
-						Status: services.ResponseCodeEnum_SUCCESS,
-					},
-				},
-			},
 		},
 		&services.Response{
 			Response: &services.Response_TransactionGetReceipt{

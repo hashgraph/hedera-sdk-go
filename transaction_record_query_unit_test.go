@@ -134,19 +134,6 @@ func TestUnitTransactionRecordPlatformNotActiveGracefulHandling(t *testing.T) {
 			Response: &services.Response_TransactionGetReceipt{
 				TransactionGetReceipt: &services.TransactionGetReceiptResponse{
 					Header: &services.ResponseHeader{
-						Cost:         1234,
-						ResponseType: services.ResponseType_COST_ANSWER,
-					},
-					Receipt: &services.TransactionReceipt{
-						Status: services.ResponseCodeEnum_SUCCESS,
-					},
-				},
-			},
-		},
-		&services.Response{
-			Response: &services.Response_TransactionGetReceipt{
-				TransactionGetReceipt: &services.TransactionGetReceiptResponse{
-					Header: &services.ResponseHeader{
 						Cost:         0,
 						ResponseType: services.ResponseType_ANSWER_ONLY,
 					},
@@ -160,7 +147,8 @@ func TestUnitTransactionRecordPlatformNotActiveGracefulHandling(t *testing.T) {
 			Response: &services.Response_TransactionGetRecord{
 				TransactionGetRecord: &services.TransactionGetRecordResponse{
 					Header: &services.ResponseHeader{
-						ResponseType: services.ResponseType_COST_ANSWER,
+						Cost:         0,
+						ResponseType: services.ResponseType_ANSWER_ONLY,
 					},
 					TransactionRecord: &services.TransactionRecord{
 						Receipt: &services.TransactionReceipt{
@@ -174,8 +162,8 @@ func TestUnitTransactionRecordPlatformNotActiveGracefulHandling(t *testing.T) {
 			Response: &services.Response_TransactionGetRecord{
 				TransactionGetRecord: &services.TransactionGetRecordResponse{
 					Header: &services.ResponseHeader{
-						Cost:         1234,
-						ResponseType: services.ResponseType_COST_ANSWER,
+						Cost:         0,
+						ResponseType: services.ResponseType_ANSWER_ONLY,
 					},
 					TransactionRecord: &services.TransactionRecord{
 						Receipt: &services.TransactionReceipt{
