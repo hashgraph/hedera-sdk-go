@@ -150,7 +150,6 @@ func TestUnitTransactionPlatformNotActiveGracefulHandling(t *testing.T) {
 			},
 		},
 	}}
-
 	client, server := NewMockClientAndServer(responses)
 	defer server.Close()
 	tx, err := NewTransferTransaction().

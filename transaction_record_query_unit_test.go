@@ -251,19 +251,6 @@ func TestUnitTransactionRecordReceiptNotFound(t *testing.T) {
 				},
 			},
 		},
-		&services.Response{
-			Response: &services.Response_TransactionGetReceipt{
-				TransactionGetReceipt: &services.TransactionGetReceiptResponse{
-					Header: &services.ResponseHeader{
-						Cost:         0,
-						ResponseType: services.ResponseType_ANSWER_ONLY,
-					},
-					Receipt: &services.TransactionReceipt{
-						Status: services.ResponseCodeEnum_RECEIPT_NOT_FOUND,
-					},
-				},
-			},
-		},
 	}}
 	client, server := NewMockClientAndServer(responses)
 	defer server.Close()
