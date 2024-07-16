@@ -1,3 +1,9 @@
+## v2.41.0
+
+### Added
+
+-  Modified `AccountUpdateTransaction` to allow `maxAutomaticTokenAssociations` to support `-1` as a valid value
+
 ## v2.40.0
 
 ### Added

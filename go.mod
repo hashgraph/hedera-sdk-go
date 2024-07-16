@@ -6,16 +6,16 @@ require (
 	github.com/btcsuite/btcd/btcec/v2 v2.3.3
 	github.com/cenkalti/backoff/v4 v4.3.0
 	github.com/ethereum/go-ethereum v1.13.15
-	github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20240613101214-39d5b1374695
+	github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20240704081952-395063202d11
 	github.com/json-iterator/go v1.1.12
 	github.com/pkg/errors v0.9.1
 	github.com/rs/zerolog v1.33.0
 	github.com/stretchr/testify v1.8.4
 	github.com/tyler-smith/go-bip39 v1.1.0
 	github.com/youmark/pkcs8 v0.0.0-20201027041543-1326539a0a0a
-	golang.org/x/crypto v0.24.0
+	golang.org/x/crypto v0.25.0
 	golang.org/x/text v0.16.0
-	google.golang.org/grpc v1.64.0
+	google.golang.org/grpc v1.65.0
 	google.golang.org/protobuf v1.34.2
 )
 
@@ -46,10 +46,10 @@ require (
 	github.com/supranational/blst v0.3.11 // indirect
 	github.com/syndtr/goleveldb v1.0.1-0.20220614013038-64ee5596c38a // indirect
 	golang.org/x/exp v0.0.0-20240416160154-fe59bbe5cc7f // indirect
-	golang.org/x/net v0.23.0 // indirect
+	golang.org/x/net v0.25.0 // indirect
 	golang.org/x/sync v0.7.0 // indirect
-	golang.org/x/sys v0.21.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20240415180920-8c6c420018be // indirect
+	golang.org/x/sys v0.22.0 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240528184218-531527333157 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	rsc.io/tmplfunc v0.0.3 // indirect
 )
