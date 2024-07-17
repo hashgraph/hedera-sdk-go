@@ -30,52 +30,6 @@ import (
  *
  */
 
-var initialMetadataList = [][]byte{{1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}}
-
-func createNftHelper(t *testing.T, env *IntegrationTestEnv) TokenID {
-	tokenCreate, err := NewTokenCreateTransaction().
-		SetTokenName("Example Collection").SetTokenSymbol("ABC").
-		SetTokenType(TokenTypeNonFungibleUnique).SetDecimals(0).
-		SetInitialSupply(0).SetMaxSupply(10).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).SetSupplyType(TokenSupplyTypeFinite).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeKey(env.Client.GetOperatorPublicKey()).
-		SetSupplyKey(env.Client.GetOperatorPublicKey()).
-		SetMetadataKey(env.Client.GetOperatorPublicKey()).
-		SetPauseKey(env.Client.GetOperatorPublicKey()).
-		Execute(env.Client)
-
-	require.NoError(t, err)
-	receipt, err := tokenCreate.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
-	return *receipt.TokenID
-}
-
-func createFungibleTokenHelper(decimals uint, t *testing.T, env *IntegrationTestEnv) TokenID {
-	tokenCreate, err := NewTokenCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetTokenMemo("asdf").
-		SetDecimals(decimals).
-		SetInitialSupply(1_000_000).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeKey(env.Client.GetOperatorPublicKey()).
-		SetPauseKey(env.Client.GetOperatorPublicKey()).
-		SetWipeKey(env.Client.GetOperatorPublicKey()).
-		SetSupplyKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeDefault(false).
-		Execute(env.Client)
-	require.NoError(t, err)
-
-	receipt, err := tokenCreate.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
-
-	return *receipt.TokenID
-
-}
-
 func createAccountHelper(t *testing.T, env *IntegrationTestEnv, maxAutoAssociations int32) (AccountID, PrivateKey) {
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -99,10 +53,12 @@ func TestLimitedMaxAutoAssociationsFungibleTokensFlow(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	// create token1
-	tokenID1 := createFungibleTokenHelper(3, t, &env)
+	tokenID1, err := createFungibleToken(t, &env)
+	require.NoError(t, err)
 
 	// create token2
-	tokenID2 := createFungibleTokenHelper(3, t, &env)
+	tokenID2, err := createFungibleToken(t, &env)
+	require.NoError(t, err)
 
 	// account create with 1 max auto associations
 	receiver, _ := createAccountHelper(t, &env, 1)
@@ -133,13 +89,15 @@ func TestLimitedMaxAutoAssociationsNFTsFlow(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	// create 2 NFT collections and mint 10 NFTs for each collection
-	nftID1 := createNftHelper(t, &env)
+	nftID1, err := createNft(t, &env)
+	require.NoError(t, err)
 
 	mint, err := NewTokenMintTransaction().SetTokenID(nftID1).SetMetadatas(initialMetadataList).Execute(env.Client)
 	receipt, err := mint.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	nftID2 := createNftHelper(t, &env)
+	nftID2, err := createNft(t, &env)
+	require.NoError(t, err)
 
 	mint, err = NewTokenMintTransaction().SetTokenID(nftID2).SetMetadatas(initialMetadataList).Execute(env.Client)
 	receipt, err = mint.SetValidateStatus(true).GetReceipt(env.Client)
@@ -177,7 +135,7 @@ func TestLimitedMaxAutoAssociationsFungibleTokensWithManualAssociate(t *testing.
 	env := NewIntegrationTestEnv(t)
 
 	// create token1
-	tokenID1 := createFungibleTokenHelper(3, t, &env)
+	tokenID1, err := createFungibleToken(t, &env)
 
 	// account create with 0 max auto associations
 	receiver, key := createAccountHelper(t, &env, 0)
@@ -211,7 +169,8 @@ func TestLimitedMaxAutoAssociationsNFTsManualAssociate(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	// create NFT collection and mint 10
-	nftID1 := createNftHelper(t, &env)
+	nftID1, err := createNft(t, &env)
+	require.NoError(t, err)
 
 	mint, err := NewTokenMintTransaction().SetTokenID(nftID1).SetMetadatas(initialMetadataList).Execute(env.Client)
 	receipt, err := mint.SetValidateStatus(true).GetReceipt(env.Client)
@@ -272,10 +231,12 @@ func TestUnlimitedMaxAutoAssociationsAllowsToTransferFungibleTokens(t *testing.T
 	env := NewIntegrationTestEnv(t)
 
 	// create token1
-	tokenID1 := createFungibleTokenHelper(3, t, &env)
+	tokenID1, err := createFungibleToken(t, &env)
+	require.NoError(t, err)
 
 	// create token2
-	tokenID2 := createFungibleTokenHelper(3, t, &env)
+	tokenID2, err := createFungibleToken(t, &env)
+	require.NoError(t, err)
 
 	// account create with unlimited max auto associations
 	accountID1, _ := createAccountHelper(t, &env, -1)
@@ -336,9 +297,16 @@ func TestUnlimitedMaxAutoAssociationsAllowsToTransferFungibleTokensWithDecimals(
 	env := NewIntegrationTestEnv(t)
 
 	// create token1
-	tokenID1 := createFungibleTokenHelper(10, t, &env)
+	tokenID1, err := createFungibleToken(t, &env, func(transaction *TokenCreateTransaction) {
+		transaction.SetDecimals(10)
+	})
+	require.NoError(t, err)
+
 	// create token2
-	tokenID2 := createFungibleTokenHelper(10, t, &env)
+	tokenID2, err := createFungibleToken(t, &env, func(transaction *TokenCreateTransaction) {
+		transaction.SetDecimals(10)
+	})
+	require.NoError(t, err)
 
 	// account create with unlimited max auto associations
 	accountID, _ := createAccountHelper(t, &env, -1)
@@ -370,10 +338,12 @@ func TestUnlimitedMaxAutoAssociationsAllowsToTransferFromFungibleTokens(t *testi
 	spender, spenderKey := createAccountHelper(t, &env, 10)
 
 	// create token1
-	tokenID1 := createFungibleTokenHelper(3, t, &env)
+	tokenID1, err := createFungibleToken(t, &env)
+	require.NoError(t, err)
 
 	// create token2
-	tokenID2 := createFungibleTokenHelper(3, t, &env)
+	tokenID2, err := createFungibleToken(t, &env)
+	require.NoError(t, err)
 
 	// account create with unlimited max auto associations
 	accountID, _ := createAccountHelper(t, &env, -1)
@@ -418,13 +388,15 @@ func TestUnlimitedMaxAutoAssociationsAllowsToTransferNFTs(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	// create 2 NFT collections and mint 10 NFTs for each collection
-	nftID1 := createNftHelper(t, &env)
+	nftID1, err := createNft(t, &env)
+	require.NoError(t, err)
 
 	mint, err := NewTokenMintTransaction().SetTokenID(nftID1).SetMetadatas(initialMetadataList).Execute(env.Client)
 	receipt, err := mint.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	nftID2 := createNftHelper(t, &env)
+	nftID2, err := createNft(t, &env)
+	require.NoError(t, err)
 
 	mint, err = NewTokenMintTransaction().SetTokenID(nftID2).SetMetadatas(initialMetadataList).Execute(env.Client)
 	receipt, err = mint.SetValidateStatus(true).GetReceipt(env.Client)
@@ -498,13 +470,15 @@ func TestUnlimitedMaxAutoAssociationsAllowsToTransferFromNFTs(t *testing.T) {
 	spender, spenderKey := createAccountHelper(t, &env, 10)
 
 	// create 2 NFT collections and mint 10 NFTs for each collection
-	nftID1 := createNftHelper(t, &env)
+	nftID1, err := createNft(t, &env)
+	require.NoError(t, err)
 
 	mint, err := NewTokenMintTransaction().SetTokenID(nftID1).SetMetadatas(initialMetadataList).Execute(env.Client)
 	receipt, err := mint.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	nftID2 := createNftHelper(t, &env)
+	nftID2, err := createNft(t, &env)
+	require.NoError(t, err)
 
 	mint, err = NewTokenMintTransaction().SetTokenID(nftID2).SetMetadatas(initialMetadataList).Execute(env.Client)
 	receipt, err = mint.SetValidateStatus(true).GetReceipt(env.Client)
