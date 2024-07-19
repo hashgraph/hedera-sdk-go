@@ -127,7 +127,7 @@ func main() {
 	// Transfer the NFT to the new account
 	tokenTransferTransaction, err := hedera.NewTransferTransaction().AddNftTransfer(nftTokenID.Nft(serials[0]), operatorAccountID, *newAccountId).Execute(client)
 	if err != nil {
-		panic(fmt.Sprintf("%v : error transfering nft", err))
+		panic(fmt.Sprintf("%v : error transferring nft", err))
 	}
 	_, err = tokenTransferTransaction.GetReceipt(client)
 	if err != nil {

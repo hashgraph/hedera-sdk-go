@@ -183,7 +183,7 @@ func main() {
 	transactionResponse, err = hedera.NewTransferTransaction().
 		AddTokenTransfer(tokenID, myAccountId, 0).AddTokenTransfer(tokenID, aliceAccountId, 0).Execute(client)
 	if err != nil {
-		panic(fmt.Sprintf("%v : error transfering token", err))
+		panic(fmt.Sprintf("%v : error transferring token", err))
 	}
 	_, err = transactionResponse.GetRecord(client)
 	if err != nil {

@@ -125,7 +125,7 @@ func main() {
 	/**
 	 * Step 4
 	 *
-	 * Tranfer the NFT to the public key alias using the transfer transaction
+	 * Transfer the NFT to the public key alias using the transfer transaction
 	 */
 	nftTransferTransaction, err := hedera.NewTransferTransaction().AddNftTransfer(exampleNftId, operatorId, *aliasAccountId).FreezeWith(client)
 	if err != nil {
@@ -249,7 +249,7 @@ func main() {
 
 	accountId2Info, err := hedera.NewAccountInfoQuery().SetAccountID(aliasAccountId2).Execute(client)
 	if err != nil {
-		panic(fmt.Sprintf("%v : error executing acount info query", err))
+		panic(fmt.Sprintf("%v : error executing account info query", err))
 	}
 	accountId2 := accountId2Info.AccountID
 	fmt.Println("The normal account ID of the given alias: ", accountId2)
@@ -267,7 +267,7 @@ func main() {
 
 	tokenBalanceAccountId2 := accountBalances.Tokens.Get(tokenId)
 	if tokenBalanceAccountId2 == 10 {
-		fmt.Println(`Account is created succesfully using HTS "TransferTransaction"`)
+		fmt.Println(`Account is created successfully using HTS "TransferTransaction"`)
 	} else {
 		fmt.Println("Creating account with HTS using public key alias failed")
 	}
