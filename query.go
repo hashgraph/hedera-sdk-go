@@ -215,7 +215,7 @@ func (q *Query) execute(client *Client, e QueryInterface) (*services.Response, e
 	}
 
 	var cost Hbar
-	if q.queryPayment.tinybar == 0 {
+	if q.queryPayment.tinybar == 0 && q.isPaymentRequired {
 		if q.maxQueryPayment.tinybar == 0 {
 			cost = client.GetDefaultMaxQueryPayment()
 		} else {
@@ -291,7 +291,7 @@ func (q *Query) advanceRequest() {
 }
 
 func (q *Query) makeRequest() interface{} {
-	if q.client != nil {
+	if q.client != nil && q.isPaymentRequired {
 		tx, err := q.generatePayments(q.client, q.queryPayment)
 		if err != nil {
 			return q.pb

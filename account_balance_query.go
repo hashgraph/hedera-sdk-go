@@ -97,23 +97,16 @@ func (q *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error) {
 		return AccountBalance{}, errNoClientProvided
 	}
 
-	var err error
-
-	err = q.validateNetworkOnIDs(client)
+	err := q.validateNetworkOnIDs(client)
 	if err != nil {
 		return AccountBalance{}, err
 	}
 
-	q.paymentTransactions = make([]*services.Transaction, 0)
-	q.pb = q.buildQuery()
-
-	resp, err := _Execute(client, q)
-
+	resp, err := q.Query.execute(client, q)
 	if err != nil {
 		return AccountBalance{}, err
 	}
-
-	return _AccountBalanceFromProtobuf(resp.(*services.Response).GetCryptogetAccountBalance()), nil
+	return _AccountBalanceFromProtobuf(resp.GetCryptogetAccountBalance()), nil
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this query.
