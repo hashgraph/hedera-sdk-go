@@ -3,7 +3,7 @@ module github.com/hashgraph/hedera-sdk-go/v2
 go 1.20
 
 require (
-	github.com/btcsuite/btcd/btcec/v2 v2.3.3
+	github.com/btcsuite/btcd/btcec/v2 v2.3.4
 	github.com/cenkalti/backoff/v4 v4.3.0
 	github.com/ethereum/go-ethereum v1.13.15
 	github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20240704081952-395063202d11
