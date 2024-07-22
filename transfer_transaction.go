@@ -319,7 +319,7 @@ func (tx *TransferTransaction) AddNftTransfer(nftID NftID, sender AccountID, rec
 	return tx
 }
 
-// AddHbarTransferWithDecimals adds an approved hbar transfer
+// AddApprovedHbarTransfer adds an approved hbar transfer
 func (tx *TransferTransaction) AddApprovedHbarTransfer(accountID AccountID, amount Hbar, approve bool) *TransferTransaction {
 	tx._RequireNotFrozen()
 
@@ -340,7 +340,7 @@ func (tx *TransferTransaction) AddApprovedHbarTransfer(accountID AccountID, amou
 	return tx
 }
 
-// AddHbarTransfer adds an approved hbar transfer with decimals
+// AddApprovedTokenTransferWithDecimals adds an approved hbar transfer with decimals
 func (tx *TransferTransaction) AddApprovedTokenTransferWithDecimals(tokenID TokenID, accountID AccountID, value int64, decimal uint32, approve bool) *TransferTransaction { //nolint
 	tx._RequireNotFrozen()
 
@@ -383,7 +383,7 @@ func (tx *TransferTransaction) AddApprovedTokenTransferWithDecimals(tokenID Toke
 	return tx
 }
 
-// AddHbarTransfer adds an approved hbar transfer
+// AddApprovedTokenTransfer adds an approved hbar transfer
 func (tx *TransferTransaction) AddApprovedTokenTransfer(tokenID TokenID, accountID AccountID, value int64, approve bool) *TransferTransaction { //nolint
 	tx._RequireNotFrozen()
 
@@ -421,7 +421,7 @@ func (tx *TransferTransaction) AddApprovedTokenTransfer(tokenID TokenID, account
 	return tx
 }
 
-// AddNftTransfer adds an approved nft transfer
+// AddApprovedNftTransfer adds an approved nft transfer
 func (tx *TransferTransaction) AddApprovedNftTransfer(nftID NftID, sender AccountID, receiver AccountID, approve bool) *TransferTransaction {
 	tx._RequireNotFrozen()
 
