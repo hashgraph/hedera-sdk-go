@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/hex"
 	"errors"
-	"strings"
 
 	"github.com/hashgraph/hedera-sdk-go/tck/param"
 	"github.com/hashgraph/hedera-sdk-go/tck/response"
@@ -90,19 +89,11 @@ func processKeyRecursively(params param.KeyParams, response *response.GenerateKe
 			if err != nil {
 				return "", err
 			}
-			if strings.Contains(keyStr, "326d") {
-				key, err := getKeyListFromString(keyStr)
-				if err != nil {
-					return "", err
-				}
-				keyList.Add(key)
-			} else {
-				key, err := getKeyFromString(keyStr)
-				if err != nil {
-					return "", err
-				}
-				keyList.Add(key)
+			key, err := getKeyFromString(keyStr)
+			if err != nil {
+				return "", err
 			}
+			keyList.Add(key)
 		}
 		if params.Type == param.THRESHOLD_KEY {
 			keyList.SetThreshold(params.Threshold)
@@ -149,7 +140,7 @@ func getKeyListFromString(keyStr string) (hedera.Key, error) {
 		return hedera.KeyList{}, err
 	}
 
-	return hedera.KeyFromBytes(bytes)
+	return hedera.KeyListFromBytes(bytes)
 }
 
 func getKeyFromString(keyStr string) (hedera.Key, error) {

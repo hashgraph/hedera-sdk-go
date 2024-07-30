@@ -165,3 +165,14 @@ func _KeyListFromProtobuf(pb *services.KeyList) (KeyList, error) {
 		threshold: -1,
 	}, nil
 }
+
+func KeyListFromBytes(bytes []byte) (KeyList, error) {
+	protoKey := &services.KeyList{}
+
+	err := protobuf.Unmarshal(bytes, protoKey)
+	if err != nil {
+		return KeyList{}, err
+	}
+
+	return _KeyListFromProtobuf(protoKey)
+}
