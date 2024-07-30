@@ -140,7 +140,7 @@ func getKeyListFromString(keyStr string) (hedera.Key, error) {
 		return hedera.KeyList{}, err
 	}
 
-	return hedera.KeyListFromBytes(bytes)
+	return hedera.KeyFromBytes(bytes)
 }
 
 func getKeyFromString(keyStr string) (hedera.Key, error) {
