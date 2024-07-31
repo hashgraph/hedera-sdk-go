@@ -495,7 +495,7 @@ func TestUnitPrivateKeyEd25519FromStringDer(t *testing.T) {
 	require.Equal(t, key2.StringDer(), key.StringDer())
 }
 
-func TestUnit_ECDSAPublicKeyFromString(t *testing.T) {
+func TestUnitPublicKeyEd25519FromString(t *testing.T) {
 	t.Parallel()
 
 	key, err := PrivateKeyGenerateEd25519()
@@ -506,7 +506,7 @@ func TestUnit_ECDSAPublicKeyFromString(t *testing.T) {
 	require.Equal(t, publicKey2.String(), publicKey.String())
 }
 
-func TestUnit_ECDSAPublicKeyFromStringRaw(t *testing.T) {
+func TestUnitPublicKeyEd25519FromStringRaw(t *testing.T) {
 	t.Parallel()
 
 	key, err := PrivateKeyGenerateEd25519()
@@ -518,7 +518,7 @@ func TestUnit_ECDSAPublicKeyFromStringRaw(t *testing.T) {
 	require.Equal(t, publicKey2.String(), publicKey.String())
 }
 
-func TestUnit_ECDSAPublicKeyFromStringDer(t *testing.T) {
+func TestUnitPublicKeyEd25519FromStringDer(t *testing.T) {
 	t.Parallel()
 
 	key, err := PrivateKeyGenerateEd25519()
@@ -779,7 +779,7 @@ func TestUnitPublicKeyECDSAFromBytes(t *testing.T) {
 	require.Equal(t, key.PublicKey().String(), key2.String())
 }
 
-func TestUnit_ECDSAPublicKeyFromBytes(t *testing.T) {
+func TestUnitPublicKeyEd25519FromBytes(t *testing.T) {
 	t.Parallel()
 
 	key, err := PrivateKeyGenerateEd25519()
@@ -1315,6 +1315,7 @@ func TestSlip10ECDSAVector2(t *testing.T) {
 	assert.Equal(t, key6.PublicKey().StringRaw(), test6PublicKey)
 	assert.Equal(t, hex.EncodeToString(key6.ecdsaPrivateKey.chainCode), test6ChainCode)
 }
+
 func TestFromBytesEd25519(t *testing.T) {
 	keyBytes, _ := hex.DecodeString("0011223344556677889900112233445566778899001122334455667788990011")
 	protoKey := &services.Key{
