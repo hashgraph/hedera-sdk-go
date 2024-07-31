@@ -1421,3 +1421,17 @@ func TestThrowsUnsupportedKeyFromBytes(t *testing.T) {
 	assert.Error(t, err)
 	assert.Equal(t, "key type not implemented: &{[0 1 2]}", err.Error())
 }
+
+func TestStringMethod(t *testing.T) {
+	ecdsaPrivateKey, _ := _GenerateECDSAPrivateKey()
+	ecdsaPublicKey := ecdsaPrivateKey._PublicKey()
+
+	ed25519PrivateKey, _ := _GenerateEd25519PrivateKey()
+	ed25519PublicKey := ed25519PrivateKey._PublicKey()
+
+	assert.Equal(t, ecdsaPrivateKey.String(), ecdsaPrivateKey.String())
+	assert.Equal(t, ecdsaPublicKey.String(), ecdsaPublicKey.String())
+	assert.Equal(t, ed25519PrivateKey.String(), ed25519PrivateKey.String())
+	assert.Equal(t, ed25519PublicKey.String(), ed25519PublicKey.String())
+
+}
