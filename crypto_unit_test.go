@@ -31,9 +31,12 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/hashgraph/hedera-protobufs-go/services"
+
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"google.golang.org/protobuf/proto"
 )
 
 const _Ed25519PubKeyPrefix = "302a300506032b6570032100"
@@ -492,7 +495,7 @@ func TestUnitPrivateKeyEd25519FromStringDer(t *testing.T) {
 	require.Equal(t, key2.StringDer(), key.StringDer())
 }
 
-func TestUnitPublicKeyEd25519FromString(t *testing.T) {
+func TestUnit_ECDSAPublicKeyFromString(t *testing.T) {
 	t.Parallel()
 
 	key, err := PrivateKeyGenerateEd25519()
@@ -503,7 +506,7 @@ func TestUnitPublicKeyEd25519FromString(t *testing.T) {
 	require.Equal(t, publicKey2.String(), publicKey.String())
 }
 
-func TestUnitPublicKeyEd25519FromStringRaw(t *testing.T) {
+func TestUnit_ECDSAPublicKeyFromStringRaw(t *testing.T) {
 	t.Parallel()
 
 	key, err := PrivateKeyGenerateEd25519()
@@ -515,7 +518,7 @@ func TestUnitPublicKeyEd25519FromStringRaw(t *testing.T) {
 	require.Equal(t, publicKey2.String(), publicKey.String())
 }
 
-func TestUnitPublicKeyEd25519FromStringDer(t *testing.T) {
+func TestUnit_ECDSAPublicKeyFromStringDer(t *testing.T) {
 	t.Parallel()
 
 	key, err := PrivateKeyGenerateEd25519()
@@ -776,7 +779,7 @@ func TestUnitPublicKeyECDSAFromBytes(t *testing.T) {
 	require.Equal(t, key.PublicKey().String(), key2.String())
 }
 
-func TestUnitPublicKeyEd25519FromBytes(t *testing.T) {
+func TestUnit_ECDSAPublicKeyFromBytes(t *testing.T) {
 	t.Parallel()
 
 	key, err := PrivateKeyGenerateEd25519()
@@ -1311,4 +1314,109 @@ func TestSlip10ECDSAVector2(t *testing.T) {
 	assert.Equal(t, key6.StringRaw(), test6PrivateKey)
 	assert.Equal(t, key6.PublicKey().StringRaw(), test6PublicKey)
 	assert.Equal(t, hex.EncodeToString(key6.ecdsaPrivateKey.chainCode), test6ChainCode)
+}
+func TestFromBytesEd25519(t *testing.T) {
+	keyBytes, _ := hex.DecodeString("0011223344556677889900112233445566778899001122334455667788990011")
+	protoKey := &services.Key{
+		Key: &services.Key_Ed25519{Ed25519: keyBytes},
+	}
+	bytes, err := proto.Marshal(protoKey)
+	require.NoError(t, err)
+
+	cut, err := KeyFromBytes(bytes)
+	require.NoError(t, err)
+
+	assert.IsType(t, PublicKey{}, cut)
+	cutBytes, _ := KeyToBytes(cut.(PublicKey).ed25519PublicKey)
+	assert.Equal(t, keyBytes, cutBytes[2:])
+}
+
+func TestFromBytesECDSA(t *testing.T) {
+	keyBytes, _ := hex.DecodeString("3a21034e0441201f2bf9c7d9873c2a9dc3fd451f64b7c05e17e4d781d916e3a11dfd99")
+
+	cut, err := KeyFromBytes(keyBytes)
+	require.NoError(t, err)
+
+	assert.IsType(t, PublicKey{}, cut)
+	cutBytes, _ := KeyToBytes(cut.(PublicKey).ecdsaPublicKey)
+	assert.Equal(t, keyBytes, cutBytes)
+}
+
+func TestFromBytesKeyList(t *testing.T) {
+	keyBytes1, _ := hex.DecodeString("0011223344556677889900112233445566778899001122334455667788990011")
+	keyBytes2, _ := hex.DecodeString("aa11223344556677889900112233445566778899001122334455667788990011")
+
+	protoKeyList := &services.KeyList{
+		Keys: []*services.Key{
+			{Key: &services.Key_Ed25519{Ed25519: keyBytes1}},
+			{Key: &services.Key_Ed25519{Ed25519: keyBytes2}},
+		},
+	}
+
+	protoKey := &services.Key{
+		Key: &services.Key_KeyList{KeyList: protoKeyList},
+	}
+	bytes, err := proto.Marshal(protoKey)
+	require.NoError(t, err)
+
+	cut, err := KeyFromBytes(bytes)
+	require.NoError(t, err)
+
+	assert.IsType(t, &KeyList{}, cut)
+
+	keyList := cut.(*KeyList)
+	actual := keyList._ToProtoKey().GetKeyList()
+
+	assert.Len(t, actual.Keys, 2)
+	assert.Equal(t, keyBytes1, actual.Keys[0].GetEd25519())
+	assert.Equal(t, keyBytes2, actual.Keys[1].GetEd25519())
+}
+
+func TestFromBytesThresholdKey(t *testing.T) {
+	keyBytes1, _ := hex.DecodeString("0011223344556677889900112233445566778899001122334455667788990011")
+	keyBytes2, _ := hex.DecodeString("aa11223344556677889900112233445566778899001122334455667788990011")
+
+	protoKeyList := &services.KeyList{
+		Keys: []*services.Key{
+			{Key: &services.Key_Ed25519{Ed25519: keyBytes1}},
+			{Key: &services.Key_Ed25519{Ed25519: keyBytes2}},
+		},
+	}
+
+	protoThresholdKey := &services.ThresholdKey{
+		Threshold: 1,
+		Keys:      protoKeyList,
+	}
+
+	protoKey := &services.Key{
+		Key: &services.Key_ThresholdKey{ThresholdKey: protoThresholdKey},
+	}
+	bytes, err := proto.Marshal(protoKey)
+	require.NoError(t, err)
+
+	cut, err := KeyFromBytes(bytes)
+	require.NoError(t, err)
+
+	assert.IsType(t, &KeyList{}, cut)
+
+	thresholdKey := cut.(*KeyList)
+	actual := thresholdKey._ToProtoKey().GetThresholdKey()
+
+	assert.Equal(t, uint32(1), actual.Threshold)
+	assert.Len(t, actual.Keys.Keys, 2)
+	assert.Equal(t, keyBytes1, actual.Keys.Keys[0].GetEd25519())
+	assert.Equal(t, keyBytes2, actual.Keys.Keys[1].GetEd25519())
+}
+
+func TestThrowsUnsupportedKeyFromBytes(t *testing.T) {
+	keyBytes := []byte{0, 1, 2}
+	protoKey := &services.Key{
+		Key: &services.Key_RSA_3072{RSA_3072: keyBytes},
+	}
+	bytes, err := proto.Marshal(protoKey)
+	require.NoError(t, err)
+
+	_, err = KeyFromBytes(bytes)
+	assert.Error(t, err)
+	assert.Equal(t, "key type not implemented: &{[0 1 2]}", err.Error())
 }

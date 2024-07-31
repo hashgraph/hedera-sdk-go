@@ -214,6 +214,9 @@ func (pk _ECDSAPublicKey) _BytesDer() []byte {
 	return derBytes
 }
 
+func (pk _ECDSAPublicKey) String() string {
+	return pk._StringRaw()
+}
 func (pk _ECDSAPublicKey) _StringRaw() string {
 	return hex.EncodeToString(pk._BytesRaw())
 }
