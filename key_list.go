@@ -24,6 +24,7 @@ import (
 	"fmt"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
+	protobuf "google.golang.org/protobuf/proto"
 )
 
 // KeyList is a list of keys
@@ -76,6 +77,11 @@ func (kl *KeyList) AddAllPublicKeys(keys []PublicKey) *KeyList {
 	}
 
 	return kl
+}
+
+func (kl *KeyList) ToBytes() ([]byte, error) {
+	protoKey := kl._ToProtoKeyList()
+	return protobuf.Marshal(protoKey)
 }
 
 // String returns a string representation of the KeyList
