@@ -29,10 +29,10 @@ func main() {
 
 	// Create a new RPC server
 	assigner := handler.Map{
-		"setup":         errorHandlerWrapper(HandleError, handler.New(sdkService.Setup)),
-		"reset":         errorHandlerWrapper(HandleError, handler.New(sdkService.Reset)),
-		"createAccount": errorHandlerWrapper(HandleError, handler.New(accountService.CreateAccount)),
-		"generateKey":   errorHandlerWrapper(HandleError, handler.New(methods.GenerateKey)),
+		"setup":         postHandler(HandleError, handler.New(sdkService.Setup)),
+		"reset":         postHandler(HandleError, handler.New(sdkService.Reset)),
+		"createAccount": postHandler(HandleError, handler.New(accountService.CreateAccount)),
+		"generateKey":   postHandler(HandleError, handler.New(methods.GenerateKey)),
 	}
 
 	bridge := jhttp.NewBridge(assigner, nil)
@@ -73,8 +73,8 @@ func main() {
 	fmt.Println("Server shutdown complete.")
 }
 
-// ErrorHandler is a function that handles errors reported by a method handler.
-type ErrorHandler func(context.Context, *jrpc2.Request, error) error
+// Handler is a function that handles errors reported by a method handler.
+type Handler func(context.Context, *jrpc2.Request, error) error
 
 func HandleError(_ context.Context, request *jrpc2.Request, err error) error {
 	if err != nil {
@@ -96,14 +96,13 @@ func HandleError(_ context.Context, request *jrpc2.Request, err error) error {
 }
 
 // this wraps the jrpc2.Handler as it invokes the ErrorHandler func if error is returned
-// essentially acts as a "postHandler"
-func errorHandlerWrapper(eh ErrorHandler, h jrpc2.Handler) jrpc2.Handler {
+func postHandler(handler Handler, h jrpc2.Handler) jrpc2.Handler {
 	return func(ctx context.Context, req *jrpc2.Request) (any, error) {
 		res, err := h(ctx, req)
 		if err != nil {
 			errorMessage := fmt.Sprintf("Error occurred processing JSON-RPC request: %s, Response error: %s", req, err)
 			fmt.Println(errorMessage)
-			return nil, eh(ctx, req, err)
+			return nil, handler(ctx, req, err)
 		}
 		return res, nil
 	}

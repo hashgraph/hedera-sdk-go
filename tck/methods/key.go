@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashgraph/hedera-sdk-go/tck/param"
 	"github.com/hashgraph/hedera-sdk-go/tck/response"
+	"github.com/hashgraph/hedera-sdk-go/tck/utils"
 	"github.com/hashgraph/hedera-sdk-go/v2"
 )
 
@@ -89,7 +90,7 @@ func processKeyRecursively(params param.KeyParams, response *response.GenerateKe
 			if err != nil {
 				return "", err
 			}
-			key, err := getKeyFromString(keyStr)
+			key, err := utils.GetKeyFromString(keyStr)
 			if err != nil {
 				return "", err
 			}
@@ -108,7 +109,7 @@ func processKeyRecursively(params param.KeyParams, response *response.GenerateKe
 
 	case param.EVM_ADDRESS_KEY:
 		if params.FromKey != "" {
-			key, err := getKeyFromString(params.FromKey)
+			key, err := utils.GetKeyFromString(params.FromKey)
 			if err != nil {
 				return "", err
 			}
@@ -132,25 +133,4 @@ func processKeyRecursively(params param.KeyParams, response *response.GenerateKe
 	default:
 		return "", errors.New("invalid request: key type not recognized")
 	}
-}
-
-func getKeyListFromString(keyStr string) (hedera.Key, error) {
-	bytes, err := hex.DecodeString(keyStr)
-	if err != nil {
-		return hedera.KeyList{}, err
-	}
-
-	return hedera.KeyFromBytes(bytes)
-}
-
-func getKeyFromString(keyStr string) (hedera.Key, error) {
-	key, err := hedera.PublicKeyFromString(keyStr)
-	if err != nil {
-		key, err := hedera.PrivateKeyFromStringDer(keyStr)
-		if err != nil {
-			return getKeyListFromString(keyStr)
-		}
-		return key, nil
-	}
-	return key, nil
 }

@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashgraph/hedera-sdk-go/tck/param"
 	"github.com/hashgraph/hedera-sdk-go/tck/response"
+	"github.com/hashgraph/hedera-sdk-go/tck/utils"
 	"github.com/hashgraph/hedera-sdk-go/v2"
 )
 
@@ -28,7 +29,7 @@ func (a *AccountService) CreateAccount(_ context.Context, accountCreateParams pa
 	transaction := hedera.NewAccountCreateTransaction().SetGrpcDeadline(&threeSecondsDuration)
 
 	if accountCreateParams.Key != "" {
-		key, err := getKeyFromString(accountCreateParams.Key)
+		key, err := utils.GetKeyFromString(accountCreateParams.Key)
 		if err != nil {
 			return nil, err
 		}
