@@ -42,15 +42,15 @@ type Key interface {
 	String() string
 }
 
-func KeyFromBytes(bytes []byte) (KeyList, error) {
-	protoKey := &services.KeyList{}
+func KeyFromBytes(bytes []byte) (Key, error) {
+	protoKey := &services.Key{}
 
 	err := protobuf.Unmarshal(bytes, protoKey)
 	if err != nil {
-		return KeyList{}, err
+		return nil, err
 	}
 
-	return _KeyListFromProtobuf(protoKey)
+	return _KeyFromProtobuf(protoKey)
 }
 
 func KeyToBytes(key Key) ([]byte, error) {
