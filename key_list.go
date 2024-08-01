@@ -48,6 +48,12 @@ func NewKeyList() *KeyList {
 	}
 }
 
+// SetThreshold sets the threshold of the KeyList
+func (kl *KeyList) SetThreshold(threshold int) *KeyList {
+	kl.threshold = threshold
+	return kl
+}
+
 // Add adds a key to the KeyList
 func (kl *KeyList) Add(key Key) *KeyList {
 	kl.keys = append(kl.keys, key)
@@ -73,7 +79,7 @@ func (kl *KeyList) AddAllPublicKeys(keys []PublicKey) *KeyList {
 }
 
 // String returns a string representation of the KeyList
-func (kl *KeyList) String() string {
+func (kl KeyList) String() string {
 	var s string
 	if kl.threshold > 0 {
 		s = "{threshold:" + fmt.Sprint(kl.threshold) + ",["
@@ -93,7 +99,7 @@ func (kl *KeyList) String() string {
 	return s
 }
 
-func (kl *KeyList) _ToProtoKey() *services.Key {
+func (kl KeyList) _ToProtoKey() *services.Key {
 	keys := make([]*services.Key, len(kl.keys))
 	for i, key := range kl.keys {
 		keys[i] = key._ToProtoKey()
