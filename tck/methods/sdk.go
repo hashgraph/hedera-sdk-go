@@ -13,12 +13,15 @@ type SDKService struct {
 }
 
 // Setup function for the SDK
-func (s *SDKService) Setup(_ context.Context, params param.SetupParams) response.SetupResponse {
+func (s *SDKService) Setup(_ context.Context, params param.SetupParams) (response.SetupResponse, error) {
 	var clientType string
 
 	if params.NodeIp != nil && params.NodeAccountId != nil && params.MirrorNetworkIp != nil {
 		// Custom client setup
-		nodeId, _ := hedera.AccountIDFromString(*params.NodeAccountId)
+		nodeId, err := hedera.AccountIDFromString(*params.NodeAccountId)
+		if err != nil {
+			return response.SetupResponse{}, err
+		}
 		node := map[string]hedera.AccountID{
 			*params.NodeIp: nodeId,
 		}
@@ -39,7 +42,7 @@ func (s *SDKService) Setup(_ context.Context, params param.SetupParams) response
 	return response.SetupResponse{
 		Message: "Successfully setup " + clientType + " client.",
 		Status:  "SUCCESS",
-	}
+	}, nil
 }
 
 // Reset function for the SDK
