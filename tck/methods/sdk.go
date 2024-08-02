@@ -3,37 +3,24 @@ package methods
 import (
 	"context"
 
+	"github.com/hashgraph/hedera-sdk-go/tck/param"
+	"github.com/hashgraph/hedera-sdk-go/tck/response"
 	"github.com/hashgraph/hedera-sdk-go/v2"
 )
 
-// Define the SDK service structure
 type SDKService struct {
 	Client *hedera.Client
 }
 
-// Parameters for the setup function
-type SetupParams struct {
-	OperatorAccountId  string
-	OperatorPrivateKey string
-	NodeIp             *string
-	NodeAccountId      *uint64
-	MirrorNetworkIp    *string
-}
-
-// Response structure for the setup function
-type SetupResponse struct {
-	Message string
-	Status  string
-}
-
 // Setup function for the SDK
-func (s *SDKService) Setup(_ context.Context, params SetupParams) SetupResponse {
+func (s *SDKService) Setup(_ context.Context, params param.SetupParams) response.SetupResponse {
 	var clientType string
 
 	if params.NodeIp != nil && params.NodeAccountId != nil && params.MirrorNetworkIp != nil {
 		// Custom client setup
+		nodeId, _ := hedera.AccountIDFromString(*params.NodeAccountId)
 		node := map[string]hedera.AccountID{
-			*params.NodeIp: {Account: *params.NodeAccountId},
+			*params.NodeIp: nodeId,
 		}
 		s.Client = hedera.ClientForNetwork(node)
 		clientType = "custom"
@@ -49,16 +36,16 @@ func (s *SDKService) Setup(_ context.Context, params SetupParams) SetupResponse 
 	operatorKey, _ := hedera.PrivateKeyFromString(params.OperatorPrivateKey)
 	s.Client.SetOperator(operatorId, operatorKey)
 
-	return SetupResponse{
+	return response.SetupResponse{
 		Message: "Successfully setup " + clientType + " client.",
 		Status:  "SUCCESS",
 	}
 }
 
 // Reset function for the SDK
-func (s *SDKService) Reset(_ context.Context) SetupResponse {
+func (s *SDKService) Reset(_ context.Context) response.SetupResponse {
 	s.Client = nil
-	return SetupResponse{
+	return response.SetupResponse{
 		Status: "SUCCESS",
 	}
 }
