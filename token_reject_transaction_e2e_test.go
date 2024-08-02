@@ -517,7 +517,6 @@ func TestIntegrationTokenRejectTransactionTokenPaused(t *testing.T) {
 }
 
 func TestIntegrationTokenRejectTransactionDoesNotRemoveAllowanceFT(t *testing.T) {
-	t.Skip("Skipping until fixed in services")
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
@@ -606,7 +605,7 @@ func TestIntegrationTokenRejectTransactionDoesNotRemoveAllowanceFT(t *testing.T)
 }
 
 func TestIntegrationTokenRejectTransactionDoesNotRemoveAllowanceNFT(t *testing.T) {
-	t.Skip("Skipping until fixed in services")
+	t.Skip("Skipping test as this flow is currently not working as expected in services")
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 

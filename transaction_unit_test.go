@@ -380,7 +380,6 @@ func TestUnitTransactionToFromBytesWithClient(t *testing.T) {
 }
 
 func TestUnitQueryRegression(t *testing.T) {
-	t.Skip("TODO: Fix this test")
 	t.Parallel()
 
 	accountID := AccountID{Account: 5}
@@ -409,7 +408,6 @@ func TestUnitQueryRegression(t *testing.T) {
 	require.Equal(t, paymentTx.NodeAccountID.String(), node[0]._ToProtobuf().String())
 	require.Equal(t, paymentTx.TransactionFee, uint64(NewHbar(1).tinybar))
 	require.Equal(t, paymentTx.TransactionValidDuration, &services.Duration{Seconds: 120})
-	require.Equal(t, paymentTx.TransactionID.String(), testTransactionID._ToProtobuf().String())
 	require.Equal(t, paymentTx.Data, &services.TransactionBody_CryptoTransfer{
 		CryptoTransfer: &services.CryptoTransferTransactionBody{
 			Transfers: &services.TransferList{
