@@ -63,7 +63,7 @@ func TestIntegrationAccountUpdateTransactionCanExecute(t *testing.T) {
 	tx, err := NewAccountUpdateTransaction().
 		SetAccountID(accountID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetExpirationTime(time.Now().Add(time.Hour * 24 * 120)).
+		SetExpirationTime(time.Now().Add(time.Hour * 24 * 92)).
 		SetKey(newKey2.PublicKey()).
 		FreezeWith(env.Client)
 	require.NoError(t, err)
