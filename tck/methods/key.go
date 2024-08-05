@@ -60,26 +60,34 @@ func processKeyRecursively(params param.KeyParams, response *response.GenerateKe
 
 	case param.ED25519_PUBLIC_KEY, param.ECDSA_SECP256K1_PUBLIC_KEY:
 		var publicKey string
+		var privateKey string
 		if params.FromKey != "" {
 			if params.Type == param.ED25519_PUBLIC_KEY {
 				pk, _ := hedera.PrivateKeyFromStringEd25519(params.FromKey)
+				privateKey = pk.StringDer()
 				publicKey = pk.PublicKey().StringDer()
 			} else {
 				pk, _ := hedera.PrivateKeyFromStringECDSA(params.FromKey)
+				privateKey = pk.StringDer()
 				publicKey = pk.PublicKey().StringDer()
+			}
+			if isList {
+				response.PrivateKeys = append(response.PrivateKeys, privateKey)
 			}
 
 			return publicKey, nil
 		}
 		if params.Type == param.ED25519_PUBLIC_KEY {
 			pk, _ := hedera.PrivateKeyGenerateEd25519()
+			privateKey = pk.StringDer()
 			publicKey = pk.PublicKey().StringDer()
 		} else {
 			pk, _ := hedera.PrivateKeyGenerateEcdsa()
+			privateKey = pk.StringDer()
 			publicKey = pk.PublicKey().StringDer()
 		}
 		if isList {
-			response.PrivateKeys = append(response.PrivateKeys, publicKey)
+			response.PrivateKeys = append(response.PrivateKeys, privateKey)
 		}
 		return publicKey, nil
 

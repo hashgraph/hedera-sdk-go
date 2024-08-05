@@ -32,6 +32,7 @@ func main() {
 		"setup":         postHandler(HandleError, handler.New(sdkService.Setup)),
 		"reset":         postHandler(HandleError, handler.New(sdkService.Reset)),
 		"createAccount": postHandler(HandleError, handler.New(accountService.CreateAccount)),
+		"updateAccount": postHandler(HandleError, handler.New(accountService.UpdateAccount)),
 		"generateKey":   postHandler(HandleError, handler.New(methods.GenerateKey)),
 	}
 
