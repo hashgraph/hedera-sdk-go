@@ -1,3 +1,10 @@
+## v2.43.0
+
+### Added
+
+-  `Key` functions such as `KeyFromBytes` `KeyToBytes`
+-  `KeyList` functions such as `SetThreshold`
+
 ## v2.42.0
 
 ### Added
