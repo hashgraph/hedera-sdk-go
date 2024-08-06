@@ -59,28 +59,42 @@ func processKeyRecursively(params param.KeyParams, response *response.GenerateKe
 		return privateKey, nil
 
 	case param.ED25519_PUBLIC_KEY, param.ECDSA_SECP256K1_PUBLIC_KEY:
-		var publicKey string
-		if params.FromKey != nil {
-			if params.Type == param.ED25519_PUBLIC_KEY {
-				pk, _ := hedera.PrivateKeyFromStringEd25519(*params.FromKey)
-				publicKey = pk.PublicKey().StringDer()
-			} else {
-				pk, _ := hedera.PrivateKeyFromStringECDSA(*params.FromKey)
-				publicKey = pk.PublicKey().StringDer()
-			}
+		var publicKey, privateKey string
 
-			return publicKey, nil
-		}
-		if params.Type == param.ED25519_PUBLIC_KEY {
-			pk, _ := hedera.PrivateKeyGenerateEd25519()
+		setKeysFromKey := func(fromKey string, isEd25519 bool) {
+			var pk hedera.PrivateKey
+			if isEd25519 {
+				pk, _ = hedera.PrivateKeyFromStringEd25519(fromKey)
+			} else {
+				pk, _ = hedera.PrivateKeyFromStringECDSA(fromKey)
+			}
+			privateKey = pk.StringDer()
 			publicKey = pk.PublicKey().StringDer()
+		}
+
+		generateKeys := func(isEd25519 bool) {
+			var pk hedera.PrivateKey
+			if isEd25519 {
+				pk, _ = hedera.PrivateKeyGenerateEd25519()
+			} else {
+				pk, _ = hedera.PrivateKeyGenerateEcdsa()
+			}
+			privateKey = pk.StringDer()
+			publicKey = pk.PublicKey().StringDer()
+		}
+
+		isEd25519 := params.Type == param.ED25519_PUBLIC_KEY
+
+		if params.FromKey != nil {
+			setKeysFromKey(*params.FromKey, isEd25519)
 		} else {
-			pk, _ := hedera.PrivateKeyGenerateEcdsa()
-			publicKey = pk.PublicKey().StringDer()
+			generateKeys(isEd25519)
 		}
+
 		if isList {
-			response.PrivateKeys = append(response.PrivateKeys, publicKey)
+			response.PrivateKeys = append(response.PrivateKeys, privateKey)
 		}
+
 		return publicKey, nil
 
 	case param.LIST_KEY, param.THRESHOLD_KEY:
