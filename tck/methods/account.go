@@ -28,21 +28,21 @@ func (a *AccountService) SetSdkService(service *SDKService) {
 func (a *AccountService) CreateAccount(_ context.Context, accountCreateParams param.CreateAccountParams) (*response.AccountResponse, error) {
 	transaction := hedera.NewAccountCreateTransaction().SetGrpcDeadline(&threeSecondsDuration)
 
-	if accountCreateParams.Key != "" {
-		key, err := utils.GetKeyFromString(accountCreateParams.Key)
+	if accountCreateParams.Key != nil {
+		key, err := utils.GetKeyFromString(*accountCreateParams.Key)
 		if err != nil {
 			return nil, err
 		}
 		transaction.SetKey(key)
 	}
-	if accountCreateParams.InitialBalance != 0 {
-		transaction.SetInitialBalance(hedera.HbarFromTinybar(accountCreateParams.InitialBalance))
+	if accountCreateParams.InitialBalance != nil {
+		transaction.SetInitialBalance(hedera.HbarFromTinybar(*accountCreateParams.InitialBalance))
 	}
-	if accountCreateParams.ReceiverSignatureRequired {
-		transaction.SetReceiverSignatureRequired(accountCreateParams.ReceiverSignatureRequired)
+	if accountCreateParams.ReceiverSignatureRequired != nil {
+		transaction.SetReceiverSignatureRequired(*accountCreateParams.ReceiverSignatureRequired)
 	}
-	if accountCreateParams.MaxAutomaticTokenAssociations != 0 {
-		transaction.SetMaxAutomaticTokenAssociations(accountCreateParams.MaxAutomaticTokenAssociations)
+	if accountCreateParams.MaxAutomaticTokenAssociations != nil {
+		transaction.SetMaxAutomaticTokenAssociations(*accountCreateParams.MaxAutomaticTokenAssociations)
 	}
 	if accountCreateParams.StakedAccountId != nil {
 		accountId, err := hedera.AccountIDFromString(*accountCreateParams.StakedAccountId)
@@ -51,27 +51,29 @@ func (a *AccountService) CreateAccount(_ context.Context, accountCreateParams pa
 		}
 		transaction.SetStakedAccountID(accountId)
 	}
-	if accountCreateParams.StakedNodeId.String() != "" {
+	if accountCreateParams.StakedNodeId != nil {
 		stakedNodeID, err := strconv.ParseInt(accountCreateParams.StakedNodeId.String(), 10, 64)
 		if err != nil {
 			return nil, response.InvalidParams.WithData(err.Error())
 		}
 		transaction.SetStakedNodeID(stakedNodeID)
 	}
-	if accountCreateParams.DeclineStakingReward {
-		transaction.SetDeclineStakingReward(accountCreateParams.DeclineStakingReward)
+	if accountCreateParams.DeclineStakingReward != nil {
+		transaction.SetDeclineStakingReward(*accountCreateParams.DeclineStakingReward)
 	}
-	if accountCreateParams.Memo != "" {
-		transaction.SetAccountMemo(accountCreateParams.Memo)
+	if accountCreateParams.Memo != nil {
+		transaction.SetAccountMemo(*accountCreateParams.Memo)
 	}
-	if accountCreateParams.AutoRenewPeriod != 0 {
-		transaction.SetAutoRenewPeriod(time.Duration(accountCreateParams.AutoRenewPeriod) * time.Second)
+	if accountCreateParams.AutoRenewPeriod != nil {
+		transaction.SetAutoRenewPeriod(time.Duration(*accountCreateParams.AutoRenewPeriod) * time.Second)
 	}
-	if accountCreateParams.Alias != "" {
-		transaction.SetAlias(accountCreateParams.Alias)
+	if accountCreateParams.Alias != nil {
+		transaction.SetAlias(*accountCreateParams.Alias)
 	}
 
-	accountCreateParams.CommonTransactionParams.FillOutTransaction(transaction, &transaction.Transaction, a.sdkService.Client)
+	if accountCreateParams.CommonTransactionParams != nil {
+		accountCreateParams.CommonTransactionParams.FillOutTransaction(transaction, &transaction.Transaction, a.sdkService.Client)
+	}
 
 	txResponse, err := transaction.Execute(a.sdkService.Client)
 	if err != nil {

@@ -5,15 +5,15 @@ import (
 )
 
 type CreateAccountParams struct {
-	Key                           string                  `json:"key"`
-	InitialBalance                int64                   `json:"initialBalance"`
-	ReceiverSignatureRequired     bool                    `json:"receiverSignatureRequired"`
-	AutoRenewPeriod               int64                   `json:"autoRenewPeriod"`
-	Memo                          string                  `json:"memo"`
-	MaxAutomaticTokenAssociations int32                   `json:"maxAutoTokenAssociations"`
-	StakedAccountId               *string                 `json:"stakedAccountId"`
-	StakedNodeId                  json.Number             `json:"stakedNodeId"`
-	DeclineStakingReward          bool                    `json:"declineStakingReward"`
-	Alias                         string                  `json:"alias"`
-	CommonTransactionParams       CommonTransactionParams `json:"commonTransactionParams"`
+	Key                           *string                  `json:"key"`
+	InitialBalance                *int64                   `json:"initialBalance"`
+	ReceiverSignatureRequired     *bool                    `json:"receiverSignatureRequired"`
+	AutoRenewPeriod               *int64                   `json:"autoRenewPeriod"`
+	Memo                          *string                  `json:"memo"`
+	MaxAutomaticTokenAssociations *int32                   `json:"maxAutoTokenAssociations"`
+	StakedAccountId               *string                  `json:"stakedAccountId"`
+	StakedNodeId                  *json.Number             `json:"stakedNodeId"`
+	DeclineStakingReward          *bool                    `json:"declineStakingReward"`
+	Alias                         *string                  `json:"alias"`
+	CommonTransactionParams       *CommonTransactionParams `json:"commonTransactionParams"`
 }

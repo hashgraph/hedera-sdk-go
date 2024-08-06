@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -43,7 +44,7 @@ func main() {
 	if port == "" {
 		port = "80"
 	}
-	fmt.Println("Server is listening on port: " + port)
+	log.Println("Server is listening on port: " + port)
 
 	server := &http.Server{Addr: ":" + port}
 
@@ -70,7 +71,7 @@ func main() {
 		fmt.Printf("Error shutting down server: %s\n", err)
 	}
 
-	fmt.Println("Server shutdown complete.")
+	log.Println("Server shutdown complete.")
 }
 
 // Handler is a function that handles errors reported by a method handler.
@@ -100,8 +101,7 @@ func postHandler(handler Handler, h jrpc2.Handler) jrpc2.Handler {
 	return func(ctx context.Context, req *jrpc2.Request) (any, error) {
 		res, err := h(ctx, req)
 		if err != nil {
-			errorMessage := fmt.Sprintf("Error occurred processing JSON-RPC request: %s, Response error: %s", req, err)
-			fmt.Println(errorMessage)
+			log.Printf("Error occurred processing JSON-RPC request: %s, Response error: %s", req, err)
 			return nil, handler(ctx, req, err)
 		}
 		return res, nil

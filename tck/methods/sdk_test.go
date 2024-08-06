@@ -42,7 +42,6 @@ func TestSetupFail(t *testing.T) {
 	// Then
 	_, err := sdkService.Setup(context.Background(), params)
 	require.Error(t, err)
-
 }
 
 func TestReset(t *testing.T) {
@@ -57,7 +56,8 @@ func TestReset(t *testing.T) {
 	}
 
 	// Setup first to initialize the client
-	sdkService.Setup(context.Background(), params)
+	_, err := sdkService.Setup(context.Background(), params)
+	require.NoError(t, err)
 
 	// When
 	response := sdkService.Reset(context.Background())
@@ -69,4 +69,8 @@ func TestReset(t *testing.T) {
 
 func stringPointer(s string) *string {
 	return &s
+}
+
+func intPointer(i int) *int {
+	return &i
 }
