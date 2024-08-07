@@ -280,6 +280,7 @@ func TestUnitTransactionRecordQueryMarshalJSON(t *testing.T) {
 	contractID, err := ContractIDFromString("0.0.3")
 	require.NoError(t, err)
 	record.Receipt.ContractID = &contractID
+	record.Receipt.NodeID = 1
 
 	tokenTransfer := TokenTransfer{
 		AccountID:  accID,
@@ -344,7 +345,7 @@ func TestUnitTransactionRecordQueryMarshalJSON(t *testing.T) {
 	"0.0.1246","amount":"1000000000","isApproved":false},{"accountId":"0.0.5","amount":"1071080","isApproved":false},{"accountId":"0.0.800","amount":"4062319",
 	"isApproved":false},{"accountId":"0.0.801","amount":"4062319","isApproved":false},{"accountId":"0.0.98","amount":"32498552","isApproved":false}],
 	"parentConsensusTimestamp":"2022-06-18T02:54:43.839Z","prngBytes":"01020304","prngNumber":123,"receipt":{"accountId":"0.0.1246","children":[],
-	"contractId":"0.0.3","duplicates":[],"exchangeRate":{"cents":12,"expirationTime":"1963-11-25T17:31:44.000Z","hbars":1},"fileId":null,"scheduleId":
+	"contractId":"0.0.3","duplicates":[],"exchangeRate":{"cents":12,"expirationTime":"1963-11-25T17:31:44.000Z","hbars":1},"fileId":null, "nodeId":1, "scheduleId":
 	null,"scheduledTransactionId":null,"serialNumbers":null,"status":"SUCCESS","tokenId":null,"topicId":null,"topicRunningHash":"","topicRunningHashVersion":
 	0,"topicSequenceNumber":0,"totalSupply":0},"tokenTransfers":{"0.0.123":{"0.0.1246":"789"}},"transactionFee":"41694270","transactionHash":
 	"cac44f2db045ba441f3fbc295217f2eb0f956293d28b3401578f6160e66f4e47ea87952d91c4b1cb5bda6447823b979a","transactionId":"0.0.1157@1655520872.507983896",

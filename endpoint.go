@@ -27,8 +27,9 @@ import (
 )
 
 type _Endpoint struct {
-	address _IPv4Address
-	port    int32
+	address    _IPv4Address
+	port       int32
+	domainName string
 }
 
 func _EndpointFromProtobuf(serviceEndpoint *services.ServiceEndpoint) _Endpoint {
@@ -39,8 +40,9 @@ func _EndpointFromProtobuf(serviceEndpoint *services.ServiceEndpoint) _Endpoint 
 	}
 
 	return _Endpoint{
-		address: _Ipv4AddressFromProtobuf(serviceEndpoint.GetIpAddressV4()),
-		port:    port,
+		address:    _Ipv4AddressFromProtobuf(serviceEndpoint.GetIpAddressV4()),
+		port:       port,
+		domainName: serviceEndpoint.GetDomainName(),
 	}
 }
 
@@ -48,6 +50,7 @@ func (endpoint *_Endpoint) _ToProtobuf() *services.ServiceEndpoint {
 	return &services.ServiceEndpoint{
 		IpAddressV4: endpoint.address._ToProtobuf(),
 		Port:        endpoint.port,
+		DomainName:  endpoint.domainName,
 	}
 }
 

@@ -26,16 +26,17 @@ import (
 )
 
 type _Channel struct {
-	crypto   services.CryptoServiceClient
-	file     services.FileServiceClient
-	contract services.SmartContractServiceClient
-	topic    services.ConsensusServiceClient
-	freeze   services.FreezeServiceClient
-	network  services.NetworkServiceClient
-	token    services.TokenServiceClient
-	schedule services.ScheduleServiceClient
-	util     services.UtilServiceClient
-	client   *grpc.ClientConn
+	crypto      services.CryptoServiceClient
+	file        services.FileServiceClient
+	contract    services.SmartContractServiceClient
+	topic       services.ConsensusServiceClient
+	freeze      services.FreezeServiceClient
+	network     services.NetworkServiceClient
+	token       services.TokenServiceClient
+	schedule    services.ScheduleServiceClient
+	util        services.UtilServiceClient
+	addressBook services.AddressBookServiceClient
+	client      *grpc.ClientConn
 }
 
 func _NewChannel(client *grpc.ClientConn) _Channel {
@@ -114,4 +115,12 @@ func (channel _Channel) _GetUtil() services.UtilServiceClient {
 	}
 
 	return channel.util
+}
+
+func (channel _Channel) _GetAddressBook() services.AddressBookServiceClient {
+	if channel.addressBook == nil {
+		channel.addressBook = services.NewAddressBookServiceClient(channel.client)
+	}
+
+	return channel.addressBook
 }

@@ -47,6 +47,7 @@ type TransactionReceipt struct {
 	ScheduleID              *ScheduleID
 	ScheduledTransactionID  *TransactionID
 	SerialNumbers           []int64
+	NodeID                  uint64
 	Duplicates              []TransactionReceipt
 	Children                []TransactionReceipt
 	TransactionID           *TransactionID
@@ -60,6 +61,7 @@ func (receipt *TransactionReceipt) _ToMap() map[string]interface{} {
 		"topicRunningHashVersion": receipt.TopicRunningHashVersion,
 		"totalSupply":             receipt.TotalSupply,
 		"serialNumbers":           receipt.SerialNumbers,
+		"nodeId":                  receipt.NodeID,
 	}
 
 	// The real ExchangeRate struct has cents and ExpirationTime fields as private, so they can't be marshalled directly
@@ -194,6 +196,7 @@ func _TransactionReceiptFromProtobuf(protoResponse *services.TransactionGetRecei
 		ScheduleID:              scheduleID,
 		ScheduledTransactionID:  scheduledTransactionID,
 		SerialNumbers:           protoReceipt.SerialNumbers,
+		NodeID:                  protoReceipt.NodeId,
 		Children:                childReceipts,
 		Duplicates:              duplicateReceipts,
 		TransactionID:           transactionID,
@@ -208,6 +211,7 @@ func (receipt TransactionReceipt) _ToProtobuf() *services.TransactionGetReceiptR
 		TopicRunningHashVersion: receipt.TopicRunningHashVersion,
 		NewTotalSupply:          receipt.TotalSupply,
 		SerialNumbers:           receipt.SerialNumbers,
+		NodeId:                  receipt.NodeID,
 	}
 
 	if receipt.ExchangeRate != nil {

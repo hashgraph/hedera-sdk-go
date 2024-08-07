@@ -84,7 +84,6 @@ func TestUnitTransactionReceiptQueryGet(t *testing.T) {
 		SetIncludeChildren(true).
 		SetQueryPayment(NewHbar(2)).
 		SetMaxQueryPayment(NewHbar(1)).
-		SetQueryPayment(HbarFromTinybar(25)).
 		SetNodeAccountIDs([]AccountID{{Account: 10}, {Account: 11}, {Account: 12}})
 
 	balance.GetTransactionID()
@@ -287,6 +286,7 @@ func TestUnitTransactionReceiptToJson(t *testing.T) {
 						SerialNumbers: []int64{1, 2, 3},
 						TopicID:       &services.TopicID{TopicNum: 654},
 						ScheduleID:    &services.ScheduleID{ScheduleNum: 321},
+						NodeId:        1,
 						ScheduledTransactionID: &services.TransactionID{
 							AccountID: &services.AccountID{Account: &services.AccountID_AccountNum{
 								AccountNum: 123,
@@ -394,14 +394,14 @@ func TestUnitTransactionReceiptToJson(t *testing.T) {
 	jsonBytes, err := receipt.MarshalJSON()
 	require.NoError(t, err)
 	expected := `{"accountId":"0.0.123","children":[{"accountId":"0.0.123","children":[],"contractId":"0.0.456","duplicates":[],"exchangeRate":
-	{"hbars":30000,"cents":154271,"expirationTime":"2023-09-14T11:00:00.000Z"},"fileId":"0.0.789","scheduleId":"0.0.321",
+	{"hbars":30000,"cents":154271,"expirationTime":"2023-09-14T11:00:00.000Z"},"fileId":"0.0.789","nodeId":0,"scheduleId":"0.0.321",
 	"scheduledTransactionId":"0.0.123@1694689200.000000000","serialNumbers":[1,2,3],"status":"SUCCESS","tokenId":"0.0.987","topicId":"0.0.654",
 	"topicRunningHash":"0a","topicRunningHashVersion":0,"topicSequenceNumber":10,"totalSupply":0}],"contractId":"0.0.456",
 	"duplicates":[{"accountId":"0.0.123","children":[],"contractId":"0.0.456","duplicates":[],"exchangeRate":{"hbars":30000,"cents":154271,
-	"expirationTime":"2023-09-14T11:00:00.000Z"},"fileId":"0.0.789","scheduleId":"0.0.321","scheduledTransactionId":"0.0.123@1694689200.000000000",
+	"expirationTime":"2023-09-14T11:00:00.000Z"},"fileId":"0.0.789","nodeId":0,"scheduleId":"0.0.321","scheduledTransactionId":"0.0.123@1694689200.000000000",
 	"serialNumbers":[1,2,3],"status":"SUCCESS","tokenId":"0.0.987","topicId":"0.0.654","topicRunningHash":"0a","topicRunningHashVersion":0,
 	"topicSequenceNumber":10,"totalSupply":0}],"exchangeRate":{"hbars":30000,"cents":154271,"expirationTime":"2023-09-14T11:00:00.000Z"},
-	"fileId":"0.0.789","scheduleId":"0.0.321","scheduledTransactionId":"0.0.123@1694689200.000000000","serialNumbers":[1,2,3],"status":"SUCCESS",
+	"fileId":"0.0.789","nodeId":1,"scheduleId":"0.0.321","scheduledTransactionId":"0.0.123@1694689200.000000000","serialNumbers":[1,2,3],"status":"SUCCESS",
 	"tokenId":"0.0.987","topicId":"0.0.654","topicRunningHash":"0a","topicRunningHashVersion":0,"topicSequenceNumber":10,"totalSupply":0}`
 
 	assert.JSONEqf(t, expected, string(jsonBytes), "json should be equal")

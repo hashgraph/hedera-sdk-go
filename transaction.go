@@ -316,6 +316,12 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 		return *_NewTokenUpdateNftsTransactionFromProtobuf(tx, first), nil
 	case *services.TransactionBody_TokenReject:
 		return *_TokenRejectTransactionFromProtobuf(tx, first), nil
+	case *services.TransactionBody_NodeCreate:
+		return *_NodeCreateTransactionFromProtobuf(tx, first), nil
+	case *services.TransactionBody_NodeUpdate:
+		return *_NodeUpdateTransactionFromProtobuf(tx, first), nil
+	case *services.TransactionBody_NodeDelete:
+		return *_NodeDeleteTransactionFromProtobuf(tx, first), nil
 	default:
 		return Transaction{}, errFailedToDeserializeBytes
 	}
