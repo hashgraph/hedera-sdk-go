@@ -2,7 +2,6 @@ package methods
 
 import (
 	"context"
-	"strconv"
 	"time"
 
 	"github.com/hashgraph/hedera-sdk-go/tck/param"
@@ -35,7 +34,6 @@ func (a *AccountService) CreateAccount(_ context.Context, accountCreateParams pa
 		}
 		transaction.SetKey(key)
 	}
-
 	if accountCreateParams.InitialBalance != nil {
 		transaction.SetInitialBalance(hedera.HbarFromTinybar(*accountCreateParams.InitialBalance))
 	}
@@ -52,15 +50,13 @@ func (a *AccountService) CreateAccount(_ context.Context, accountCreateParams pa
 		}
 		transaction.SetStakedAccountID(accountId)
 	}
-
 	if accountCreateParams.StakedNodeId != nil {
-		stakedNodeID, err := strconv.ParseInt(accountCreateParams.StakedNodeId.String(), 10, 64)
+		stakedNodeID, err := accountCreateParams.StakedNodeId.Int64()
 		if err != nil {
 			return nil, response.InvalidParams.WithData(err.Error())
 		}
 		transaction.SetStakedNodeID(stakedNodeID)
 	}
-
 	if accountCreateParams.DeclineStakingReward != nil {
 		transaction.SetDeclineStakingReward(*accountCreateParams.DeclineStakingReward)
 	}
@@ -73,11 +69,9 @@ func (a *AccountService) CreateAccount(_ context.Context, accountCreateParams pa
 	if accountCreateParams.Alias != nil {
 		transaction.SetAlias(*accountCreateParams.Alias)
 	}
-
 	if accountCreateParams.CommonTransactionParams != nil {
 		accountCreateParams.CommonTransactionParams.FillOutTransaction(transaction, &transaction.Transaction, a.sdkService.Client)
 	}
-
 	txResponse, err := transaction.Execute(a.sdkService.Client)
 	if err != nil {
 		return nil, err
@@ -125,7 +119,7 @@ func (a *AccountService) UpdateAccount(_ context.Context, accountUpdateParams pa
 		transaction.SetStakedAccountID(accountId)
 	}
 	if accountUpdateParams.StakedNodeId != nil {
-		stakedNodeID, err := strconv.ParseInt(accountUpdateParams.StakedNodeId.String(), 10, 64)
+		stakedNodeID, err := accountUpdateParams.StakedNodeId.Int64()
 		if err != nil {
 			return nil, response.InvalidParams.WithData(err.Error())
 		}
@@ -140,11 +134,9 @@ func (a *AccountService) UpdateAccount(_ context.Context, accountUpdateParams pa
 	if accountUpdateParams.AutoRenewPeriod != nil {
 		transaction.SetAutoRenewPeriod(time.Duration(*accountUpdateParams.AutoRenewPeriod) * time.Second)
 	}
-
 	if accountUpdateParams.CommonTransactionParams != nil {
 		accountUpdateParams.CommonTransactionParams.FillOutTransaction(transaction, &transaction.Transaction, a.sdkService.Client)
 	}
-
 	txResponse, err := transaction.Execute(a.sdkService.Client)
 	if err != nil {
 		return nil, err
@@ -153,6 +145,5 @@ func (a *AccountService) UpdateAccount(_ context.Context, accountUpdateParams pa
 	if err != nil {
 		return nil, err
 	}
-
 	return &response.AccountResponse{Status: receipt.Status.String()}, nil
 }

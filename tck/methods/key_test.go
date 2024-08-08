@@ -23,7 +23,6 @@ func TestGenerateKeyWithInvalidFromKey(t *testing.T) {
 
 	// Then
 	assert.Error(t, err)
-
 	assert.Contains(t, err.Error(), utils.ErrFromKeyShouldBeProvided.Error())
 }
 
@@ -47,8 +46,7 @@ func TestGenerateKeyWithInvalidThreshold(t *testing.T) {
 func TestGenerateKeyWithInvalidKeys(t *testing.T) {
 	// Given
 	params := param.KeyParams{
-		Type: param.ED25519_PUBLIC_KEY,
-
+		Type:      param.ED25519_PUBLIC_KEY,
 		FromKey:   nil,
 		Threshold: nil,
 		Keys:      &[]param.KeyParams{},
@@ -66,8 +64,7 @@ func TestGenerateKeyWithInvalidKeys(t *testing.T) {
 func TestGenerateKeyWithMissingKeysForKeyList(t *testing.T) {
 	// Given
 	params := param.KeyParams{
-		Type: param.LIST_KEY,
-
+		Type:      param.LIST_KEY,
 		FromKey:   nil,
 		Threshold: nil,
 		Keys:      nil,
@@ -86,7 +83,6 @@ func TestGenerateKeyWithMissingThresholdForThresholdKey(t *testing.T) {
 	// Given
 	params := param.KeyParams{
 		Type: param.THRESHOLD_KEY,
-
 		Keys: &[]param.KeyParams{
 			{
 				Type: param.ED25519_PUBLIC_KEY,
@@ -99,7 +95,6 @@ func TestGenerateKeyWithMissingThresholdForThresholdKey(t *testing.T) {
 
 	// Then
 	assert.Error(t, err)
-
 	assert.Contains(t, err.Error(), utils.ErrThresholdRequired.Error())
 }
 
@@ -136,8 +131,7 @@ func TestGenerateKeyWithValidEd25519PublicKey(t *testing.T) {
 func TestGenerateKeyWithValidThresholdKey(t *testing.T) {
 	// Given
 	params := param.KeyParams{
-		Type: param.THRESHOLD_KEY,
-
+		Type:      param.THRESHOLD_KEY,
 		Threshold: intPointer(2),
 		Keys: &[]param.KeyParams{
 			{
@@ -159,7 +153,6 @@ func TestGenerateKeyWithValidListKey(t *testing.T) {
 	// Given
 	params := param.KeyParams{
 		Type: param.LIST_KEY,
-
 		Keys: &[]param.KeyParams{
 			{
 				Type: param.ED25519_PUBLIC_KEY,
@@ -179,8 +172,7 @@ func TestGenerateKeyWithValidListKey(t *testing.T) {
 func TestGenerateKeyWithValidEvmAddressKey(t *testing.T) {
 	// Given
 	params := param.KeyParams{
-		Type: param.EVM_ADDRESS_KEY,
-
+		Type:    param.EVM_ADDRESS_KEY,
 		FromKey: stringPointer("3054020101042056b071002a75ab207a44bb2c18320286062bc26969fcb98240301e4afbe9ee2ea00706052b8104000aa124032200038ef0b62d60b1415f8cfb460303c498fbf09cb2ef2d2ff19fad33982228ef86fd"),
 	}
 
