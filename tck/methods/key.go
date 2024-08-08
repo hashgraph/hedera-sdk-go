@@ -13,24 +13,24 @@ import (
 
 // GenerateKey generates key based on provided key params
 func GenerateKey(_ context.Context, params param.KeyParams) (response.GenerateKeyResponse, error) {
-	if params.FromKey != "" && params.Type != param.ED25519_PUBLIC_KEY && params.Type != param.ECDSA_SECP256K1_PUBLIC_KEY && params.Type != param.EVM_ADDRESS_KEY {
-		return response.GenerateKeyResponse{}, errors.New("invalid parameters: fromKey should only be provided for ed25519PublicKey, ecdsaSecp256k1PublicKey, or evmAddress types")
+	if params.FromKey != nil && params.Type != param.ED25519_PUBLIC_KEY && params.Type != param.ECDSA_SECP256K1_PUBLIC_KEY && params.Type != param.EVM_ADDRESS_KEY {
+		return response.GenerateKeyResponse{}, utils.ErrFromKeyShouldBeProvided
 	}
 
-	if params.Threshold != 0 && params.Type != param.THRESHOLD_KEY {
-		return response.GenerateKeyResponse{}, errors.New("invalid parameters: threshold should only be provided for thresholdKey types")
+	if params.Threshold != nil && params.Type != param.THRESHOLD_KEY {
+		return response.GenerateKeyResponse{}, utils.ErrThresholdTypeShouldBeProvided
 	}
 
 	if params.Keys != nil && params.Type != param.LIST_KEY && params.Type != param.THRESHOLD_KEY {
-		return response.GenerateKeyResponse{}, errors.New("invalid parameters: keys should only be provided for keyList or thresholdKey types")
+		return response.GenerateKeyResponse{}, utils.ErrKeysShouldBeProvided
 	}
 
 	if (params.Type == param.THRESHOLD_KEY || params.Type == param.LIST_KEY) && params.Keys == nil {
-		return response.GenerateKeyResponse{}, errors.New("invalid request: keys list is required for generating a KeyList type")
+		return response.GenerateKeyResponse{}, utils.ErrKeylistRequired
 	}
 
-	if params.Type == param.THRESHOLD_KEY && params.Threshold == 0 {
-		return response.GenerateKeyResponse{}, errors.New("invalid request: threshold is required for generating a ThresholdKey type")
+	if params.Type == param.THRESHOLD_KEY && params.Threshold == nil {
+		return response.GenerateKeyResponse{}, utils.ErrThresholdRequired
 	}
 
 	resp := response.GenerateKeyResponse{}
@@ -59,41 +59,47 @@ func processKeyRecursively(params param.KeyParams, response *response.GenerateKe
 		return privateKey, nil
 
 	case param.ED25519_PUBLIC_KEY, param.ECDSA_SECP256K1_PUBLIC_KEY:
-		var publicKey string
-		var privateKey string
-		if params.FromKey != "" {
-			if params.Type == param.ED25519_PUBLIC_KEY {
-				pk, _ := hedera.PrivateKeyFromStringEd25519(params.FromKey)
-				privateKey = pk.StringDer()
-				publicKey = pk.PublicKey().StringDer()
-			} else {
-				pk, _ := hedera.PrivateKeyFromStringECDSA(params.FromKey)
-				privateKey = pk.StringDer()
-				publicKey = pk.PublicKey().StringDer()
-			}
-			if isList {
-				response.PrivateKeys = append(response.PrivateKeys, privateKey)
-			}
+		var publicKey, privateKey string
 
-			return publicKey, nil
-		}
-		if params.Type == param.ED25519_PUBLIC_KEY {
-			pk, _ := hedera.PrivateKeyGenerateEd25519()
+		setKeysFromKey := func(fromKey string, isEd25519 bool) {
+			var pk hedera.PrivateKey
+			if isEd25519 {
+				pk, _ = hedera.PrivateKeyFromStringEd25519(fromKey)
+			} else {
+				pk, _ = hedera.PrivateKeyFromStringECDSA(fromKey)
+			}
 			privateKey = pk.StringDer()
 			publicKey = pk.PublicKey().StringDer()
+		}
+
+		generateKeys := func(isEd25519 bool) {
+			var pk hedera.PrivateKey
+			if isEd25519 {
+				pk, _ = hedera.PrivateKeyGenerateEd25519()
+			} else {
+				pk, _ = hedera.PrivateKeyGenerateEcdsa()
+			}
+			privateKey = pk.StringDer()
+			publicKey = pk.PublicKey().StringDer()
+		}
+
+		isEd25519 := params.Type == param.ED25519_PUBLIC_KEY
+
+		if params.FromKey != nil {
+			setKeysFromKey(*params.FromKey, isEd25519)
 		} else {
-			pk, _ := hedera.PrivateKeyGenerateEcdsa()
-			privateKey = pk.StringDer()
-			publicKey = pk.PublicKey().StringDer()
+			generateKeys(isEd25519)
 		}
+
 		if isList {
 			response.PrivateKeys = append(response.PrivateKeys, privateKey)
 		}
+
 		return publicKey, nil
 
 	case param.LIST_KEY, param.THRESHOLD_KEY:
 		keyList := hedera.NewKeyList()
-		for _, keyParams := range params.Keys {
+		for _, keyParams := range *params.Keys {
 			keyStr, err := processKeyRecursively(keyParams, response, true)
 			if err != nil {
 				return "", err
@@ -105,7 +111,7 @@ func processKeyRecursively(params param.KeyParams, response *response.GenerateKe
 			keyList.Add(key)
 		}
 		if params.Type == param.THRESHOLD_KEY {
-			keyList.SetThreshold(params.Threshold)
+			keyList.SetThreshold(*params.Threshold)
 		}
 
 		keyListBytes, err := hedera.KeyToBytes(keyList)
@@ -116,8 +122,8 @@ func processKeyRecursively(params param.KeyParams, response *response.GenerateKe
 		return hex.EncodeToString(keyListBytes), nil
 
 	case param.EVM_ADDRESS_KEY:
-		if params.FromKey != "" {
-			key, err := utils.GetKeyFromString(params.FromKey)
+		if params.FromKey != nil {
+			key, err := utils.GetKeyFromString(*params.FromKey)
 			if err != nil {
 				return "", err
 			}

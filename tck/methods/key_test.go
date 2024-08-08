@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/hashgraph/hedera-sdk-go/tck/param"
+	"github.com/hashgraph/hedera-sdk-go/tck/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -12,8 +13,8 @@ func TestGenerateKeyWithInvalidFromKey(t *testing.T) {
 	// Given
 	params := param.KeyParams{
 		Type:      param.ED25519_PRIVATE_KEY,
-		FromKey:   "someKey",
-		Threshold: 0,
+		FromKey:   stringPointer("someKey"),
+		Threshold: nil,
 		Keys:      nil,
 	}
 
@@ -22,15 +23,16 @@ func TestGenerateKeyWithInvalidFromKey(t *testing.T) {
 
 	// Then
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "invalid parameters: fromKey should only be provided for ed25519PublicKey, ecdsaSecp256k1PublicKey, or evmAddress types")
+
+	assert.Contains(t, err.Error(), utils.ErrFromKeyShouldBeProvided.Error())
 }
 
 func TestGenerateKeyWithInvalidThreshold(t *testing.T) {
 	// Given
 	params := param.KeyParams{
 		Type:      param.ED25519_PUBLIC_KEY,
-		FromKey:   "",
-		Threshold: 1,
+		FromKey:   nil,
+		Threshold: intPointer(1),
 		Keys:      nil,
 	}
 
@@ -39,16 +41,17 @@ func TestGenerateKeyWithInvalidThreshold(t *testing.T) {
 
 	// Then
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "invalid parameters: threshold should only be provided for thresholdKey types")
+	assert.Contains(t, err.Error(), utils.ErrThresholdTypeShouldBeProvided.Error())
 }
 
 func TestGenerateKeyWithInvalidKeys(t *testing.T) {
 	// Given
 	params := param.KeyParams{
-		Type:      param.ED25519_PUBLIC_KEY,
-		FromKey:   "",
-		Threshold: 0,
-		Keys:      []param.KeyParams{},
+		Type: param.ED25519_PUBLIC_KEY,
+
+		FromKey:   nil,
+		Threshold: nil,
+		Keys:      &[]param.KeyParams{},
 	}
 
 	// When
@@ -56,15 +59,17 @@ func TestGenerateKeyWithInvalidKeys(t *testing.T) {
 
 	// Then
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "invalid parameters: keys should only be provided for keyList or thresholdKey types")
+
+	assert.Contains(t, err.Error(), utils.ErrKeysShouldBeProvided.Error())
 }
 
 func TestGenerateKeyWithMissingKeysForKeyList(t *testing.T) {
 	// Given
 	params := param.KeyParams{
-		Type:      param.LIST_KEY,
-		FromKey:   "",
-		Threshold: 0,
+		Type: param.LIST_KEY,
+
+		FromKey:   nil,
+		Threshold: nil,
 		Keys:      nil,
 	}
 
@@ -73,14 +78,16 @@ func TestGenerateKeyWithMissingKeysForKeyList(t *testing.T) {
 
 	// Then
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "invalid request: keys list is required for generating a KeyList type")
+
+	assert.Contains(t, err.Error(), utils.ErrKeylistRequired.Error())
 }
 
 func TestGenerateKeyWithMissingThresholdForThresholdKey(t *testing.T) {
 	// Given
 	params := param.KeyParams{
 		Type: param.THRESHOLD_KEY,
-		Keys: []param.KeyParams{
+
+		Keys: &[]param.KeyParams{
 			{
 				Type: param.ED25519_PUBLIC_KEY,
 			},
@@ -92,7 +99,8 @@ func TestGenerateKeyWithMissingThresholdForThresholdKey(t *testing.T) {
 
 	// Then
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "invalid request: threshold is required for generating a ThresholdKey type")
+
+	assert.Contains(t, err.Error(), utils.ErrThresholdRequired.Error())
 }
 
 func TestGenerateKeyWithValidEd25519PrivateKey(t *testing.T) {
@@ -128,9 +136,10 @@ func TestGenerateKeyWithValidEd25519PublicKey(t *testing.T) {
 func TestGenerateKeyWithValidThresholdKey(t *testing.T) {
 	// Given
 	params := param.KeyParams{
-		Type:      param.THRESHOLD_KEY,
-		Threshold: 2,
-		Keys: []param.KeyParams{
+		Type: param.THRESHOLD_KEY,
+
+		Threshold: intPointer(2),
+		Keys: &[]param.KeyParams{
 			{
 				Type: param.ED25519_PUBLIC_KEY,
 			},
@@ -150,7 +159,8 @@ func TestGenerateKeyWithValidListKey(t *testing.T) {
 	// Given
 	params := param.KeyParams{
 		Type: param.LIST_KEY,
-		Keys: []param.KeyParams{
+
+		Keys: &[]param.KeyParams{
 			{
 				Type: param.ED25519_PUBLIC_KEY,
 			},
@@ -169,8 +179,9 @@ func TestGenerateKeyWithValidListKey(t *testing.T) {
 func TestGenerateKeyWithValidEvmAddressKey(t *testing.T) {
 	// Given
 	params := param.KeyParams{
-		Type:    param.EVM_ADDRESS_KEY,
-		FromKey: "3054020101042056b071002a75ab207a44bb2c18320286062bc26969fcb98240301e4afbe9ee2ea00706052b8104000aa124032200038ef0b62d60b1415f8cfb460303c498fbf09cb2ef2d2ff19fad33982228ef86fd",
+		Type: param.EVM_ADDRESS_KEY,
+
+		FromKey: stringPointer("3054020101042056b071002a75ab207a44bb2c18320286062bc26969fcb98240301e4afbe9ee2ea00706052b8104000aa124032200038ef0b62d60b1415f8cfb460303c498fbf09cb2ef2d2ff19fad33982228ef86fd"),
 	}
 
 	// When

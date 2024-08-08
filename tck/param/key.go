@@ -13,8 +13,8 @@ const (
 )
 
 type KeyParams struct {
-	Type      KeyType     `json:"type"`
-	FromKey   string      `json:"fromKey"`
-	Threshold int         `json:"threshold"`
-	Keys      []KeyParams `json:"keys"`
+	Type      KeyType      `json:"type"`
+	FromKey   *string      `json:"fromKey"`
+	Threshold *int         `json:"threshold"`
+	Keys      *[]KeyParams `json:"keys"`
 }
