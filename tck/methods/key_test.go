@@ -57,7 +57,6 @@ func TestGenerateKeyWithInvalidKeys(t *testing.T) {
 
 	// Then
 	assert.Error(t, err)
-
 	assert.Contains(t, err.Error(), utils.ErrKeysShouldBeProvided.Error())
 }
 
@@ -75,7 +74,6 @@ func TestGenerateKeyWithMissingKeysForKeyList(t *testing.T) {
 
 	// Then
 	assert.Error(t, err)
-
 	assert.Contains(t, err.Error(), utils.ErrKeylistRequired.Error())
 }
 
