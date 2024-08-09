@@ -296,6 +296,10 @@ func (sk _ECDSAPrivateKey) _BytesDer() []byte {
 	return derBytes
 }
 
+func (sk _ECDSAPrivateKey) String() string {
+	return sk._StringRaw()
+}
+
 func (sk _ECDSAPrivateKey) _StringDer() string {
 	return fmt.Sprint(hex.EncodeToString(sk._BytesDer()))
 }

@@ -266,6 +266,11 @@ func (sk _Ed25519PrivateKey) _PublicKey() *_Ed25519PublicKey {
 }
 
 // String returns the text-encoded representation of the _Ed25519PrivateKey.
+func (sk _Ed25519PrivateKey) String() string {
+	return sk._StringRaw()
+}
+
+// String returns the text-encoded representation of the _Ed25519PrivateKey.
 func (sk _Ed25519PrivateKey) _StringDer() string {
 	return fmt.Sprint(_Ed25519PrivateKeyPrefix, hex.EncodeToString(sk.keyData[:32]))
 }

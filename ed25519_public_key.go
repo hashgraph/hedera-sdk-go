@@ -148,6 +148,10 @@ func (pk _Ed25519PublicKey) _ToProtoKey() *services.Key {
 	return &services.Key{Key: &services.Key_Ed25519{Ed25519: pk.keyData}}
 }
 
+func (pk _Ed25519PublicKey) String() string {
+	return pk._StringRaw()
+}
+
 func (pk _Ed25519PublicKey) _ToSignaturePairProtobuf(signature []byte) *services.SignaturePair {
 	return &services.SignaturePair{
 		PubKeyPrefix: pk.keyData,

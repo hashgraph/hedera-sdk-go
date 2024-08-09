@@ -176,3 +176,12 @@ func TestUnitAccountBalanceQueryMock(t *testing.T) {
 	_, err := query.Execute(client)
 	require.NoError(t, err)
 }
+
+func TestUnitAccountBalanceQueryNoClient(t *testing.T) {
+	t.Parallel()
+
+	_, err := NewAccountBalanceQuery().
+		Execute(nil)
+
+	require.ErrorContains(t, err, "client` must be provided and have an _Operator")
+}

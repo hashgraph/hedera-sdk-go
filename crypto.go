@@ -32,6 +32,7 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 	"github.com/pkg/errors"
 	"golang.org/x/crypto/pbkdf2"
+	protobuf "google.golang.org/protobuf/proto"
 )
 
 const _Ed25519PrivateKeyPrefix = "302e020100300506032b657004220420"
@@ -39,6 +40,22 @@ const _Ed25519PrivateKeyPrefix = "302e020100300506032b657004220420"
 type Key interface {
 	_ToProtoKey() *services.Key
 	String() string
+}
+
+func KeyFromBytes(bytes []byte) (Key, error) {
+	protoKey := &services.Key{}
+
+	err := protobuf.Unmarshal(bytes, protoKey)
+	if err != nil {
+		return nil, err
+	}
+
+	return _KeyFromProtobuf(protoKey)
+}
+
+func KeyToBytes(key Key) ([]byte, error) {
+	protoKey := key._ToProtoKey()
+	return protobuf.Marshal(protoKey)
 }
 
 func _KeyFromProtobuf(pbKey *services.Key) (Key, error) {
