@@ -30,13 +30,29 @@ import (
  *
  */
 
+func TestCustomizer(t *testing.T) {
+	t.Parallel()
+	env := NewIntegrationTestEnv(t)
+	newKey, _ := GeneratePrivateKey()
+
+	// TODO - remove this once the customizer is implemented
+	_, err := createFungibleToken(t, &env, func(transaction *TokenCreateTransaction) {
+		_, err := transaction.SetAdminKey(newKey).FreezeWith(env.Client)
+		require.NoError(t, err)
+		transaction.Sign(newKey)
+	})
+
+	require.NoError(t, err)
+}
 func TestIntegrationTokenRejectFlowCanExecuteForFungibleToken(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
 	// create fungible tokens with treasury
-	tokenID1 := createFungibleTokenHelper(18, t, &env)
-	tokenID2 := createFungibleTokenHelper(18, t, &env)
+	tokenID1, err := createFungibleToken(t, &env)
+	require.NoError(t, err)
+	tokenID2, err := createFungibleToken(t, &env)
+	require.NoError(t, err)
 
 	// create receiver account with 0 auto associations
 	receiver, key := createAccountHelper(t, &env, 0)
@@ -108,8 +124,10 @@ func TestIntegrationTokenRejectFlowCanExecuteForNFT(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	// create nft collections with treasury
-	nftID1 := createNftHelper(t, &env)
-	nftID2 := createNftHelper(t, &env)
+	nftID1, err := createNft(t, &env)
+	require.NoError(t, err)
+	nftID2, err := createNft(t, &env)
+	require.NoError(t, err)
 
 	// mint
 	mint, err := NewTokenMintTransaction().SetTokenID(nftID1).SetMetadatas(initialMetadataList).Execute(env.Client)
@@ -188,8 +206,10 @@ func TestIntegrationTokenRejectFlowFailsWhenNotRejectingAllNFTs(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	// create nft collections with treasury
-	nftID1 := createNftHelper(t, &env)
-	nftID2 := createNftHelper(t, &env)
+	nftID1, err := createNft(t, &env)
+	require.NoError(t, err)
+	nftID2, err := createNft(t, &env)
+	require.NoError(t, err)
 
 	// mint
 	mint, err := NewTokenMintTransaction().SetTokenID(nftID1).SetMetadatas(initialMetadataList).Execute(env.Client)
