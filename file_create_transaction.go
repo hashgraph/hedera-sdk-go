@@ -259,7 +259,7 @@ func (tx *FileCreateTransaction) SetTransactionID(transactionID TransactionID) *
 	return tx
 }
 
-// SetNodeAccountID sets the _Node AccountID for this FileCreateTransaction.
+// SetNodeAccountIDs sets the _Node AccountID for this FileCreateTransaction.
 func (tx *FileCreateTransaction) SetNodeAccountIDs(nodeID []AccountID) *FileCreateTransaction {
 	tx._RequireNotFrozen()
 	tx.Transaction.SetNodeAccountIDs(nodeID)

@@ -248,7 +248,7 @@ func (tx *LiveHashAddTransaction) SetTransactionID(transactionID TransactionID) 
 	return tx
 }
 
-// SetNodeAccountID sets the _Node AccountID for this LiveHashAddTransaction.
+// SetNodeAccountIDs sets the _Node AccountID for this LiveHashAddTransaction.
 func (tx *LiveHashAddTransaction) SetNodeAccountIDs(nodeID []AccountID) *LiveHashAddTransaction {
 	tx._RequireNotFrozen()
 	tx.Transaction.SetNodeAccountIDs(nodeID)

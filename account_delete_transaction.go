@@ -57,7 +57,7 @@ func NewAccountDeleteTransaction() *AccountDeleteTransaction {
 	return &tx
 }
 
-// SetNodeAccountID sets the _Node AccountID for this AccountDeleteTransaction.
+// SetAccountID sets the _Node AccountID for this AccountDeleteTransaction.
 func (tx *AccountDeleteTransaction) SetAccountID(accountID AccountID) *AccountDeleteTransaction {
 	tx._RequireNotFrozen()
 	tx.deleteAccountID = &accountID

@@ -415,7 +415,7 @@ func (tx *ContractUpdateTransaction) SetTransactionID(transactionID TransactionI
 	return tx
 }
 
-// SetNodeAccountID sets the _Node AccountID for this ContractUpdateTransaction.
+// SetNodeAccountIDs sets the _Node AccountID for this ContractUpdateTransaction.
 func (tx *ContractUpdateTransaction) SetNodeAccountIDs(nodeID []AccountID) *ContractUpdateTransaction {
 	tx._RequireNotFrozen()
 	tx.Transaction.SetNodeAccountIDs(nodeID)

@@ -180,7 +180,7 @@ func (tx *FileDeleteTransaction) SetTransactionID(transactionID TransactionID) *
 	return tx
 }
 
-// SetNodeAccountID sets the _Node AccountID for this FileDeleteTransaction.
+// SetNodeAccountIDs sets the _Node AccountID for this FileDeleteTransaction.
 func (tx *FileDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *FileDeleteTransaction {
 	tx._RequireNotFrozen()
 	tx.Transaction.SetNodeAccountIDs(nodeID)
