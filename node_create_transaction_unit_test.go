@@ -73,17 +73,17 @@ func TestUnitNodeCreateTransactionValidateWrong(t *testing.T) {
 	}
 }
 
-func endpoints(offsets ...uint) []_Endpoint {
-	endpoints := make([]_Endpoint, 0)
+func endpoints(offsets ...uint) []Endpoint {
+	endpoints := make([]Endpoint, 0)
 
 	for _, offset := range offsets {
-		endpoints = append(endpoints, _Endpoint{
-			address: _IPv4Address{
-				network: _IPv4AddressPart{
+		endpoints = append(endpoints, Endpoint{
+			address: IPv4Address{
+				network: IPv4AddressPart{
 					left:  byte(offset),
 					right: byte(offset),
 				},
-				host: _IPv4AddressPart{
+				host: IPv4AddressPart{
 					left:  byte(offset),
 					right: byte(offset),
 				},

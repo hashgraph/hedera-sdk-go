@@ -26,27 +26,42 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
-type _Endpoint struct {
-	address    _IPv4Address
+type Endpoint struct {
+	address    IPv4Address
 	port       int32
 	domainName string
 }
 
-func _EndpointFromProtobuf(serviceEndpoint *services.ServiceEndpoint) _Endpoint {
+func (endpoint *Endpoint) SetAddress(address IPv4Address) *Endpoint {
+	endpoint.address = address
+	return endpoint
+}
+
+func (endpoint *Endpoint) SetPort(port int32) *Endpoint {
+	endpoint.port = port
+	return endpoint
+}
+
+func (endpoint *Endpoint) SetDomainName(domainName string) *Endpoint {
+	endpoint.domainName = domainName
+	return endpoint
+}
+
+func EndpointFromProtobuf(serviceEndpoint *services.ServiceEndpoint) Endpoint {
 	port := serviceEndpoint.GetPort()
 
 	if port == 0 || port == 50111 {
 		port = 50211
 	}
 
-	return _Endpoint{
-		address:    _Ipv4AddressFromProtobuf(serviceEndpoint.GetIpAddressV4()),
+	return Endpoint{
+		address:    Ipv4AddressFromProtobuf(serviceEndpoint.GetIpAddressV4()),
 		port:       port,
 		domainName: serviceEndpoint.GetDomainName(),
 	}
 }
 
-func (endpoint *_Endpoint) _ToProtobuf() *services.ServiceEndpoint {
+func (endpoint *Endpoint) _ToProtobuf() *services.ServiceEndpoint {
 	return &services.ServiceEndpoint{
 		IpAddressV4: endpoint.address._ToProtobuf(),
 		Port:        endpoint.port,
@@ -54,6 +69,7 @@ func (endpoint *_Endpoint) _ToProtobuf() *services.ServiceEndpoint {
 	}
 }
 
-func (endpoint *_Endpoint) String() string {
-	return endpoint.address.String() + ":" + fmt.Sprintf("%d", endpoint.port)
+func (endpoint *Endpoint) String() string {
+	return endpoint.address.String() + ":" + fmt.Sprintf("%d", endpoint.port) + ":" + fmt.Sprintf("%s", endpoint.domainName)
+
 }

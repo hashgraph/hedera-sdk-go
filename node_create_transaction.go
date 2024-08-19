@@ -54,8 +54,8 @@ type NodeCreateTransaction struct {
 	Transaction
 	accountID           *AccountID
 	description         string
-	gossipEndpoints     []_Endpoint
-	serviceEndpoints    []_Endpoint
+	gossipEndpoints     []Endpoint
+	serviceEndpoints    []Endpoint
 	gossipCaCertificate []byte
 	grpcCertificateHash []byte
 	adminKey            Key
@@ -79,13 +79,13 @@ func _NodeCreateTransactionFromProtobuf(transaction Transaction, pb *services.Tr
 	}
 
 	accountID := _AccountIDFromProtobuf(pb.GetNodeCreate().GetAccountId())
-	gossipEndpoints := make([]_Endpoint, 0)
+	gossipEndpoints := make([]Endpoint, 0)
 	for _, endpoint := range pb.GetNodeCreate().GetGossipEndpoint() {
-		gossipEndpoints = append(gossipEndpoints, _EndpointFromProtobuf(endpoint))
+		gossipEndpoints = append(gossipEndpoints, EndpointFromProtobuf(endpoint))
 	}
-	serviceEndpoints := make([]_Endpoint, 0)
+	serviceEndpoints := make([]Endpoint, 0)
 	for _, endpoint := range pb.GetNodeCreate().GetServiceEndpoint() {
-		serviceEndpoints = append(serviceEndpoints, _EndpointFromProtobuf(endpoint))
+		serviceEndpoints = append(serviceEndpoints, EndpointFromProtobuf(endpoint))
 	}
 
 	return &NodeCreateTransaction{
@@ -129,38 +129,38 @@ func (tx *NodeCreateTransaction) SetDescription(description string) *NodeCreateT
 }
 
 // GetServiceEndpoints the list of service endpoints for gossip.
-func (tx *NodeCreateTransaction) GetGossipEndpoints() []_Endpoint {
+func (tx *NodeCreateTransaction) GetGossipEndpoints() []Endpoint {
 	return tx.gossipEndpoints
 }
 
 // SetServiceEndpoints the list of service endpoints for gossip.
-func (tx *NodeCreateTransaction) SetGossipEndpoints(gossipEndpoints []_Endpoint) *NodeCreateTransaction {
+func (tx *NodeCreateTransaction) SetGossipEndpoints(gossipEndpoints []Endpoint) *NodeCreateTransaction {
 	tx._RequireNotFrozen()
 	tx.gossipEndpoints = gossipEndpoints
 	return tx
 }
 
 // AddGossipEndpoint add an endpoint for gossip to the list of service endpoints for gossip.
-func (tx *NodeCreateTransaction) AddGossipEndpoint(endpoint _Endpoint) *NodeCreateTransaction {
+func (tx *NodeCreateTransaction) AddGossipEndpoint(endpoint Endpoint) *NodeCreateTransaction {
 	tx._RequireNotFrozen()
 	tx.gossipEndpoints = append(tx.gossipEndpoints, endpoint)
 	return tx
 }
 
 // GetServiceEndpoints the list of service endpoints for gRPC calls.
-func (tx *NodeCreateTransaction) GetServiceEndpoints() []_Endpoint {
+func (tx *NodeCreateTransaction) GetServiceEndpoints() []Endpoint {
 	return tx.serviceEndpoints
 }
 
 // SetServiceEndpoints the list of service endpoints for gRPC calls.
-func (tx *NodeCreateTransaction) SetServiceEndpoints(serviceEndpoints []_Endpoint) *NodeCreateTransaction {
+func (tx *NodeCreateTransaction) SetServiceEndpoints(serviceEndpoints []Endpoint) *NodeCreateTransaction {
 	tx._RequireNotFrozen()
 	tx.serviceEndpoints = serviceEndpoints
 	return tx
 }
 
 // AddServiceEndpoint the list of service endpoints for gRPC calls.
-func (tx *NodeCreateTransaction) AddServiceEndpoint(endpoint _Endpoint) *NodeCreateTransaction {
+func (tx *NodeCreateTransaction) AddServiceEndpoint(endpoint Endpoint) *NodeCreateTransaction {
 	tx._RequireNotFrozen()
 	tx.serviceEndpoints = append(tx.serviceEndpoints, endpoint)
 	return tx
