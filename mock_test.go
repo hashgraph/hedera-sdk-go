@@ -196,10 +196,12 @@ func TestUnitMockAddressBookQuery(t *testing.T) {
 				{
 					IpAddressV4: []byte{byte(uint(1)), byte(uint(2)), byte(uint(2)), byte(uint(3))},
 					Port:        50123,
+					DomainName:  "hedera.domain.name",
 				},
 				{
 					IpAddressV4: []byte{byte(uint(2)), byte(uint(1)), byte(uint(2)), byte(uint(3))},
 					Port:        50123,
+					DomainName:  "hedera.domain.name",
 				},
 			},
 			Description: "",
@@ -218,10 +220,12 @@ func TestUnitMockAddressBookQuery(t *testing.T) {
 				{
 					IpAddressV4: []byte{byte(uint(1)), byte(uint(2)), byte(uint(2)), byte(uint(9))},
 					Port:        50123,
+					DomainName:  "hedera.domain.name2",
 				},
 				{
 					IpAddressV4: []byte{byte(uint(2)), byte(uint(1)), byte(uint(2)), byte(uint(9))},
 					Port:        50123,
+					DomainName:  "hedera.domain.name2",
 				},
 			},
 			Description: "",
@@ -240,11 +244,11 @@ func TestUnitMockAddressBookQuery(t *testing.T) {
 
 	require.Equal(t, len(result.NodeAddresses), 2)
 	require.Equal(t, result.NodeAddresses[0].AccountID.String(), "0.0.3")
-	require.Equal(t, result.NodeAddresses[0].Addresses[0].String(), "1.2.2.3:50123")
-	require.Equal(t, result.NodeAddresses[0].Addresses[1].String(), "2.1.2.3:50123")
+	require.Equal(t, result.NodeAddresses[0].Addresses[0].String(), "1.2.2.3:50123:hedera.domain.name")
+	require.Equal(t, result.NodeAddresses[0].Addresses[1].String(), "2.1.2.3:50123:hedera.domain.name")
 	require.Equal(t, result.NodeAddresses[1].AccountID.String(), "0.0.4")
-	require.Equal(t, result.NodeAddresses[1].Addresses[0].String(), "1.2.2.9:50123")
-	require.Equal(t, result.NodeAddresses[1].Addresses[1].String(), "2.1.2.9:50123")
+	require.Equal(t, result.NodeAddresses[1].Addresses[0].String(), "1.2.2.9:50123:hedera.domain.name2")
+	require.Equal(t, result.NodeAddresses[1].Addresses[1].String(), "2.1.2.9:50123:hedera.domain.name2")
 }
 
 func TestUnitMockGenerateTransactionIDsPerExecution(t *testing.T) {

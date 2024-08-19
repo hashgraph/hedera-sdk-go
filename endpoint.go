@@ -70,6 +70,5 @@ func (endpoint *Endpoint) _ToProtobuf() *services.ServiceEndpoint {
 }
 
 func (endpoint *Endpoint) String() string {
-	return endpoint.address.String() + ":" + fmt.Sprintf("%d", endpoint.port) + ":" + fmt.Sprintf("%s", endpoint.domainName)
-
+	return endpoint.address.String() + ":" + fmt.Sprintf("%d", endpoint.port) + ":" + endpoint.domainName
 }
