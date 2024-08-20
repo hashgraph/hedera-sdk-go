@@ -55,26 +55,8 @@ func TestIntegrationTokenMintTransactionCanExecute(t *testing.T) {
 
 	accountID := *receipt.AccountID
 
-	resp, err = NewTokenCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetDecimals(3).
-		SetInitialSupply(1000000).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeKey(env.Client.GetOperatorPublicKey()).
-		SetWipeKey(env.Client.GetOperatorPublicKey()).
-		SetKycKey(env.Client.GetOperatorPublicKey()).
-		SetSupplyKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeDefault(false).
-		Execute(env.Client)
+	tokenID, err := createFungibleToken(&env)
 	require.NoError(t, err)
-
-	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
-
-	tokenID := *receipt.TokenID
 
 	resp, err = NewTokenMintTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
@@ -135,26 +117,8 @@ func TestIntegrationTokenMintTransactionNoAmount(t *testing.T) {
 
 	accountID := *receipt.AccountID
 
-	resp, err = NewTokenCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetDecimals(3).
-		SetInitialSupply(1000000).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeKey(env.Client.GetOperatorPublicKey()).
-		SetWipeKey(env.Client.GetOperatorPublicKey()).
-		SetKycKey(env.Client.GetOperatorPublicKey()).
-		SetSupplyKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeDefault(false).
-		Execute(env.Client)
+	tokenID, err := createFungibleToken(&env)
 	require.NoError(t, err)
-
-	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
-
-	tokenID := *receipt.TokenID
 
 	_, err = NewTokenMintTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
@@ -204,26 +168,8 @@ func TestIntegrationTokenMintTransactionNoTokenID(t *testing.T) {
 
 	accountID := *receipt.AccountID
 
-	resp, err = NewTokenCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetDecimals(3).
-		SetInitialSupply(1000000).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeKey(env.Client.GetOperatorPublicKey()).
-		SetWipeKey(env.Client.GetOperatorPublicKey()).
-		SetKycKey(env.Client.GetOperatorPublicKey()).
-		SetSupplyKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeDefault(false).
-		Execute(env.Client)
+	tokenID, err := createFungibleToken(&env)
 	require.NoError(t, err)
-
-	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
-
-	tokenID := *receipt.TokenID
 
 	resp2, err := NewTokenMintTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
@@ -275,28 +221,14 @@ func TestIntegrationTokenMintTransactionMaxReached(t *testing.T) {
 
 	accountID := *receipt.AccountID
 
-	resp, err = NewTokenCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetDecimals(3).
-		SetInitialSupply(10).
-		SetSupplyType(TokenSupplyTypeFinite).
-		SetMaxSupply(30).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeKey(env.Client.GetOperatorPublicKey()).
-		SetWipeKey(env.Client.GetOperatorPublicKey()).
-		SetKycKey(env.Client.GetOperatorPublicKey()).
-		SetSupplyKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeDefault(false).
-		Execute(env.Client)
+	tokenID, err := createFungibleToken(&env, func(transaction *TokenCreateTransaction) {
+		transaction.
+			SetDecimals(3).
+			SetInitialSupply(10).
+			SetSupplyType(TokenSupplyTypeFinite).
+			SetMaxSupply(30)
+	})
 	require.NoError(t, err)
-
-	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
-
-	tokenID := *receipt.TokenID
 
 	resp, err = NewTokenMintTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
@@ -337,31 +269,12 @@ func DisabledTestIntegrationTokenMintTransactionMetadataTooLong(t *testing.T) { 
 
 	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 
-	resp, err := NewTokenCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetTokenType(TokenTypeNonFungibleUnique).
-		SetMaxSupply(20).
-		SetSupplyType(TokenSupplyTypeFinite).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeKey(env.Client.GetOperatorPublicKey()).
-		SetWipeKey(env.Client.GetOperatorPublicKey()).
-		SetKycKey(env.Client.GetOperatorPublicKey()).
-		SetSupplyKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeDefault(false).
-		Execute(env.Client)
+	tokenID, err := createNft(&env)
 	require.NoError(t, err)
 
-	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
-
-	tokenID := *receipt.TokenID
 	metaData := make([]byte, 50, 101)
 
 	mint, err := NewTokenMintTransaction().
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetTokenID(tokenID).
 		SetMetadata(metaData).
 		Execute(env.Client)
@@ -376,7 +289,6 @@ func DisabledTestIntegrationTokenMintTransactionMetadataTooLong(t *testing.T) { 
 
 	_, err = NewTokenNftInfoQuery().
 		SetNftID(nftID).
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
 	assert.Error(t, err)
 }
@@ -389,30 +301,10 @@ func DisabledTestIntegrationTokenMintTransactionInvalidMetadata(t *testing.T) { 
 
 	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 
-	resp, err := NewTokenCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetTokenType(TokenTypeNonFungibleUnique).
-		SetMaxSupply(20).
-		SetSupplyType(TokenSupplyTypeFinite).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeKey(env.Client.GetOperatorPublicKey()).
-		SetWipeKey(env.Client.GetOperatorPublicKey()).
-		SetKycKey(env.Client.GetOperatorPublicKey()).
-		SetSupplyKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeDefault(false).
-		Execute(env.Client)
+	tokenID, err := createNft(&env)
 	require.NoError(t, err)
-
-	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
-
-	tokenID := *receipt.TokenID
 
 	mint, err := NewTokenMintTransaction().
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetTokenID(tokenID).
 		SetAmount(1).
 		Execute(env.Client)

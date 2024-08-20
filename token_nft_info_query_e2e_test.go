@@ -39,29 +39,12 @@ func TestIntegrationTokenNftGetInfoByNftIDCanExecute(t *testing.T) { // nolint
 
 	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 
-	resp, err := NewTokenCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetTokenType(TokenTypeNonFungibleUnique).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeKey(env.Client.GetOperatorPublicKey()).
-		SetWipeKey(env.Client.GetOperatorPublicKey()).
-		SetKycKey(env.Client.GetOperatorPublicKey()).
-		SetSupplyKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeDefault(false).
-		Execute(env.Client)
+	tokenID, err := createNft(&env)
 	require.NoError(t, err)
 
-	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
-
-	tokenID := *receipt.TokenID
 	metaData := []byte{50}
 
 	mint, err := NewTokenMintTransaction().
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetTokenID(tokenID).
 		SetMetadata(metaData).
 		Execute(env.Client)
@@ -74,7 +57,6 @@ func TestIntegrationTokenNftGetInfoByNftIDCanExecute(t *testing.T) { // nolint
 
 	info, err := NewTokenNftInfoQuery().
 		SetNftID(nftID).
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
 	require.NoError(t, err)
 

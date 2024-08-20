@@ -36,7 +36,7 @@ func TestCustomizer(t *testing.T) {
 	newKey, _ := GeneratePrivateKey()
 
 	// TODO - remove this once the customizer is implemented
-	_, err := createFungibleToken(t, &env, func(transaction *TokenCreateTransaction) {
+	_, err := createFungibleToken(&env, func(transaction *TokenCreateTransaction) {
 		_, err := transaction.SetAdminKey(newKey).FreezeWith(env.Client)
 		require.NoError(t, err)
 		transaction.Sign(newKey)
@@ -49,9 +49,9 @@ func TestIntegrationTokenRejectFlowCanExecuteForFungibleToken(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	// create fungible tokens with treasury
-	tokenID1, err := createFungibleToken(t, &env)
+	tokenID1, err := createFungibleToken(&env)
 	require.NoError(t, err)
-	tokenID2, err := createFungibleToken(t, &env)
+	tokenID2, err := createFungibleToken(&env)
 	require.NoError(t, err)
 
 	// create receiver account with 0 auto associations
@@ -124,17 +124,17 @@ func TestIntegrationTokenRejectFlowCanExecuteForNFT(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	// create nft collections with treasury
-	nftID1, err := createNft(t, &env)
+	nftID1, err := createNft(&env)
 	require.NoError(t, err)
-	nftID2, err := createNft(t, &env)
+	nftID2, err := createNft(&env)
 	require.NoError(t, err)
 
 	// mint
-	mint, err := NewTokenMintTransaction().SetTokenID(nftID1).SetMetadatas(initialMetadataList).Execute(env.Client)
+	mint, err := NewTokenMintTransaction().SetTokenID(nftID1).SetMetadatas(mintMetadata).Execute(env.Client)
 	require.NoError(t, err)
 	receipt, err := mint.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
-	mint, err = NewTokenMintTransaction().SetTokenID(nftID2).SetMetadatas(initialMetadataList).Execute(env.Client)
+	mint, err = NewTokenMintTransaction().SetTokenID(nftID2).SetMetadatas(mintMetadata).Execute(env.Client)
 	require.NoError(t, err)
 	receipt, err = mint.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
@@ -206,17 +206,17 @@ func TestIntegrationTokenRejectFlowFailsWhenNotRejectingAllNFTs(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	// create nft collections with treasury
-	nftID1, err := createNft(t, &env)
+	nftID1, err := createNft(&env)
 	require.NoError(t, err)
-	nftID2, err := createNft(t, &env)
+	nftID2, err := createNft(&env)
 	require.NoError(t, err)
 
 	// mint
-	mint, err := NewTokenMintTransaction().SetTokenID(nftID1).SetMetadatas(initialMetadataList).Execute(env.Client)
+	mint, err := NewTokenMintTransaction().SetTokenID(nftID1).SetMetadatas(mintMetadata).Execute(env.Client)
 	require.NoError(t, err)
 	receipt, err := mint.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
-	mint, err = NewTokenMintTransaction().SetTokenID(nftID2).SetMetadatas(initialMetadataList).Execute(env.Client)
+	mint, err = NewTokenMintTransaction().SetTokenID(nftID2).SetMetadatas(mintMetadata).Execute(env.Client)
 	require.NoError(t, err)
 	receipt, err = mint.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)

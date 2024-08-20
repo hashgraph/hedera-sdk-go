@@ -55,27 +55,8 @@ func TestIntegrationAccountBalanceQueryCanGetTokenBalance(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
-	resp, err := NewTokenCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetTokenMemo("fnord").
-		SetDecimals(3).
-		SetInitialSupply(1000000).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeKey(env.Client.GetOperatorPublicKey()).
-		SetWipeKey(env.Client.GetOperatorPublicKey()).
-		SetKycKey(env.Client.GetOperatorPublicKey()).
-		SetSupplyKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeDefault(false).
-		Execute(env.Client)
+	tokenID, err := createFungibleToken(&env)
 	require.NoError(t, err)
-
-	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
-
-	tokenID := receipt.TokenID
 
 	balance, err := NewAccountBalanceQuery().
 		SetNodeAccountIDs(env.NodeAccountIDs).
@@ -86,7 +67,7 @@ func TestIntegrationAccountBalanceQueryCanGetTokenBalance(t *testing.T) {
 	assert.Equal(t, balance, balance)
 	// TODO: assert.Equal(t, uint64(1000000), balance.Tokens.Get(*tokenID))
 	// TODO: assert.Equal(t, uint64(3), balance.TokenDecimals.Get(*tokenID))
-	err = CloseIntegrationTestEnv(env, tokenID)
+	err = CloseIntegrationTestEnv(env, &tokenID)
 	require.NoError(t, err)
 }
 

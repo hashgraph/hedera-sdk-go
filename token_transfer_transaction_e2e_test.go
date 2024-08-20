@@ -54,26 +54,10 @@ func TestIntegrationTokenTransferTransactionCanExecute(t *testing.T) {
 
 	accountID := *receipt.AccountID
 
-	resp, err = NewTokenCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetDecimals(3).
-		SetInitialSupply(1000000).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeKey(env.Client.GetOperatorPublicKey()).
-		SetWipeKey(env.Client.GetOperatorPublicKey()).
-		SetKycKey(env.Client.GetOperatorPublicKey()).
-		SetSupplyKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeDefault(false).
-		Execute(env.Client)
+	tokenID, err := createFungibleToken(&env, func(transaction *TokenCreateTransaction) {
+		transaction.SetKycKey(env.Client.GetOperatorPublicKey())
+	})
 	require.NoError(t, err)
-
-	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
-
-	tokenID := *receipt.TokenID
 
 	transaction, err := NewTokenAssociateTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
@@ -171,26 +155,10 @@ func TestIntegrationTokenTransferTransactionNotZeroSum(t *testing.T) {
 
 	accountID := *receipt.AccountID
 
-	resp, err = NewTokenCreateTransaction().
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetDecimals(3).
-		SetInitialSupply(1000000).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeKey(env.Client.GetOperatorPublicKey()).
-		SetWipeKey(env.Client.GetOperatorPublicKey()).
-		SetKycKey(env.Client.GetOperatorPublicKey()).
-		SetSupplyKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeDefault(false).
-		Execute(env.Client)
+	tokenID, err := createFungibleToken(&env, func(transaction *TokenCreateTransaction) {
+		transaction.SetKycKey(env.Client.GetOperatorPublicKey())
+	})
 	require.NoError(t, err)
-
-	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
-
-	tokenID := *receipt.TokenID
 
 	nodeID := resp.NodeID
 
@@ -280,27 +248,9 @@ func DisabledTestIntegrationNftTransferTransaction(t *testing.T) { // nolint
 
 	accountID := *receipt.AccountID
 
-	resp, err = NewTokenCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetTokenType(TokenTypeNonFungibleUnique).
-		SetSupplyType(TokenSupplyTypeFinite).
-		SetMaxSupply(5).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeKey(env.Client.GetOperatorPublicKey()).
-		SetWipeKey(env.Client.GetOperatorPublicKey()).
-		SetKycKey(env.Client.GetOperatorPublicKey()).
-		SetSupplyKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeDefault(false).
-		Execute(env.Client)
+	tokenID, err := createNft(&env)
 	require.NoError(t, err)
 
-	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
-
-	tokenID := *receipt.TokenID
 	metaData := [][]byte{{50}, {50}}
 
 	mint, err := NewTokenMintTransaction().
@@ -411,27 +361,8 @@ func DisabledTestIntegrationTokenFeeScheduleUpdateRecursionDepthTransaction(t *t
 
 	accountID := *receipt.AccountID
 
-	resp, err = NewTokenCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetDecimals(3).
-		SetInitialSupply(1000000100000000).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeKey(env.Client.GetOperatorPublicKey()).
-		SetWipeKey(env.Client.GetOperatorPublicKey()).
-		SetKycKey(env.Client.GetOperatorPublicKey()).
-		SetSupplyKey(env.Client.GetOperatorPublicKey()).
-		SetFeeScheduleKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeDefault(false).
-		Execute(env.Client)
+	tokenID, err := createFungibleToken(&env)
 	require.NoError(t, err)
-
-	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
-
-	tokenID := *receipt.TokenID
 
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
@@ -518,27 +449,10 @@ func TestIntegrationTokenFeeScheduleUpdateHugeAmountTransaction(t *testing.T) {
 
 	accountID := *receipt.AccountID
 
-	resp, err = NewTokenCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetDecimals(3).
-		SetInitialSupply(10).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeKey(env.Client.GetOperatorPublicKey()).
-		SetWipeKey(env.Client.GetOperatorPublicKey()).
-		SetKycKey(env.Client.GetOperatorPublicKey()).
-		SetSupplyKey(env.Client.GetOperatorPublicKey()).
-		SetFeeScheduleKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeDefault(false).
-		Execute(env.Client)
+	tokenID, err := createFungibleToken(&env, func(transaction *TokenCreateTransaction) {
+		transaction.SetKycKey(env.Client.GetOperatorPublicKey())
+	})
 	require.NoError(t, err)
-
-	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
-
-	tokenID := *receipt.TokenID
 
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
@@ -632,27 +546,8 @@ func DisabledTestIntegrationTokenFeeScheduleUpdateHugeAmountOneTransaction(t *te
 
 	accountID2 := *receipt.AccountID
 
-	resp, err = NewTokenCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetDecimals(3).
-		SetInitialSupply(10).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeKey(env.Client.GetOperatorPublicKey()).
-		SetWipeKey(env.Client.GetOperatorPublicKey()).
-		SetKycKey(env.Client.GetOperatorPublicKey()).
-		SetSupplyKey(env.Client.GetOperatorPublicKey()).
-		SetFeeScheduleKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeDefault(false).
-		Execute(env.Client)
+	tokenID, err := createFungibleToken(&env)
 	require.NoError(t, err)
-
-	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
-
-	tokenID := *receipt.TokenID
 
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
@@ -736,27 +631,10 @@ func TestIntegrationNftTransferTransactionAccountAmountTransfersOnlyForFungibleC
 
 	accountID := *receipt.AccountID
 
-	resp, err = NewTokenCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetTokenType(TokenTypeNonFungibleUnique).
-		SetSupplyType(TokenSupplyTypeFinite).
-		SetMaxSupply(5).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeKey(env.Client.GetOperatorPublicKey()).
-		SetWipeKey(env.Client.GetOperatorPublicKey()).
-		SetKycKey(env.Client.GetOperatorPublicKey()).
-		SetSupplyKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeDefault(false).
-		Execute(env.Client)
+	tokenID, err := createNft(&env, func(transaction *TokenCreateTransaction) {
+		transaction.SetKycKey(env.Client.GetOperatorPublicKey())
+	})
 	require.NoError(t, err)
-
-	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
-
-	tokenID := *receipt.TokenID
 
 	transaction, err := NewTokenAssociateTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
@@ -851,27 +729,9 @@ func DisabledTestIntegrationNftAccountStillOwnsNfts(t *testing.T) { // nolint
 
 	accountID := *receipt.AccountID
 
-	resp, err = NewTokenCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetTokenType(TokenTypeNonFungibleUnique).
-		SetSupplyType(TokenSupplyTypeFinite).
-		SetMaxSupply(5).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeKey(env.Client.GetOperatorPublicKey()).
-		SetWipeKey(env.Client.GetOperatorPublicKey()).
-		SetKycKey(env.Client.GetOperatorPublicKey()).
-		SetSupplyKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeDefault(false).
-		Execute(env.Client)
+	tokenID, err := createNft(&env)
 	require.NoError(t, err)
 
-	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
-
-	tokenID := *receipt.TokenID
 	metaData := [][]byte{{50}, {50}}
 
 	transaction, err := NewTokenAssociateTransaction().
@@ -970,27 +830,11 @@ func TestIntegrationTokenFeeScheduleUpdateTokenNotAssociatedToFeeCollector(t *te
 
 	accountID := *receipt.AccountID
 
-	resp, err = NewTokenCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetDecimals(3).
-		SetInitialSupply(10).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeKey(env.Client.GetOperatorPublicKey()).
-		SetWipeKey(env.Client.GetOperatorPublicKey()).
-		SetKycKey(env.Client.GetOperatorPublicKey()).
-		SetSupplyKey(env.Client.GetOperatorPublicKey()).
-		SetFeeScheduleKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeDefault(false).
-		Execute(env.Client)
+	tokenID, err := createFungibleToken(&env, func(transaction *TokenCreateTransaction) {
+		transaction.SetKycKey(env.Client.GetOperatorPublicKey()).
+			SetFeeScheduleKey(env.Client.GetOperatorPublicKey())
+	})
 	require.NoError(t, err)
-
-	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
-
-	tokenID := *receipt.TokenID
 
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
@@ -1056,71 +900,14 @@ func DisabledTestIntegrationTokenFeeScheduleUpdateCustomFeeChargingExceededMax(t
 
 	accountID3 := *receipt.AccountID
 
-	resp, err = NewTokenCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetDecimals(3).
-		SetInitialSupply(10).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeKey(env.Client.GetOperatorPublicKey()).
-		SetWipeKey(env.Client.GetOperatorPublicKey()).
-		SetKycKey(env.Client.GetOperatorPublicKey()).
-		SetSupplyKey(env.Client.GetOperatorPublicKey()).
-		SetFeeScheduleKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeDefault(false).
-		Execute(env.Client)
+	tokenID, err := createFungibleToken(&env)
 	require.NoError(t, err)
 
-	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	tokenID2, err := createFungibleToken(&env)
 	require.NoError(t, err)
 
-	tokenID := *receipt.TokenID
-
-	resp, err = NewTokenCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetDecimals(3).
-		SetInitialSupply(10).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeKey(env.Client.GetOperatorPublicKey()).
-		SetWipeKey(env.Client.GetOperatorPublicKey()).
-		SetKycKey(env.Client.GetOperatorPublicKey()).
-		SetSupplyKey(env.Client.GetOperatorPublicKey()).
-		SetFeeScheduleKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeDefault(false).
-		Execute(env.Client)
+	tokenID3, err := createFungibleToken(&env)
 	require.NoError(t, err)
-
-	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
-
-	tokenID2 := *receipt.TokenID
-
-	resp, err = NewTokenCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetDecimals(3).
-		SetInitialSupply(10).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeKey(env.Client.GetOperatorPublicKey()).
-		SetWipeKey(env.Client.GetOperatorPublicKey()).
-		SetKycKey(env.Client.GetOperatorPublicKey()).
-		SetSupplyKey(env.Client.GetOperatorPublicKey()).
-		SetFeeScheduleKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeDefault(false).
-		Execute(env.Client)
-	require.NoError(t, err)
-
-	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
-
-	tokenID3 := *receipt.TokenID
 
 	transaction, err := NewTokenAssociateTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).

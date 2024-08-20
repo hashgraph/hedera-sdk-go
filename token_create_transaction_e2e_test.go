@@ -36,27 +36,10 @@ func TestIntegrationTokenCreateTransactionCanExecute(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
-	resp, err := NewTokenCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetTokenMemo("fnord").
-		SetDecimals(3).
-		SetInitialSupply(1000000).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeKey(env.Client.GetOperatorPublicKey()).
-		SetWipeKey(env.Client.GetOperatorPublicKey()).
-		SetKycKey(env.Client.GetOperatorPublicKey()).
-		SetSupplyKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeDefault(false).
-		Execute(env.Client)
+	tokenID, err := createFungibleToken(&env)
 	require.NoError(t, err)
 
-	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
-
-	err = CloseIntegrationTestEnv(env, receipt.TokenID)
+	err = CloseIntegrationTestEnv(env, &tokenID)
 	require.NoError(t, err)
 }
 
@@ -89,27 +72,17 @@ func TestIntegrationTokenCreateTransactionMultipleKeys(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	resp, err = NewTokenCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetDecimals(3).
-		SetInitialSupply(1000000).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeKey(pubKeys[1]).
-		SetWipeKey(pubKeys[2]).
-		SetKycKey(pubKeys[3]).
-		SetSupplyKey(pubKeys[4]).
-		SetMetadataKey(pubKeys[5]).
-		SetFreezeDefault(false).
-		Execute(env.Client)
+	tokenID, err := createFungibleToken(&env, func(transaction *TokenCreateTransaction) {
+		transaction.
+			SetFreezeKey(pubKeys[1]).
+			SetWipeKey(pubKeys[2]).
+			SetKycKey(pubKeys[3]).
+			SetSupplyKey(pubKeys[4]).
+			SetMetadataKey(pubKeys[5])
+	})
 	require.NoError(t, err)
 
-	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
-
-	err = CloseIntegrationTestEnv(env, receipt.TokenID)
+	err = CloseIntegrationTestEnv(env, &tokenID)
 	require.NoError(t, err)
 }
 
@@ -209,34 +182,20 @@ func TestIntegrationTokenCreateTransactionAdminSign(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	tokenCreate, err := NewTokenCreateTransaction().
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetDecimals(3).
-		SetInitialSupply(1000000).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeKey(pubKeys[1]).
-		SetWipeKey(pubKeys[2]).
-		SetKycKey(pubKeys[3]).
-		SetSupplyKey(pubKeys[4]).
-		SetFreezeDefault(false).
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		FreezeWith(env.Client)
-	require.NoError(t, err)
+	tokenID, err := createFungibleToken(&env, func(transaction *TokenCreateTransaction) {
+		transaction.
+			SetFreezeKey(pubKeys[1]).
+			SetWipeKey(pubKeys[2]).
+			SetKycKey(pubKeys[3]).
+			SetSupplyKey(pubKeys[4]).
+			SetMetadataKey(pubKeys[5]).
+			FreezeWith(env.Client)
+		transaction.
+			Sign(keys[0]).
+			Sign(keys[1])
+	})
 
-	resp, err = tokenCreate.
-		Sign(keys[0]).
-		Sign(keys[1]).
-		Execute(env.Client)
-	require.NoError(t, err)
-
-	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
-
-	assert.NotNil(t, receipt.TokenID)
-
-	err = CloseIntegrationTestEnv(env, receipt.TokenID)
+	err = CloseIntegrationTestEnv(env, &tokenID)
 	require.NoError(t, err)
 }
 
@@ -244,28 +203,9 @@ func DisabledTestIntegrationTokenNftCreateTransaction(t *testing.T) { // nolint
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
-	resp, err := NewTokenCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetTokenMemo("fnord").
-		SetTokenType(TokenTypeNonFungibleUnique).
-		SetSupplyType(TokenSupplyTypeFinite).
-		SetMaxSupply(5).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeKey(env.Client.GetOperatorPublicKey()).
-		SetWipeKey(env.Client.GetOperatorPublicKey()).
-		SetKycKey(env.Client.GetOperatorPublicKey()).
-		SetSupplyKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeDefault(false).
-		Execute(env.Client)
-	require.NoError(t, err)
+	tokenID, err := createNft(&env)
 
-	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
-
-	err = CloseIntegrationTestEnv(env, receipt.TokenID)
+	err = CloseIntegrationTestEnv(env, &tokenID)
 	require.NoError(t, err)
 }
 
@@ -273,39 +213,23 @@ func TestIntegrationTokenCreateTransactionWithCustomFees(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
-	resp, err := NewTokenCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetTokenMemo("fnord").
-		SetDecimals(3).
-		SetInitialSupply(1000000).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeKey(env.Client.GetOperatorPublicKey()).
-		SetWipeKey(env.Client.GetOperatorPublicKey()).
-		SetKycKey(env.Client.GetOperatorPublicKey()).
-		SetSupplyKey(env.Client.GetOperatorPublicKey()).
-		SetCustomFees([]Fee{
-			NewCustomFixedFee().
-				SetFeeCollectorAccountID(env.OperatorID).
-				SetAmount(10),
-			NewCustomFractionalFee().
-				SetFeeCollectorAccountID(env.OperatorID).
-				SetNumerator(1).
-				SetDenominator(20).
-				SetMin(1).
-				SetAssessmentMethod(true).
-				SetMax(10),
-		}).
-		SetFreezeDefault(false).
-		Execute(env.Client)
-	require.NoError(t, err)
+	tokenID, err := createFungibleToken(&env, func(transaction *TokenCreateTransaction) {
+		transaction.
+			SetCustomFees([]Fee{
+				NewCustomFixedFee().
+					SetFeeCollectorAccountID(env.OperatorID).
+					SetAmount(10),
+				NewCustomFractionalFee().
+					SetFeeCollectorAccountID(env.OperatorID).
+					SetNumerator(1).
+					SetDenominator(20).
+					SetMin(1).
+					SetAssessmentMethod(true).
+					SetMax(10),
+			})
+	})
 
-	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
-
-	err = CloseIntegrationTestEnv(env, receipt.TokenID)
+	err = CloseIntegrationTestEnv(env, &tokenID)
 	require.NoError(t, err)
 }
 
@@ -313,41 +237,26 @@ func TestIntegrationTokenCreateTransactionWithCustomFeesDenominatorZero(t *testi
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
-	resp, err := NewTokenCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetTokenMemo("fnord").
-		SetDecimals(3).
-		SetInitialSupply(1000000).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeKey(env.Client.GetOperatorPublicKey()).
-		SetWipeKey(env.Client.GetOperatorPublicKey()).
-		SetKycKey(env.Client.GetOperatorPublicKey()).
-		SetSupplyKey(env.Client.GetOperatorPublicKey()).
-		SetCustomFees([]Fee{
-			CustomFixedFee{
-				CustomFee: CustomFee{
-					FeeCollectorAccountID: &env.OperatorID,
+	_, err := createFungibleToken(&env, func(transaction *TokenCreateTransaction) {
+		transaction.
+			SetCustomFees([]Fee{
+				CustomFixedFee{
+					CustomFee: CustomFee{
+						FeeCollectorAccountID: &env.OperatorID,
+					},
+					Amount: 10,
 				},
-				Amount: 10,
-			},
-			CustomFractionalFee{
-				CustomFee: CustomFee{
-					FeeCollectorAccountID: &env.OperatorID,
+				CustomFractionalFee{
+					CustomFee: CustomFee{
+						FeeCollectorAccountID: &env.OperatorID,
+					},
+					Numerator:     1,
+					Denominator:   0,
+					MinimumAmount: 1,
+					MaximumAmount: 10,
 				},
-				Numerator:     1,
-				Denominator:   0,
-				MinimumAmount: 1,
-				MaximumAmount: 10,
-			},
-		}).
-		SetFreezeDefault(false).
-		Execute(env.Client)
-	require.NoError(t, err)
-
-	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+			})
+	})
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "exceptional receipt status: FRACTION_DIVIDES_BY_ZERO", err.Error())
@@ -358,118 +267,68 @@ func TestIntegrationTokenCreateTransactionWithInvalidFeeCollectorAccountID(t *te
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
-	resp, err := NewTokenCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetTokenMemo("fnord").
-		SetDecimals(3).
-		SetInitialSupply(1000000).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeKey(env.Client.GetOperatorPublicKey()).
-		SetWipeKey(env.Client.GetOperatorPublicKey()).
-		SetKycKey(env.Client.GetOperatorPublicKey()).
-		SetSupplyKey(env.Client.GetOperatorPublicKey()).
-		SetCustomFees([]Fee{
-			NewCustomFractionalFee().
-				SetFeeCollectorAccountID(AccountID{}).
-				SetNumerator(1).
-				SetDenominator(20).
-				SetMin(1).
-				SetMax(10),
-		}).
-		SetFreezeDefault(false).
-		Execute(env.Client)
-	require.NoError(t, err)
-
-	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
+	_, err := createFungibleToken(&env, func(transaction *TokenCreateTransaction) {
+		transaction.
+			SetCustomFees([]Fee{
+				NewCustomFractionalFee().
+					SetFeeCollectorAccountID(AccountID{}).
+					SetNumerator(1).
+					SetDenominator(20).
+					SetMin(1).
+					SetMax(10),
+			})
+	})
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "exceptional receipt status: INVALID_CUSTOM_FEE_COLLECTOR", err.Error())
 	}
-
-	err = CloseIntegrationTestEnv(env, receipt.TokenID)
-	require.NoError(t, err)
 }
 
 func TestIntegrationTokenCreateTransactionWithMaxLessThanMin(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
-	resp, err := NewTokenCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetTokenMemo("fnord").
-		SetDecimals(3).
-		SetInitialSupply(1000000).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeKey(env.Client.GetOperatorPublicKey()).
-		SetWipeKey(env.Client.GetOperatorPublicKey()).
-		SetKycKey(env.Client.GetOperatorPublicKey()).
-		SetSupplyKey(env.Client.GetOperatorPublicKey()).
-		SetCustomFees([]Fee{
-			CustomFractionalFee{
-				CustomFee: CustomFee{
-					FeeCollectorAccountID: &env.OperatorID,
+	_, err := createFungibleToken(&env, func(transaction *TokenCreateTransaction) {
+		transaction.
+			SetCustomFees([]Fee{
+				CustomFractionalFee{
+					CustomFee: CustomFee{
+						FeeCollectorAccountID: &env.OperatorID,
+					},
+					Numerator:     1,
+					Denominator:   20,
+					MinimumAmount: 100,
+					MaximumAmount: 10,
 				},
-				Numerator:     1,
-				Denominator:   20,
-				MinimumAmount: 100,
-				MaximumAmount: 10,
-			},
-		}).
-		SetFreezeDefault(false).
-		Execute(env.Client)
-	require.NoError(t, err)
-
-	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
+			})
+	})
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "exceptional receipt status: FRACTIONAL_FEE_MAX_AMOUNT_LESS_THAN_MIN_AMOUNT", err.Error())
 	}
-
-	err = CloseIntegrationTestEnv(env, receipt.TokenID)
-	require.NoError(t, err)
 }
 
 func TestIntegrationTokenCreateTransactionWithRoyaltyCustomFee(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
-	resp, err := NewTokenCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetTokenMemo("fnord").
-		SetTokenType(TokenTypeNonFungibleUnique).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeKey(env.Client.GetOperatorPublicKey()).
-		SetWipeKey(env.Client.GetOperatorPublicKey()).
-		SetKycKey(env.Client.GetOperatorPublicKey()).
-		SetSupplyKey(env.Client.GetOperatorPublicKey()).
-		SetCustomFees([]Fee{
-			NewCustomRoyaltyFee().
-				SetFeeCollectorAccountID(env.OperatorID).
-				SetNumerator(1).
-				SetDenominator(20).
-				SetFallbackFee(
-					NewCustomFixedFee().
-						SetFeeCollectorAccountID(env.OperatorID).
-						SetAmount(10),
-				),
-		}).
-		SetFreezeDefault(false).
-		Execute(env.Client)
+	tokenID, err := createNft(&env, func(transaction *TokenCreateTransaction) {
+		transaction.
+			SetCustomFees([]Fee{
+				NewCustomRoyaltyFee().
+					SetFeeCollectorAccountID(env.OperatorID).
+					SetNumerator(1).
+					SetDenominator(20).
+					SetFallbackFee(
+						NewCustomFixedFee().
+							SetFeeCollectorAccountID(env.OperatorID).
+							SetAmount(10),
+					),
+			})
+	})
 	require.NoError(t, err)
 
-	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
-
-	err = CloseIntegrationTestEnv(env, receipt.TokenID)
+	err = CloseIntegrationTestEnv(env, &tokenID)
 	require.NoError(t, err)
 }
 
@@ -477,107 +336,56 @@ func TestIntegrationTokenCreateTransactionWithRoyaltyCannotExceedOne(t *testing.
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
-	resp, err := NewTokenCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetTokenMemo("fnord").
-		SetTokenType(TokenTypeNonFungibleUnique).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeKey(env.Client.GetOperatorPublicKey()).
-		SetWipeKey(env.Client.GetOperatorPublicKey()).
-		SetKycKey(env.Client.GetOperatorPublicKey()).
-		SetSupplyKey(env.Client.GetOperatorPublicKey()).
-		SetCustomFees([]Fee{
-			NewCustomRoyaltyFee().
-				SetFeeCollectorAccountID(env.OperatorID).
-				SetNumerator(2).
-				SetDenominator(1),
-		}).
-		SetFreezeDefault(false).
-		Execute(env.Client)
-	require.NoError(t, err)
-
-	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
+	_, err := createNft(&env, func(transaction *TokenCreateTransaction) {
+		transaction.
+			SetCustomFees([]Fee{
+				NewCustomRoyaltyFee().
+					SetFeeCollectorAccountID(env.OperatorID).
+					SetNumerator(2).
+					SetDenominator(1),
+			})
+	})
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "exceptional receipt status: ROYALTY_FRACTION_CANNOT_EXCEED_ONE", err.Error())
 	}
-
-	err = CloseIntegrationTestEnv(env, receipt.TokenID)
-	require.NoError(t, err)
 }
 
 func TestIntegrationTokenCreateTransactionFeeCollectorMissing(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
-	resp, err := NewTokenCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetTokenMemo("fnord").
-		SetTokenType(TokenTypeNonFungibleUnique).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeKey(env.Client.GetOperatorPublicKey()).
-		SetWipeKey(env.Client.GetOperatorPublicKey()).
-		SetKycKey(env.Client.GetOperatorPublicKey()).
-		SetSupplyKey(env.Client.GetOperatorPublicKey()).
-		SetCustomFees([]Fee{
-			NewCustomRoyaltyFee().
-				SetNumerator(1).
-				SetDenominator(20),
-		}).
-		SetFreezeDefault(false).
-		Execute(env.Client)
-	require.NoError(t, err)
-
-	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
+	_, err := createNft(&env, func(transaction *TokenCreateTransaction) {
+		transaction.
+			SetCustomFees([]Fee{
+				NewCustomRoyaltyFee().
+					SetNumerator(1).
+					SetDenominator(20),
+			})
+	})
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "exceptional receipt status: INVALID_CUSTOM_FEE_COLLECTOR", err.Error())
 	}
-
-	err = CloseIntegrationTestEnv(env, receipt.TokenID)
-	require.NoError(t, err)
 }
 
 func TestIntegrationTokenCreateTransactionRoyaltyFeeOnlyAllowedForNonFungibleUnique(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
-	resp, err := NewTokenCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetTokenMemo("fnord").
-		SetTokenType(TokenTypeFungibleCommon).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeKey(env.Client.GetOperatorPublicKey()).
-		SetWipeKey(env.Client.GetOperatorPublicKey()).
-		SetKycKey(env.Client.GetOperatorPublicKey()).
-		SetSupplyKey(env.Client.GetOperatorPublicKey()).
-		SetCustomFees([]Fee{
-			NewCustomRoyaltyFee().
-				SetFeeCollectorAccountID(env.OperatorID).
-				SetNumerator(1).
-				SetDenominator(20),
-		}).
-		SetFreezeDefault(false).
-		Execute(env.Client)
-	require.NoError(t, err)
-
-	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
+	_, err := createFungibleToken(&env, func(transaction *TokenCreateTransaction) {
+		transaction.
+			SetCustomFees([]Fee{
+				NewCustomRoyaltyFee().
+					SetFeeCollectorAccountID(env.OperatorID).
+					SetNumerator(1).
+					SetDenominator(20),
+			})
+	})
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "exceptional receipt status: CUSTOM_ROYALTY_FEE_ONLY_ALLOWED_FOR_NON_FUNGIBLE_UNIQUE", err.Error())
 	}
-
-	err = CloseIntegrationTestEnv(env, receipt.TokenID)
-	require.NoError(t, err)
 }
 
 func TestIntegrationTokenAccountStillOwnsNfts(t *testing.T) {
@@ -603,33 +411,20 @@ func TestIntegrationTokenAccountStillOwnsNfts(t *testing.T) {
 
 	accountID := *receipt.AccountID
 
-	tokTx, err := NewTokenCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetTokenMemo("fnord").
-		SetTokenType(TokenTypeNonFungibleUnique).
-		SetSupplyType(TokenSupplyTypeFinite).
-		SetMaxSupply(5).
-		SetTreasuryAccountID(accountID).
-		SetAdminKey(newKey.PublicKey()).
-		SetFreezeKey(newKey.PublicKey()).
-		SetWipeKey(newKey.PublicKey()).
-		SetKycKey(newKey.PublicKey()).
-		SetSupplyKey(newKey.PublicKey()).
-		SetFreezeDefault(false).
-		FreezeWith(env.Client)
+	tokenID, err := createNft(&env, func(transaction *TokenCreateTransaction) {
+		transaction.
+			SetTreasuryAccountID(accountID).
+			SetAdminKey(newKey.PublicKey()).
+			SetFreezeKey(newKey.PublicKey()).
+			SetWipeKey(newKey.PublicKey()).
+			SetKycKey(newKey.PublicKey()).
+			SetSupplyKey(newKey.PublicKey()).
+			FreezeWith(env.Client)
+
+		transaction.Sign(newKey)
+	})
 	require.NoError(t, err)
 
-	tokTx.Sign(newKey)
-
-	resp, err = tokTx.Execute(env.Client)
-	require.NoError(t, err)
-
-	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
-
-	tokenID := *receipt.TokenID
 	metaData := make([]byte, 50, 101)
 
 	mintTx, err := NewTokenMintTransaction().
@@ -685,31 +480,20 @@ func TestIntegrationTokenCreateTransactionMetadataKey(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	resp, err = NewTokenCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetDecimals(3).
-		SetInitialSupply(1000000).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetMetadataKey(pubKey).
-		SetFreezeDefault(false).
-		Execute(env.Client)
-	require.NoError(t, err)
-
-	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
+	tokenID, err := createFungibleToken(&env, func(transaction *TokenCreateTransaction) {
+		transaction.SetMetadataKey(pubKey)
+	})
 	require.NoError(t, err)
 
 	info, err := NewTokenInfoQuery().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetMaxQueryPayment(NewHbar(2)).
-		SetTokenID(*receipt.TokenID).
+		SetTokenID(tokenID).
 		SetQueryPayment(NewHbar(1)).
 		Execute(env.Client)
 
 	require.NoError(t, err)
 	assert.Equal(t, pubKey, info.MetadataKey)
 
-	err = CloseIntegrationTestEnv(env, receipt.TokenID)
+	err = CloseIntegrationTestEnv(env, &tokenID)
 }

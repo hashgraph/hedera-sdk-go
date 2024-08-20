@@ -33,32 +33,16 @@ func TestIntegrationTokenPauseTransactionCanExecute(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
-	resp, err := NewTokenCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetPauseKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeDefault(false).
-		Execute(env.Client)
-	require.NoError(t, err)
-
-	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
-
-	tokenID := *receipt.TokenID
+	tokenID, err := createFungibleToken(&env)
 
 	info, err := NewTokenInfoQuery().
 		SetTokenID(tokenID).
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
 
 	require.NotNil(t, info.PauseStatus)
 	require.False(t, *info.PauseStatus)
 
-	resp, err = NewTokenPauseTransaction().
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+	resp, err := NewTokenPauseTransaction().
 		SetTokenID(tokenID).
 		Execute(env.Client)
 	require.NoError(t, err)

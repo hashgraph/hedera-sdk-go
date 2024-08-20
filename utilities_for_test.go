@@ -251,9 +251,10 @@ func _NewMockTransaction() (*TransferTransaction, error) {
 
 type TokenCreateTransactionCustomizer func(transaction *TokenCreateTransaction)
 
-var initialMetadataList = [][]byte{{1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}}
+var mintMetadata = [][]byte{{1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}}
+var initialMetadata = []byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
 
-func createNft(t *testing.T, env *IntegrationTestEnv, opts ...TokenCreateTransactionCustomizer) (TokenID, error) {
+func createNft(env *IntegrationTestEnv, opts ...TokenCreateTransactionCustomizer) (TokenID, error) {
 	tokenCreate := NewTokenCreateTransaction().
 		SetTokenName("Example Collection").
 		SetTokenSymbol("ABC").
@@ -266,6 +267,8 @@ func createNft(t *testing.T, env *IntegrationTestEnv, opts ...TokenCreateTransac
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
 		SetFreezeKey(env.Client.GetOperatorPublicKey()).
 		SetPauseKey(env.Client.GetOperatorPublicKey()).
+		SetWipeKey(env.Client.GetOperatorPublicKey()).
+		SetFeeScheduleKey(env.Client.GetOperatorPublicKey()).
 		SetSupplyKey(env.Client.GetOperatorPublicKey()).
 		SetMetadataKey(env.Client.GetOperatorPublicKey())
 
@@ -277,12 +280,15 @@ func createNft(t *testing.T, env *IntegrationTestEnv, opts ...TokenCreateTransac
 	if err != nil {
 		return TokenID{}, err
 	}
-	require.NoError(t, err)
+
 	receipt, err := tokenCreateExec.SetValidateStatus(true).GetReceipt(env.Client)
+	if err != nil {
+		return TokenID{}, err
+	}
 	return *receipt.TokenID, err
 }
 
-func createFungibleToken(t *testing.T, env *IntegrationTestEnv, opts ...TokenCreateTransactionCustomizer) (TokenID, error) {
+func createFungibleToken(env *IntegrationTestEnv, opts ...TokenCreateTransactionCustomizer) (TokenID, error) {
 	tokenCreate := NewTokenCreateTransaction().
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetTokenName("ffff").
@@ -295,6 +301,8 @@ func createFungibleToken(t *testing.T, env *IntegrationTestEnv, opts ...TokenCre
 		SetFreezeKey(env.Client.GetOperatorPublicKey()).
 		SetPauseKey(env.Client.GetOperatorPublicKey()).
 		SetWipeKey(env.Client.GetOperatorPublicKey()).
+		SetFeeScheduleKey(env.Client.GetOperatorPublicKey()).
+		SetMetadataKey(env.Client.GetOperatorPublicKey()).
 		SetSupplyKey(env.Client.GetOperatorPublicKey()).
 		SetFreezeDefault(false)
 
@@ -306,7 +314,10 @@ func createFungibleToken(t *testing.T, env *IntegrationTestEnv, opts ...TokenCre
 	if err != nil {
 		return TokenID{}, err
 	}
-	require.NoError(t, err)
+
 	receipt, err := tokenCreateExec.SetValidateStatus(true).GetReceipt(env.Client)
+	if err != nil {
+		return TokenID{}, err
+	}
 	return *receipt.TokenID, err
 }
