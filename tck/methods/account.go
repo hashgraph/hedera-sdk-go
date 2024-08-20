@@ -102,15 +102,19 @@ func (a *AccountService) UpdateAccount(_ context.Context, accountUpdateParams pa
 		}
 		transaction.SetKey(key)
 	}
+
 	if accountUpdateParams.ExpirationTime != nil {
 		transaction.SetExpirationTime(time.Unix(*accountUpdateParams.ExpirationTime, 0))
 	}
+
 	if accountUpdateParams.ReceiverSignatureRequired != nil {
 		transaction.SetReceiverSignatureRequired(*accountUpdateParams.ReceiverSignatureRequired)
 	}
+
 	if accountUpdateParams.MaxAutomaticTokenAssociations != nil {
 		transaction.SetMaxAutomaticTokenAssociations(*accountUpdateParams.MaxAutomaticTokenAssociations)
 	}
+
 	if accountUpdateParams.StakedAccountId != nil {
 		accountId, err := hedera.AccountIDFromString(*accountUpdateParams.StakedAccountId)
 		if err != nil {
@@ -118,6 +122,7 @@ func (a *AccountService) UpdateAccount(_ context.Context, accountUpdateParams pa
 		}
 		transaction.SetStakedAccountID(accountId)
 	}
+
 	if accountUpdateParams.StakedNodeId != nil {
 		stakedNodeID, err := accountUpdateParams.StakedNodeId.Int64()
 		if err != nil {
@@ -125,18 +130,23 @@ func (a *AccountService) UpdateAccount(_ context.Context, accountUpdateParams pa
 		}
 		transaction.SetStakedNodeID(stakedNodeID)
 	}
+
 	if accountUpdateParams.DeclineStakingReward != nil {
 		transaction.SetDeclineStakingReward(*accountUpdateParams.DeclineStakingReward)
 	}
+
 	if accountUpdateParams.Memo != nil {
 		transaction.SetAccountMemo(*accountUpdateParams.Memo)
 	}
+
 	if accountUpdateParams.AutoRenewPeriod != nil {
 		transaction.SetAutoRenewPeriod(time.Duration(*accountUpdateParams.AutoRenewPeriod) * time.Second)
 	}
+
 	if accountUpdateParams.CommonTransactionParams != nil {
 		accountUpdateParams.CommonTransactionParams.FillOutTransaction(transaction, &transaction.Transaction, a.sdkService.Client)
 	}
+
 	txResponse, err := transaction.Execute(a.sdkService.Client)
 	if err != nil {
 		return nil, err
