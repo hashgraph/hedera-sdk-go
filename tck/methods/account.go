@@ -2,7 +2,6 @@ package methods
 
 import (
 	"context"
-	"strconv"
 	"time"
 
 	"github.com/hashgraph/hedera-sdk-go/tck/param"
@@ -52,7 +51,7 @@ func (a *AccountService) CreateAccount(_ context.Context, accountCreateParams pa
 		transaction.SetStakedAccountID(accountId)
 	}
 	if accountCreateParams.StakedNodeId != nil {
-		stakedNodeID, err := strconv.ParseInt(accountCreateParams.StakedNodeId.String(), 10, 64)
+		stakedNodeID, err := accountCreateParams.StakedNodeId.Int64()
 		if err != nil {
 			return nil, response.InvalidParams.WithData(err.Error())
 		}
@@ -70,11 +69,9 @@ func (a *AccountService) CreateAccount(_ context.Context, accountCreateParams pa
 	if accountCreateParams.Alias != nil {
 		transaction.SetAlias(*accountCreateParams.Alias)
 	}
-
 	if accountCreateParams.CommonTransactionParams != nil {
 		accountCreateParams.CommonTransactionParams.FillOutTransaction(transaction, &transaction.Transaction, a.sdkService.Client)
 	}
-
 	txResponse, err := transaction.Execute(a.sdkService.Client)
 	if err != nil {
 		return nil, err
@@ -87,6 +84,76 @@ func (a *AccountService) CreateAccount(_ context.Context, accountCreateParams pa
 	if receipt.Status == hedera.StatusSuccess {
 		accId = receipt.AccountID.String()
 	}
-
 	return &response.AccountResponse{AccountId: accId, Status: receipt.Status.String()}, nil
+}
+
+// UpdateAccount jRPC method for updateAccount
+func (a *AccountService) UpdateAccount(_ context.Context, accountUpdateParams param.UpdateAccountParams) (*response.AccountResponse, error) {
+	transaction := hedera.NewAccountUpdateTransaction().SetGrpcDeadline(&threeSecondsDuration)
+	if accountUpdateParams.AccountId != nil {
+		accountId, _ := hedera.AccountIDFromString(*accountUpdateParams.AccountId)
+		transaction.SetAccountID(accountId)
+	}
+
+	if accountUpdateParams.Key != nil {
+		key, err := utils.GetKeyFromString(*accountUpdateParams.Key)
+		if err != nil {
+			return nil, err
+		}
+		transaction.SetKey(key)
+	}
+
+	if accountUpdateParams.ExpirationTime != nil {
+		transaction.SetExpirationTime(time.Unix(*accountUpdateParams.ExpirationTime, 0))
+	}
+
+	if accountUpdateParams.ReceiverSignatureRequired != nil {
+		transaction.SetReceiverSignatureRequired(*accountUpdateParams.ReceiverSignatureRequired)
+	}
+
+	if accountUpdateParams.MaxAutomaticTokenAssociations != nil {
+		transaction.SetMaxAutomaticTokenAssociations(*accountUpdateParams.MaxAutomaticTokenAssociations)
+	}
+
+	if accountUpdateParams.StakedAccountId != nil {
+		accountId, err := hedera.AccountIDFromString(*accountUpdateParams.StakedAccountId)
+		if err != nil {
+			return nil, err
+		}
+		transaction.SetStakedAccountID(accountId)
+	}
+
+	if accountUpdateParams.StakedNodeId != nil {
+		stakedNodeID, err := accountUpdateParams.StakedNodeId.Int64()
+		if err != nil {
+			return nil, response.InvalidParams.WithData(err.Error())
+		}
+		transaction.SetStakedNodeID(stakedNodeID)
+	}
+
+	if accountUpdateParams.DeclineStakingReward != nil {
+		transaction.SetDeclineStakingReward(*accountUpdateParams.DeclineStakingReward)
+	}
+
+	if accountUpdateParams.Memo != nil {
+		transaction.SetAccountMemo(*accountUpdateParams.Memo)
+	}
+
+	if accountUpdateParams.AutoRenewPeriod != nil {
+		transaction.SetAutoRenewPeriod(time.Duration(*accountUpdateParams.AutoRenewPeriod) * time.Second)
+	}
+
+	if accountUpdateParams.CommonTransactionParams != nil {
+		accountUpdateParams.CommonTransactionParams.FillOutTransaction(transaction, &transaction.Transaction, a.sdkService.Client)
+	}
+
+	txResponse, err := transaction.Execute(a.sdkService.Client)
+	if err != nil {
+		return nil, err
+	}
+	receipt, err := txResponse.GetReceipt(a.sdkService.Client)
+	if err != nil {
+		return nil, err
+	}
+	return &response.AccountResponse{Status: receipt.Status.String()}, nil
 }
