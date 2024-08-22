@@ -1,3 +1,9 @@
+## v2.44.0
+
+### Added
+
+- `NodeCreateTransaction`,`NodeUpdateTransaction`,`NodeDeleteTransaction` (part of HIP-869)
+
 ## v2.43.0
 
 ### Added
