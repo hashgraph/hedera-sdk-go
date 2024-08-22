@@ -37,14 +37,26 @@ func (endpoint *Endpoint) SetAddress(address IPv4Address) *Endpoint {
 	return endpoint
 }
 
+func (endpoint *Endpoint) GetAddress() IPv4Address {
+	return endpoint.address
+}
+
 func (endpoint *Endpoint) SetPort(port int32) *Endpoint {
 	endpoint.port = port
 	return endpoint
 }
 
+func (endpoint *Endpoint) GetPort() int32 {
+	return endpoint.port
+}
+
 func (endpoint *Endpoint) SetDomainName(domainName string) *Endpoint {
 	endpoint.domainName = domainName
 	return endpoint
+}
+
+func (endpoint *Endpoint) GetDomainName() string {
+	return endpoint.domainName
 }
 
 func EndpointFromProtobuf(serviceEndpoint *services.ServiceEndpoint) Endpoint {

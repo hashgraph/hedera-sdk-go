@@ -25,6 +25,26 @@ type IPv4Address struct {
 	host    IPv4AddressPart
 }
 
+func (ip *IPv4Address) SetNetwork(left byte, right byte) *IPv4Address {
+	ip.network.left = left
+	ip.network.right = right
+	return ip
+}
+
+func (ip *IPv4Address) GetNetwork() IPv4AddressPart {
+	return ip.network
+}
+
+func (ip *IPv4Address) SetHost(left byte, right byte) *IPv4Address {
+	ip.host.left = left
+	ip.host.right = right
+	return ip
+}
+
+func (ip *IPv4Address) GetHost() IPv4AddressPart {
+	return ip.host
+}
+
 func Ipv4AddressFromProtobuf(byte []byte) IPv4Address {
 	return IPv4Address{
 		network: IPv4AddressPart{
@@ -36,18 +56,6 @@ func Ipv4AddressFromProtobuf(byte []byte) IPv4Address {
 			right: byte[3],
 		},
 	}
-}
-
-func (ip *IPv4Address) SetNetwork(left byte, right byte) *IPv4Address {
-	ip.network.left = left
-	ip.network.right = right
-	return ip
-}
-
-func (ip *IPv4Address) SetHost(left byte, right byte) *IPv4Address {
-	ip.host.left = left
-	ip.host.right = right
-	return ip
 }
 
 func (ip *IPv4Address) _ToProtobuf() []byte {

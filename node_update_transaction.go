@@ -63,8 +63,6 @@ func NewNodeUpdateTransaction() *NodeUpdateTransaction {
 	tx := &NodeUpdateTransaction{
 		Transaction: _NewTransaction(),
 	}
-
-	// TODO
 	tx._SetDefaultMaxTransactionFee(NewHbar(5))
 
 	return tx
@@ -444,6 +442,7 @@ func (tx *NodeUpdateTransaction) getMethod(channel *_Channel) _Method {
 }
 
 func (tx *NodeUpdateTransaction) preFreezeWith(client *Client) {
+	// No special actions needed.
 }
 
 func (tx *NodeUpdateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {

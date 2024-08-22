@@ -34,13 +34,13 @@ func (ip *IPv4AddressPart) SetLeft(left byte) *IPv4AddressPart {
 	return ip
 }
 
+func (ip *IPv4AddressPart) GetLeft() byte {
+	return ip.left
+}
+
 func (ip *IPv4AddressPart) SetRight(right byte) *IPv4AddressPart {
 	ip.right = right
 	return ip
-}
-
-func (ip *IPv4AddressPart) GetLeft() byte {
-	return ip.left
 }
 
 func (ip *IPv4AddressPart) GetRight() byte {
