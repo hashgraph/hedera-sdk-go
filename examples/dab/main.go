@@ -32,7 +32,7 @@ func main() {
 	// Setting the client operator ID and key
 	client.SetOperator(operatorAccountID, operatorKey)
 
-	accountID, _ := hedera.AccountIDFromString("0.0.999")
+	accountID, _ := hedera.AccountIDFromString("0.0.1999")
 	description := "Hedera™ cryptocurrency"
 	newDescription := "Hedera™ cryptocurrency - updated"
 

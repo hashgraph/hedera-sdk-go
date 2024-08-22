@@ -82,5 +82,10 @@ func (endpoint *Endpoint) _ToProtobuf() *services.ServiceEndpoint {
 }
 
 func (endpoint *Endpoint) String() string {
-	return endpoint.address.String() + ":" + fmt.Sprintf("%d", endpoint.port) + ":" + endpoint.domainName
+	if endpoint.domainName != "" {
+		// If domain name is populated domainName + port
+		return endpoint.domainName + ":" + fmt.Sprintf("%d", endpoint.port)
+	} else {
+		return endpoint.address.String() + ":" + fmt.Sprintf("%d", endpoint.port)
+	}
 }
