@@ -30,15 +30,15 @@ type NodeAddress struct {
 	AccountID   *AccountID
 	NodeID      int64
 	CertHash    []byte
-	Addresses   []_Endpoint
+	Addresses   []Endpoint
 	Description string
 }
 
 func _NodeAddressFromProtobuf(nodeAd *services.NodeAddress) NodeAddress {
-	address := make([]_Endpoint, 0)
+	address := make([]Endpoint, 0)
 
 	for _, end := range nodeAd.GetServiceEndpoint() {
-		address = append(address, _EndpointFromProtobuf(end))
+		address = append(address, EndpointFromProtobuf(end))
 	}
 
 	return NodeAddress{
