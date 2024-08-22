@@ -354,30 +354,22 @@ func TestIntegrationAccountInfoQueryTokenRelationshipInfo(t *testing.T) {
 	accountID := *receipt.AccountID
 	require.NoError(t, err)
 
-	resp, err = NewTokenCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetDecimals(3).
-		SetInitialSupply(1000000).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeKey(newKey).
-		SetWipeKey(newKey).
-		SetKycKey(newKey).
-		SetSupplyKey(newKey).
-		SetMetadataKey(newKey).
-		SetFreezeDefault(true).
-		Execute(env.Client)
-	require.NoError(t, err)
+	tokenID, err := createFungibleToken(&env, func(transaction *TokenCreateTransaction) {
+		transaction.
+			SetFreezeKey(newKey).
+			SetWipeKey(newKey).
+			SetKycKey(newKey).
+			SetSupplyKey(newKey).
+			SetMetadataKey(newKey).
+			SetFreezeDefault(true)
+	})
 
-	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	associateTxn, err := NewTokenAssociateTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetAccountID(accountID).
-		SetTokenIDs(*receipt.TokenID).
+		SetTokenIDs(tokenID).
 		FreezeWith(env.Client)
 	require.NoError(t, err)
 
@@ -400,13 +392,13 @@ func TestIntegrationAccountInfoQueryTokenRelationshipInfo(t *testing.T) {
 	assert.Equal(t, false, *info.TokenRelationships[0].KycStatus)
 	assert.Equal(t, uint64(0), info.TokenRelationships[0].Balance)
 	assert.Equal(t, "F", info.TokenRelationships[0].Symbol)
-	assert.Equal(t, *receipt.TokenID, info.TokenRelationships[0].TokenID)
+	assert.Equal(t, tokenID, info.TokenRelationships[0].TokenID)
 	assert.Equal(t, false, info.TokenRelationships[0].AutomaticAssociation)
 
 	unfreezeTxn, err := NewTokenUnfreezeTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetAccountID(accountID).
-		SetTokenID(*receipt.TokenID).
+		SetTokenID(tokenID).
 		FreezeWith(env.Client)
 
 	require.NoError(t, err)
@@ -420,7 +412,7 @@ func TestIntegrationAccountInfoQueryTokenRelationshipInfo(t *testing.T) {
 	kycUpdateTxn, err := NewTokenGrantKycTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetAccountID(accountID).
-		SetTokenID(*receipt.TokenID).
+		SetTokenID(tokenID).
 		FreezeWith(env.Client)
 
 	require.NoError(t, err)
@@ -443,7 +435,7 @@ func TestIntegrationAccountInfoQueryTokenRelationshipInfo(t *testing.T) {
 	assert.Equal(t, true, *info.TokenRelationships[0].KycStatus)
 	assert.Equal(t, uint64(0), info.TokenRelationships[0].Balance)
 	assert.Equal(t, "F", info.TokenRelationships[0].Symbol)
-	assert.Equal(t, *receipt.TokenID, info.TokenRelationships[0].TokenID)
+	assert.Equal(t, tokenID, info.TokenRelationships[0].TokenID)
 	assert.Equal(t, false, info.TokenRelationships[0].AutomaticAssociation)
 }
 
@@ -471,26 +463,16 @@ func TestIntegrationAccountInfoQueryTokenRelationshipsLength(t *testing.T) {
 	accountID := *receipt.AccountID
 	require.NoError(t, err)
 
-	resp, err = NewTokenCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetDecimals(3).
-		SetInitialSupply(1000000).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeKey(newKey).
-		SetWipeKey(newKey).
-		SetKycKey(newKey).
-		SetSupplyKey(newKey).
-		SetMetadataKey(newKey).
-		SetFreezeDefault(false).
-		Execute(env.Client)
+	firstTokenID, err := createFungibleToken(&env, func(transaction *TokenCreateTransaction) {
+		transaction.
+			SetFreezeKey(newKey).
+			SetWipeKey(newKey).
+			SetKycKey(newKey).
+			SetSupplyKey(newKey).
+			SetMetadataKey(newKey).
+			SetDecimals(3)
+	})
 	require.NoError(t, err)
-
-	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
-	firstTokenID := *receipt.TokenID
 
 	associateTxn, err := NewTokenAssociateTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
@@ -515,26 +497,15 @@ func TestIntegrationAccountInfoQueryTokenRelationshipsLength(t *testing.T) {
 	assert.Equal(t, 1, len(info.TokenRelationships))
 	assert.Equal(t, uint32(3), info.TokenRelationships[0].Decimals)
 
-	resp, err = NewTokenCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetDecimals(18).
-		SetInitialSupply(1000000).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeKey(newKey).
-		SetWipeKey(newKey).
-		SetKycKey(newKey).
-		SetSupplyKey(newKey).
-		SetMetadataKey(newKey).
-		SetFreezeDefault(false).
-		Execute(env.Client)
+	secondTokenID, err := createFungibleToken(&env, func(transaction *TokenCreateTransaction) {
+		transaction.
+			SetFreezeKey(newKey).
+			SetWipeKey(newKey).
+			SetKycKey(newKey).
+			SetSupplyKey(newKey).
+			SetMetadataKey(newKey)
+	})
 	require.NoError(t, err)
-
-	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
-	secondTokenID := *receipt.TokenID
 
 	associateTxn, err = NewTokenAssociateTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).

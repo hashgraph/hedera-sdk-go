@@ -36,8 +36,10 @@ func TestIntegrationTokenRejectTransactionCanExecuteForFungibleToken(t *testing.
 	env := NewIntegrationTestEnv(t)
 
 	// create fungible tokens with treasury
-	tokenID1 := createFungibleTokenHelper(18, t, &env)
-	tokenID2 := createFungibleTokenHelper(18, t, &env)
+	tokenID1, err := createFungibleToken(&env)
+	require.NoError(t, err)
+	tokenID2, err := createFungibleToken(&env)
+	require.NoError(t, err)
 
 	// create receiver account with auto associations
 	receiver, key := createAccountHelper(t, &env, 100)
@@ -83,15 +85,17 @@ func TestIntegrationTokenRejectTransactionCanExecuteForNFT(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	// create nft collections with treasury
-	nftID1 := createNftHelper(t, &env)
-	nftID2 := createNftHelper(t, &env)
+	nftID1, err := createNft(&env)
+	require.NoError(t, err)
+	nftID2, err := createNft(&env)
+	require.NoError(t, err)
 
 	// mint
-	mint, err := NewTokenMintTransaction().SetTokenID(nftID1).SetMetadatas(initialMetadataList).Execute(env.Client)
+	mint, err := NewTokenMintTransaction().SetTokenID(nftID1).SetMetadatas(mintMetadata).Execute(env.Client)
 	require.NoError(t, err)
 	receipt, err := mint.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
-	mint, err = NewTokenMintTransaction().SetTokenID(nftID2).SetMetadatas(initialMetadataList).Execute(env.Client)
+	mint, err = NewTokenMintTransaction().SetTokenID(nftID2).SetMetadatas(mintMetadata).Execute(env.Client)
 	require.NoError(t, err)
 	receipt, err = mint.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
@@ -142,19 +146,23 @@ func TestIntegrationTokenRejectTransactionCanExecuteForFTAndNFTAtTheSameTime(t *
 	env := NewIntegrationTestEnv(t)
 
 	// create fungible tokens with treasury
-	tokenID1 := createFungibleTokenHelper(18, t, &env)
-	tokenID2 := createFungibleTokenHelper(18, t, &env)
+	tokenID1, err := createFungibleToken(&env)
+	require.NoError(t, err)
+	tokenID2, err := createFungibleToken(&env)
+	require.NoError(t, err)
 
 	// create nft collections with treasury
-	nftID1 := createNftHelper(t, &env)
-	nftID2 := createNftHelper(t, &env)
+	nftID1, err := createNft(&env)
+	require.NoError(t, err)
+	nftID2, err := createNft(&env)
+	require.NoError(t, err)
 
 	// mint
-	mint, err := NewTokenMintTransaction().SetTokenID(nftID1).SetMetadatas(initialMetadataList).Execute(env.Client)
+	mint, err := NewTokenMintTransaction().SetTokenID(nftID1).SetMetadatas(mintMetadata).Execute(env.Client)
 	require.NoError(t, err)
 	receipt, err := mint.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
-	mint, err = NewTokenMintTransaction().SetTokenID(nftID2).SetMetadatas(initialMetadataList).Execute(env.Client)
+	mint, err = NewTokenMintTransaction().SetTokenID(nftID2).SetMetadatas(mintMetadata).Execute(env.Client)
 	require.NoError(t, err)
 	receipt, err = mint.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
@@ -242,26 +250,14 @@ func TestIntegrationTokenRejectTransactionReceiverSigRequired(t *testing.T) {
 	require.NoError(t, err)
 	treasury := *receipt.AccountID
 
-	frozenTokenCreate, err := NewTokenCreateTransaction().
-		SetTokenName("Example Collection").SetTokenSymbol("ABC").
-		SetTokenType(TokenTypeNonFungibleUnique).SetDecimals(0).
-		SetInitialSupply(0).
-		SetMaxSupply(10).
-		SetTreasuryAccountID(treasury).
-		SetSupplyType(TokenSupplyTypeFinite).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeKey(env.Client.GetOperatorPublicKey()).
-		SetSupplyKey(env.Client.GetOperatorPublicKey()).
-		SetMetadataKey(env.Client.GetOperatorPublicKey()).FreezeWith(env.Client)
+	nftID, err := createNft(&env, func(transaction *TokenCreateTransaction) {
+		transaction.SetTreasuryAccountID(treasury).FreezeWith(env.Client)
+		transaction.Sign(treasuryKey)
+	})
 	require.NoError(t, err)
-	tokenCreate, err := frozenTokenCreate.Sign(treasuryKey).Execute(env.Client)
-	receipt, err = tokenCreate.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
-
-	nftID := *receipt.TokenID
 
 	// mint
-	mint, err := NewTokenMintTransaction().SetTokenID(nftID).SetMetadatas(initialMetadataList).Execute(env.Client)
+	mint, err := NewTokenMintTransaction().SetTokenID(nftID).SetMetadatas(mintMetadata).Execute(env.Client)
 	require.NoError(t, err)
 	receipt, err = mint.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
@@ -306,26 +302,11 @@ func TestIntegrationTokenRejectTransactionReceiverSigRequired(t *testing.T) {
 	// same test for fungible token
 
 	// create fungible token with treasury with receiver sig required
-	frozenTokenCreate, err = NewTokenCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetTokenMemo("asdf").
-		SetDecimals(18).
-		SetInitialSupply(1_000_000).
-		SetTreasuryAccountID(treasury).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeKey(env.Client.GetOperatorPublicKey()).
-		SetWipeKey(env.Client.GetOperatorPublicKey()).
-		SetSupplyKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeDefault(false).FreezeWith(env.Client)
+	tokenID, err := createFungibleToken(&env, func(transaction *TokenCreateTransaction) {
+		transaction.SetTreasuryAccountID(treasury).FreezeWith(env.Client)
+		transaction.Sign(treasuryKey)
+	})
 	require.NoError(t, err)
-
-	tokenCreate, err = frozenTokenCreate.Sign(treasuryKey).Execute(env.Client)
-
-	receipt, err = tokenCreate.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
-	tokenID := *receipt.TokenID
 
 	// transfer ft to the receiver
 	frozenTransfer, err = NewTransferTransaction().
@@ -366,10 +347,11 @@ func TestIntegrationTokenRejectTransactionTokenFrozen(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	// create nft with treasury
-	nftID := createNftHelper(t, &env)
+	nftID, err := createNft(&env)
+	require.NoError(t, err)
 
 	// mint
-	mint, err := NewTokenMintTransaction().SetTokenID(nftID).SetMetadatas(initialMetadataList).Execute(env.Client)
+	mint, err := NewTokenMintTransaction().SetTokenID(nftID).SetMetadatas(mintMetadata).Execute(env.Client)
 	require.NoError(t, err)
 	receipt, err := mint.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
@@ -409,7 +391,8 @@ func TestIntegrationTokenRejectTransactionTokenFrozen(t *testing.T) {
 	// same test with fungible token
 
 	// create fungible token with treasury
-	tokenID := createFungibleTokenHelper(18, t, &env)
+	tokenID, err := createFungibleToken(&env)
+	require.NoError(t, err)
 
 	// transfer ft to the receiver
 	tx, err = NewTransferTransaction().
@@ -444,10 +427,11 @@ func TestIntegrationTokenRejectTransactionTokenPaused(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	// create nft with treasury
-	nftID := createNftHelper(t, &env)
+	nftID, err := createNft(&env)
+	require.NoError(t, err)
 
 	// mint
-	mint, err := NewTokenMintTransaction().SetTokenID(nftID).SetMetadatas(initialMetadataList).Execute(env.Client)
+	mint, err := NewTokenMintTransaction().SetTokenID(nftID).SetMetadatas(mintMetadata).Execute(env.Client)
 	require.NoError(t, err)
 	receipt, err := mint.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
@@ -487,7 +471,8 @@ func TestIntegrationTokenRejectTransactionTokenPaused(t *testing.T) {
 	// same test with fungible token
 
 	// create fungible token with treasury
-	tokenID := createFungibleTokenHelper(18, t, &env)
+	tokenID, err := createFungibleToken(&env)
+	require.NoError(t, err)
 
 	// transfer ft to the receiver
 	tx, err = NewTransferTransaction().
@@ -521,7 +506,8 @@ func TestIntegrationTokenRejectTransactionDoesNotRemoveAllowanceFT(t *testing.T)
 	env := NewIntegrationTestEnv(t)
 
 	// create fungible token with treasury
-	tokenID := createFungibleTokenHelper(18, t, &env)
+	tokenID, err := createFungibleToken(&env)
+	require.NoError(t, err)
 	// create receiver account with auto associations
 	receiver, key := createAccountHelper(t, &env, 100)
 	// create spender account to be approved
@@ -614,10 +600,11 @@ func TestIntegrationTokenRejectTransactionDoesNotRemoveAllowanceNFT(t *testing.T
 	// create spender account to be approved
 	spender, spenderKey := createAccountHelper(t, &env, 100)
 	// create nft with treasury
-	nftID := createNftHelper(t, &env)
+	nftID, err := createNft(&env)
+	require.NoError(t, err)
 
 	// mint
-	mint, err := NewTokenMintTransaction().SetTokenID(nftID).SetMetadatas(initialMetadataList).Execute(env.Client)
+	mint, err := NewTokenMintTransaction().SetTokenID(nftID).SetMetadatas(mintMetadata).Execute(env.Client)
 	receipt, err := mint.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
@@ -712,9 +699,10 @@ func TestIntegrationTokenRejectTransactionFailsWhenRejectingNFTWithTokenID(t *te
 	env := NewIntegrationTestEnv(t)
 
 	// create nft with treasury
-	nftID := createNftHelper(t, &env)
+	nftID, err := createNft(&env)
+	require.NoError(t, err)
 	// mint
-	mint, err := NewTokenMintTransaction().SetTokenID(nftID).SetMetadatas(initialMetadataList).Execute(env.Client)
+	mint, err := NewTokenMintTransaction().SetTokenID(nftID).SetMetadatas(mintMetadata).Execute(env.Client)
 	receipt, err := mint.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
@@ -748,7 +736,8 @@ func TestIntegrationTokenRejectTransactionFailsWithTokenReferenceRepeated(t *tes
 	env := NewIntegrationTestEnv(t)
 
 	// create fungible token with treasury
-	tokenID := createFungibleTokenHelper(18, t, &env)
+	tokenID, err := createFungibleToken(&env)
+	require.NoError(t, err)
 
 	// create receiver account with auto associations
 	receiver, key := createAccountHelper(t, &env, 100)
@@ -774,10 +763,11 @@ func TestIntegrationTokenRejectTransactionFailsWithTokenReferenceRepeated(t *tes
 	// same test for nft
 
 	// create nft with treasury
-	nftID := createNftHelper(t, &env)
+	nftID, err := createNft(&env)
+	require.NoError(t, err)
 
 	// mint
-	mint, err := NewTokenMintTransaction().SetTokenID(nftID).SetMetadatas(initialMetadataList).Execute(env.Client)
+	mint, err := NewTokenMintTransaction().SetTokenID(nftID).SetMetadatas(mintMetadata).Execute(env.Client)
 	require.NoError(t, err)
 	receipt, err := mint.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
@@ -804,7 +794,8 @@ func TestIntegrationTokenRejectTransactionFailsWhenOwnerHasNoBalance(t *testing.
 	env := NewIntegrationTestEnv(t)
 
 	// create fungible token with treasury
-	tokenID := createFungibleTokenHelper(18, t, &env)
+	tokenID, err := createFungibleToken(&env)
+	require.NoError(t, err)
 	// create receiver account with auto associations
 	receiver, key := createAccountHelper(t, &env, 100)
 
@@ -831,10 +822,11 @@ func TestIntegrationTokenRejectTransactionFailsWhenOwnerHasNoBalance(t *testing.
 	// same test for nft
 
 	// create nft with treasury
-	nftID := createNftHelper(t, &env)
+	nftID, err := createNft(&env)
+	require.NoError(t, err)
 
 	// mint
-	mint, err := NewTokenMintTransaction().SetTokenID(nftID).SetMetadatas(initialMetadataList).Execute(env.Client)
+	mint, err := NewTokenMintTransaction().SetTokenID(nftID).SetMetadatas(mintMetadata).Execute(env.Client)
 	require.NoError(t, err)
 	receipt, err := mint.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
@@ -868,7 +860,8 @@ func TestIntegrationTokenRejectTransactionFailsTreasuryRejects(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	// create fungible token with treasury
-	tokenID := createFungibleTokenHelper(18, t, &env)
+	tokenID, err := createFungibleToken(&env)
+	require.NoError(t, err)
 
 	// skip the transfer
 	// reject the token with the treasury - should fail with ACCOUNT_IS_TREASURY
@@ -885,10 +878,11 @@ func TestIntegrationTokenRejectTransactionFailsTreasuryRejects(t *testing.T) {
 	// same test for nft
 
 	// create nft with treasury
-	nftID := createNftHelper(t, &env)
+	nftID, err := createNft(&env)
+	require.NoError(t, err)
 
 	// mint
-	mint, err := NewTokenMintTransaction().SetTokenID(nftID).SetMetadatas(initialMetadataList).Execute(env.Client)
+	mint, err := NewTokenMintTransaction().SetTokenID(nftID).SetMetadatas(mintMetadata).Execute(env.Client)
 	require.NoError(t, err)
 	receipt, err := mint.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
@@ -929,13 +923,15 @@ func TestIntegrationTokenRejectTransactionFailsWithReferenceSizeExceeded(t *test
 	receiver, key := createAccountHelper(t, &env, 100)
 
 	// create fungible token with treasury
-	tokenID := createFungibleTokenHelper(18, t, &env)
+	tokenID, err := createFungibleToken(&env)
+	require.NoError(t, err)
 
 	// create nft with treasury
-	nftID := createNftHelper(t, &env)
+	nftID, err := createNft(&env)
+	require.NoError(t, err)
 
 	// mint
-	mint, err := NewTokenMintTransaction().SetTokenID(nftID).SetMetadatas(initialMetadataList).Execute(env.Client)
+	mint, err := NewTokenMintTransaction().SetTokenID(nftID).SetMetadatas(mintMetadata).Execute(env.Client)
 	require.NoError(t, err)
 	receipt, err := mint.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
@@ -984,7 +980,8 @@ func TestIntegrationTokenRejectTransactionFailsWithInvalidSignature(t *testing.T
 	env := NewIntegrationTestEnv(t)
 
 	// create fungible token with treasury
-	tokenID := createFungibleTokenHelper(18, t, &env)
+	tokenID, err := createFungibleToken(&env)
+	require.NoError(t, err)
 
 	// create receiver account with auto associations
 	receiver, _ := createAccountHelper(t, &env, 100)

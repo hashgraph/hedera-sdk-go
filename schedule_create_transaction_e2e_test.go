@@ -486,7 +486,7 @@ func TestIntegrationScheduleCreateTransactionCanExecute(t *testing.T) {
 //
 //	accountID := *receipt.AccountID
 //
-//	resp, err = NewTokenCreateTransaction().
+//	resp, err = fixme
 //		SetNodeAccountIDs(env.NodeAccountIDs).
 //		SetTokenName("ffff").
 //		SetTokenSymbol("F").
@@ -643,7 +643,7 @@ func TestIntegrationScheduleCreateTransactionCanExecute(t *testing.T) {
 //
 //	accountID := *receipt.AccountID
 //
-//	resp, err = NewTokenCreateTransaction().
+//	resp, err = fixme
 //		SetNodeAccountIDs(env.NodeAccountIDs).
 //		SetTokenName("ffff").
 //		SetTokenSymbol("F").

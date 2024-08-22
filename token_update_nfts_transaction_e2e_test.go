@@ -41,7 +41,7 @@ func TestTokenUpdateNftsUpdatesMetadata(t *testing.T) {
 
 	nftCount := 4
 	// create metadata list for all NFTs
-	initialMetadataList := generateNftMetadata([]byte{4, 2, 0}, nftCount)
+	mintMetadata := generateNftMetadata([]byte{4, 2, 0}, nftCount)
 	updatedMetadata := []byte{6, 9}
 	// create updated metadata list  for all NFTs
 	updatedMetadataList := generateNftMetadata(updatedMetadata, nftCount/2)
@@ -51,7 +51,7 @@ func TestTokenUpdateNftsUpdatesMetadata(t *testing.T) {
 
 	// mint tokens using the metadata list
 	tokenMintTx := NewTokenMintTransaction().
-		SetMetadatas(initialMetadataList).
+		SetMetadatas(mintMetadata).
 		SetTokenID(tokenID)
 	tx, err := tokenMintTx.Execute(env.Client)
 	require.NoError(t, err)
@@ -62,7 +62,7 @@ func TestTokenUpdateNftsUpdatesMetadata(t *testing.T) {
 	// verify the metadata is set in the new tokens
 	metadataListAfterMint := getMetadataList(t, &env, tokenID, nftSerials)
 
-	assert.True(t, reflect.DeepEqual(metadataListAfterMint, initialMetadataList), "metadata after minting should match initial metadata")
+	assert.True(t, reflect.DeepEqual(metadataListAfterMint, mintMetadata), "metadata after minting should match initial metadata")
 
 	// update nft metadata for half of the NFTs
 	_, err = updateNftMetadata(t, &env, tokenID, nftSerials[:nftCount/2], updatedMetadata, &metadataKey)
@@ -75,7 +75,7 @@ func TestTokenUpdateNftsUpdatesMetadata(t *testing.T) {
 	// verify the remaining NFTs' metadata is unchanged
 	metadataList := getMetadataList(t, &env, tokenID, nftSerials[nftCount/2:])
 
-	assert.True(t, reflect.DeepEqual(metadataList, initialMetadataList[nftCount/2:]), "remaining NFTs' metadata should remain unchanged")
+	assert.True(t, reflect.DeepEqual(metadataList, mintMetadata[nftCount/2:]), "remaining NFTs' metadata should remain unchanged")
 }
 
 func TestCanUpdateEmptyNFTMetadata(t *testing.T) {
@@ -87,7 +87,7 @@ func TestCanUpdateEmptyNFTMetadata(t *testing.T) {
 	metadataPublicKey := metadataKey.PublicKey()
 
 	nftCount := 4
-	initialMetadataList := generateNftMetadata([]byte{4, 2, 0}, nftCount)
+	mintMetadata := generateNftMetadata([]byte{4, 2, 0}, nftCount)
 	updatedMetadata := make([]byte, 0)
 	updatedMetadataList := make([][]byte, 4)
 
@@ -96,7 +96,7 @@ func TestCanUpdateEmptyNFTMetadata(t *testing.T) {
 
 	// Mint tokens
 	tokenMintTx := NewTokenMintTransaction().
-		SetMetadatas(initialMetadataList).
+		SetMetadatas(mintMetadata).
 		SetTokenID(tokenID)
 	tx, err := tokenMintTx.Execute(env.Client)
 	require.NoError(t, err)
@@ -105,7 +105,7 @@ func TestCanUpdateEmptyNFTMetadata(t *testing.T) {
 	nftSerials := receipt.SerialNumbers
 
 	metadataListAfterMint := getMetadataList(t, &env, tokenID, nftSerials)
-	assert.Equal(t, initialMetadataList, metadataListAfterMint, "metadata after minting should match initial metadata")
+	assert.Equal(t, mintMetadata, metadataListAfterMint, "metadata after minting should match initial metadata")
 
 	// Update metadata for all NFTs
 	_, err = updateNftMetadata(t, &env, tokenID, nftSerials, updatedMetadata, &metadataKey)
@@ -124,7 +124,7 @@ func TestCannotUpdateNFTMetadataWhenKeyIsNotSet(t *testing.T) {
 	require.NoError(t, err)
 
 	nftCount := 4
-	initialMetadataList := generateNftMetadata([]byte{4, 2, 0}, nftCount)
+	mintMetadata := generateNftMetadata([]byte{4, 2, 0}, nftCount)
 	updatedMetadata := []byte{6, 9}
 
 	// Create a token without a metadata key
@@ -132,7 +132,7 @@ func TestCannotUpdateNFTMetadataWhenKeyIsNotSet(t *testing.T) {
 
 	// Mint tokens
 	tokenMintTx := NewTokenMintTransaction().
-		SetMetadatas(initialMetadataList).
+		SetMetadatas(mintMetadata).
 		SetTokenID(tokenID)
 	tx, err := tokenMintTx.Execute(env.Client)
 	require.NoError(t, err)
@@ -141,7 +141,7 @@ func TestCannotUpdateNFTMetadataWhenKeyIsNotSet(t *testing.T) {
 	nftSerials := receipt.SerialNumbers
 
 	metadataListAfterMint := getMetadataList(t, &env, tokenID, nftSerials)
-	assert.Equal(t, initialMetadataList, metadataListAfterMint, "metadata after minting should match initial metadata")
+	assert.Equal(t, mintMetadata, metadataListAfterMint, "metadata after minting should match initial metadata")
 
 	// Update metadata for the first half of the NFTs
 	_, err = updateNftMetadata(t, &env, tokenID, nftSerials[:nftCount/2], updatedMetadata, &metadataKey)
@@ -157,7 +157,7 @@ func TestCannotUpdateNFTMetadataWhenTransactionIsNotSignedWithMetadataKey(t *tes
 	metadataPublicKey := metadataKey.PublicKey()
 
 	nftCount := 4
-	initialMetadataList := generateNftMetadata([]byte{4, 2, 0}, nftCount)
+	mintMetadata := generateNftMetadata([]byte{4, 2, 0}, nftCount)
 	updatedMetadata := []byte{6, 9}
 
 	// Create a token with a metadata key
@@ -165,7 +165,7 @@ func TestCannotUpdateNFTMetadataWhenTransactionIsNotSignedWithMetadataKey(t *tes
 
 	// Mint tokens
 	tokenMintTx := NewTokenMintTransaction().
-		SetMetadatas(initialMetadataList).
+		SetMetadatas(mintMetadata).
 		SetTokenID(tokenID)
 	tx, err := tokenMintTx.Execute(env.Client)
 	require.NoError(t, err)

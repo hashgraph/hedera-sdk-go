@@ -248,3 +248,76 @@ func _NewMockTransaction() (*TransferTransaction, error) {
 
 	return tx, nil
 }
+
+type TokenCreateTransactionCustomizer func(transaction *TokenCreateTransaction)
+
+var mintMetadata = [][]byte{{1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}}
+var initialMetadata = []byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
+
+func createNft(env *IntegrationTestEnv, opts ...TokenCreateTransactionCustomizer) (TokenID, error) {
+	tokenCreate := NewTokenCreateTransaction().
+		SetTokenName("Example Collection").
+		SetTokenSymbol("ABC").
+		SetTokenType(TokenTypeNonFungibleUnique).
+		SetDecimals(0).
+		SetInitialSupply(0).
+		SetMaxSupply(10).
+		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+		SetSupplyType(TokenSupplyTypeFinite).
+		SetAdminKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeKey(env.Client.GetOperatorPublicKey()).
+		SetPauseKey(env.Client.GetOperatorPublicKey()).
+		SetWipeKey(env.Client.GetOperatorPublicKey()).
+		SetFeeScheduleKey(env.Client.GetOperatorPublicKey()).
+		SetSupplyKey(env.Client.GetOperatorPublicKey()).
+		SetMetadataKey(env.Client.GetOperatorPublicKey())
+
+	for _, opt := range opts {
+		opt(tokenCreate)
+	}
+
+	tokenCreateExec, err := tokenCreate.Execute(env.Client)
+	if err != nil {
+		return TokenID{}, err
+	}
+
+	receipt, err := tokenCreateExec.SetValidateStatus(true).GetReceipt(env.Client)
+	if err != nil {
+		return TokenID{}, err
+	}
+	return *receipt.TokenID, err
+}
+
+func createFungibleToken(env *IntegrationTestEnv, opts ...TokenCreateTransactionCustomizer) (TokenID, error) {
+	tokenCreate := NewTokenCreateTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetTokenName("ffff").
+		SetTokenSymbol("F").
+		SetTokenMemo("asdf").
+		SetDecimals(18).
+		SetInitialSupply(1_000_000).
+		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+		SetAdminKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeKey(env.Client.GetOperatorPublicKey()).
+		SetPauseKey(env.Client.GetOperatorPublicKey()).
+		SetWipeKey(env.Client.GetOperatorPublicKey()).
+		SetFeeScheduleKey(env.Client.GetOperatorPublicKey()).
+		SetMetadataKey(env.Client.GetOperatorPublicKey()).
+		SetSupplyKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeDefault(false)
+
+	for _, opt := range opts {
+		opt(tokenCreate)
+	}
+
+	tokenCreateExec, err := tokenCreate.Execute(env.Client)
+	if err != nil {
+		return TokenID{}, err
+	}
+
+	receipt, err := tokenCreateExec.SetValidateStatus(true).GetReceipt(env.Client)
+	if err != nil {
+		return TokenID{}, err
+	}
+	return *receipt.TokenID, err
+}

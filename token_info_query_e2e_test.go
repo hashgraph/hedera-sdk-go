@@ -35,31 +35,15 @@ func TestIntegrationTokenInfoQueryCanExecute(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
-	resp, err := NewTokenCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetDecimals(3).
-		SetInitialSupply(1000000).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeKey(env.Client.GetOperatorPublicKey()).
-		SetWipeKey(env.Client.GetOperatorPublicKey()).
-		SetKycKey(env.Client.GetOperatorPublicKey()).
-		SetSupplyKey(env.Client.GetOperatorPublicKey()).
-		SetMetadataKey(env.Client.GetOperatorPublicKey()).
-		SetTokenMetadata([]byte{1, 2, 3}).
-		SetFreezeDefault(false).
-		Execute(env.Client)
+	tokenID, err := createFungibleToken(&env, func(transaction *TokenCreateTransaction) {
+		transaction.
+			SetTokenMetadata([]byte{1, 2, 3}).
+			SetKycKey(env.Client.GetOperatorPublicKey()).
+			SetDecimals(3)
+	})
 	require.NoError(t, err)
-
-	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
-
-	tokenID := *receipt.TokenID
 
 	info, err := NewTokenInfoQuery().
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetMaxQueryPayment(NewHbar(2)).
 		SetTokenID(tokenID).
 		SetQueryPayment(NewHbar(1)).
@@ -94,29 +78,10 @@ func TestIntegrationTokenInfoQueryGetCost(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
-	resp, err := NewTokenCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetDecimals(3).
-		SetInitialSupply(1000000).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeKey(env.Client.GetOperatorPublicKey()).
-		SetWipeKey(env.Client.GetOperatorPublicKey()).
-		SetKycKey(env.Client.GetOperatorPublicKey()).
-		SetSupplyKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeDefault(false).
-		Execute(env.Client)
+	tokenID, err := createFungibleToken(&env)
 	require.NoError(t, err)
-
-	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
-
-	tokenID := *receipt.TokenID
 
 	infoQuery := NewTokenInfoQuery().
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetMaxQueryPayment(NewHbar(1)).
 		SetTokenID(tokenID)
 
@@ -134,29 +99,10 @@ func TestIntegrationTokenInfoQuerySetBigMaxPayment(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
-	resp, err := NewTokenCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetDecimals(3).
-		SetInitialSupply(1000000).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeKey(env.Client.GetOperatorPublicKey()).
-		SetWipeKey(env.Client.GetOperatorPublicKey()).
-		SetKycKey(env.Client.GetOperatorPublicKey()).
-		SetSupplyKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeDefault(false).
-		Execute(env.Client)
+	tokenID, err := createFungibleToken(&env)
 	require.NoError(t, err)
-
-	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
-
-	tokenID := *receipt.TokenID
 
 	infoQuery := NewTokenInfoQuery().
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetMaxQueryPayment(NewHbar(1000000)).
 		SetTokenID(tokenID)
 
@@ -174,29 +120,10 @@ func TestIntegrationTokenInfoQuerySetSmallMaxPayment(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
-	resp, err := NewTokenCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetDecimals(3).
-		SetInitialSupply(1000000).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeKey(env.Client.GetOperatorPublicKey()).
-		SetWipeKey(env.Client.GetOperatorPublicKey()).
-		SetKycKey(env.Client.GetOperatorPublicKey()).
-		SetSupplyKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeDefault(false).
-		Execute(env.Client)
+	tokenID, err := createFungibleToken(&env)
 	require.NoError(t, err)
-
-	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
-
-	tokenID := *receipt.TokenID
 
 	infoQuery := NewTokenInfoQuery().
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetMaxQueryPayment(HbarFromTinybar(1)).
 		SetTokenID(tokenID)
 
@@ -217,29 +144,10 @@ func TestIntegrationTokenInfoQueryInsufficientCost(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
-	resp, err := NewTokenCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetDecimals(3).
-		SetInitialSupply(1000000).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeKey(env.Client.GetOperatorPublicKey()).
-		SetWipeKey(env.Client.GetOperatorPublicKey()).
-		SetKycKey(env.Client.GetOperatorPublicKey()).
-		SetSupplyKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeDefault(false).
-		Execute(env.Client)
+	tokenID, err := createFungibleToken(&env)
 	require.NoError(t, err)
-
-	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
-
-	tokenID := *receipt.TokenID
 
 	infoQuery := NewTokenInfoQuery().
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetMaxQueryPayment(NewHbar(1)).
 		SetTokenID(tokenID)
 
@@ -260,27 +168,14 @@ func TestIntegrationTokenInfoQueryNoPayment(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
-	resp, err := NewTokenCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetDecimals(3).
-		SetInitialSupply(1000000).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeKey(env.Client.GetOperatorPublicKey()).
-		SetKycKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeDefault(false).
-		Execute(env.Client)
+	tokenID, err := createFungibleToken(&env, func(transaction *TokenCreateTransaction) {
+		transaction.
+			SetDecimals(3).
+			SetKycKey(env.Client.GetOperatorPublicKey())
+	})
 	require.NoError(t, err)
-
-	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
-
-	tokenID := *receipt.TokenID
 
 	info, err := NewTokenInfoQuery().
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetQueryPayment(NewHbar(1)).
 		SetTokenID(tokenID).
 		Execute(env.Client)

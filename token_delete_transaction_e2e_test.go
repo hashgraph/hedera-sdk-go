@@ -36,26 +36,10 @@ func TestIntegrationTokenDeleteTransactionCanExecute(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
-	resp, err := NewTokenCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetDecimals(3).
-		SetInitialSupply(1000000).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeKey(env.Client.GetOperatorPublicKey()).
-		SetWipeKey(env.Client.GetOperatorPublicKey()).
-		SetKycKey(env.Client.GetOperatorPublicKey()).
-		SetSupplyKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeDefault(false).
-		Execute(env.Client)
+	tokenID, err := createFungibleToken(&env)
 	require.NoError(t, err)
 
-	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
-
-	err = CloseIntegrationTestEnv(env, receipt.TokenID)
+	err = CloseIntegrationTestEnv(env, &tokenID)
 	require.NoError(t, err)
 }
 
