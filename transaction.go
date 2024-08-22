@@ -4892,6 +4892,10 @@ func (tx *Transaction) execute(client *Client, e TransactionInterface) (Transact
 	}, nil
 }
 
+func (tx *Transaction) FreezeWith(client *Client, e TransactionInterface) (TransactionInterface, error) {
+	return tx.freezeWith(client, e)
+}
+
 func (tx *Transaction) freezeWith(client *Client, e TransactionInterface) (TransactionInterface, error) { //nolint
 	if tx.IsFrozen() {
 		return tx, nil

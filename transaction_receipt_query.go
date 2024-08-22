@@ -37,7 +37,6 @@ type TransactionReceiptQuery struct {
 	transactionID *TransactionID
 	childReceipts *bool
 	duplicates    *bool
-	timestamp     time.Time
 }
 
 // NewTransactionReceiptQuery creates TransactionReceiptQuery which
@@ -102,40 +101,17 @@ func (q *TransactionReceiptQuery) GetCost(client *Client) (Hbar, error) {
 
 // Execute executes the Query with the provided client
 func (q *TransactionReceiptQuery) Execute(client *Client) (TransactionReceipt, error) {
-	// TODO(Toni): Custom execute here, should be checked against the common execute
-	if client == nil {
-		return TransactionReceipt{}, errNoClientProvided
-	}
-
-	var err error
-
-	err = q.validateNetworkOnIDs(client)
-	if err != nil {
-		return TransactionReceipt{}, err
-	}
-
-	q.timestamp = time.Now()
-
-	q.paymentTransactions = make([]*services.Transaction, 0)
-
-	q.pb = q.buildQuery()
-
-	if q.isPaymentRequired && len(q.paymentTransactions) > 0 {
-		q.paymentTransactionIDs._Advance()
-	}
-	q.pbHeader.ResponseType = services.ResponseType_ANSWER_ONLY
-
-	resp, err := _Execute(client, q)
+	resp, err := q.Query.execute(client, q)
 
 	if err, ok := err.(ErrHederaPreCheckStatus); ok {
-		if resp.(*services.Response).GetTransactionGetReceipt() != nil {
-			return _TransactionReceiptFromProtobuf(resp.(*services.Response).GetTransactionGetReceipt(), q.transactionID), err
+		if resp.GetTransactionGetReceipt() != nil {
+			return _TransactionReceiptFromProtobuf(resp.GetTransactionGetReceipt(), q.transactionID), err
 		}
 		// Manually add the receipt status, because an empty receipt has no status and no status defaults to 0, which means success
 		return TransactionReceipt{Status: err.Status}, err
 	}
 
-	return _TransactionReceiptFromProtobuf(resp.(*services.Response).GetTransactionGetReceipt(), q.transactionID), nil
+	return _TransactionReceiptFromProtobuf(resp.GetTransactionGetReceipt(), q.transactionID), nil
 }
 
 // SetTransactionID sets the TransactionID for which the receipt is being requested.

@@ -1,3 +1,20 @@
+## v2.43.0
+
+### Added
+
+-  `Key` functions such as `KeyFromBytes` `KeyToBytes`
+-  `KeyList` functions such as `SetThreshold`
+
+## v2.42.0
+
+### Added
+
+-  `TokenReject` functionality (part of HIP-904)
+
+### Fixed
+
+-  `TransactionReceiptQuery` and `AccountBalanceQuery` execution flows
+
 ## v2.41.0
 
 ### Added
