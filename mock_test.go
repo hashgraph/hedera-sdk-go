@@ -244,11 +244,11 @@ func TestUnitMockAddressBookQuery(t *testing.T) {
 
 	require.Equal(t, len(result.NodeAddresses), 2)
 	require.Equal(t, result.NodeAddresses[0].AccountID.String(), "0.0.3")
-	require.Equal(t, result.NodeAddresses[0].Addresses[0].String(), "1.2.2.3:50123:hedera.domain.name")
-	require.Equal(t, result.NodeAddresses[0].Addresses[1].String(), "2.1.2.3:50123:hedera.domain.name")
+	require.Equal(t, result.NodeAddresses[0].Addresses[0].String(), "hedera.domain.name:50123")
+	require.Equal(t, result.NodeAddresses[0].Addresses[1].String(), "hedera.domain.name:50123")
 	require.Equal(t, result.NodeAddresses[1].AccountID.String(), "0.0.4")
-	require.Equal(t, result.NodeAddresses[1].Addresses[0].String(), "1.2.2.9:50123:hedera.domain.name2")
-	require.Equal(t, result.NodeAddresses[1].Addresses[1].String(), "2.1.2.9:50123:hedera.domain.name2")
+	require.Equal(t, result.NodeAddresses[1].Addresses[0].String(), "hedera.domain.name2:50123")
+	require.Equal(t, result.NodeAddresses[1].Addresses[1].String(), "hedera.domain.name2:50123")
 }
 
 func TestUnitMockGenerateTransactionIDsPerExecution(t *testing.T) {
