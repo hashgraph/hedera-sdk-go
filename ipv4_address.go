@@ -24,7 +24,12 @@ type IPv4Address struct {
 	address []byte
 }
 
+// Leaving this due to backwards compatibility.
 func Ipv4AddressFromProtobuf(address []byte) IPv4Address {
+	return Ipv4AddressFromBytes(address)
+}
+
+func Ipv4AddressFromBytes(address []byte) IPv4Address {
 	return IPv4Address{
 		address: address,
 	}
