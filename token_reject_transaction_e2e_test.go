@@ -501,7 +501,7 @@ func TestIntegrationTokenRejectTransactionTokenPaused(t *testing.T) {
 	require.ErrorContains(t, err, "TOKEN_IS_PAUSED")
 }
 
-func TestIntegrationTokenRejectTransactionRemovesAllowance(t *testing.T) {
+func TestIntegrationTokenRejectTransactionDoesNotRemoveAllowanceFT(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
@@ -512,6 +512,7 @@ func TestIntegrationTokenRejectTransactionRemovesAllowance(t *testing.T) {
 	receiver, key := createAccountHelper(t, &env, 100)
 	// create spender account to be approved
 	spender, spenderKey := createAccountHelper(t, &env, 100)
+
 	// transfer ft to the receiver
 	tx, err := NewTransferTransaction().
 		AddTokenTransfer(tokenID, env.Client.GetOperatorAccountID(), -10).
@@ -520,6 +521,7 @@ func TestIntegrationTokenRejectTransactionRemovesAllowance(t *testing.T) {
 	require.NoError(t, err)
 	_, err = tx.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
+
 	// approve allowance to the spender
 	frozenApprove, err := NewAccountAllowanceApproveTransaction().
 		ApproveTokenAllowance(tokenID, receiver, spender, 10).FreezeWith(env.Client)
@@ -528,6 +530,7 @@ func TestIntegrationTokenRejectTransactionRemovesAllowance(t *testing.T) {
 	require.NoError(t, err)
 	_, err = approve.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
+
 	// verify the spender has allowance
 	env.Client.SetOperator(spender, spenderKey)
 	frozenTx, err := NewTransferTransaction().
@@ -539,7 +542,9 @@ func TestIntegrationTokenRejectTransactionRemovesAllowance(t *testing.T) {
 	require.NoError(t, err)
 	_, err = transfer.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
+
 	env.Client.SetOperator(env.OperatorID, env.OperatorKey)
+
 	// reject the token
 	frozenTxn, err := NewTokenRejectTransaction().
 		SetOwnerID(receiver).
@@ -550,6 +555,7 @@ func TestIntegrationTokenRejectTransactionRemovesAllowance(t *testing.T) {
 	require.NoError(t, err)
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
+
 	// verify the allowance - should be 0 , because the receiver is no longer the owner
 	env.Client.SetOperator(spender, spenderKey)
 	frozenTx, err = NewTransferTransaction().
@@ -558,78 +564,29 @@ func TestIntegrationTokenRejectTransactionRemovesAllowance(t *testing.T) {
 	tx, err = frozenTx.Sign(spenderKey).Execute(env.Client)
 	require.NoError(t, err)
 	_, err = tx.SetValidateStatus(true).GetReceipt(env.Client)
-	require.ErrorContains(t, err, "SPENDER_DOES_NOT_HAVE_ALLOWANCE")
+	require.ErrorContains(t, err, "INSUFFICIENT_TOKEN_BALANCE")
 	env.Client.SetOperator(env.OperatorID, env.OperatorKey)
 
-	// same test for nft
-
-	// create nft with treasury
-	nftID, err := createNft(&env)
-	require.NoError(t, err)
-
-	// mint
-	mint, err := NewTokenMintTransaction().SetTokenID(nftID).SetMetadatas(mintMetadata).Execute(env.Client)
-	receipt, err := mint.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
-	serials := receipt.SerialNumbers
-
-	// transfer nfts to the receiver
+	// transfer ft to the back to the receiver
 	tx, err = NewTransferTransaction().
-		AddNftTransfer(nftID.Nft(serials[0]), env.Client.GetOperatorAccountID(), receiver).
-		AddNftTransfer(nftID.Nft(serials[1]), env.Client.GetOperatorAccountID(), receiver).
-		AddNftTransfer(nftID.Nft(serials[2]), env.Client.GetOperatorAccountID(), receiver).
-		AddNftTransfer(nftID.Nft(serials[3]), env.Client.GetOperatorAccountID(), receiver).
+		AddTokenTransfer(tokenID, env.Client.GetOperatorAccountID(), -10).
+		AddTokenTransfer(tokenID, receiver, 10).
 		Execute(env.Client)
 	require.NoError(t, err)
 	_, err = tx.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	// approve allowance to the spender
-	frozenApprove, err = NewAccountAllowanceApproveTransaction().
-		ApproveTokenNftAllowance(nftID.Nft(serials[0]), receiver, spender).
-		ApproveTokenNftAllowance(nftID.Nft(serials[1]), receiver, spender).
-		FreezeWith(env.Client)
-	require.NoError(t, err)
-	approve, err = frozenApprove.Sign(key).Execute(env.Client)
-	require.NoError(t, err)
-	_, err = approve.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
-
 	// verify the spender has allowance
 	env.Client.SetOperator(spender, spenderKey)
 	frozenTx, err = NewTransferTransaction().
-		AddApprovedNftTransfer(nftID.Nft(serials[0]), receiver, spender, true).
+		AddApprovedTokenTransfer(tokenID, receiver, -5, true).
+		AddTokenTransfer(tokenID, spender, 5).
 		FreezeWith(env.Client)
 	require.NoError(t, err)
 	transfer, err = frozenTx.SignWith(spenderKey.PublicKey(), spenderKey.Sign).Execute(env.Client)
 	require.NoError(t, err)
 	_, err = transfer.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
-
-	env.Client.SetOperator(env.OperatorID, env.OperatorKey)
-
-	// reject the token
-	frozenTxn, err = NewTokenRejectTransaction().
-		SetOwnerID(receiver).
-		SetNftIDs(nftID.Nft(serials[1]), nftID.Nft(serials[2])).
-		FreezeWith(env.Client)
-	require.NoError(t, err)
-	resp, err = frozenTxn.Sign(key).Execute(env.Client)
-	require.NoError(t, err)
-	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
-
-	// verify the allowance - should be 0 , because the receiver is no longer the owner
-	env.Client.SetOperator(spender, spenderKey)
-	frozenTx, err = NewTransferTransaction().
-		AddApprovedNftTransfer(nftID.Nft(serials[1]), receiver, spender, true).
-		AddApprovedNftTransfer(nftID.Nft(serials[2]), receiver, spender, true).
-		FreezeWith(env.Client)
-	tx, err = frozenTx.Sign(spenderKey).Execute(env.Client)
-	require.NoError(t, err)
-	_, err = tx.SetValidateStatus(true).GetReceipt(env.Client)
-	require.ErrorContains(t, err, "SPENDER_DOES_NOT_HAVE_ALLOWANCE")
-	env.Client.SetOperator(env.OperatorID, env.OperatorKey)
 
 }
 
