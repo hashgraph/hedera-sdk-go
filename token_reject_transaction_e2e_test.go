@@ -501,6 +501,95 @@ func TestIntegrationTokenRejectTransactionTokenPaused(t *testing.T) {
 	require.ErrorContains(t, err, "TOKEN_IS_PAUSED")
 }
 
+func TestIntegrationTokenRejectTransactionDoesNotRemoveAllowanceFT(t *testing.T) {
+	t.Skip("Skipping test as this flow is currently not working as expected in services")
+	t.Parallel()
+	env := NewIntegrationTestEnv(t)
+
+	// create fungible token with treasury
+	tokenID, err := createFungibleToken(&env)
+	require.NoError(t, err)
+	// create receiver account with auto associations
+	receiver, key := createAccountHelper(t, &env, 100)
+	// create spender account to be approved
+	spender, spenderKey := createAccountHelper(t, &env, 100)
+
+	// transfer ft to the receiver
+	tx, err := NewTransferTransaction().
+		AddTokenTransfer(tokenID, env.Client.GetOperatorAccountID(), -10).
+		AddTokenTransfer(tokenID, receiver, 10).
+		Execute(env.Client)
+	require.NoError(t, err)
+	_, err = tx.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	// approve allowance to the spender
+	frozenApprove, err := NewAccountAllowanceApproveTransaction().
+		ApproveTokenAllowance(tokenID, receiver, spender, 10).FreezeWith(env.Client)
+	require.NoError(t, err)
+	approve, err := frozenApprove.Sign(key).Execute(env.Client)
+	require.NoError(t, err)
+	_, err = approve.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	// verify the spender has allowance
+	env.Client.SetOperator(spender, spenderKey)
+	frozenTx, err := NewTransferTransaction().
+		AddApprovedTokenTransfer(tokenID, receiver, -5, true).
+		AddTokenTransfer(tokenID, spender, 5).
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+	transfer, err := frozenTx.SignWith(spenderKey.PublicKey(), spenderKey.Sign).Execute(env.Client)
+	require.NoError(t, err)
+	_, err = transfer.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	env.Client.SetOperator(env.OperatorID, env.OperatorKey)
+
+	// reject the token
+	frozenTxn, err := NewTokenRejectTransaction().
+		SetOwnerID(receiver).
+		AddTokenID(tokenID).
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+	resp, err := frozenTxn.Sign(key).Execute(env.Client)
+	require.NoError(t, err)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	// verify the allowance - should be 0 , because the receiver is no longer the owner
+	env.Client.SetOperator(spender, spenderKey)
+	frozenTx, err = NewTransferTransaction().
+		AddApprovedTokenTransfer(tokenID, receiver, -5, true).
+		AddTokenTransfer(tokenID, spender, 5).FreezeWith(env.Client)
+	tx, err = frozenTx.Sign(spenderKey).Execute(env.Client)
+	require.NoError(t, err)
+	_, err = tx.SetValidateStatus(true).GetReceipt(env.Client)
+	require.ErrorContains(t, err, "INSUFFICIENT_TOKEN_BALANCE")
+	env.Client.SetOperator(env.OperatorID, env.OperatorKey)
+
+	// transfer ft to the back to the receiver
+	tx, err = NewTransferTransaction().
+		AddTokenTransfer(tokenID, env.Client.GetOperatorAccountID(), -10).
+		AddTokenTransfer(tokenID, receiver, 10).
+		Execute(env.Client)
+	require.NoError(t, err)
+	_, err = tx.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	// verify the spender has allowance
+	env.Client.SetOperator(spender, spenderKey)
+	frozenTx, err = NewTransferTransaction().
+		AddApprovedTokenTransfer(tokenID, receiver, -5, true).
+		AddTokenTransfer(tokenID, spender, 5).
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+	transfer, err = frozenTx.SignWith(spenderKey.PublicKey(), spenderKey.Sign).Execute(env.Client)
+	require.NoError(t, err)
+	_, err = transfer.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+}
+
 func TestIntegrationTokenRejectTransactionDoesNotRemoveAllowanceNFT(t *testing.T) {
 	t.Skip("Skipping test as this flow is currently not working as expected in services")
 	t.Parallel()
