@@ -60,6 +60,14 @@ and `OPERATOR_KEY` and `OPERATOR_ID` **must** be provided.
 
 [Example Config File](./client-config-with-operator.json)
 
+## Linting
+
+This repository uses golangci-lint for linting. You can install a pre-commit git hook that runs golangci-lint before each commit by running the following command:
+
+```sh
+scripts/install-hooks.sh
+```
+
 ## Support
 
 If you have a question on how to use the product, please see our
