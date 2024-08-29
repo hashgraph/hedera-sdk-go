@@ -14,7 +14,7 @@ on:
 
 jobs:
   test:
-    runs-on: [ self-hosted, Linux, medium, ephemeral ]
+    runs-on: client-sdk-linux-medium
     strategy:
       matrix:
         version: [ 'current', 'latest' ]
