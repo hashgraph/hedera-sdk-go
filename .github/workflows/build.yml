@@ -23,7 +23,7 @@ concurrency:
 jobs:
     build:
         name: Build
-        runs-on: [ self-hosted, Linux, medium, ephemeral ]
+        runs-on: client-sdk-linux-medium
         steps:
             - name: Harden Runner
               uses: step-security/harden-runner@5c7944e73c4c2a096b17a9cb74d65b6c2bbafbde # v2.9.1
@@ -62,7 +62,7 @@ jobs:
     test:
         name: Unit and Integration Tests
         if: success()
-        runs-on: [ self-hosted, Linux, medium, ephemeral ]
+        runs-on: client-sdk-linux-medium
 
         needs:
             - build
@@ -122,7 +122,7 @@ jobs:
     run-examples:
         name: Run Examples
         if: success()
-        runs-on: [ self-hosted, Linux, medium, ephemeral ]
+        runs-on: client-sdk-linux-medium
 
         needs:
             - build
