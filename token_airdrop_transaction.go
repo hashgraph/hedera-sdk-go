@@ -56,7 +56,7 @@ func _TokenAirdropTransactionFromProtobuf(tx Transaction, pb *services.Transacti
 		tokenTransfers[*tok] = _TokenTransferPrivateFromProtobuf(tokenTransfersList)
 	}
 
-	for _, tokenTransfersList := range pb.GetCryptoTransfer().GetTokenTransfers() {
+	for _, tokenTransfersList := range pb.GetTokenAirdrop().GetTokenTransfers() {
 		if tokenID := _TokenIDFromProtobuf(tokenTransfersList.Token); tokenID != nil {
 			for _, aa := range tokenTransfersList.GetNftTransfers() {
 				if nftTransfers[*tokenID] == nil {

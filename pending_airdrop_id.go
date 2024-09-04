@@ -29,20 +29,44 @@ type PendingAirdropId struct {
 	nftID    *NftID
 }
 
+func (pendingAirdropId *PendingAirdropId) NewPendingAirdropId() *PendingAirdropId {
+	return &PendingAirdropId{}
+}
+
 func (pendingAirdropId *PendingAirdropId) GetSender() *AccountID {
 	return pendingAirdropId.sender
+}
+
+func (pendingAirdropId *PendingAirdropId) SetSender(sender AccountID) *PendingAirdropId {
+	pendingAirdropId.sender = &sender
+	return pendingAirdropId
 }
 
 func (pendingAirdropId *PendingAirdropId) GetReceiver() *AccountID {
 	return pendingAirdropId.receiver
 }
 
+func (pendingAirdropId *PendingAirdropId) SetReceiver(receiver AccountID) *PendingAirdropId {
+	pendingAirdropId.receiver = &receiver
+	return pendingAirdropId
+}
+
 func (pendingAirdropId *PendingAirdropId) GetTokenID() *TokenID {
 	return pendingAirdropId.tokenID
 }
 
+func (pendingAirdropId *PendingAirdropId) SetTokenID(tokenID TokenID) *PendingAirdropId {
+	pendingAirdropId.tokenID = &tokenID
+	return pendingAirdropId
+}
+
 func (pendingAirdropId *PendingAirdropId) GetNftID() *NftID {
 	return pendingAirdropId.nftID
+}
+
+func (pendingAirdropId *PendingAirdropId) SetNftID(nftID NftID) *PendingAirdropId {
+	pendingAirdropId.nftID = &nftID
+	return pendingAirdropId
 }
 
 func _PendingAirdropIdFromProtobuf(pb *services.PendingAirdropId) *PendingAirdropId {

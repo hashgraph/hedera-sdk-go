@@ -343,6 +343,12 @@ const (
 	StatusServiceEndpointsExceededLimit                            Status = 357
 	StatusEmptyTokenReferenceList                                  Status = 358
 	StatusUpdateNodeAccountNotAllowed                              Status = 359
+	TokenHasNoMetadataOrSupplyKey                                  Status = 360
+	EmptyPendingAirdropIdList                                      Status = 361
+	PendingAirdropIdRepeated                                       Status = 362
+	MaxPendingAirdropIdExceeded                                    Status = 363
+	PendingNftAirdropAlreadyExists                                 Status = 364
+	AccountHasPendingAirdrops                                      Status = 365
 )
 
 // String() returns a string representation of the status
@@ -984,6 +990,18 @@ func (status Status) String() string { // nolint
 		return "EMPTY_TOKEN_REFERENCE_LIST"
 	case StatusUpdateNodeAccountNotAllowed:
 		return "UPDATE_NODE_ACCOUNT_NOT_ALLOWED"
+	case TokenHasNoMetadataOrSupplyKey:
+		return "TOKEN_HAS_NO_METADATA_OR_SUPPLY_KEY"
+	case EmptyPendingAirdropIdList:
+		return "EMPTY_PENDING_AIRDROP_ID_LIST"
+	case PendingAirdropIdRepeated:
+		return "PENDING_AIRDROP_ID_REPEATED"
+	case MaxPendingAirdropIdExceeded:
+		return "MAX_PENDING_AIRDROP_ID_EXCEEDED"
+	case PendingNftAirdropAlreadyExists:
+		return "PENDING_NFT_AIRDROP_ALREADY_EXISTS"
+	case AccountHasPendingAirdrops:
+		return "ACCOUNT_HAS_PENDING_AIRDROPS"
 	}
 
 	panic(fmt.Sprintf("unreachable: Status.String() switch statement is non-exhaustive. Status: %v", uint32(status)))

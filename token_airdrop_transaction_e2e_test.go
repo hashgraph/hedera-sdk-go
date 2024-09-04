@@ -34,7 +34,7 @@ func TestIntegrationTokenAirdropTransactionTransfersTokensWhenAssociated(t *test
 	env := NewIntegrationTestEnv(t)
 	defer CloseIntegrationTestEnv(env, nil)
 
-	// Create fungible and NFT token
+	// Create ft and nft
 	tokenID, err := createFungibleToken(&env)
 	require.NoError(t, err)
 	nftID, err := createNft(&env)
@@ -54,7 +54,6 @@ func TestIntegrationTokenAirdropTransactionTransfersTokensWhenAssociated(t *test
 
 	// Create receiver with unlimited auto associations and receiverSig = false
 	receiver, _ := createAccountHelper(t, &env, -1)
-	require.NoError(t, err)
 
 	// Airdrop the tokens
 	airdropTx, err := NewTokenAirdropTransaction().
@@ -86,9 +85,8 @@ func TestIntegrationTokenAirdropTransactionTransfersTokensWhenAssociated(t *test
 }
 func TestIntegrationTokenAirdropTransactionPendingTokensWhenNotAssociated(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
-	// defer CloseIntegrationTestEnv(env, nil)
 
-	// Create fungible and NFT token
+	// Create ft and nft
 	tokenID, err := createFungibleToken(&env)
 	require.NoError(t, err)
 	nftID, err := createNft(&env)
@@ -108,7 +106,6 @@ func TestIntegrationTokenAirdropTransactionPendingTokensWhenNotAssociated(t *tes
 
 	// Create receiver with 0 auto associations and receiverSig = false
 	receiver, _ := createAccountHelper(t, &env, 0)
-	require.NoError(t, err)
 
 	// Airdrop the tokens
 	airdropTx, err := NewTokenAirdropTransaction().
@@ -151,4 +148,350 @@ func TestIntegrationTokenAirdropTransactionPendingTokensWhenNotAssociated(t *tes
 	require.NoError(t, err)
 	assert.Equal(t, uint64(1_000_000), operatorBalance.Tokens.Get(tokenID))
 	assert.Equal(t, uint64(10), operatorBalance.Tokens.Get(nftID))
+}
+
+func TestIntegrationTokenAirdropTransactionCreatesHollowAccount(t *testing.T) {
+	env := NewIntegrationTestEnv(t)
+
+	// Create ft and nft
+	tokenID, err := createFungibleToken(&env)
+	require.NoError(t, err)
+	nftID, err := createNft(&env)
+	require.NoError(t, err)
+
+	// Mint some NFTs
+	tx, err := NewTokenMintTransaction().
+		SetTokenID(nftID).
+		SetMetadatas(mintMetadata).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	receipt, err := tx.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	nftSerials := receipt.SerialNumbers
+
+	// Create a ECDSA private key
+	privateKey, err := PrivateKeyGenerateEcdsa()
+	if err != nil {
+		println(err.Error())
+	}
+	// Extract the ECDSA public key public key
+	publicKey := privateKey.PublicKey()
+
+	aliasAccountId := publicKey.ToAccountID(0, 0)
+
+	// should lazy-create and transfer the tokens
+	airdropTx, err := NewTokenAirdropTransaction().
+		AddNftTransfer(nftID.Nft(nftSerials[0]), env.OperatorID, *aliasAccountId).
+		AddNftTransfer(nftID.Nft(nftSerials[1]), env.OperatorID, *aliasAccountId).
+		AddTokenTransfer(tokenID, *aliasAccountId, 100).
+		AddTokenTransfer(tokenID, env.OperatorID, -100).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	_, err = airdropTx.SetValidateStatus(true).GetRecord(env.Client)
+	require.NoError(t, err)
+
+	// Verify the receiver holds the tokens via query
+	receiverAccountBalance, err := NewAccountBalanceQuery().
+		SetAccountID(*aliasAccountId).
+		Execute(env.Client)
+	require.NoError(t, err)
+	assert.Equal(t, uint64(100), receiverAccountBalance.Tokens.Get(tokenID))
+	assert.Equal(t, uint64(2), receiverAccountBalance.Tokens.Get(nftID))
+
+	// Verify the operator does not hold the tokens
+	operatorBalance, err := NewAccountBalanceQuery().
+		SetAccountID(env.OperatorID).
+		Execute(env.Client)
+	require.NoError(t, err)
+	assert.Equal(t, uint64(1_000_000-100), operatorBalance.Tokens.Get(tokenID))
+	assert.Equal(t, uint64(8), operatorBalance.Tokens.Get(nftID))
+
+	CloseIntegrationTestEnv(env, nil)
+}
+
+func TestIntegrationTokenAirdropTransactionWithCustomFees(t *testing.T) {
+	env := NewIntegrationTestEnv(t)
+
+	// Create receiver with unlimited auto associations and receiverSig = false
+	receiver, _ := createAccountHelper(t, &env, -1)
+
+	// create fungible token with custom fee another token
+	customFeeTokenID, err := createFungibleToken(&env)
+	require.NoError(t, err)
+
+	// make the custom fee to be paid by the sender and the fee collector to be the operator account
+	fee := NewCustomFixedFee().
+		SetFeeCollectorAccountID(env.OperatorID).
+		SetDenominatingTokenID(customFeeTokenID).
+		SetAmount(1).
+		SetAllCollectorsAreExempt(true)
+
+	tx, err := NewTokenCreateTransaction().
+		SetTokenName("Test Fungible Token").
+		SetTokenSymbol("TFT").
+		SetTokenMemo("I was created for integration tests").
+		SetDecimals(3).
+		SetInitialSupply(1_000_000).
+		SetMaxSupply(1_000_000).
+		SetTreasuryAccountID(env.OperatorID).
+		SetSupplyType(TokenSupplyTypeFinite).
+		SetAdminKey(env.OperatorKey).
+		SetFreezeKey(env.OperatorKey).
+		SetSupplyKey(env.OperatorKey).
+		SetMetadataKey(env.OperatorKey).
+		SetPauseKey(env.OperatorKey).
+		SetCustomFees([]Fee{fee}).
+		Execute(env.Client)
+
+	require.NoError(t, err)
+
+	receipt, err := tx.SetValidateStatus(true).GetReceipt(env.Client)
+	tokenID := receipt.TokenID
+
+	// create sender account with unlimited associations and send some tokens to it
+	sender, senderKey := createAccountHelper(t, &env, -1)
+
+	// associate the token to the sender
+	frozenTxn, err := NewTokenAssociateTransaction().
+		SetAccountID(sender).
+		AddTokenID(*tokenID).
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+	tx, err = frozenTxn.Sign(senderKey).Execute(env.Client)
+	require.NoError(t, err)
+	_, err = tx.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	// send tokens to the sender
+	tx, err = NewTransferTransaction().
+		AddTokenTransfer(customFeeTokenID, sender, 100).
+		AddTokenTransfer(customFeeTokenID, env.OperatorID, -100).
+		AddTokenTransfer(*tokenID, sender, 100).
+		AddTokenTransfer(*tokenID, env.OperatorID, -100).
+		Execute(env.Client)
+	require.NoError(t, err)
+	_, err = tx.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	// airdrop the tokens from the sender to the receiver
+	frozenTx, err := NewTokenAirdropTransaction().
+		AddTokenTransfer(*tokenID, receiver, 100).
+		AddTokenTransfer(*tokenID, sender, -100).
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+	airdropTx, err := frozenTx.
+		Sign(senderKey).
+		Execute(env.Client)
+	require.NoError(t, err)
+	_, err = airdropTx.SetValidateStatus(true).GetRecord(env.Client)
+	require.NoError(t, err)
+
+	// verify the custom fee has been paid by the sender to the collector
+	receiverAccountBalance, err := NewAccountBalanceQuery().
+		SetAccountID(receiver).
+		Execute(env.Client)
+	require.NoError(t, err)
+	assert.Equal(t, uint64(100), receiverAccountBalance.Tokens.Get(*tokenID))
+
+	senderAccountBalance, err := NewAccountBalanceQuery().
+		SetAccountID(sender).
+		Execute(env.Client)
+	require.NoError(t, err)
+	assert.Equal(t, uint64(0), senderAccountBalance.Tokens.Get(*tokenID))
+	assert.Equal(t, uint64(99), senderAccountBalance.Tokens.Get(customFeeTokenID))
+
+	operatorBalance, err := NewAccountBalanceQuery().
+		SetAccountID(env.OperatorID).
+		Execute(env.Client)
+	require.NoError(t, err)
+	assert.Equal(t, uint64(1_000_000-100), operatorBalance.Tokens.Get(*tokenID))
+	assert.Equal(t, uint64(1_000_000-100+1), operatorBalance.Tokens.Get(customFeeTokenID))
+
+	CloseIntegrationTestEnv(env, nil)
+}
+func TestIntegrationTokenAirdropTransactionWithReceiverSigTrue(t *testing.T) {
+	env := NewIntegrationTestEnv(t)
+
+	// create fungible token
+	tokenID, err := createFungibleToken(&env)
+	require.NoError(t, err)
+
+	// create nft
+	nftID, err := createNft(&env)
+	require.NoError(t, err)
+
+	// Mint some NFTs
+	tx, err := NewTokenMintTransaction().
+		SetTokenID(nftID).
+		SetMetadatas(mintMetadata).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	receipt, err := tx.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	nftSerials := receipt.SerialNumbers
+
+	// create receiver with unlimited auto associations and receiverSig = true
+	newKey, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+
+	accountCreateFrozen, err := NewAccountCreateTransaction().
+		SetKey(newKey).
+		SetInitialBalance(NewHbar(3)).
+		SetReceiverSignatureRequired(true).
+		SetMaxAutomaticTokenAssociations(-1).
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+	accountCreate, err := accountCreateFrozen.Sign(newKey).Execute(env.Client)
+	require.NoError(t, err)
+	receipt, err = accountCreate.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+	receiver := *receipt.AccountID
+
+	// airdrop the tokens
+	airdropTx, err := NewTokenAirdropTransaction().
+		AddNftTransfer(nftID.Nft(nftSerials[0]), env.OperatorID, receiver).
+		AddNftTransfer(nftID.Nft(nftSerials[1]), env.OperatorID, receiver).
+		AddTokenTransfer(tokenID, receiver, 100).
+		AddTokenTransfer(tokenID, env.OperatorID, -100).
+		Execute(env.Client)
+	require.NoError(t, err)
+	_, err = airdropTx.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	CloseIntegrationTestEnv(env, nil)
+}
+
+func TestIntegrationTokenAirdropTransactionWithNoBalanceFT(t *testing.T) {
+	env := NewIntegrationTestEnv(t)
+
+	// create fungible token
+	tokenID, _ := createFungibleToken(&env)
+
+	// create spender and approve to it some tokens
+	spender, spenderKey := createAccountHelper(t, &env, -1)
+
+	// create sender
+	sender, senderKey := createAccountHelper(t, &env, -1)
+
+	// transfer ft to sender
+	tx, err := NewTransferTransaction().
+		AddTokenTransfer(tokenID, sender, 100).
+		AddTokenTransfer(tokenID, env.OperatorID, -100).
+		Execute(env.Client)
+	require.NoError(t, err)
+	_, err = tx.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	// approve allowance to the spender
+	frozenTx, err := NewAccountAllowanceApproveTransaction().
+		ApproveTokenAllowance(tokenID, sender, spender, 100).
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+	tx, err = frozenTx.Sign(senderKey).Execute(env.Client)
+	require.NoError(t, err)
+	_, err = tx.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	// airdrop the tokens from the sender to the spender via approval
+	// fails with NOT_SUPPORTED
+	frozenTxn, err := NewTokenAirdropTransaction().
+		AddTokenTransfer(tokenID, spender, 100).
+		AddApprovedTokenTransfer(tokenID, sender, -100, true).
+		SetTransactionID(TransactionIDGenerate(spender)).
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+	_, err = frozenTxn.
+		Sign(spenderKey).
+		Execute(env.Client)
+	assert.ErrorContains(t, err, "NOT_SUPPORTED")
+
+	CloseIntegrationTestEnv(env, nil)
+}
+
+func TestIntegrationTokenAirdropTransactionWithNoBalanceNFT(t *testing.T) {
+	env := NewIntegrationTestEnv(t)
+
+	// create nft
+	nftID, err := createNft(&env)
+	require.NoError(t, err)
+
+	// Mint some NFTs
+	tx, err := NewTokenMintTransaction().
+		SetTokenID(nftID).
+		SetMetadatas(mintMetadata).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	receipt, err := tx.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	nftSerials := receipt.SerialNumbers
+
+	// create spender and approve to it some tokens
+	spender, spenderKey := createAccountHelper(t, &env, -1)
+
+	// create sender
+	sender, senderKey := createAccountHelper(t, &env, -1)
+
+	// transfer ft to sender
+	tx, err = NewTransferTransaction().
+		AddNftTransfer(nftID.Nft(nftSerials[0]), env.OperatorID, sender).
+		AddNftTransfer(nftID.Nft(nftSerials[1]), env.OperatorID, sender).
+		Execute(env.Client)
+	require.NoError(t, err)
+	_, err = tx.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	// approve allowance to the spender
+	frozenTx, err := NewAccountAllowanceApproveTransaction().
+		ApproveTokenNftAllowance(nftID.Nft(nftSerials[0]), sender, spender).
+		ApproveTokenNftAllowance(nftID.Nft(nftSerials[1]), sender, spender).
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+	tx, err = frozenTx.Sign(senderKey).Execute(env.Client)
+	require.NoError(t, err)
+	_, err = tx.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	// airdrop the tokens from the sender to the spender via approval
+	// fails with NOT_SUPPORTED
+	frozenTxn, err := NewTokenAirdropTransaction().
+		AddApprovedNftTransfer(nftID.Nft(nftSerials[0]), sender, spender, true).
+		AddApprovedNftTransfer(nftID.Nft(nftSerials[1]), sender, spender, true).
+		SetTransactionID(TransactionIDGenerate(spender)).
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+	_, err = frozenTxn.
+		Sign(spenderKey).
+		Execute(env.Client)
+	assert.ErrorContains(t, err, "NOT_SUPPORTED")
+
+	CloseIntegrationTestEnv(env, nil)
+}
+
+func TestIntegrationTokenAirdropTransactionWithInvalidBody(t *testing.T) {
+	env := NewIntegrationTestEnv(t)
+
+	// create fungible token
+	tokenID, _ := createFungibleToken(&env)
+
+	// create receiver
+	receiver, _ := createAccountHelper(t, &env, -1)
+
+	_, err := NewTokenAirdropTransaction().
+		Execute(env.Client)
+	require.ErrorContains(t, err, "EMPTY_TOKEN_TRANSFER_BODY")
+
+	_, err = NewTokenAirdropTransaction().
+		AddTokenTransfer(tokenID, receiver, 100).
+		AddTokenTransfer(tokenID, receiver, 100).
+		Execute(env.Client)
+	require.ErrorContains(t, err, "INVALID_TRANSACTION_BODY")
+
+	CloseIntegrationTestEnv(env, nil)
 }
