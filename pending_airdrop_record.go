@@ -1,7 +1,5 @@
 package hedera
 
-import "github.com/hashgraph/hedera-protobufs-go/services"
-
 /*-
  *
  * Hedera Go SDK
@@ -21,6 +19,8 @@ import "github.com/hashgraph/hedera-protobufs-go/services"
  * limitations under the License.
  *
  */
+
+import "github.com/hashgraph/hedera-protobufs-go/services"
 
 type PendingAirdropRecord struct {
 	pendingAirdropId     PendingAirdropId

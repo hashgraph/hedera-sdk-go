@@ -1,7 +1,5 @@
 package hedera
 
-import "github.com/hashgraph/hedera-protobufs-go/services"
-
 /*-
  *
  * Hedera Go SDK
@@ -22,6 +20,15 @@ import "github.com/hashgraph/hedera-protobufs-go/services"
  *
  */
 
+import "github.com/hashgraph/hedera-protobufs-go/services"
+
+/**
+ * A unique, composite, identifier for a pending airdrop.
+ *
+ * Each pending airdrop SHALL be uniquely identified by a PendingAirdropId.
+ * A PendingAirdropId SHALL be recorded when created and MUST be provided in any transaction
+ * that would modify that pending airdrop (such as a `claimAirdrop` or `cancelAirdrop`).
+ */
 type PendingAirdropId struct {
 	sender   *AccountID
 	receiver *AccountID
@@ -33,37 +40,45 @@ func (pendingAirdropId *PendingAirdropId) NewPendingAirdropId() *PendingAirdropI
 	return &PendingAirdropId{}
 }
 
+// GetSender returns the AccountID of the sender
 func (pendingAirdropId *PendingAirdropId) GetSender() *AccountID {
 	return pendingAirdropId.sender
 }
 
+// SetSender sets the AccountID of the sender
 func (pendingAirdropId *PendingAirdropId) SetSender(sender AccountID) *PendingAirdropId {
 	pendingAirdropId.sender = &sender
 	return pendingAirdropId
 }
 
+// GetReceiver returns the AccountID of the receiver
 func (pendingAirdropId *PendingAirdropId) GetReceiver() *AccountID {
 	return pendingAirdropId.receiver
 }
 
+// SetReceiver sets the AccountID of the receiver
 func (pendingAirdropId *PendingAirdropId) SetReceiver(receiver AccountID) *PendingAirdropId {
 	pendingAirdropId.receiver = &receiver
 	return pendingAirdropId
 }
 
+// GetTokenID returns the TokenID of the pending airdrop
 func (pendingAirdropId *PendingAirdropId) GetTokenID() *TokenID {
 	return pendingAirdropId.tokenID
 }
 
+// SetTokenID sets the TokenID of the pending airdrop
 func (pendingAirdropId *PendingAirdropId) SetTokenID(tokenID TokenID) *PendingAirdropId {
 	pendingAirdropId.tokenID = &tokenID
 	return pendingAirdropId
 }
 
+// GetNftID returns the NftID of the pending airdrop
 func (pendingAirdropId *PendingAirdropId) GetNftID() *NftID {
 	return pendingAirdropId.nftID
 }
 
+// SetNftID sets the NftID of the pending airdrop
 func (pendingAirdropId *PendingAirdropId) SetNftID(nftID NftID) *PendingAirdropId {
 	pendingAirdropId.nftID = &nftID
 	return pendingAirdropId

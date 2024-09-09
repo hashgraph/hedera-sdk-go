@@ -85,6 +85,7 @@ func TestIntegrationTokenAirdropTransactionTransfersTokensWhenAssociated(t *test
 }
 func TestIntegrationTokenAirdropTransactionPendingTokensWhenNotAssociated(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	// Create ft and nft
 	tokenID, err := createFungibleToken(&env)
@@ -152,6 +153,7 @@ func TestIntegrationTokenAirdropTransactionPendingTokensWhenNotAssociated(t *tes
 
 func TestIntegrationTokenAirdropTransactionCreatesHollowAccount(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	// Create ft and nft
 	tokenID, err := createFungibleToken(&env)
@@ -208,12 +210,11 @@ func TestIntegrationTokenAirdropTransactionCreatesHollowAccount(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, uint64(1_000_000-100), operatorBalance.Tokens.Get(tokenID))
 	assert.Equal(t, uint64(8), operatorBalance.Tokens.Get(nftID))
-
-	CloseIntegrationTestEnv(env, nil)
 }
 
 func TestIntegrationTokenAirdropTransactionWithCustomFees(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	// Create receiver with unlimited auto associations and receiverSig = false
 	receiver, _ := createAccountHelper(t, &env, -1)
@@ -309,11 +310,10 @@ func TestIntegrationTokenAirdropTransactionWithCustomFees(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, uint64(1_000_000-100), operatorBalance.Tokens.Get(*tokenID))
 	assert.Equal(t, uint64(1_000_000-100+1), operatorBalance.Tokens.Get(customFeeTokenID))
-
-	CloseIntegrationTestEnv(env, nil)
 }
 func TestIntegrationTokenAirdropTransactionWithReceiverSigTrue(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	// create fungible token
 	tokenID, err := createFungibleToken(&env)
@@ -362,12 +362,11 @@ func TestIntegrationTokenAirdropTransactionWithReceiverSigTrue(t *testing.T) {
 	require.NoError(t, err)
 	_, err = airdropTx.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
-
-	CloseIntegrationTestEnv(env, nil)
 }
 
 func TestIntegrationTokenAirdropTransactionWithNoBalanceFT(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	// create fungible token
 	tokenID, _ := createFungibleToken(&env)
@@ -409,12 +408,11 @@ func TestIntegrationTokenAirdropTransactionWithNoBalanceFT(t *testing.T) {
 		Sign(spenderKey).
 		Execute(env.Client)
 	assert.ErrorContains(t, err, "NOT_SUPPORTED")
-
-	CloseIntegrationTestEnv(env, nil)
 }
 
 func TestIntegrationTokenAirdropTransactionWithNoBalanceNFT(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	// create nft
 	nftID, err := createNft(&env)
@@ -470,12 +468,11 @@ func TestIntegrationTokenAirdropTransactionWithNoBalanceNFT(t *testing.T) {
 		Sign(spenderKey).
 		Execute(env.Client)
 	assert.ErrorContains(t, err, "NOT_SUPPORTED")
-
-	CloseIntegrationTestEnv(env, nil)
 }
 
 func TestIntegrationTokenAirdropTransactionWithInvalidBody(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	// create fungible token
 	tokenID, _ := createFungibleToken(&env)
@@ -492,6 +489,4 @@ func TestIntegrationTokenAirdropTransactionWithInvalidBody(t *testing.T) {
 		AddTokenTransfer(tokenID, receiver, 100).
 		Execute(env.Client)
 	require.ErrorContains(t, err, "INVALID_TRANSACTION_BODY")
-
-	CloseIntegrationTestEnv(env, nil)
 }
