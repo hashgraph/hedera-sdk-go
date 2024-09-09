@@ -54,9 +54,20 @@ func TestUnitTokenAirdropTransactionValidate(t *testing.T) {
 	client.SetAutoValidateChecksums(true)
 	accountID, err := AccountIDFromString("0.0.123-esxsf")
 	require.NoError(t, err)
+	nodeAccountIDs := []AccountID{{Account: 10}}
+	transactionID := TransactionIDGenerate(AccountID{Account: 123})
 
+	checksum := "dmqui"
+
+	token := TokenID{Token: 3, checksum: &checksum}
+	nft := NftID{TokenID: TokenID{Token: 3, checksum: &checksum}, SerialNumber: 1}
 	airdrop := NewTokenAirdropTransaction().
-		AddTokenTransfer(TokenID{Token: 1}, accountID, 100)
+		AddTokenTransfer(token, accountID, 100).
+		AddNftTransfer(nft, accountID, accountID).
+		SetTransactionID(transactionID).SetNodeAccountIDs(nodeAccountIDs).
+		SetMaxTransactionFee(HbarFromTinybar(100)).SetRegenerateTransactionID(true).
+		SetTransactionMemo("go sdk unit test").SetTransactionValidDuration(time.Second * 120).
+		SetMaxRetry(1).SetMaxBackoff(time.Second * 120).SetMinBackoff(time.Second * 1)
 
 	err = airdrop.validateNetworkOnIDs(client)
 	require.NoError(t, err)

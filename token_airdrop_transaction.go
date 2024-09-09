@@ -498,6 +498,9 @@ func (tx *TokenAirdropTransaction) validateNetworkOnIDs(client *Client) error {
 	var err error
 	for token, tokenTransfer := range tx.tokenTransfers {
 		err = token.ValidateChecksum(client)
+		if err != nil {
+			return err
+		}
 		for _, transfer := range tokenTransfer.Transfers {
 			err = transfer.accountID.ValidateChecksum(client)
 			if err != nil {
