@@ -27,6 +27,7 @@ import (
 	"encoding/hex"
 	"io"
 	"math/big"
+	"strings"
 
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -321,7 +322,8 @@ func PrivateKeyFromStringECSDA(s string) (PrivateKey, error) {
 }
 
 func PrivateKeyFromStringECDSA(s string) (PrivateKey, error) {
-	key, err := _ECDSAPrivateKeyFromString(s)
+	trimmedKey := strings.TrimPrefix(s, "0x")
+	key, err := _ECDSAPrivateKeyFromString(trimmedKey)
 	if err != nil {
 		return PrivateKey{}, err
 	}
