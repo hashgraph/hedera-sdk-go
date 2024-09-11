@@ -33,7 +33,7 @@ import (
 func TestUnitTokenNftTransferToBytes(t *testing.T) {
 	t.Parallel()
 
-	transfer := TokenNftTransfer{
+	transfer := _TokenNftTransfer{
 		SenderAccountID:   AccountID{Account: 3},
 		ReceiverAccountID: AccountID{Account: 4},
 		SerialNumber:      5,

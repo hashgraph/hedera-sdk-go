@@ -192,6 +192,11 @@ func (id TokenID) _IsZero() bool {
 	return id.Shard == 0 && id.Realm == 0 && id.Token == 0
 }
 
+// equals returns true if this TokenID and the given TokenID are identical
+func (id TokenID) equals(other TokenID) bool {
+	return id.Shard == other.Shard && id.Realm == other.Realm
+}
+
 // Compare compares two TokenIDs
 func (id TokenID) Compare(given TokenID) int {
 	if id.Shard > given.Shard { //nolint
