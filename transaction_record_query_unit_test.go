@@ -290,14 +290,14 @@ func TestUnitTransactionRecordQueryMarshalJSON(t *testing.T) {
 	tokenTransferList := map[TokenID][]TokenTransfer{}
 	tokenTransferList[tokenID] = []TokenTransfer{tokenTransfer}
 
-	tokenNftTransfer := TokenNftTransfer{
+	tokenNftTransfer := _TokenNftTransfer{
 		SenderAccountID:   accID,
 		ReceiverAccountID: accID,
 		SerialNumber:      123,
 		IsApproved:        true,
 	}
-	tokenNftTransferList := map[TokenID][]TokenNftTransfer{}
-	tokenNftTransferList[tokenID] = []TokenNftTransfer{tokenNftTransfer}
+	tokenNftTransferList := map[TokenID][]_TokenNftTransfer{}
+	tokenNftTransferList[tokenID] = []_TokenNftTransfer{tokenNftTransfer}
 
 	assessedCustomFee := AssessedCustomFee{
 		FeeCollectorAccountId: &accID,
@@ -335,22 +335,75 @@ func TestUnitTransactionRecordQueryMarshalJSON(t *testing.T) {
 	record.EvmAddress = evmAddressBytes
 	record.AssessedCustomFees = []AssessedCustomFee{assessedCustomFee}
 	record.AutomaticTokenAssociations = []TokenAssociation{tokenAssociation}
+	record.PendingAirdropRecords = []PendingAirdropRecord{{pendingAirdropId: PendingAirdropId{&accID, &accID, &tokenID, nil}, pendingAirdropAmount: 789}}
 	result, err := record.MarshalJSON()
 	require.NoError(t, err)
-	expected := `{"aliasKey":"302a300506032b6570032100d7366c45e4d2f1a6c1d9af054f5ef8edc0b8d3875ba5d08a7f2e81ee8876e9e8","assessedCustomFees":
-	[{"feeCollectorAccountId":"0.0.1246","tokenId":"0.0.123","amount":"789","payerAccountIds":["0.0.1246"]}],"automaticTokenAssociations":
-	[{"tokenId":"0.0.123","accountId":"0.0.1246"}],"callResultIsCreate":true,"children":[],"consensusTimestamp":"2022-06-18T02:54:43.839Z",
-	"duplicates":[],"ethereumHash":"01020304","evmAddress":"deadbeef","expectedDecimals":null,"nftTransfers":{"0.0.123":[{"sender":"0.0.1246","recipient":
-	"0.0.1246","isApproved":true,"serial":123}]},"paidStakingRewards":[{"accountId":"0.0.1157","amount":"-1041694270","isApproved":false},{"accountId":
-	"0.0.1246","amount":"1000000000","isApproved":false},{"accountId":"0.0.5","amount":"1071080","isApproved":false},{"accountId":"0.0.800","amount":"4062319",
-	"isApproved":false},{"accountId":"0.0.801","amount":"4062319","isApproved":false},{"accountId":"0.0.98","amount":"32498552","isApproved":false}],
-	"parentConsensusTimestamp":"2022-06-18T02:54:43.839Z","prngBytes":"01020304","prngNumber":123,"receipt":{"accountId":"0.0.1246","children":[],
-	"contractId":"0.0.3","duplicates":[],"exchangeRate":{"cents":12,"expirationTime":"1963-11-25T17:31:44.000Z","hbars":1},"fileId":null, "nodeId":1, "scheduleId":
-	null,"scheduledTransactionId":null,"serialNumbers":null,"status":"SUCCESS","tokenId":null,"topicId":null,"topicRunningHash":"","topicRunningHashVersion":
-	0,"topicSequenceNumber":0,"totalSupply":0},"tokenTransfers":{"0.0.123":{"0.0.1246":"789"}},"transactionFee":"41694270","transactionHash":
-	"cac44f2db045ba441f3fbc295217f2eb0f956293d28b3401578f6160e66f4e47ea87952d91c4b1cb5bda6447823b979a","transactionId":"0.0.1157@1655520872.507983896",
-	"transactionMemo":"test","transfers":[{"accountId":"0.0.5","amount":"1071080","isApproved":false},{"accountId":"0.0.98","amount":"32498552",
-	"isApproved":false},{"accountId":"0.0.800","amount":"4062319","isApproved":false},{"accountId":"0.0.801","amount":"4062319","isApproved":false},
-	{"accountId":"0.0.1157","amount":"-1041694270","isApproved":false},{"accountId":"0.0.1246","amount":"1000000000","isApproved":false}]}`
+	expected := `{
+        "aliasKey":"302a300506032b6570032100d7366c45e4d2f1a6c1d9af054f5ef8edc0b8d3875ba5d08a7f2e81ee8876e9e8",
+        "assessedCustomFees":[{"feeCollectorAccountId":"0.0.1246","tokenId":"0.0.123","amount":"789","payerAccountIds":["0.0.1246"]}],
+        "automaticTokenAssociations":[{"tokenId":"0.0.123","accountId":"0.0.1246"}],
+        "callResultIsCreate":true,
+        "children":[],
+        "consensusTimestamp":"2022-06-18T02:54:43.839Z",
+        "duplicates":[],
+        "ethereumHash":"01020304",
+        "evmAddress":"deadbeef",
+        "expectedDecimals":null,
+        "nftTransfers":{"0.0.123":[{"sender":"0.0.1246","recipient":"0.0.1246","isApproved":true,"serial":123}]},
+        "paidStakingRewards":[
+            {"accountId":"0.0.1157","amount":"-1041694270","isApproved":false},
+            {"accountId":"0.0.1246","amount":"1000000000","isApproved":false},
+            {"accountId":"0.0.5","amount":"1071080","isApproved":false},
+            {"accountId":"0.0.800","amount":"4062319","isApproved":false},
+            {"accountId":"0.0.801","amount":"4062319","isApproved":false},
+            {"accountId":"0.0.98","amount":"32498552","isApproved":false}
+        ],
+        "parentConsensusTimestamp":"2022-06-18T02:54:43.839Z",
+        "pendingAirdropRecords":[
+            {
+                "pendingAirdropAmount":"789",
+                "pendingAirdropId":{
+                    "nftId":"",
+                    "receiver":"0.0.1246",
+                    "sender":"0.0.1246",
+                    "tokenId":"0.0.123"
+                }
+            }
+        ],
+        "prngBytes":"01020304",
+        "prngNumber":123,
+        "receipt":{
+            "accountId":"0.0.1246",
+            "children":[],
+            "contractId":"0.0.3",
+            "duplicates":[],
+            "exchangeRate":{"cents":12,"expirationTime":"1963-11-25T17:31:44.000Z","hbars":1},
+            "fileId":null,
+            "nodeId":1,
+            "scheduleId":null,
+            "scheduledTransactionId":null,
+            "serialNumbers":null,
+            "status":"SUCCESS",
+            "tokenId":null,
+            "topicId":null,
+            "topicRunningHash":"",
+            "topicRunningHashVersion":0,
+            "topicSequenceNumber":0,
+            "totalSupply":0
+        },
+        "tokenTransfers":{"0.0.123":{"0.0.1246":"789"}},
+        "transactionFee":"41694270",
+        "transactionHash":"cac44f2db045ba441f3fbc295217f2eb0f956293d28b3401578f6160e66f4e47ea87952d91c4b1cb5bda6447823b979a",
+        "transactionId":"0.0.1157@1655520872.507983896",
+        "transactionMemo":"test",
+        "transfers":[
+            {"accountId":"0.0.5","amount":"1071080","isApproved":false},
+            {"accountId":"0.0.98","amount":"32498552","isApproved":false},
+            {"accountId":"0.0.800","amount":"4062319","isApproved":false},
+            {"accountId":"0.0.801","amount":"4062319","isApproved":false},
+            {"accountId":"0.0.1157","amount":"-1041694270","isApproved":false},
+            {"accountId":"0.0.1246","amount":"1000000000","isApproved":false}
+        ]
+    }`
 	require.JSONEqf(t, expected, string(result), "json should be equal")
 }

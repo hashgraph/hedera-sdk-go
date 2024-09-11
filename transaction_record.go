@@ -45,7 +45,7 @@ type TransactionRecord struct {
 	TransactionFee             Hbar
 	Transfers                  []Transfer
 	TokenTransfers             map[TokenID][]TokenTransfer
-	NftTransfers               map[TokenID][]TokenNftTransfer
+	NftTransfers               map[TokenID][]_TokenNftTransfer
 	ExpectedDecimals           map[TokenID]uint32
 	CallResult                 *ContractFunctionResult
 	CallResultIsCreate         bool
@@ -60,12 +60,13 @@ type TransactionRecord struct {
 	// Deprecated
 	TokenAllowances []TokenAllowance
 	// Deprecated
-	TokenNftAllowances []TokenNftAllowance
-	EthereumHash       []byte
-	PaidStakingRewards map[AccountID]Hbar
-	PrngBytes          []byte
-	PrngNumber         *int32
-	EvmAddress         []byte
+	TokenNftAllowances    []TokenNftAllowance
+	EthereumHash          []byte
+	PaidStakingRewards    map[AccountID]Hbar
+	PrngBytes             []byte
+	PrngNumber            *int32
+	EvmAddress            []byte
+	PendingAirdropRecords []PendingAirdropRecord
 }
 
 // MarshalJSON returns the JSON representation of the TransactionRecord
@@ -199,6 +200,47 @@ func (record TransactionRecord) MarshalJSON() ([]byte, error) {
 	m["children"] = record.Children
 	m["duplicates"] = record.Duplicates
 
+	type PendingAirdropIdOutput struct {
+		Sender   string `json:"sender"`
+		Receiver string `json:"receiver"`
+		TokenID  string `json:"tokenId"`
+		NftID    string `json:"nftId"`
+	}
+	type PendingAirdropsOutput struct {
+		PendingAirdropId     PendingAirdropIdOutput `json:"pendingAirdropId"`
+		PendingAirdropAmount string                 `json:"pendingAirdropAmount"`
+	}
+	pendingAirdropRecords := make([]PendingAirdropsOutput, len(record.PendingAirdropRecords))
+	for i, p := range record.PendingAirdropRecords {
+		var tokenID string
+		var nftID string
+		var sender string
+		var receiver string
+		if p.pendingAirdropId.tokenID != nil {
+			tokenID = p.pendingAirdropId.tokenID.String()
+		}
+		if p.pendingAirdropId.nftID != nil {
+			nftID = p.pendingAirdropId.nftID.String()
+		}
+		if p.pendingAirdropId.sender != nil {
+			sender = p.pendingAirdropId.sender.String()
+		}
+		if p.pendingAirdropId.receiver != nil {
+			receiver = p.pendingAirdropId.receiver.String()
+		}
+		pendingAirdropRecords[i] = PendingAirdropsOutput{
+			PendingAirdropId: PendingAirdropIdOutput{
+				Sender:   sender,
+				Receiver: receiver,
+				TokenID:  tokenID,
+				NftID:    nftID,
+			},
+			PendingAirdropAmount: fmt.Sprint(p.pendingAirdropAmount),
+		}
+	}
+	m["pendingAirdropRecords"] = pendingAirdropRecords
+	fmt.Println(m["pendingAirdropRecords"])
+
 	receiptBytes, err := record.Receipt.MarshalJSON()
 	if err != nil {
 		return nil, err
@@ -242,7 +284,7 @@ func _TransactionRecordFromProtobuf(protoResponse *services.TransactionGetRecord
 	}
 	var accountTransfers = make([]Transfer, 0)
 	var tokenTransfers = make(map[TokenID][]TokenTransfer)
-	var nftTransfers = make(map[TokenID][]TokenNftTransfer)
+	var nftTransfers = make(map[TokenID][]_TokenNftTransfer)
 	var expectedDecimals = make(map[TokenID]uint32)
 
 	if pb.TransferList != nil {
@@ -321,6 +363,11 @@ func _TransactionRecordFromProtobuf(protoResponse *services.TransactionGetRecord
 		transactionID = _TransactionIDFromProtobuf(pb.TransactionID)
 	}
 
+	var pendingAirdropRecords []PendingAirdropRecord
+	for _, pendingAirdropRecord := range pb.NewPendingAirdrops {
+		pendingAirdropRecords = append(pendingAirdropRecords, _PendingAirdropRecordFromProtobuf(pendingAirdropRecord))
+	}
+
 	txRecord := TransactionRecord{
 		Receipt:                    _TransactionReceiptFromProtobuf(&services.TransactionGetReceiptResponse{Receipt: pb.GetReceipt()}, txID),
 		TransactionHash:            pb.TransactionHash,
@@ -341,6 +388,7 @@ func _TransactionRecordFromProtobuf(protoResponse *services.TransactionGetRecord
 		EthereumHash:               pb.EthereumHash,
 		PaidStakingRewards:         paidStakingRewards,
 		EvmAddress:                 pb.EvmAddress,
+		PendingAirdropRecords:      pendingAirdropRecords,
 	}
 
 	if w, ok := pb.Entropy.(*services.TransactionRecord_PrngBytes); ok {
@@ -507,6 +555,12 @@ func (record TransactionRecord) _ToProtobuf() (*services.TransactionGetRecordRes
 				return nil, err
 			}
 			duplicateReceipts = append(duplicateReceipts, temp.GetTransactionRecord())
+		}
+	}
+
+	if record.PendingAirdropRecords != nil {
+		for _, pendingAirdropRecord := range record.PendingAirdropRecords {
+			tRecord.NewPendingAirdrops = append(tRecord.NewPendingAirdrops, pendingAirdropRecord._ToProtobuf())
 		}
 	}
 
