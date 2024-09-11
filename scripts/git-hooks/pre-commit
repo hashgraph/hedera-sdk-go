@@ -1,0 +1,22 @@
+#!/bin/sh
+
+# Check if golangci-lint is installed
+if ! command -v golangci-lint >/dev/null 2>&1; then
+  echo "Error: golangci-lint is not installed. Please install it before committing."
+  exit 1
+fi
+
+# Run golangci-lint
+golangci-lint run
+
+# Capture the exit code of golangci-lint
+EXIT_CODE=$?
+
+# If golangci-lint fails, prevent commit
+if [ $EXIT_CODE -ne 0 ]; then
+  echo "golangci-lint found issues. Please fix them before committing."
+  exit 1
+fi
+
+# If linting passes, allow commit
+exit 0
