@@ -1,3 +1,11 @@
+## v2.45.0
+
+### Added
+- `TokenAirdropTransaction` (part of HIP-904)
+
+### Fixed
+- handling of `THROTTLED_AT_CONSENSUS` status code
+
 ## v2.44.0
 
 ### Added
