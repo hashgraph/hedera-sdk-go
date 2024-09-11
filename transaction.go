@@ -4755,7 +4755,7 @@ func TransactionExecute(transaction interface{}, client *Client) (TransactionRes
 func (tx *Transaction) shouldRetry(_ Executable, response interface{}) _ExecutionState {
 	status := Status(response.(*services.TransactionResponse).NodeTransactionPrecheckCode)
 	switch status {
-	case StatusPlatformTransactionNotCreated, StatusPlatformNotActive, StatusBusy:
+	case StatusPlatformTransactionNotCreated, StatusPlatformNotActive, StatusBusy, StatusThrottledAtConsensus:
 		return executionStateRetry
 	case StatusTransactionExpired:
 		return executionStateExpired

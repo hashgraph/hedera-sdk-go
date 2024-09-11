@@ -350,6 +350,9 @@ const (
 	StatusPendingNftAirdropAlreadyExists                           Status = 364
 	StatusAccountHasPendingAirdrops                                Status = 365
 	StatusThrottledAtConsensus                                     Status = 366
+	StatusInvalidPendingAirdropId                                  Status = 367
+	StatusTokenAirdropWithFallbackRoyalty                          Status = 368
+	StatusInvalidTokenIdPendingAirdrop                             Status = 369
 )
 
 // String() returns a string representation of the status
@@ -1005,6 +1008,12 @@ func (status Status) String() string { // nolint
 		return "ACCOUNT_HAS_PENDING_AIRDROPS"
 	case StatusThrottledAtConsensus:
 		return "THROTTLED_AT_CONSENSUS"
+	case StatusInvalidPendingAirdropId:
+		return "INVALID_PENDING_AIRDROP_ID"
+	case StatusTokenAirdropWithFallbackRoyalty:
+		return "TOKEN_AIRDROP_WITH_FALLBACK_ROYALTY"
+	case StatusInvalidTokenIdPendingAirdrop:
+		return "INVALID_TOKEN_IN_PENDING_AIRDROP"
 	}
 
 	panic(fmt.Sprintf("unreachable: Status.String() switch statement is non-exhaustive. Status: %v", uint32(status)))
