@@ -322,6 +322,8 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 		return *_NodeUpdateTransactionFromProtobuf(tx, first), nil
 	case *services.TransactionBody_NodeDelete:
 		return *_NodeDeleteTransactionFromProtobuf(tx, first), nil
+	case *services.TransactionBody_TokenAirdrop:
+		return *_TokenAirdropTransactionFromProtobuf(tx, first), nil
 	default:
 		return Transaction{}, errFailedToDeserializeBytes
 	}
@@ -4753,7 +4755,7 @@ func TransactionExecute(transaction interface{}, client *Client) (TransactionRes
 func (tx *Transaction) shouldRetry(_ Executable, response interface{}) _ExecutionState {
 	status := Status(response.(*services.TransactionResponse).NodeTransactionPrecheckCode)
 	switch status {
-	case StatusPlatformTransactionNotCreated, StatusPlatformNotActive, StatusBusy:
+	case StatusPlatformTransactionNotCreated, StatusPlatformNotActive, StatusBusy, StatusThrottledAtConsensus:
 		return executionStateRetry
 	case StatusTransactionExpired:
 		return executionStateExpired
