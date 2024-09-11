@@ -41,13 +41,13 @@ func TestIntegrationTokenAirdropTransactionTransfersTokensWhenAssociated(t *test
 	require.NoError(t, err)
 
 	// Mint some NFTs
-	tx, err := NewTokenMintTransaction().
+	txResponse, err := NewTokenMintTransaction().
 		SetTokenID(nftID).
 		SetMetadatas(mintMetadata).
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := tx.SetValidateStatus(true).GetReceipt(env.Client)
+	receipt, err := txResponse.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	nftSerials := receipt.SerialNumbers
@@ -94,13 +94,13 @@ func TestIntegrationTokenAirdropTransactionPendingTokensWhenNotAssociated(t *tes
 	require.NoError(t, err)
 
 	// Mint some NFTs
-	tx, err := NewTokenMintTransaction().
+	txResponse, err := NewTokenMintTransaction().
 		SetTokenID(nftID).
 		SetMetadatas(mintMetadata).
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := tx.SetValidateStatus(true).GetReceipt(env.Client)
+	receipt, err := txResponse.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	nftSerials := receipt.SerialNumbers
@@ -162,13 +162,13 @@ func TestIntegrationTokenAirdropTransactionCreatesHollowAccount(t *testing.T) {
 	require.NoError(t, err)
 
 	// Mint some NFTs
-	tx, err := NewTokenMintTransaction().
+	txResponse, err := NewTokenMintTransaction().
 		SetTokenID(nftID).
 		SetMetadatas(mintMetadata).
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := tx.SetValidateStatus(true).GetReceipt(env.Client)
+	receipt, err := txResponse.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	nftSerials := receipt.SerialNumbers
@@ -230,7 +230,7 @@ func TestIntegrationTokenAirdropTransactionWithCustomFees(t *testing.T) {
 		SetAmount(1).
 		SetAllCollectorsAreExempt(true)
 
-	tx, err := NewTokenCreateTransaction().
+	txResponse, err := NewTokenCreateTransaction().
 		SetTokenName("Test Fungible Token").
 		SetTokenSymbol("TFT").
 		SetTokenMemo("I was created for integration tests").
@@ -249,7 +249,7 @@ func TestIntegrationTokenAirdropTransactionWithCustomFees(t *testing.T) {
 
 	require.NoError(t, err)
 
-	receipt, err := tx.SetValidateStatus(true).GetReceipt(env.Client)
+	receipt, err := txResponse.SetValidateStatus(true).GetReceipt(env.Client)
 	tokenID := receipt.TokenID
 
 	// create sender account with unlimited associations and send some tokens to it
@@ -261,20 +261,20 @@ func TestIntegrationTokenAirdropTransactionWithCustomFees(t *testing.T) {
 		AddTokenID(*tokenID).
 		FreezeWith(env.Client)
 	require.NoError(t, err)
-	tx, err = frozenTxn.Sign(senderKey).Execute(env.Client)
+	txResponse, err = frozenTxn.Sign(senderKey).Execute(env.Client)
 	require.NoError(t, err)
-	_, err = tx.SetValidateStatus(true).GetReceipt(env.Client)
+	_, err = txResponse.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	// send tokens to the sender
-	tx, err = NewTransferTransaction().
+	txResponse, err = NewTransferTransaction().
 		AddTokenTransfer(customFeeTokenID, sender, 100).
 		AddTokenTransfer(customFeeTokenID, env.OperatorID, -100).
 		AddTokenTransfer(*tokenID, sender, 100).
 		AddTokenTransfer(*tokenID, env.OperatorID, -100).
 		Execute(env.Client)
 	require.NoError(t, err)
-	_, err = tx.SetValidateStatus(true).GetReceipt(env.Client)
+	_, err = txResponse.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	// airdrop the tokens from the sender to the receiver
@@ -324,13 +324,13 @@ func TestIntegrationTokenAirdropTransactionWithReceiverSigTrue(t *testing.T) {
 	require.NoError(t, err)
 
 	// Mint some NFTs
-	tx, err := NewTokenMintTransaction().
+	txResponse, err := NewTokenMintTransaction().
 		SetTokenID(nftID).
 		SetMetadatas(mintMetadata).
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := tx.SetValidateStatus(true).GetReceipt(env.Client)
+	receipt, err := txResponse.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	nftSerials := receipt.SerialNumbers
@@ -378,12 +378,12 @@ func TestIntegrationTokenAirdropTransactionWithNoBalanceFT(t *testing.T) {
 	sender, senderKey := createAccountHelper(t, &env, -1)
 
 	// transfer ft to sender
-	tx, err := NewTransferTransaction().
+	txResponse, err := NewTransferTransaction().
 		AddTokenTransfer(tokenID, sender, 100).
 		AddTokenTransfer(tokenID, env.OperatorID, -100).
 		Execute(env.Client)
 	require.NoError(t, err)
-	_, err = tx.SetValidateStatus(true).GetReceipt(env.Client)
+	_, err = txResponse.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	// approve allowance to the spender
@@ -391,9 +391,9 @@ func TestIntegrationTokenAirdropTransactionWithNoBalanceFT(t *testing.T) {
 		ApproveTokenAllowance(tokenID, sender, spender, 100).
 		FreezeWith(env.Client)
 	require.NoError(t, err)
-	tx, err = frozenTx.Sign(senderKey).Execute(env.Client)
+	txResponse, err = frozenTx.Sign(senderKey).Execute(env.Client)
 	require.NoError(t, err)
-	_, err = tx.SetValidateStatus(true).GetReceipt(env.Client)
+	_, err = txResponse.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	// airdrop the tokens from the sender to the spender via approval
@@ -419,13 +419,13 @@ func TestIntegrationTokenAirdropTransactionWithNoBalanceNFT(t *testing.T) {
 	require.NoError(t, err)
 
 	// Mint some NFTs
-	tx, err := NewTokenMintTransaction().
+	txResponse, err := NewTokenMintTransaction().
 		SetTokenID(nftID).
 		SetMetadatas(mintMetadata).
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := tx.SetValidateStatus(true).GetReceipt(env.Client)
+	receipt, err := txResponse.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	nftSerials := receipt.SerialNumbers
@@ -437,12 +437,12 @@ func TestIntegrationTokenAirdropTransactionWithNoBalanceNFT(t *testing.T) {
 	sender, senderKey := createAccountHelper(t, &env, -1)
 
 	// transfer ft to sender
-	tx, err = NewTransferTransaction().
+	txResponse, err = NewTransferTransaction().
 		AddNftTransfer(nftID.Nft(nftSerials[0]), env.OperatorID, sender).
 		AddNftTransfer(nftID.Nft(nftSerials[1]), env.OperatorID, sender).
 		Execute(env.Client)
 	require.NoError(t, err)
-	_, err = tx.SetValidateStatus(true).GetReceipt(env.Client)
+	_, err = txResponse.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	// approve allowance to the spender
@@ -451,9 +451,9 @@ func TestIntegrationTokenAirdropTransactionWithNoBalanceNFT(t *testing.T) {
 		ApproveTokenNftAllowance(nftID.Nft(nftSerials[1]), sender, spender).
 		FreezeWith(env.Client)
 	require.NoError(t, err)
-	tx, err = frozenTx.Sign(senderKey).Execute(env.Client)
+	txResponse, err = frozenTx.Sign(senderKey).Execute(env.Client)
 	require.NoError(t, err)
-	_, err = tx.SetValidateStatus(true).GetReceipt(env.Client)
+	_, err = txResponse.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	// airdrop the tokens from the sender to the spender via approval

@@ -32,14 +32,14 @@ import (
 type TokenAirdropTransaction struct {
 	Transaction
 	tokenTransfers map[TokenID]*_TokenTransfer
-	nftTransfers   map[TokenID][]*TokenNftTransfer
+	nftTransfers   map[TokenID][]*_TokenNftTransfer
 }
 
 func NewTokenAirdropTransaction() *TokenAirdropTransaction {
 	tx := TokenAirdropTransaction{
 		Transaction:    _NewTransaction(),
 		tokenTransfers: make(map[TokenID]*_TokenTransfer),
-		nftTransfers:   make(map[TokenID][]*TokenNftTransfer),
+		nftTransfers:   make(map[TokenID][]*_TokenNftTransfer),
 	}
 
 	tx._SetDefaultMaxTransactionFee(NewHbar(1))
@@ -49,7 +49,7 @@ func NewTokenAirdropTransaction() *TokenAirdropTransaction {
 
 func _TokenAirdropTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *TokenAirdropTransaction {
 	tokenTransfers := make(map[TokenID]*_TokenTransfer)
-	nftTransfers := make(map[TokenID][]*TokenNftTransfer)
+	nftTransfers := make(map[TokenID][]*_TokenNftTransfer)
 
 	for _, tokenTransfersList := range pb.GetTokenAirdrop().GetTokenTransfers() {
 		tok := _TokenIDFromProtobuf(tokenTransfersList.Token)
@@ -60,7 +60,7 @@ func _TokenAirdropTransactionFromProtobuf(tx Transaction, pb *services.Transacti
 		if tokenID := _TokenIDFromProtobuf(tokenTransfersList.Token); tokenID != nil {
 			for _, aa := range tokenTransfersList.GetNftTransfers() {
 				if nftTransfers[*tokenID] == nil {
-					nftTransfers[*tokenID] = make([]*TokenNftTransfer, 0)
+					nftTransfers[*tokenID] = make([]*_TokenNftTransfer, 0)
 				}
 				nftTransfer := _NftTransferFromProtobuf(aa)
 				nftTransfers[*tokenID] = append(nftTransfers[*tokenID], &nftTransfer)
@@ -78,9 +78,9 @@ func _TokenAirdropTransactionFromProtobuf(tx Transaction, pb *services.Transacti
 // SetTokenTransferApproval Sets the desired token unit balance adjustments
 func (tx *TokenAirdropTransaction) SetTokenTransferApproval(tokenID TokenID, accountID AccountID, approval bool) *TokenAirdropTransaction { //nolint
 	for token, tokenTransfer := range tx.tokenTransfers {
-		if token.Compare(tokenID) == 0 {
+		if token.equals(tokenID) {
 			for _, transfer := range tokenTransfer.Transfers {
-				if transfer.accountID.Compare(accountID) == 0 {
+				if transfer.accountID._Equals(accountID) {
 					transfer.IsApproved = approval
 				}
 			}
@@ -93,7 +93,7 @@ func (tx *TokenAirdropTransaction) SetTokenTransferApproval(tokenID TokenID, acc
 // SetNftTransferApproval Sets the desired nft token unit balance adjustments
 func (tx *TokenAirdropTransaction) SetNftTransferApproval(nftID NftID, approval bool) *TokenAirdropTransaction {
 	for token, nftTransfers := range tx.nftTransfers {
-		if token.Compare(nftID.TokenID) == 0 {
+		if token.equals(nftID.TokenID) {
 			for _, nftTransfer := range nftTransfers {
 				if nftTransfer.SerialNumber == nftID.SerialNumber {
 					nftTransfer.IsApproved = approval
@@ -105,10 +105,10 @@ func (tx *TokenAirdropTransaction) SetNftTransferApproval(nftID NftID, approval 
 }
 
 // GetNftTransfers returns the nft transfers
-func (tx *TokenAirdropTransaction) GetNftTransfers() map[TokenID][]TokenNftTransfer {
-	nftResult := make(map[TokenID][]TokenNftTransfer)
+func (tx *TokenAirdropTransaction) GetNftTransfers() map[TokenID][]_TokenNftTransfer {
+	nftResult := make(map[TokenID][]_TokenNftTransfer)
 	for token, nftTransfers := range tx.nftTransfers {
-		tempArray := make([]TokenNftTransfer, 0)
+		tempArray := make([]_TokenNftTransfer, 0)
 		for _, nftTransfer := range nftTransfers {
 			tempArray = append(tempArray, *nftTransfer)
 		}
@@ -162,9 +162,9 @@ func (tx *TokenAirdropTransaction) AddTokenTransferWithDecimals(tokenID TokenID,
 	tx._RequireNotFrozen()
 
 	for token, tokenTransfer := range tx.tokenTransfers {
-		if token.Compare(tokenID) == 0 {
+		if token.equals(tokenID) {
 			for _, transfer := range tokenTransfer.Transfers {
-				if transfer.accountID.Compare(accountID) == 0 {
+				if transfer.accountID._Equals(accountID) {
 					transfer.Amount = HbarFromTinybar(transfer.Amount.AsTinybar() + value)
 					tokenTransfer.ExpectedDecimals = &decimal
 
@@ -203,9 +203,9 @@ func (tx *TokenAirdropTransaction) AddTokenTransfer(tokenID TokenID, accountID A
 	tx._RequireNotFrozen()
 
 	for token, tokenTransfer := range tx.tokenTransfers {
-		if token.Compare(tokenID) == 0 {
+		if token.equals(tokenID) {
 			for _, transfer := range tokenTransfer.Transfers {
-				if transfer.accountID.Compare(accountID) == 0 {
+				if transfer.accountID._Equals(accountID) {
 					transfer.Amount = HbarFromTinybar(transfer.Amount.AsTinybar() + value)
 
 					return tx
@@ -241,14 +241,14 @@ func (tx *TokenAirdropTransaction) AddNftTransfer(nftID NftID, sender AccountID,
 	tx._RequireNotFrozen()
 
 	if tx.nftTransfers == nil {
-		tx.nftTransfers = make(map[TokenID][]*TokenNftTransfer)
+		tx.nftTransfers = make(map[TokenID][]*_TokenNftTransfer)
 	}
 
 	if tx.nftTransfers[nftID.TokenID] == nil {
-		tx.nftTransfers[nftID.TokenID] = make([]*TokenNftTransfer, 0)
+		tx.nftTransfers[nftID.TokenID] = make([]*_TokenNftTransfer, 0)
 	}
 
-	tx.nftTransfers[nftID.TokenID] = append(tx.nftTransfers[nftID.TokenID], &TokenNftTransfer{
+	tx.nftTransfers[nftID.TokenID] = append(tx.nftTransfers[nftID.TokenID], &_TokenNftTransfer{
 		SenderAccountID:   sender,
 		ReceiverAccountID: receiver,
 		SerialNumber:      nftID.SerialNumber,
@@ -262,9 +262,9 @@ func (tx *TokenAirdropTransaction) AddApprovedTokenTransferWithDecimals(tokenID 
 	tx._RequireNotFrozen()
 
 	for token, tokenTransfer := range tx.tokenTransfers {
-		if token.Compare(tokenID) == 0 {
+		if token.equals(tokenID) {
 			for _, transfer := range tokenTransfer.Transfers {
-				if transfer.accountID.Compare(accountID) == 0 {
+				if transfer.accountID._Equals(accountID) {
 					transfer.Amount = HbarFromTinybar(transfer.Amount.AsTinybar() + value)
 					tokenTransfer.ExpectedDecimals = &decimal
 					for _, transfer := range tokenTransfer.Transfers {
@@ -305,9 +305,9 @@ func (tx *TokenAirdropTransaction) AddApprovedTokenTransfer(tokenID TokenID, acc
 	tx._RequireNotFrozen()
 
 	for token, tokenTransfer := range tx.tokenTransfers {
-		if token.Compare(tokenID) == 0 {
+		if token.equals(tokenID) {
 			for _, transfer := range tokenTransfer.Transfers {
-				if transfer.accountID.Compare(accountID) == 0 {
+				if transfer.accountID._Equals(accountID) {
 					transfer.Amount = HbarFromTinybar(transfer.Amount.AsTinybar() + value)
 					transfer.IsApproved = approve
 
@@ -343,14 +343,14 @@ func (tx *TokenAirdropTransaction) AddApprovedNftTransfer(nftID NftID, sender Ac
 	tx._RequireNotFrozen()
 
 	if tx.nftTransfers == nil {
-		tx.nftTransfers = make(map[TokenID][]*TokenNftTransfer)
+		tx.nftTransfers = make(map[TokenID][]*_TokenNftTransfer)
 	}
 
 	if tx.nftTransfers[nftID.TokenID] == nil {
-		tx.nftTransfers[nftID.TokenID] = make([]*TokenNftTransfer, 0)
+		tx.nftTransfers[nftID.TokenID] = make([]*_TokenNftTransfer, 0)
 	}
 
-	tx.nftTransfers[nftID.TokenID] = append(tx.nftTransfers[nftID.TokenID], &TokenNftTransfer{
+	tx.nftTransfers[nftID.TokenID] = append(tx.nftTransfers[nftID.TokenID], &_TokenNftTransfer{
 		SenderAccountID:   sender,
 		ReceiverAccountID: receiver,
 		SerialNumber:      nftID.SerialNumber,
@@ -559,8 +559,8 @@ func (tx *TokenAirdropTransaction) buildProtoBody() *services.TokenAirdropTransa
 	}
 
 	tempTokenIDarray := make([]TokenID, 0)
-	for k := range tx.tokenTransfers {
-		tempTokenIDarray = append(tempTokenIDarray, k)
+	for transfer := range tx.tokenTransfers {
+		tempTokenIDarray = append(tempTokenIDarray, transfer)
 	}
 	sort.Sort(_TokenIDs{tokenIDs: tempTokenIDarray})
 
@@ -595,7 +595,7 @@ func (tx *TokenAirdropTransaction) buildProtoBody() *services.TokenAirdropTransa
 	}
 	sort.Sort(_TokenIDs{tokenIDs: tempTokenIDarray})
 
-	tempNftTransfers := make(map[TokenID][]*TokenNftTransfer)
+	tempNftTransfers := make(map[TokenID][]*_TokenNftTransfer)
 	for _, k := range tempTokenIDarray {
 		tempTokenNftTransfer := tx.nftTransfers[k]
 

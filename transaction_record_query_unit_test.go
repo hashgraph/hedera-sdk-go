@@ -290,14 +290,14 @@ func TestUnitTransactionRecordQueryMarshalJSON(t *testing.T) {
 	tokenTransferList := map[TokenID][]TokenTransfer{}
 	tokenTransferList[tokenID] = []TokenTransfer{tokenTransfer}
 
-	tokenNftTransfer := TokenNftTransfer{
+	tokenNftTransfer := _TokenNftTransfer{
 		SenderAccountID:   accID,
 		ReceiverAccountID: accID,
 		SerialNumber:      123,
 		IsApproved:        true,
 	}
-	tokenNftTransferList := map[TokenID][]TokenNftTransfer{}
-	tokenNftTransferList[tokenID] = []TokenNftTransfer{tokenNftTransfer}
+	tokenNftTransferList := map[TokenID][]_TokenNftTransfer{}
+	tokenNftTransferList[tokenID] = []_TokenNftTransfer{tokenNftTransfer}
 
 	assessedCustomFee := AssessedCustomFee{
 		FeeCollectorAccountId: &accID,

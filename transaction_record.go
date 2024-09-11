@@ -45,7 +45,7 @@ type TransactionRecord struct {
 	TransactionFee             Hbar
 	Transfers                  []Transfer
 	TokenTransfers             map[TokenID][]TokenTransfer
-	NftTransfers               map[TokenID][]TokenNftTransfer
+	NftTransfers               map[TokenID][]_TokenNftTransfer
 	ExpectedDecimals           map[TokenID]uint32
 	CallResult                 *ContractFunctionResult
 	CallResultIsCreate         bool
@@ -284,7 +284,7 @@ func _TransactionRecordFromProtobuf(protoResponse *services.TransactionGetRecord
 	}
 	var accountTransfers = make([]Transfer, 0)
 	var tokenTransfers = make(map[TokenID][]TokenTransfer)
-	var nftTransfers = make(map[TokenID][]TokenNftTransfer)
+	var nftTransfers = make(map[TokenID][]_TokenNftTransfer)
 	var expectedDecimals = make(map[TokenID]uint32)
 
 	if pb.TransferList != nil {

@@ -25,8 +25,8 @@ import (
 	protobuf "google.golang.org/protobuf/proto"
 )
 
-// TokenNftTransfer is the information about a NFT transfer
-type TokenNftTransfer struct {
+// _TokenNftTransfer is the information about a NFT transfer
+type _TokenNftTransfer struct {
 	SenderAccountID   AccountID
 	ReceiverAccountID AccountID
 	SerialNumber      int64
@@ -34,12 +34,12 @@ type TokenNftTransfer struct {
 }
 
 type _TokenNftTransfers struct {
-	tokenNftTransfers []*TokenNftTransfer
+	tokenNftTransfers []*_TokenNftTransfer
 }
 
-func _NftTransferFromProtobuf(pb *services.NftTransfer) TokenNftTransfer {
+func _NftTransferFromProtobuf(pb *services.NftTransfer) _TokenNftTransfer {
 	if pb == nil {
-		return TokenNftTransfer{}
+		return _TokenNftTransfer{}
 	}
 
 	senderAccountID := AccountID{}
@@ -52,7 +52,7 @@ func _NftTransferFromProtobuf(pb *services.NftTransfer) TokenNftTransfer {
 		receiverAccountID = *_AccountIDFromProtobuf(pb.ReceiverAccountID)
 	}
 
-	return TokenNftTransfer{
+	return _TokenNftTransfer{
 		SenderAccountID:   senderAccountID,
 		ReceiverAccountID: receiverAccountID,
 		SerialNumber:      pb.SerialNumber,
@@ -60,7 +60,7 @@ func _NftTransferFromProtobuf(pb *services.NftTransfer) TokenNftTransfer {
 	}
 }
 
-func (transfer *TokenNftTransfer) _ToProtobuf() *services.NftTransfer {
+func (transfer *_TokenNftTransfer) _ToProtobuf() *services.NftTransfer {
 	return &services.NftTransfer{
 		SenderAccountID:   transfer.SenderAccountID._ToProtobuf(),
 		ReceiverAccountID: transfer.ReceiverAccountID._ToProtobuf(),
@@ -70,7 +70,7 @@ func (transfer *TokenNftTransfer) _ToProtobuf() *services.NftTransfer {
 }
 
 // ToBytes returns the byte representation of the TokenNftTransfer
-func (transfer TokenNftTransfer) ToBytes() []byte {
+func (transfer _TokenNftTransfer) ToBytes() []byte {
 	data, err := protobuf.Marshal(transfer._ToProtobuf())
 	if err != nil {
 		return make([]byte, 0)
@@ -80,14 +80,14 @@ func (transfer TokenNftTransfer) ToBytes() []byte {
 }
 
 // TokenNftTransfersFromBytes returns the TokenNftTransfer from a raw protobuf bytes representation
-func NftTransferFromBytes(data []byte) (TokenNftTransfer, error) {
+func NftTransferFromBytes(data []byte) (_TokenNftTransfer, error) {
 	if data == nil {
-		return TokenNftTransfer{}, errByteArrayNull
+		return _TokenNftTransfer{}, errByteArrayNull
 	}
 	pb := services.NftTransfer{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {
-		return TokenNftTransfer{}, err
+		return _TokenNftTransfer{}, err
 	}
 
 	return _NftTransferFromProtobuf(&pb), nil

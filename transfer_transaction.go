@@ -43,7 +43,7 @@ type TransferTransaction struct {
 	Transaction
 	tokenTransfers map[TokenID]*_TokenTransfer
 	hbarTransfers  []*_HbarTransfer
-	nftTransfers   map[TokenID][]*TokenNftTransfer
+	nftTransfers   map[TokenID][]*_TokenNftTransfer
 }
 
 // NewTransferTransaction creates TransferTransaction which
@@ -61,7 +61,7 @@ func NewTransferTransaction() *TransferTransaction {
 		Transaction:    _NewTransaction(),
 		tokenTransfers: make(map[TokenID]*_TokenTransfer),
 		hbarTransfers:  make([]*_HbarTransfer, 0),
-		nftTransfers:   make(map[TokenID][]*TokenNftTransfer),
+		nftTransfers:   make(map[TokenID][]*_TokenNftTransfer),
 	}
 
 	tx._SetDefaultMaxTransactionFee(NewHbar(1))
@@ -71,7 +71,7 @@ func NewTransferTransaction() *TransferTransaction {
 
 func _TransferTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *TransferTransaction {
 	tokenTransfers := make(map[TokenID]*_TokenTransfer)
-	nftTransfers := make(map[TokenID][]*TokenNftTransfer)
+	nftTransfers := make(map[TokenID][]*_TokenNftTransfer)
 
 	for _, tokenTransfersList := range pb.GetCryptoTransfer().GetTokenTransfers() {
 		tok := _TokenIDFromProtobuf(tokenTransfersList.Token)
@@ -82,7 +82,7 @@ func _TransferTransactionFromProtobuf(tx Transaction, pb *services.TransactionBo
 		if tokenID := _TokenIDFromProtobuf(tokenTransfersList.Token); tokenID != nil {
 			for _, aa := range tokenTransfersList.GetNftTransfers() {
 				if nftTransfers[*tokenID] == nil {
-					nftTransfers[*tokenID] = make([]*TokenNftTransfer, 0)
+					nftTransfers[*tokenID] = make([]*_TokenNftTransfer, 0)
 				}
 				nftTransfer := _NftTransferFromProtobuf(aa)
 				nftTransfers[*tokenID] = append(nftTransfers[*tokenID], &nftTransfer)
@@ -138,10 +138,10 @@ func (tx *TransferTransaction) SetNftTransferApproval(nftID NftID, approval bool
 }
 
 // GetNftTransfers returns the nft transfers
-func (tx *TransferTransaction) GetNftTransfers() map[TokenID][]TokenNftTransfer {
-	nftResult := make(map[TokenID][]TokenNftTransfer)
+func (tx *TransferTransaction) GetNftTransfers() map[TokenID][]_TokenNftTransfer {
+	nftResult := make(map[TokenID][]_TokenNftTransfer)
 	for token, nftTransfers := range tx.nftTransfers {
-		tempArray := make([]TokenNftTransfer, 0)
+		tempArray := make([]_TokenNftTransfer, 0)
 		for _, nftTransfer := range nftTransfers {
 			tempArray = append(tempArray, *nftTransfer)
 		}
@@ -303,14 +303,14 @@ func (tx *TransferTransaction) AddNftTransfer(nftID NftID, sender AccountID, rec
 	tx._RequireNotFrozen()
 
 	if tx.nftTransfers == nil {
-		tx.nftTransfers = make(map[TokenID][]*TokenNftTransfer)
+		tx.nftTransfers = make(map[TokenID][]*_TokenNftTransfer)
 	}
 
 	if tx.nftTransfers[nftID.TokenID] == nil {
-		tx.nftTransfers[nftID.TokenID] = make([]*TokenNftTransfer, 0)
+		tx.nftTransfers[nftID.TokenID] = make([]*_TokenNftTransfer, 0)
 	}
 
-	tx.nftTransfers[nftID.TokenID] = append(tx.nftTransfers[nftID.TokenID], &TokenNftTransfer{
+	tx.nftTransfers[nftID.TokenID] = append(tx.nftTransfers[nftID.TokenID], &_TokenNftTransfer{
 		SenderAccountID:   sender,
 		ReceiverAccountID: receiver,
 		SerialNumber:      nftID.SerialNumber,
@@ -426,14 +426,14 @@ func (tx *TransferTransaction) AddApprovedNftTransfer(nftID NftID, sender Accoun
 	tx._RequireNotFrozen()
 
 	if tx.nftTransfers == nil {
-		tx.nftTransfers = make(map[TokenID][]*TokenNftTransfer)
+		tx.nftTransfers = make(map[TokenID][]*_TokenNftTransfer)
 	}
 
 	if tx.nftTransfers[nftID.TokenID] == nil {
-		tx.nftTransfers[nftID.TokenID] = make([]*TokenNftTransfer, 0)
+		tx.nftTransfers[nftID.TokenID] = make([]*_TokenNftTransfer, 0)
 	}
 
-	tx.nftTransfers[nftID.TokenID] = append(tx.nftTransfers[nftID.TokenID], &TokenNftTransfer{
+	tx.nftTransfers[nftID.TokenID] = append(tx.nftTransfers[nftID.TokenID], &_TokenNftTransfer{
 		SenderAccountID:   sender,
 		ReceiverAccountID: receiver,
 		SerialNumber:      nftID.SerialNumber,
@@ -700,7 +700,7 @@ func (tx *TransferTransaction) buildProtoBody() *services.CryptoTransferTransact
 	}
 	sort.Sort(_TokenIDs{tokenIDs: tempTokenIDarray})
 
-	tempNftTransfers := make(map[TokenID][]*TokenNftTransfer)
+	tempNftTransfers := make(map[TokenID][]*_TokenNftTransfer)
 	for _, k := range tempTokenIDarray {
 		tempTokenNftTransfer := tx.nftTransfers[k]
 
