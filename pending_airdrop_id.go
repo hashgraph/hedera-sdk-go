@@ -102,9 +102,14 @@ func _PendingAirdropIdFromProtobuf(pb *services.PendingAirdropId) *PendingAirdro
 }
 
 func (pendingAirdropId *PendingAirdropId) _ToProtobuf() *services.PendingAirdropId {
-	pb := &services.PendingAirdropId{
-		SenderId:   pendingAirdropId.sender._ToProtobuf(),
-		ReceiverId: pendingAirdropId.receiver._ToProtobuf(),
+	pb := &services.PendingAirdropId{}
+
+	if pendingAirdropId.sender != nil {
+		pb.SenderId = pendingAirdropId.sender._ToProtobuf()
+	}
+
+	if pendingAirdropId.receiver != nil {
+		pb.ReceiverId = pendingAirdropId.receiver._ToProtobuf()
 	}
 
 	if pendingAirdropId.tokenID != nil {
