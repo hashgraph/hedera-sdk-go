@@ -157,3 +157,31 @@ func (a *AccountService) UpdateAccount(_ context.Context, accountUpdateParams pa
 	}
 	return &response.AccountResponse{Status: receipt.Status.String()}, nil
 }
+
+// DeleteAccount jRPC method for deleteAccount
+func (a *AccountService) DeleteAccount(_ context.Context, deleteAccountParams param.DeleteAccountParams) (*response.AccountResponse, error) {
+	transaction := hedera.NewAccountDeleteTransaction().SetGrpcDeadline(&threeSecondsDuration)
+	if deleteAccountParams.DeleteAccountId != nil {
+		accountId, _ := hedera.AccountIDFromString(*deleteAccountParams.DeleteAccountId)
+		transaction.SetAccountID(accountId)
+	}
+
+	if deleteAccountParams.TransferAccountId != nil {
+		accountId, _ := hedera.AccountIDFromString(*deleteAccountParams.TransferAccountId)
+		transaction.SetTransferAccountID(accountId)
+	}
+
+	if deleteAccountParams.CommonTransactionParams != nil {
+		deleteAccountParams.CommonTransactionParams.FillOutTransaction(transaction, &transaction.Transaction, a.sdkService.Client)
+	}
+
+	txResponse, err := transaction.Execute(a.sdkService.Client)
+	if err != nil {
+		return nil, err
+	}
+	receipt, err := txResponse.GetReceipt(a.sdkService.Client)
+	if err != nil {
+		return nil, err
+	}
+	return &response.AccountResponse{Status: receipt.Status.String()}, nil
+}

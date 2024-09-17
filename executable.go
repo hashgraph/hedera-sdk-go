@@ -359,6 +359,8 @@ func _Execute(client *Client, e Executable) (interface{}, error) {
 		return TransactionResponse{}, errors.Wrapf(errPersistent, "retry %d/%d", attempt, maxAttempts)
 	}
 
+	txLogger.Error("exceeded maximum attempts for request", "last exception being", errPersistent)
+
 	return &services.Response{}, errPersistent
 }
 
