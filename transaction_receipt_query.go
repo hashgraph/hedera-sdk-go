@@ -242,25 +242,46 @@ func (q *TransactionReceiptQuery) validateNetworkOnIDs(client *Client) error {
 }
 
 func (q *TransactionReceiptQuery) shouldRetry(_ Executable, response interface{}) _ExecutionState {
-	status := Status(response.(*services.Response).GetTransactionGetReceipt().GetHeader().GetNodeTransactionPrecheckCode())
+	receiptResponse := response.(*services.Response).GetTransactionGetReceipt()
+	header := receiptResponse.GetHeader()
 
-	switch status {
-	case StatusPlatformTransactionNotCreated, StatusBusy, StatusUnknown, StatusReceiptNotFound, StatusRecordNotFound, StatusPlatformNotActive:
+	status := Status(header.GetNodeTransactionPrecheckCode())
+
+	retryableHeaderStatuses := map[Status]bool{
+		StatusPlatformTransactionNotCreated: true,
+		StatusBusy:                          true,
+		StatusUnknown:                       true,
+		StatusReceiptNotFound:               true,
+		StatusRecordNotFound:                true,
+		StatusPlatformNotActive:             true,
+		StatusThrottledAtConsensus:          true,
+	}
+
+	if retryableHeaderStatuses[status] {
 		return executionStateRetry
-	case StatusOk:
-		break
-	default:
+	}
+
+	if status != StatusOk {
 		return executionStateError
 	}
 
-	status = Status(response.(*services.Response).GetTransactionGetReceipt().GetReceipt().GetStatus())
+	status = Status(receiptResponse.GetReceipt().GetStatus())
 
-	switch status {
-	case StatusBusy, StatusUnknown, StatusOk, StatusReceiptNotFound, StatusRecordNotFound, StatusPlatformNotActive:
-		return executionStateRetry
-	default:
-		return executionStateFinished
+	retryableReceiptStatuses := map[Status]bool{
+		StatusBusy:                 true,
+		StatusUnknown:              true,
+		StatusOk:                   true,
+		StatusReceiptNotFound:      true,
+		StatusRecordNotFound:       true,
+		StatusPlatformNotActive:    true,
+		StatusThrottledAtConsensus: true,
 	}
+
+	if retryableReceiptStatuses[status] {
+		return executionStateRetry
+	}
+
+	return executionStateFinished
 }
 
 func (q *TransactionReceiptQuery) getQueryResponse(response *services.Response) queryResponse {

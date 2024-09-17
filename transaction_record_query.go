@@ -247,29 +247,50 @@ func (q *TransactionRecordQuery) validateNetworkOnIDs(client *Client) error {
 }
 
 func (q *TransactionRecordQuery) shouldRetry(_ Executable, response interface{}) _ExecutionState {
-	status := Status(response.(*services.Response).GetTransactionGetRecord().GetHeader().GetNodeTransactionPrecheckCode())
+	record := response.(*services.Response).GetTransactionGetRecord()
+	header := record.GetHeader()
 
-	switch status {
-	case StatusPlatformTransactionNotCreated, StatusBusy, StatusUnknown, StatusReceiptNotFound, StatusRecordNotFound, StatusPlatformNotActive:
-		return executionStateRetry
-	case StatusOk:
-		if response.(*services.Response).GetTransactionGetRecord().GetHeader().ResponseType == services.ResponseType_COST_ANSWER {
-			return executionStateFinished
-		}
-	default:
-		return executionStateError
+	status := Status(header.GetNodeTransactionPrecheckCode())
+
+	retryableHeaderStatuses := map[Status]bool{
+		StatusPlatformTransactionNotCreated: true,
+		StatusBusy:                          true,
+		StatusUnknown:                       true,
+		StatusReceiptNotFound:               true,
+		StatusRecordNotFound:                true,
+		StatusPlatformNotActive:             true,
+		StatusThrottledAtConsensus:          true,
 	}
 
-	status = Status(response.(*services.Response).GetTransactionGetRecord().GetTransactionRecord().GetReceipt().GetStatus())
-
-	switch status {
-	case StatusBusy, StatusUnknown, StatusOk, StatusReceiptNotFound, StatusRecordNotFound, StatusPlatformNotActive:
+	if retryableHeaderStatuses[status] {
 		return executionStateRetry
-	case StatusSuccess:
+	}
+
+	if status == StatusOk && header.ResponseType == services.ResponseType_COST_ANSWER {
 		return executionStateFinished
-	default:
-		return executionStateError
 	}
+
+	status = Status(record.GetTransactionRecord().GetReceipt().GetStatus())
+
+	retryableReceiptStatuses := map[Status]bool{
+		StatusBusy:                 true,
+		StatusUnknown:              true,
+		StatusOk:                   true,
+		StatusReceiptNotFound:      true,
+		StatusRecordNotFound:       true,
+		StatusPlatformNotActive:    true,
+		StatusThrottledAtConsensus: true,
+	}
+
+	if retryableReceiptStatuses[status] {
+		return executionStateRetry
+	}
+
+	if status == StatusSuccess {
+		return executionStateFinished
+	}
+
+	return executionStateError
 }
 
 func (q *TransactionRecordQuery) getQueryResponse(response *services.Response) queryResponse {
