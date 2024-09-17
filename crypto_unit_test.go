@@ -541,6 +541,13 @@ func TestUnitPrivateKeyECDSAFromString(t *testing.T) {
 	require.Equal(t, key2.String(), key.String())
 }
 
+func TestUnitPrivateKeyECDSAFromStringWithPrefix(t *testing.T) {
+	t.Parallel()
+
+	_, err := PrivateKeyFromStringECDSA("0x7e18ba654522ff6ca5314d83354aaeca416abaef89ab27ffe01ecf5830ae8730")
+	require.NoError(t, err)
+}
+
 func TestUnitPrivateKeyECDSAFromStringRaw(t *testing.T) {
 	t.Parallel()
 
