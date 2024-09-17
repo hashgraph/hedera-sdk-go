@@ -355,13 +355,13 @@ func _Execute(client *Client, e Executable) (interface{}, error) {
 		errPersistent = errors.New("unknown error occurred after max attempts")
 	}
 
-	maxAttemptsErr := errors.Wrapf(errPersistent, "retry %d/%d", attempt, maxAttempts)
-
 	if e.isTransaction() {
-		return TransactionResponse{}, maxAttemptsErr
+		return TransactionResponse{}, errors.Wrapf(errPersistent, "retry %d/%d", attempt, maxAttempts)
 	}
 
-	return &services.Response{}, maxAttemptsErr
+	txLogger.Error("exceeded maximum attempts for request", "last exception being", errPersistent)
+
+	return &services.Response{}, errPersistent
 }
 
 func _DelayForAttempt(logID string, backoff time.Duration, attempt int64, logger Logger) {

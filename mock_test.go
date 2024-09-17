@@ -479,7 +479,7 @@ func NewMockClientAndServer(allNodeResponses [][]interface{}) (*Client, *MockSer
 	servers := make([]*MockServer, len(allNodeResponses))
 	ctx, cancel := context.WithCancel(context.Background())
 
-	logger := NewLogger("hedera client mock", LoggerLevelDisabled)
+	logger := NewLogger("hedera client mock", LoggerLevelError)
 	var defaultLogger Logger = logger
 
 	client := &Client{

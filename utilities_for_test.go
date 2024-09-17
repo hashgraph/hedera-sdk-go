@@ -118,6 +118,8 @@ func NewIntegrationTestEnv(t *testing.T) IntegrationTestEnv {
 	env.Client.SetMaxAttempts(15)
 	env.Client.SetDefaultMaxTransactionFee(NewHbar(50))
 	env.Client.SetDefaultMaxQueryPayment(NewHbar(50))
+	logger := NewLogger("Hedera sdk", LoggerLevelError)
+	env.Client.SetLogger(logger)
 
 	env.OriginalOperatorID = env.Client.GetOperatorAccountID()
 	env.OriginalOperatorKey = env.Client.GetOperatorPublicKey()
