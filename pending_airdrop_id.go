@@ -20,7 +20,11 @@ package hedera
  *
  */
 
-import "github.com/hashgraph/hedera-protobufs-go/services"
+import (
+	"fmt"
+
+	"github.com/hashgraph/hedera-protobufs-go/services"
+)
 
 /**
  * A unique, composite, identifier for a pending airdrop.
@@ -122,4 +126,35 @@ func (pendingAirdropId *PendingAirdropId) _ToProtobuf() *services.PendingAirdrop
 		}
 	}
 	return pb
+}
+
+func (pendingAirdropId *PendingAirdropId) String() string {
+	const nilString = "nil"
+	var senderStr, receiverStr, tokenIDStr, nftIDStr string
+
+	if pendingAirdropId.sender != nil {
+		senderStr = pendingAirdropId.sender.String()
+	} else {
+		senderStr = nilString
+	}
+
+	if pendingAirdropId.receiver != nil {
+		receiverStr = pendingAirdropId.receiver.String()
+	} else {
+		receiverStr = nilString
+	}
+
+	if pendingAirdropId.tokenID != nil {
+		tokenIDStr = pendingAirdropId.tokenID.String()
+	} else {
+		tokenIDStr = nilString
+	}
+
+	if pendingAirdropId.nftID != nil {
+		nftIDStr = pendingAirdropId.nftID.String()
+	} else {
+		nftIDStr = nilString
+	}
+
+	return fmt.Sprintf("Sender: %s, Receiver: %s, TokenID: %s, NftID: %s", senderStr, receiverStr, tokenIDStr, nftIDStr)
 }
