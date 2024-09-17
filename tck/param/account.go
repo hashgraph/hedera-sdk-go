@@ -29,6 +29,10 @@ type UpdateAccountParams struct {
 	StakedAccountId               *string                  `json:"stakedAccountId"`
 	StakedNodeId                  *json.Number             `json:"stakedNodeId"`
 	DeclineStakingReward          *bool                    `json:"declineStakingReward"`
-	Alias                         *string                  `json:"alias"`
 	CommonTransactionParams       *CommonTransactionParams `json:"commonTransactionParams"`
+}
+type DeleteAccountParams struct {
+	DeleteAccountId         *string                  `json:"deleteAccountId"`
+	TransferAccountId       *string                  `json:"transferAccountId"`
+	CommonTransactionParams *CommonTransactionParams `json:"commonTransactionParams"`
 }
