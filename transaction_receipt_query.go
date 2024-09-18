@@ -242,46 +242,25 @@ func (q *TransactionReceiptQuery) validateNetworkOnIDs(client *Client) error {
 }
 
 func (q *TransactionReceiptQuery) shouldRetry(_ Executable, response interface{}) _ExecutionState {
-	receiptResponse := response.(*services.Response).GetTransactionGetReceipt()
-	header := receiptResponse.GetHeader()
+	status := Status(response.(*services.Response).GetTransactionGetReceipt().GetHeader().GetNodeTransactionPrecheckCode())
 
-	status := Status(header.GetNodeTransactionPrecheckCode())
-
-	retryableHeaderStatuses := map[Status]bool{
-		StatusPlatformTransactionNotCreated: true,
-		StatusBusy:                          true,
-		StatusUnknown:                       true,
-		StatusReceiptNotFound:               true,
-		StatusRecordNotFound:                true,
-		StatusPlatformNotActive:             true,
-		StatusThrottledAtConsensus:          true,
-	}
-
-	if retryableHeaderStatuses[status] {
+	switch status {
+	case StatusPlatformTransactionNotCreated, StatusBusy, StatusUnknown, StatusReceiptNotFound, StatusRecordNotFound, StatusPlatformNotActive, StatusThrottledAtConsensus:
 		return executionStateRetry
-	}
-
-	if status != StatusOk {
+	case StatusOk:
+		break
+	default:
 		return executionStateError
 	}
 
-	status = Status(receiptResponse.GetReceipt().GetStatus())
+	status = Status(response.(*services.Response).GetTransactionGetReceipt().GetReceipt().GetStatus())
 
-	retryableReceiptStatuses := map[Status]bool{
-		StatusBusy:                 true,
-		StatusUnknown:              true,
-		StatusOk:                   true,
-		StatusReceiptNotFound:      true,
-		StatusRecordNotFound:       true,
-		StatusPlatformNotActive:    true,
-		StatusThrottledAtConsensus: true,
-	}
-
-	if retryableReceiptStatuses[status] {
+	switch status {
+	case StatusBusy, StatusUnknown, StatusOk, StatusReceiptNotFound, StatusRecordNotFound, StatusPlatformNotActive, StatusThrottledAtConsensus:
 		return executionStateRetry
+	default:
+		return executionStateFinished
 	}
-
-	return executionStateFinished
 }
 
 func (q *TransactionReceiptQuery) getQueryResponse(response *services.Response) queryResponse {
