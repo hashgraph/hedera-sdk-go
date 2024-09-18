@@ -397,7 +397,6 @@ func TestIntegrationTokenAirdropTransactionWithNoBalanceFT(t *testing.T) {
 	require.NoError(t, err)
 
 	// airdrop the tokens from the sender to the spender via approval
-	// fails with NOT_SUPPORTED
 	frozenTxn, err := NewTokenAirdropTransaction().
 		AddTokenTransfer(tokenID, spender, 100).
 		AddApprovedTokenTransfer(tokenID, sender, -100, true).
@@ -457,7 +456,6 @@ func TestIntegrationTokenAirdropTransactionWithNoBalanceNFT(t *testing.T) {
 	require.NoError(t, err)
 
 	// airdrop the tokens from the sender to the spender via approval
-	// fails with NOT_SUPPORTED
 	frozenTxn, err := NewTokenAirdropTransaction().
 		AddApprovedNftTransfer(nftID.Nft(nftSerials[0]), sender, spender, true).
 		AddApprovedNftTransfer(nftID.Nft(nftSerials[1]), sender, spender, true).

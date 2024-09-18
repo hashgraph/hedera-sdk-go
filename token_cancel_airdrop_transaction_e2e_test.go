@@ -30,6 +30,8 @@ import (
  *
  */
 
+const tokenCancelAirdropTransferAmount = 100
+
 func TestIntegrationTokenCancelAirdropCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 	defer CloseIntegrationTestEnv(env, nil)
@@ -60,8 +62,8 @@ func TestIntegrationTokenCancelAirdropCanExecute(t *testing.T) {
 	airdropTx, err := NewTokenAirdropTransaction().
 		AddNftTransfer(nftID.Nft(nftSerials[0]), env.OperatorID, receiver).
 		AddNftTransfer(nftID.Nft(nftSerials[1]), env.OperatorID, receiver).
-		AddTokenTransfer(tokenID, receiver, transferAmount).
-		AddTokenTransfer(tokenID, env.OperatorID, -transferAmount).
+		AddTokenTransfer(tokenID, receiver, tokenCancelAirdropTransferAmount).
+		AddTokenTransfer(tokenID, env.OperatorID, -tokenCancelAirdropTransferAmount).
 		Execute(env.Client)
 	require.NoError(t, err)
 
@@ -125,12 +127,12 @@ func TestIntegrationTokenCancelAirdropMultipleReceivers(t *testing.T) {
 	airdropTx, err := NewTokenAirdropTransaction().
 		AddNftTransfer(nftID.Nft(nftSerials[0]), env.OperatorID, receiver1).
 		AddNftTransfer(nftID.Nft(nftSerials[1]), env.OperatorID, receiver1).
-		AddTokenTransfer(tokenID, receiver1, transferAmount).
-		AddTokenTransfer(tokenID, env.OperatorID, -transferAmount).
+		AddTokenTransfer(tokenID, receiver1, tokenCancelAirdropTransferAmount).
+		AddTokenTransfer(tokenID, env.OperatorID, -tokenCancelAirdropTransferAmount).
 		AddNftTransfer(nftID.Nft(nftSerials[2]), env.OperatorID, receiver2).
 		AddNftTransfer(nftID.Nft(nftSerials[3]), env.OperatorID, receiver2).
-		AddTokenTransfer(tokenID, receiver2, transferAmount).
-		AddTokenTransfer(tokenID, env.OperatorID, -transferAmount).
+		AddTokenTransfer(tokenID, receiver2, tokenCancelAirdropTransferAmount).
+		AddTokenTransfer(tokenID, env.OperatorID, -tokenCancelAirdropTransferAmount).
 		Execute(env.Client)
 	require.NoError(t, err)
 
@@ -214,8 +216,8 @@ func TestIntegrationTokenCancelAirdropMultipleAirdropTxns(t *testing.T) {
 
 	// Airdrop some of the tokens
 	airdropTx, err = NewTokenAirdropTransaction().
-		AddTokenTransfer(tokenID, receiver, transferAmount).
-		AddTokenTransfer(tokenID, env.OperatorID, -transferAmount).
+		AddTokenTransfer(tokenID, receiver, tokenCancelAirdropTransferAmount).
+		AddTokenTransfer(tokenID, env.OperatorID, -tokenCancelAirdropTransferAmount).
 		Execute(env.Client)
 	require.NoError(t, err)
 
@@ -277,8 +279,8 @@ func TestIntegrationTokenCancelAirdropCannotCancelNonExistingAirdrop(t *testing.
 
 	// Airdrop the tokens
 	airdropTx, err := NewTokenAirdropTransaction().
-		AddTokenTransfer(tokenID, receiver, transferAmount).
-		AddTokenTransfer(tokenID, env.OperatorID, -transferAmount).
+		AddTokenTransfer(tokenID, receiver, tokenCancelAirdropTransferAmount).
+		AddTokenTransfer(tokenID, env.OperatorID, -tokenCancelAirdropTransferAmount).
 		Execute(env.Client)
 	require.NoError(t, err)
 
@@ -286,7 +288,6 @@ func TestIntegrationTokenCancelAirdropCannotCancelNonExistingAirdrop(t *testing.
 	require.NoError(t, err)
 
 	// Cancel the tokens with the random account which has not created pending airdrops
-	// Fails with INVALID_SIGNATURE
 	_, err = NewTokenCancelAirdropTransaction().
 		SetTransactionID(TransactionIDGenerate(randomAccount)).
 		AddPendingAirdropId(record.PendingAirdropRecords[0].GetPendingAirdropId()).
@@ -307,8 +308,8 @@ func TestIntegrationTokenCancelAirdropCannotCancelAlreadyCanceledAirdrop(t *test
 
 	// Airdrop the tokens
 	airdropTx, err := NewTokenAirdropTransaction().
-		AddTokenTransfer(tokenID, receiver, transferAmount).
-		AddTokenTransfer(tokenID, env.OperatorID, -transferAmount).
+		AddTokenTransfer(tokenID, receiver, tokenCancelAirdropTransferAmount).
+		AddTokenTransfer(tokenID, env.OperatorID, -tokenCancelAirdropTransferAmount).
 		Execute(env.Client)
 	require.NoError(t, err)
 
@@ -328,7 +329,6 @@ func TestIntegrationTokenCancelAirdropCannotCancelAlreadyCanceledAirdrop(t *test
 	require.NoError(t, err)
 
 	// Cancel the tokens with the operator again
-	// Fails with INVALID_PENDING_AIRDROP_ID
 	cancelTx, err = NewTokenCancelAirdropTransaction().
 		AddPendingAirdropId(record.PendingAirdropRecords[0].GetPendingAirdropId()).
 		FreezeWith(env.Client)
@@ -346,7 +346,6 @@ func TestIntegrationTokenCancelAirdropCannotCancelWithEmptyPendingAirdrops(t *te
 	defer CloseIntegrationTestEnv(env, nil)
 
 	// Cancel the tokens with the operator without setting pendingAirdropIds
-	// Fails with EMPTY_PENDING_AIRDROP_ID_LIST
 	_, err := NewTokenCancelAirdropTransaction().
 		Execute(env.Client)
 	require.ErrorContains(t, err, "EMPTY_PENDING_AIRDROP_ID_LIST")
@@ -365,8 +364,8 @@ func TestIntegrationTokenCancelAirdropCannotCancelWithDupblicateEntries(t *testi
 
 	// Airdrop the tokens
 	airdropTx, err := NewTokenAirdropTransaction().
-		AddTokenTransfer(tokenID, receiver, transferAmount).
-		AddTokenTransfer(tokenID, env.OperatorID, -transferAmount).
+		AddTokenTransfer(tokenID, receiver, tokenCancelAirdropTransferAmount).
+		AddTokenTransfer(tokenID, env.OperatorID, -tokenCancelAirdropTransferAmount).
 		Execute(env.Client)
 	require.NoError(t, err)
 
@@ -374,7 +373,6 @@ func TestIntegrationTokenCancelAirdropCannotCancelWithDupblicateEntries(t *testi
 	require.NoError(t, err)
 
 	// Cancel the tokens with duplicate pending airdrop token ids
-	// Fails with PENDING_AIRDROP_ID_REPEATED
 	cancelTx, err := NewTokenCancelAirdropTransaction().
 		AddPendingAirdropId(record.PendingAirdropRecords[0].GetPendingAirdropId()).
 		AddPendingAirdropId(record.PendingAirdropRecords[0].GetPendingAirdropId()).
@@ -398,8 +396,8 @@ func TestIntegrationTokenCancelAirdropCanCancelWithPausedToken(t *testing.T) {
 
 	// Airdrop the tokens
 	airdropTx, err := NewTokenAirdropTransaction().
-		AddTokenTransfer(tokenID, receiver, transferAmount).
-		AddTokenTransfer(tokenID, env.OperatorID, -transferAmount).
+		AddTokenTransfer(tokenID, receiver, tokenCancelAirdropTransferAmount).
+		AddTokenTransfer(tokenID, env.OperatorID, -tokenCancelAirdropTransferAmount).
 		Execute(env.Client)
 	require.NoError(t, err)
 
@@ -438,8 +436,8 @@ func TestIntegrationTokenCancelAirdropCanCancelWithDeletedToken(t *testing.T) {
 
 	// Airdrop the tokens
 	airdropTx, err := NewTokenAirdropTransaction().
-		AddTokenTransfer(tokenID, receiver, transferAmount).
-		AddTokenTransfer(tokenID, env.OperatorID, -transferAmount).
+		AddTokenTransfer(tokenID, receiver, tokenCancelAirdropTransferAmount).
+		AddTokenTransfer(tokenID, env.OperatorID, -tokenCancelAirdropTransferAmount).
 		Execute(env.Client)
 	require.NoError(t, err)
 
@@ -478,8 +476,8 @@ func TestIntegrationTokenCancelAirdropCanCancelWithFrozenToken(t *testing.T) {
 
 	// Airdrop the tokens
 	airdropTx, err := NewTokenAirdropTransaction().
-		AddTokenTransfer(tokenID, receiver, transferAmount).
-		AddTokenTransfer(tokenID, env.OperatorID, -transferAmount).
+		AddTokenTransfer(tokenID, receiver, tokenCancelAirdropTransferAmount).
+		AddTokenTransfer(tokenID, env.OperatorID, -tokenCancelAirdropTransferAmount).
 		Execute(env.Client)
 	require.NoError(t, err)
 

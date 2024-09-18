@@ -240,7 +240,6 @@ func TestIntegrationAccountDeleteTransactionCannotDeleteWithPendingAirdrops(t *t
 	assert.Equal(t, 3, len(record.PendingAirdropRecords))
 
 	// Try to delete the sender
-	// Fails with ACCOUNT_HAS_PENDING_AIRDROPS
 	accountDeleteResp, err := NewAccountDeleteTransaction().
 		SetAccountID(env.OperatorID).
 		SetTransferAccountID(receiver).

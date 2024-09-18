@@ -30,6 +30,8 @@ import (
  *
  */
 
+const tokenClaimAirdropTransferAmount = 100
+
 func TestIntegrationTokenClaimAirdropCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 	defer CloseIntegrationTestEnv(env, nil)
@@ -60,8 +62,8 @@ func TestIntegrationTokenClaimAirdropCanExecute(t *testing.T) {
 	airdropTx, err := NewTokenAirdropTransaction().
 		AddNftTransfer(nftID.Nft(nftSerials[0]), env.OperatorID, receiver).
 		AddNftTransfer(nftID.Nft(nftSerials[1]), env.OperatorID, receiver).
-		AddTokenTransfer(tokenID, receiver, transferAmount).
-		AddTokenTransfer(tokenID, env.OperatorID, -transferAmount).
+		AddTokenTransfer(tokenID, receiver, tokenClaimAirdropTransferAmount).
+		AddTokenTransfer(tokenID, env.OperatorID, -tokenClaimAirdropTransferAmount).
 		Execute(env.Client)
 	require.NoError(t, err)
 
@@ -88,7 +90,7 @@ func TestIntegrationTokenClaimAirdropCanExecute(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	require.Equal(t, uint64(transferAmount), reciverBalance.Tokens.Get(tokenID))
+	require.Equal(t, uint64(tokenClaimAirdropTransferAmount), reciverBalance.Tokens.Get(tokenID))
 	require.Equal(t, uint64(2), reciverBalance.Tokens.Get(nftID))
 
 	// Verify the operator does not hold the tokens
@@ -97,7 +99,7 @@ func TestIntegrationTokenClaimAirdropCanExecute(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	require.Equal(t, uint64(1_000_000-transferAmount), operatorBalance.Tokens.Get(tokenID))
+	require.Equal(t, uint64(1_000_000-tokenClaimAirdropTransferAmount), operatorBalance.Tokens.Get(tokenID))
 	require.Equal(t, uint64(8), operatorBalance.Tokens.Get(nftID))
 }
 
@@ -134,12 +136,12 @@ func TestIntegrationTokenClaimAirdropMultipleReceivers(t *testing.T) {
 	airdropTx, err := NewTokenAirdropTransaction().
 		AddNftTransfer(nftID.Nft(nftSerials[0]), env.OperatorID, receiver1).
 		AddNftTransfer(nftID.Nft(nftSerials[1]), env.OperatorID, receiver1).
-		AddTokenTransfer(tokenID, receiver1, transferAmount).
-		AddTokenTransfer(tokenID, env.OperatorID, -transferAmount).
+		AddTokenTransfer(tokenID, receiver1, tokenClaimAirdropTransferAmount).
+		AddTokenTransfer(tokenID, env.OperatorID, -tokenClaimAirdropTransferAmount).
 		AddNftTransfer(nftID.Nft(nftSerials[2]), env.OperatorID, receiver2).
 		AddNftTransfer(nftID.Nft(nftSerials[3]), env.OperatorID, receiver2).
-		AddTokenTransfer(tokenID, receiver2, transferAmount).
-		AddTokenTransfer(tokenID, env.OperatorID, -transferAmount).
+		AddTokenTransfer(tokenID, receiver2, tokenClaimAirdropTransferAmount).
+		AddTokenTransfer(tokenID, env.OperatorID, -tokenClaimAirdropTransferAmount).
 		Execute(env.Client)
 	require.NoError(t, err)
 
@@ -172,7 +174,7 @@ func TestIntegrationTokenClaimAirdropMultipleReceivers(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	require.Equal(t, uint64(transferAmount), reciverBalance.Tokens.Get(tokenID))
+	require.Equal(t, uint64(tokenClaimAirdropTransferAmount), reciverBalance.Tokens.Get(tokenID))
 	require.Equal(t, uint64(2), reciverBalance.Tokens.Get(nftID))
 
 	// Verify the receiver2 holds the tokens via query
@@ -181,7 +183,7 @@ func TestIntegrationTokenClaimAirdropMultipleReceivers(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	require.Equal(t, uint64(transferAmount), reciverBalance.Tokens.Get(tokenID))
+	require.Equal(t, uint64(tokenClaimAirdropTransferAmount), reciverBalance.Tokens.Get(tokenID))
 	require.Equal(t, uint64(2), reciverBalance.Tokens.Get(nftID))
 
 	// Verify the operator does not hold the tokens
@@ -190,7 +192,7 @@ func TestIntegrationTokenClaimAirdropMultipleReceivers(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	require.Equal(t, uint64(1_000_000-transferAmount*2), operatorBalance.Tokens.Get(tokenID))
+	require.Equal(t, uint64(1_000_000-tokenClaimAirdropTransferAmount*2), operatorBalance.Tokens.Get(tokenID))
 	require.Equal(t, uint64(6), operatorBalance.Tokens.Get(nftID))
 
 }
@@ -241,8 +243,8 @@ func TestIntegrationTokenClaimAirdropMultipleAirdropTxns(t *testing.T) {
 
 	// Airdrop some of the tokens
 	airdropTx, err = NewTokenAirdropTransaction().
-		AddTokenTransfer(tokenID, receiver, transferAmount).
-		AddTokenTransfer(tokenID, env.OperatorID, -transferAmount).
+		AddTokenTransfer(tokenID, receiver, tokenClaimAirdropTransferAmount).
+		AddTokenTransfer(tokenID, env.OperatorID, -tokenClaimAirdropTransferAmount).
 		Execute(env.Client)
 	require.NoError(t, err)
 
@@ -276,7 +278,7 @@ func TestIntegrationTokenClaimAirdropMultipleAirdropTxns(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	require.Equal(t, uint64(transferAmount), reciverBalance.Tokens.Get(tokenID))
+	require.Equal(t, uint64(tokenClaimAirdropTransferAmount), reciverBalance.Tokens.Get(tokenID))
 	require.Equal(t, uint64(2), reciverBalance.Tokens.Get(nftID))
 
 	// Verify the operator does not hold the tokens
@@ -285,7 +287,7 @@ func TestIntegrationTokenClaimAirdropMultipleAirdropTxns(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	require.Equal(t, uint64(1_000_000-transferAmount), operatorBalance.Tokens.Get(tokenID))
+	require.Equal(t, uint64(1_000_000-tokenClaimAirdropTransferAmount), operatorBalance.Tokens.Get(tokenID))
 	require.Equal(t, uint64(8), operatorBalance.Tokens.Get(nftID))
 }
 
@@ -302,8 +304,8 @@ func TestIntegrationTokenClaimAirdropCannotClaimNonExistingAirdrop(t *testing.T)
 
 	// Airdrop the tokens
 	airdropTx, err := NewTokenAirdropTransaction().
-		AddTokenTransfer(tokenID, receiver, transferAmount).
-		AddTokenTransfer(tokenID, env.OperatorID, -transferAmount).
+		AddTokenTransfer(tokenID, receiver, tokenClaimAirdropTransferAmount).
+		AddTokenTransfer(tokenID, env.OperatorID, -tokenClaimAirdropTransferAmount).
 		Execute(env.Client)
 	require.NoError(t, err)
 
@@ -311,7 +313,6 @@ func TestIntegrationTokenClaimAirdropCannotClaimNonExistingAirdrop(t *testing.T)
 	require.NoError(t, err)
 
 	// Claim the tokens with the operator which does not have pending airdrops
-	// Fails with INVALID_SIGNATURE
 	claimResp, err := NewTokenClaimAirdropTransaction().
 		AddPendingAirdropId(record.PendingAirdropRecords[0].GetPendingAirdropId()).
 		Execute(env.Client)
@@ -334,8 +335,8 @@ func TestIntegrationTokenClaimAirdropCannotClaimAlreadyClaimedAirdrop(t *testing
 
 	// Airdrop the tokens
 	airdropTx, err := NewTokenAirdropTransaction().
-		AddTokenTransfer(tokenID, receiver, transferAmount).
-		AddTokenTransfer(tokenID, env.OperatorID, -transferAmount).
+		AddTokenTransfer(tokenID, receiver, tokenClaimAirdropTransferAmount).
+		AddTokenTransfer(tokenID, env.OperatorID, -tokenClaimAirdropTransferAmount).
 		Execute(env.Client)
 	require.NoError(t, err)
 
@@ -355,7 +356,6 @@ func TestIntegrationTokenClaimAirdropCannotClaimAlreadyClaimedAirdrop(t *testing
 	require.NoError(t, err)
 
 	// Claim the tokens with the receiver again
-	// Fails with INVALID_PENDING_AIRDROP_ID
 	claimTx, err = NewTokenClaimAirdropTransaction().
 		AddPendingAirdropId(record.PendingAirdropRecords[0].GetPendingAirdropId()).
 		FreezeWith(env.Client)
@@ -373,7 +373,6 @@ func TestIntegrationTokenClaimAirdropCannotClaimWithEmptyPendingAirdrops(t *test
 	defer CloseIntegrationTestEnv(env, nil)
 
 	// Claim the tokens with the receiver without setting pendingAirdropIds
-	// Fails with EMPTY_PENDING_AIRDROP_ID_LIST
 	_, err := NewTokenClaimAirdropTransaction().
 		Execute(env.Client)
 	require.ErrorContains(t, err, "EMPTY_PENDING_AIRDROP_ID_LIST")
@@ -392,8 +391,8 @@ func TestIntegrationTokenClaimAirdropCannotClaimWithDupblicateEntries(t *testing
 
 	// Airdrop the tokens
 	airdropTx, err := NewTokenAirdropTransaction().
-		AddTokenTransfer(tokenID, receiver, transferAmount).
-		AddTokenTransfer(tokenID, env.OperatorID, -transferAmount).
+		AddTokenTransfer(tokenID, receiver, tokenClaimAirdropTransferAmount).
+		AddTokenTransfer(tokenID, env.OperatorID, -tokenClaimAirdropTransferAmount).
 		Execute(env.Client)
 	require.NoError(t, err)
 
@@ -401,7 +400,6 @@ func TestIntegrationTokenClaimAirdropCannotClaimWithDupblicateEntries(t *testing
 	require.NoError(t, err)
 
 	// Claim the tokens with duplicate pending airdrop token ids
-	// Fails with PENDING_AIRDROP_ID_REPEATED
 	claimTx, err := NewTokenClaimAirdropTransaction().
 		AddPendingAirdropId(record.PendingAirdropRecords[0].GetPendingAirdropId()).
 		AddPendingAirdropId(record.PendingAirdropRecords[0].GetPendingAirdropId()).
@@ -425,8 +423,8 @@ func TestIntegrationTokenClaimAirdropCannotClaimWithPausedToken(t *testing.T) {
 
 	// Airdrop the tokens
 	airdropTx, err := NewTokenAirdropTransaction().
-		AddTokenTransfer(tokenID, receiver, transferAmount).
-		AddTokenTransfer(tokenID, env.OperatorID, -transferAmount).
+		AddTokenTransfer(tokenID, receiver, tokenClaimAirdropTransferAmount).
+		AddTokenTransfer(tokenID, env.OperatorID, -tokenClaimAirdropTransferAmount).
 		Execute(env.Client)
 	require.NoError(t, err)
 
@@ -440,7 +438,6 @@ func TestIntegrationTokenClaimAirdropCannotClaimWithPausedToken(t *testing.T) {
 	require.NoError(t, err)
 
 	// Claim the tokens with receiver
-	// Fails with TOKEN_IS_PAUSED
 	claimTx, err := NewTokenClaimAirdropTransaction().
 		AddPendingAirdropId(record.PendingAirdropRecords[0].GetPendingAirdropId()).
 		FreezeWith(env.Client)
@@ -466,8 +463,8 @@ func TestIntegrationTokenClaimAirdropCannotClaimWithDeletedToken(t *testing.T) {
 
 	// Airdrop the tokens
 	airdropTx, err := NewTokenAirdropTransaction().
-		AddTokenTransfer(tokenID, receiver, transferAmount).
-		AddTokenTransfer(tokenID, env.OperatorID, -transferAmount).
+		AddTokenTransfer(tokenID, receiver, tokenClaimAirdropTransferAmount).
+		AddTokenTransfer(tokenID, env.OperatorID, -tokenClaimAirdropTransferAmount).
 		Execute(env.Client)
 	require.NoError(t, err)
 
@@ -481,7 +478,6 @@ func TestIntegrationTokenClaimAirdropCannotClaimWithDeletedToken(t *testing.T) {
 	require.NoError(t, err)
 
 	// Claim the tokens with receiver
-	// Fails with TOKEN_WAS_DELETED
 	claimTx, err := NewTokenClaimAirdropTransaction().
 		AddPendingAirdropId(record.PendingAirdropRecords[0].GetPendingAirdropId()).
 		FreezeWith(env.Client)
@@ -507,8 +503,8 @@ func TestIntegrationTokenClaimAirdropCannotClaimWithFrozenToken(t *testing.T) {
 
 	// Airdrop the tokens
 	airdropTx, err := NewTokenAirdropTransaction().
-		AddTokenTransfer(tokenID, receiver, transferAmount).
-		AddTokenTransfer(tokenID, env.OperatorID, -transferAmount).
+		AddTokenTransfer(tokenID, receiver, tokenClaimAirdropTransferAmount).
+		AddTokenTransfer(tokenID, env.OperatorID, -tokenClaimAirdropTransferAmount).
 		Execute(env.Client)
 	require.NoError(t, err)
 
@@ -530,7 +526,6 @@ func TestIntegrationTokenClaimAirdropCannotClaimWithFrozenToken(t *testing.T) {
 	require.NoError(t, err)
 
 	// Claim the tokens with receiver
-	// Fails with ACCOUNT_FROZEN_FOR_TOKEN
 	claimTx, err := NewTokenClaimAirdropTransaction().
 		AddPendingAirdropId(record.PendingAirdropRecords[0].GetPendingAirdropId()).
 		FreezeWith(env.Client)
