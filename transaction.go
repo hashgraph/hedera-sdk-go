@@ -324,6 +324,10 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 		return *_NodeDeleteTransactionFromProtobuf(tx, first), nil
 	case *services.TransactionBody_TokenAirdrop:
 		return *_TokenAirdropTransactionFromProtobuf(tx, first), nil
+	case *services.TransactionBody_TokenClaimAirdrop:
+		return *_TokenClaimAirdropTransactionFromProtobuf(tx, first), nil
+	case *services.TransactionBody_TokenCancelAirdrop:
+		return *_TokenCancelAirdropTransactionFromProtobuf(tx, first), nil
 	default:
 		return Transaction{}, errFailedToDeserializeBytes
 	}

@@ -20,7 +20,11 @@ package hedera
  *
  */
 
-import "github.com/hashgraph/hedera-protobufs-go/services"
+import (
+	"fmt"
+
+	"github.com/hashgraph/hedera-protobufs-go/services"
+)
 
 type PendingAirdropRecord struct {
 	pendingAirdropId     PendingAirdropId
@@ -49,4 +53,8 @@ func (pendingAirdropRecord *PendingAirdropRecord) _ToProtobuf() *services.Pendin
 			Amount: pendingAirdropRecord.pendingAirdropAmount,
 		},
 	}
+}
+
+func (pendingAirdropRecord *PendingAirdropRecord) String() string {
+	return fmt.Sprintf("PendingAirdropRecord{PendingAirdropId: %s, PendingAirdropAmount: %d}", pendingAirdropRecord.pendingAirdropId.String(), pendingAirdropRecord.pendingAirdropAmount)
 }

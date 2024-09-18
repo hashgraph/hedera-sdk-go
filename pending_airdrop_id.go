@@ -20,7 +20,11 @@ package hedera
  *
  */
 
-import "github.com/hashgraph/hedera-protobufs-go/services"
+import (
+	"fmt"
+
+	"github.com/hashgraph/hedera-protobufs-go/services"
+)
 
 /**
  * A unique, composite, identifier for a pending airdrop.
@@ -102,9 +106,14 @@ func _PendingAirdropIdFromProtobuf(pb *services.PendingAirdropId) *PendingAirdro
 }
 
 func (pendingAirdropId *PendingAirdropId) _ToProtobuf() *services.PendingAirdropId {
-	pb := &services.PendingAirdropId{
-		SenderId:   pendingAirdropId.sender._ToProtobuf(),
-		ReceiverId: pendingAirdropId.receiver._ToProtobuf(),
+	pb := &services.PendingAirdropId{}
+
+	if pendingAirdropId.sender != nil {
+		pb.SenderId = pendingAirdropId.sender._ToProtobuf()
+	}
+
+	if pendingAirdropId.receiver != nil {
+		pb.ReceiverId = pendingAirdropId.receiver._ToProtobuf()
 	}
 
 	if pendingAirdropId.tokenID != nil {
@@ -117,4 +126,35 @@ func (pendingAirdropId *PendingAirdropId) _ToProtobuf() *services.PendingAirdrop
 		}
 	}
 	return pb
+}
+
+func (pendingAirdropId *PendingAirdropId) String() string {
+	const nilString = "nil"
+	var senderStr, receiverStr, tokenIDStr, nftIDStr string
+
+	if pendingAirdropId.sender != nil {
+		senderStr = pendingAirdropId.sender.String()
+	} else {
+		senderStr = nilString
+	}
+
+	if pendingAirdropId.receiver != nil {
+		receiverStr = pendingAirdropId.receiver.String()
+	} else {
+		receiverStr = nilString
+	}
+
+	if pendingAirdropId.tokenID != nil {
+		tokenIDStr = pendingAirdropId.tokenID.String()
+	} else {
+		tokenIDStr = nilString
+	}
+
+	if pendingAirdropId.nftID != nil {
+		nftIDStr = pendingAirdropId.nftID.String()
+	} else {
+		nftIDStr = nilString
+	}
+
+	return fmt.Sprintf("Sender: %s, Receiver: %s, TokenID: %s, NftID: %s", senderStr, receiverStr, tokenIDStr, nftIDStr)
 }

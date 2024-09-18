@@ -198,3 +198,52 @@ func TestIntegrationAccountDeleteTransactionNoSigning(t *testing.T) {
 	err = CloseIntegrationTestEnv(env, nil)
 	require.NoError(t, err)
 }
+
+func TestIntegrationAccountDeleteTransactionCannotDeleteWithPendingAirdrops(t *testing.T) {
+	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
+
+	// Create ft and nft
+	tokenID, err := createFungibleToken(&env)
+	require.NoError(t, err)
+	nftID, err := createNft(&env)
+	require.NoError(t, err)
+
+	// Mint some NFTs
+	txResponse, err := NewTokenMintTransaction().
+		SetTokenID(nftID).
+		SetMetadatas(mintMetadata).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	receipt, err := txResponse.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	nftSerials := receipt.SerialNumbers
+
+	// Create receiver
+	receiver, _ := createAccountHelper(t, &env, 0)
+
+	// Airdrop the tokens
+	airdropTx, err := NewTokenAirdropTransaction().
+		AddNftTransfer(nftID.Nft(nftSerials[0]), env.OperatorID, receiver).
+		AddNftTransfer(nftID.Nft(nftSerials[1]), env.OperatorID, receiver).
+		AddTokenTransfer(tokenID, receiver, 100).
+		AddTokenTransfer(tokenID, env.OperatorID, -100).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	record, err := airdropTx.SetValidateStatus(true).GetRecord(env.Client)
+	require.NoError(t, err)
+
+	// verify the pending airdrop record
+	assert.Equal(t, 3, len(record.PendingAirdropRecords))
+
+	// Try to delete the sender
+	accountDeleteResp, err := NewAccountDeleteTransaction().
+		SetAccountID(env.OperatorID).
+		SetTransferAccountID(receiver).
+		Execute(env.Client)
+	receipt, err = accountDeleteResp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.ErrorContains(t, err, "ACCOUNT_HAS_PENDING_AIRDROPS")
+}

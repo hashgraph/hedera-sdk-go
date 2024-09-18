@@ -632,6 +632,6 @@ func (tx *TokenAirdropTransaction) getMethod(channel *_Channel) _Method {
 	}
 }
 
-func (this *TokenAirdropTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
-	return this.buildScheduled()
+func (tx *TokenAirdropTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	return tx.buildScheduled()
 }
