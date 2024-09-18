@@ -323,3 +323,5 @@ func createFungibleToken(env *IntegrationTestEnv, opts ...TokenCreateTransaction
 	}
 	return *receipt.TokenID, err
 }
+
+const transferAmount = 100
