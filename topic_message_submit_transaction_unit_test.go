@@ -322,3 +322,30 @@ func TestUnitTopicMessageSubmitTransactionSerialization(t *testing.T) {
 	require.Equal(t, transaction.GetMessage(), result.GetMessage())
 	require.Equal(t, transaction.GetTransactionMemo(), result.GetTransactionMemo())
 }
+
+func TestUnitTopicMessageSubmitTransactionSetMessage(t *testing.T) {
+	t.Parallel()
+
+	transaction := NewTopicMessageSubmitTransaction().
+		SetNodeAccountIDs(nodeAccountID).
+		SetMessage("String message").
+		SetMaxChunks(30).
+		SetTransactionMemo("no")
+
+	txBytes, err := transaction.ToBytes()
+	require.NoError(t, err)
+
+	txParsed, err := TransactionFromBytes(txBytes)
+	require.NoError(t, err)
+
+	result, ok := txParsed.(TopicMessageSubmitTransaction)
+	require.True(t, ok)
+
+	require.Equal(t, transaction.GetMessage(), result.GetMessage())
+	require.Equal(t, transaction.GetTransactionMemo(), result.GetTransactionMemo())
+
+	transaction = NewTopicMessageSubmitTransaction().
+		SetMessage(1234) // wrong type - NOOP
+
+	require.Equal(t, []byte{}, transaction.GetMessage())
+}
