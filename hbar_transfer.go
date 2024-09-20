@@ -67,7 +67,7 @@ func (transfers *_HbarTransfers) Swap(i, j int) {
 
 func (transfers *_HbarTransfers) Less(i, j int) bool {
 	if transfers.transfers[i].accountID.Compare(*transfers.transfers[j].accountID) < 0 { //nolint
-		return true
+		return false
 	}
 
 	return false
