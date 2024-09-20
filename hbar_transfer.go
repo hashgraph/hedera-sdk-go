@@ -20,7 +20,11 @@ package hedera
  *
  */
 
-import "github.com/hashgraph/hedera-protobufs-go/services"
+import (
+	"fmt"
+
+	"github.com/hashgraph/hedera-protobufs-go/services"
+)
 
 type _HbarTransfer struct {
 	accountID  *AccountID
@@ -67,8 +71,9 @@ func (transfers *_HbarTransfers) Swap(i, j int) {
 
 func (transfers *_HbarTransfers) Less(i, j int) bool {
 	if transfers.transfers[i].accountID.Compare(*transfers.transfers[j].accountID) < 0 { //nolint
-		return false
+		return true
 	}
+	fmt.Println("test")
 
 	return false
 }
