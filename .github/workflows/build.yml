@@ -43,6 +43,9 @@ jobs:
 
             - name: Check out code into the Go module directory
               uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+              with:
+                fetch-depth: 0
+                ref: 'refs/tags/v2.44.0'
 
             - name: Vet Examples
               run: go vet ./examples/...
@@ -95,6 +98,9 @@ jobs:
 
             - name: Check out code into the Go module directory
               uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+              with:
+                fetch-depth: 0
+                ref: 'refs/tags/v2.44.0'
 
             - name: Start the local node
               if: success()
@@ -155,6 +161,9 @@ jobs:
 
             - name: Check out code into the Go module directory
               uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+              with:
+                fetch-depth: 0
+                ref: 'refs/tags/v2.44.0'
 
             - name: Install Task
               run: go install github.com/go-task/task/v3/cmd/task@v3.17.0
