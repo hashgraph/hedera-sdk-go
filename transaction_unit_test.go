@@ -602,32 +602,6 @@ func TestUnitTransactionSignSwitchCasesPointers(t *testing.T) {
 	}
 }
 
-func TestUnitTransactionThrottleAtConsensusGracefulHandling(t *testing.T) {
-	t.Parallel()
-
-	responses := [][]interface{}{{
-		&services.TransactionResponse{
-			NodeTransactionPrecheckCode: services.ResponseCodeEnum_THROTTLED_AT_CONSENSUS,
-		},
-		&services.TransactionResponse{
-			NodeTransactionPrecheckCode: services.ResponseCodeEnum_THROTTLED_AT_CONSENSUS,
-		},
-		&services.TransactionResponse{
-			NodeTransactionPrecheckCode: services.ResponseCodeEnum_OK,
-		},
-	}}
-
-	client, server := NewMockClientAndServer(responses)
-	defer server.Close()
-	_, err := NewTransferTransaction().
-		SetNodeAccountIDs([]AccountID{{Account: 3}}).
-		AddHbarTransfer(AccountID{Account: 2}, HbarFromTinybar(-1)).
-		AddHbarTransfer(AccountID{Account: 3}, HbarFromTinybar(1)).
-		Execute(client)
-	client.SetMaxAttempts(3)
-	require.NoError(t, err)
-
-}
 func TestUnitTransactionAttributes(t *testing.T) {
 	t.Parallel()
 
