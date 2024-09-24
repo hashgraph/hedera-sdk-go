@@ -4899,13 +4899,15 @@ func (tx *Transaction) execute(client *Client, e TransactionInterface) (Transact
 		}, err
 	}
 
-	txBytes, _ := TransactionToBytes(tx)
+	txBytes, _ := TransactionToBytes(e)
 	return TransactionResponse{
 		TransactionID:  tx.GetTransactionID(),
 		NodeID:         resp.(TransactionResponse).NodeID,
 		Hash:           resp.(TransactionResponse).Hash,
 		ValidateStatus: true,
-		Transaction:    txBytes,
+		// set the txBytes in the response, in case of throttle error in the receipt
+		// we can use this to re-submit the transaction
+		Transaction: txBytes,
 	}, nil
 }
 
