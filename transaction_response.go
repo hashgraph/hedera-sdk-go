@@ -2,6 +2,7 @@ package hedera
 
 import (
 	"encoding/hex"
+	"fmt"
 
 	jsoniter "github.com/json-iterator/go"
 )
@@ -53,7 +54,10 @@ func (response TransactionResponse) MarshalJSON() ([]byte, error) {
 
 func retryThrottle(client *Client, transaction []byte) (TransactionReceipt, error) {
 	tx, _ := TransactionFromBytes(transaction)
-	resp, _ := TransactionExecute(tx, client)
+	resp, err := TransactionExecute(tx, client)
+	if err != nil {
+		return TransactionReceipt{}, err
+	}
 	receipt, err := NewTransactionReceiptQuery().
 		SetTransactionID(resp.TransactionID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
@@ -69,6 +73,7 @@ func (response TransactionResponse) GetReceipt(client *Client) (TransactionRecei
 		Execute(client)
 
 	for receipt.Status == StatusThrottledAtConsensus {
+		fmt.Println("Throttled at consensus, retrying")
 		receipt, err = retryThrottle(client, response.Transaction)
 	}
 
