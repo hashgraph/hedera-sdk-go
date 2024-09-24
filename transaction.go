@@ -4899,6 +4899,7 @@ func (tx *Transaction) execute(client *Client, e TransactionInterface) (Transact
 		}, err
 	}
 
+	e.regenerateID(client)
 	txBytes, _ := TransactionToBytes(e)
 	return TransactionResponse{
 		TransactionID:  tx.GetTransactionID(),
