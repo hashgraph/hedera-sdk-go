@@ -37,6 +37,7 @@ type TransactionResponse struct {
 	NodeID                 AccountID
 	Hash                   []byte
 	ValidateStatus         bool
+	Transaction            []byte
 }
 
 // MarshalJSON returns the JSON representation of the TransactionResponse.
@@ -50,12 +51,26 @@ func (response TransactionResponse) MarshalJSON() ([]byte, error) {
 	return json.Marshal(obj)
 }
 
+func retryThrottle(client *Client, transaction []byte) (TransactionReceipt, error) {
+	tx, _ := TransactionFromBytes(transaction)
+	resp, _ := TransactionExecute(tx, client)
+	receipt, err := NewTransactionReceiptQuery().
+		SetTransactionID(resp.TransactionID).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		Execute(client)
+	return receipt, err
+}
+
 // GetReceipt retrieves the receipt for the transaction
 func (response TransactionResponse) GetReceipt(client *Client) (TransactionReceipt, error) {
 	receipt, err := NewTransactionReceiptQuery().
 		SetTransactionID(response.TransactionID).
 		SetNodeAccountIDs([]AccountID{response.NodeID}).
 		Execute(client)
+
+	for receipt.Status == StatusThrottledAtConsensus {
+		receipt, err = retryThrottle(client, response.Transaction)
+	}
 
 	if err != nil {
 		return receipt, err
