@@ -256,11 +256,20 @@ func (q *Query) execute(client *Client, e QueryInterface) (*services.Response, e
 
 func (q *Query) shouldRetry(e Executable, response interface{}) _ExecutionState {
 	queryResp := e.(QueryInterface).getQueryResponse(response.(*services.Response))
+
 	status := Status(queryResp.GetHeader().NodeTransactionPrecheckCode)
-	switch status {
-	case StatusPlatformTransactionNotCreated, StatusPlatformNotActive, StatusBusy, StatusThrottledAtConsensus:
+
+	retryableStatuses := map[Status]bool{
+		StatusPlatformTransactionNotCreated: true,
+		StatusPlatformNotActive:             true,
+		StatusBusy:                          true,
+	}
+
+	if retryableStatuses[status] {
 		return executionStateRetry
-	case StatusOk:
+	}
+
+	if status == StatusOk {
 		return executionStateFinished
 	}
 

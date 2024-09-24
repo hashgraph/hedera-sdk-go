@@ -4757,12 +4757,22 @@ func TransactionExecute(transaction interface{}, client *Client) (TransactionRes
 // ------------ Executable Functions ------------
 func (tx *Transaction) shouldRetry(_ Executable, response interface{}) _ExecutionState {
 	status := Status(response.(*services.TransactionResponse).NodeTransactionPrecheckCode)
-	switch status {
-	case StatusPlatformTransactionNotCreated, StatusPlatformNotActive, StatusBusy, StatusThrottledAtConsensus:
+
+	retryableStatuses := map[Status]bool{
+		StatusPlatformTransactionNotCreated: true,
+		StatusPlatformNotActive:             true,
+		StatusBusy:                          true,
+	}
+
+	if retryableStatuses[status] {
 		return executionStateRetry
-	case StatusTransactionExpired:
+	}
+
+	if status == StatusTransactionExpired {
 		return executionStateExpired
-	case StatusOk:
+	}
+
+	if status == StatusOk {
 		return executionStateFinished
 	}
 

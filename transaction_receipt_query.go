@@ -245,7 +245,7 @@ func (q *TransactionReceiptQuery) shouldRetry(_ Executable, response interface{}
 	status := Status(response.(*services.Response).GetTransactionGetReceipt().GetHeader().GetNodeTransactionPrecheckCode())
 
 	switch status {
-	case StatusPlatformTransactionNotCreated, StatusBusy, StatusUnknown, StatusReceiptNotFound, StatusRecordNotFound, StatusPlatformNotActive, StatusThrottledAtConsensus:
+	case StatusPlatformTransactionNotCreated, StatusBusy, StatusUnknown, StatusReceiptNotFound, StatusRecordNotFound, StatusPlatformNotActive:
 		return executionStateRetry
 	case StatusOk:
 		break
@@ -256,7 +256,7 @@ func (q *TransactionReceiptQuery) shouldRetry(_ Executable, response interface{}
 	status = Status(response.(*services.Response).GetTransactionGetReceipt().GetReceipt().GetStatus())
 
 	switch status {
-	case StatusBusy, StatusUnknown, StatusOk, StatusReceiptNotFound, StatusRecordNotFound, StatusPlatformNotActive, StatusThrottledAtConsensus:
+	case StatusBusy, StatusUnknown, StatusOk, StatusReceiptNotFound, StatusRecordNotFound, StatusPlatformNotActive:
 		return executionStateRetry
 	default:
 		return executionStateFinished
