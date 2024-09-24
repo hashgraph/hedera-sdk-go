@@ -4899,11 +4899,13 @@ func (tx *Transaction) execute(client *Client, e TransactionInterface) (Transact
 		}, err
 	}
 
+	txBytes, _ := TransactionToBytes(tx)
 	return TransactionResponse{
 		TransactionID:  tx.GetTransactionID(),
 		NodeID:         resp.(TransactionResponse).NodeID,
 		Hash:           resp.(TransactionResponse).Hash,
 		ValidateStatus: true,
+		Transaction:    txBytes,
 	}, nil
 }
 
