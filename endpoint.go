@@ -86,6 +86,11 @@ func (endpoint *Endpoint) String() string {
 		// If domain name is populated domainName + port
 		return endpoint.domainName + ":" + fmt.Sprintf("%d", endpoint.port)
 	} else {
-		return endpoint.address.String() + ":" + fmt.Sprintf("%d", endpoint.port)
+		return fmt.Sprintf("%d.%d.%d.%d:%d",
+			int(endpoint.address.address[0])&0xFF,
+			int(endpoint.address.address[1])&0xFF,
+			int(endpoint.address.address[2])&0xFF,
+			int(endpoint.address.address[3])&0xFF,
+			endpoint.port)
 	}
 }

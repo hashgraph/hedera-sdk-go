@@ -24,6 +24,8 @@ package hedera
  */
 
 import (
+	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -211,4 +213,32 @@ func TestIntegrationAccountBalanceQueryWorksWithHollowAccountAlias(t *testing.T)
 
 	err = CloseIntegrationTestEnv(env, nil)
 	require.NoError(t, err)
+}
+
+func TestIntegrationAccountBalanceQueryCanConnectToMainnetTls(t *testing.T) {
+	t.Parallel()
+	client := ClientForMainnet()
+	client.SetTransportSecurity(true)
+
+	succeededOnce := false
+	for address, accountID := range client.GetNetwork() {
+
+		if !strings.HasSuffix(address, ":50212") {
+			t.Errorf("Expected entry key to end with ':50212', but got %s", address)
+		}
+
+		fmt.Println(address, accountID)
+		accountIDs := []AccountID{accountID}
+		_, err := NewAccountBalanceQuery().
+			SetNodeAccountIDs(accountIDs).
+			SetAccountID(accountID).
+			Execute(client)
+		if err == nil {
+			succeededOnce = true
+			fmt.Println("succeeded for ", address, accountID)
+		} else {
+			fmt.Println("failed for ", address, accountID)
+		}
+	}
+	assert.True(t, succeededOnce)
 }
