@@ -36,8 +36,7 @@ func main() {
 	description := "Hedera™ cryptocurrency"
 	newDescription := "Hedera™ cryptocurrency - updated"
 
-	ipv4 := hedera.IPv4Address{}
-	ipv4.SetNetwork(0, 0).SetHost(0, 0)
+	ipv4 := []byte{127, 0, 0, 1}
 
 	gossipEndpoint := hedera.Endpoint{}
 	gossipEndpoint.SetAddress(ipv4).SetPort(50211)

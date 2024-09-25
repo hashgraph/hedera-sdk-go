@@ -78,16 +78,7 @@ func endpoints(offsets ...uint) []Endpoint {
 
 	for _, offset := range offsets {
 		endpoints = append(endpoints, Endpoint{
-			address: IPv4Address{
-				network: IPv4AddressPart{
-					left:  byte(offset),
-					right: byte(offset),
-				},
-				host: IPv4AddressPart{
-					left:  byte(offset),
-					right: byte(offset),
-				},
-			},
+			address: []byte{byte(offset), byte(offset), byte(offset), byte(offset)},
 		})
 	}
 

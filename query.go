@@ -203,7 +203,7 @@ func (q *Query) SetPaymentTransactionID(transactionID TransactionID) *Query {
 
 func (q *Query) execute(client *Client, e QueryInterface) (*services.Response, error) {
 	q.client = client
-	if client == nil || client.operator == nil {
+	if client == nil {
 		return nil, errNoClientProvided
 	}
 
