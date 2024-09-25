@@ -27,17 +27,17 @@ import (
 )
 
 type Endpoint struct {
-	address    IPv4Address
+	address    []byte
 	port       int32
 	domainName string
 }
 
-func (endpoint *Endpoint) SetAddress(address IPv4Address) *Endpoint {
+func (endpoint *Endpoint) SetAddress(address []byte) *Endpoint {
 	endpoint.address = address
 	return endpoint
 }
 
-func (endpoint *Endpoint) GetAddress() IPv4Address {
+func (endpoint *Endpoint) GetAddress() []byte {
 	return endpoint.address
 }
 
@@ -67,7 +67,7 @@ func EndpointFromProtobuf(serviceEndpoint *services.ServiceEndpoint) Endpoint {
 	}
 
 	return Endpoint{
-		address:    Ipv4AddressFromProtobuf(serviceEndpoint.GetIpAddressV4()),
+		address:    serviceEndpoint.GetIpAddressV4(),
 		port:       port,
 		domainName: serviceEndpoint.GetDomainName(),
 	}
@@ -75,7 +75,7 @@ func EndpointFromProtobuf(serviceEndpoint *services.ServiceEndpoint) Endpoint {
 
 func (endpoint *Endpoint) _ToProtobuf() *services.ServiceEndpoint {
 	return &services.ServiceEndpoint{
-		IpAddressV4: endpoint.address._ToProtobuf(),
+		IpAddressV4: endpoint.address,
 		Port:        endpoint.port,
 		DomainName:  endpoint.domainName,
 	}
@@ -86,6 +86,11 @@ func (endpoint *Endpoint) String() string {
 		// If domain name is populated domainName + port
 		return endpoint.domainName + ":" + fmt.Sprintf("%d", endpoint.port)
 	} else {
-		return endpoint.address.String() + ":" + fmt.Sprintf("%d", endpoint.port)
+		return fmt.Sprintf("%d.%d.%d.%d:%d",
+			int(endpoint.address[0])&0xFF,
+			int(endpoint.address[1])&0xFF,
+			int(endpoint.address[2])&0xFF,
+			int(endpoint.address[3])&0xFF,
+			endpoint.port)
 	}
 }
