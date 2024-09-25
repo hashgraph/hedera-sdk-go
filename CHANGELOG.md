@@ -1,3 +1,19 @@
+## v2.46.0
+
+### Added
+- `TokenClaimAirdropTransaction` and `TokenCancelAirdropTransaction` (part of HIP-904)
+
+### Fixed
+- Handling of `0x` prefix when constructing ECDSA keys
+
+## v2.45.0
+
+### Added
+- `TokenAirdropTransaction` (part of HIP-904)
+
+### Fixed
+- Handling of `THROTTLED_AT_CONSENSUS` status code
+
 ## v2.44.0
 
 ### Added

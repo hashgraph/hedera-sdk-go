@@ -34,6 +34,11 @@ import (
 func TestTokenUpdateNftsUpdatesMetadata(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
+	// create supply key
+	supplyKey, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+	supplyPublicKey := supplyKey.PublicKey()
+
 	// create metadata key
 	metadataKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -47,13 +52,14 @@ func TestTokenUpdateNftsUpdatesMetadata(t *testing.T) {
 	updatedMetadataList := generateNftMetadata(updatedMetadata, nftCount/2)
 
 	// create token with metadata key
-	tokenID := createTokenWithMetadataKey(t, &env, &metadataPublicKey)
+	tokenID := createTokenWithMetadataKey(t, &env, &metadataPublicKey, &supplyPublicKey)
 
 	// mint tokens using the metadata list
-	tokenMintTx := NewTokenMintTransaction().
+	tokenMintTx, _ := NewTokenMintTransaction().
 		SetMetadatas(mintMetadata).
-		SetTokenID(tokenID)
-	tx, err := tokenMintTx.Execute(env.Client)
+		SetTokenID(tokenID).
+		FreezeWith(env.Client)
+	tx, err := tokenMintTx.Sign(supplyKey).Execute(env.Client)
 	require.NoError(t, err)
 	receipt, err := tx.GetReceipt(env.Client)
 	require.NoError(t, err)
@@ -81,6 +87,11 @@ func TestTokenUpdateNftsUpdatesMetadata(t *testing.T) {
 func TestCanUpdateEmptyNFTMetadata(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
+	// create supply key
+	supplyKey, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+	supplyPublicKey := supplyKey.PublicKey()
+
 	// Generate metadata key
 	metadataKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -92,13 +103,14 @@ func TestCanUpdateEmptyNFTMetadata(t *testing.T) {
 	updatedMetadataList := make([][]byte, 4)
 
 	// Create a token with a metadata key
-	tokenID := createTokenWithMetadataKey(t, &env, &metadataPublicKey)
+	tokenID := createTokenWithMetadataKey(t, &env, &metadataPublicKey, &supplyPublicKey)
 
 	// Mint tokens
-	tokenMintTx := NewTokenMintTransaction().
+	tokenMintTx, _ := NewTokenMintTransaction().
 		SetMetadatas(mintMetadata).
-		SetTokenID(tokenID)
-	tx, err := tokenMintTx.Execute(env.Client)
+		SetTokenID(tokenID).
+		FreezeWith(env.Client)
+	tx, err := tokenMintTx.Sign(supplyKey).Execute(env.Client)
 	require.NoError(t, err)
 	receipt, err := tx.GetReceipt(env.Client)
 	require.NoError(t, err)
@@ -119,6 +131,11 @@ func TestCanUpdateEmptyNFTMetadata(t *testing.T) {
 func TestCannotUpdateNFTMetadataWhenKeyIsNotSet(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
+	// create supply key
+	supplyKey, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+	supplyPublicKey := supplyKey.PublicKey()
+
 	// Generate metadata key
 	metadataKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -128,13 +145,14 @@ func TestCannotUpdateNFTMetadataWhenKeyIsNotSet(t *testing.T) {
 	updatedMetadata := []byte{6, 9}
 
 	// Create a token without a metadata key
-	tokenID := createTokenWithMetadataKey(t, &env, nil)
+	tokenID := createTokenWithMetadataKey(t, &env, nil, &supplyPublicKey)
 
 	// Mint tokens
-	tokenMintTx := NewTokenMintTransaction().
+	tokenMintTx, _ := NewTokenMintTransaction().
 		SetMetadatas(mintMetadata).
-		SetTokenID(tokenID)
-	tx, err := tokenMintTx.Execute(env.Client)
+		SetTokenID(tokenID).
+		FreezeWith(env.Client)
+	tx, err := tokenMintTx.Sign(supplyKey).Execute(env.Client)
 	require.NoError(t, err)
 	receipt, err := tx.GetReceipt(env.Client)
 	require.NoError(t, err)
@@ -151,6 +169,11 @@ func TestCannotUpdateNFTMetadataWhenKeyIsNotSet(t *testing.T) {
 func TestCannotUpdateNFTMetadataWhenTransactionIsNotSignedWithMetadataKey(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
+	// create supply key
+	supplyKey, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+	supplyPublicKey := supplyKey.PublicKey()
+
 	// Generate metadata key
 	metadataKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -161,13 +184,14 @@ func TestCannotUpdateNFTMetadataWhenTransactionIsNotSignedWithMetadataKey(t *tes
 	updatedMetadata := []byte{6, 9}
 
 	// Create a token with a metadata key
-	tokenID := createTokenWithMetadataKey(t, &env, &metadataPublicKey)
+	tokenID := createTokenWithMetadataKey(t, &env, &metadataPublicKey, &supplyPublicKey)
 
 	// Mint tokens
-	tokenMintTx := NewTokenMintTransaction().
+	tokenMintTx, _ := NewTokenMintTransaction().
 		SetMetadatas(mintMetadata).
-		SetTokenID(tokenID)
-	tx, err := tokenMintTx.Execute(env.Client)
+		SetTokenID(tokenID).
+		FreezeWith(env.Client)
+	tx, err := tokenMintTx.Sign(supplyKey).Execute(env.Client)
 	require.NoError(t, err)
 	receipt, err := tx.GetReceipt(env.Client)
 	require.NoError(t, err)
@@ -182,7 +206,7 @@ func TestCannotUpdateNFTMetadataWhenTransactionIsNotSignedWithMetadataKey(t *tes
 }
 
 // Utility functions
-func createTokenWithMetadataKey(t *testing.T, env *IntegrationTestEnv, metadataKey *PublicKey) TokenID {
+func createTokenWithMetadataKey(t *testing.T, env *IntegrationTestEnv, metadataKey *PublicKey, supplyKey *PublicKey) TokenID {
 	var tokenCreateTx *TokenCreateTransaction
 	if metadataKey == nil {
 		tokenCreateTx = NewTokenCreateTransaction().
@@ -192,7 +216,7 @@ func createTokenWithMetadataKey(t *testing.T, env *IntegrationTestEnv, metadataK
 			SetTokenType(TokenTypeNonFungibleUnique).
 			SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
 			SetAdminKey(env.Client.GetOperatorPublicKey()).
-			SetSupplyKey(env.Client.GetOperatorPublicKey())
+			SetSupplyKey(supplyKey)
 	} else {
 		tokenCreateTx = NewTokenCreateTransaction().
 			SetNodeAccountIDs(env.NodeAccountIDs).
@@ -201,7 +225,7 @@ func createTokenWithMetadataKey(t *testing.T, env *IntegrationTestEnv, metadataK
 			SetTokenType(TokenTypeNonFungibleUnique).
 			SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
 			SetAdminKey(env.Client.GetOperatorPublicKey()).
-			SetSupplyKey(env.Client.GetOperatorPublicKey()).
+			SetSupplyKey(supplyKey).
 			SetMetadataKey(metadataKey)
 	}
 
@@ -212,21 +236,6 @@ func createTokenWithMetadataKey(t *testing.T, env *IntegrationTestEnv, metadataK
 	require.NoError(t, err)
 
 	return *receipt.TokenID
-}
-
-func updateTokenMetadataKey(t *testing.T, tokenID TokenID, metadataKey *PrivateKey, env *IntegrationTestEnv) *TokenID {
-	tokenCreateTx := NewTokenUpdateTransaction().
-		SetTokenID(tokenID).
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetMetadataKey(metadataKey)
-
-	tx, err := tokenCreateTx.Execute(env.Client)
-	require.NoError(t, err)
-
-	receipt, err := tx.GetReceipt(env.Client)
-	require.NoError(t, err)
-
-	return receipt.TokenID
 }
 
 func updateNftMetadata(t *testing.T, env *IntegrationTestEnv, tokenID TokenID, serials []int64, updatedMetadata []byte, metadataKey *PrivateKey) (*TransactionReceipt, error) {

@@ -246,7 +246,7 @@ func _Execute(client *Client, e Executable) (interface{}, error) {
 
 		if !node._IsHealthy() {
 			txLogger.Trace("node is unhealthy, waiting before continuing", "requestId", e.getLogID(e), "delay", node._Wait().String())
-			_DelayForAttempt(e.getLogID(e), currentBackoff, attempt, txLogger)
+			_DelayForAttempt(e.getLogID(e), currentBackoff, attempt, txLogger, errNodeIsUnhealthy)
 			continue
 		}
 
@@ -325,7 +325,7 @@ func _Execute(client *Client, e Executable) (interface{}, error) {
 		switch e.shouldRetry(e, resp) {
 		case executionStateRetry:
 			errPersistent = statusError
-			_DelayForAttempt(e.getLogID(e), currentBackoff, attempt, txLogger)
+			_DelayForAttempt(e.getLogID(e), currentBackoff, attempt, txLogger, errPersistent)
 			continue
 		case executionStateExpired:
 			if e.isTransaction() {
@@ -359,11 +359,13 @@ func _Execute(client *Client, e Executable) (interface{}, error) {
 		return TransactionResponse{}, errors.Wrapf(errPersistent, "retry %d/%d", attempt, maxAttempts)
 	}
 
+	txLogger.Error("exceeded maximum attempts for request", "last exception being", errPersistent)
+
 	return &services.Response{}, errPersistent
 }
 
-func _DelayForAttempt(logID string, backoff time.Duration, attempt int64, logger Logger) {
-	logger.Trace("retrying request attempt", "requestId", logID, "delay", backoff, "attempt", attempt+1)
+func _DelayForAttempt(logID string, backoff time.Duration, attempt int64, logger Logger, err error) {
+	logger.Trace("retrying request attempt", "requestId", logID, "delay", backoff, "attempt", attempt+1, "error", err)
 
 	time.Sleep(backoff)
 }

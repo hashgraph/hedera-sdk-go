@@ -234,7 +234,7 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionScheduleAlreadyHasNoFees(t 
 	require.NoError(t, err)
 
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
+	require.ErrorContains(t, err, "exceptional receipt status: CUSTOM_SCHEDULE_ALREADY_HAS_NO_FEES")
 
 	err = CloseIntegrationTestEnv(env, &tokenID)
 	require.NoError(t, err)
