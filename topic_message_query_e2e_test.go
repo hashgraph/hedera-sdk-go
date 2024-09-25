@@ -120,7 +120,7 @@ func TestIntegrationTopicMessageQueryCanExecute(t *testing.T) {
 
 	resp, err = NewTopicMessageSubmitTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetMessage([]byte("message")).
+		SetMessage("message").
 		SetTopicID(topicID).
 		Execute(env.Client)
 	require.NoError(t, err)
@@ -354,4 +354,45 @@ func TestIntegrationTopicMessageQueryNoStartTime(t *testing.T) {
 
 	err = CloseIntegrationTestEnv(env, nil)
 	require.NoError(t, err)
+}
+
+func TestIntegrationTopicMessageQueryWrongMessageType(t *testing.T) {
+	t.Parallel()
+	env := NewIntegrationTestEnv(t)
+	var finished int32 // 0 for false, 1 for true
+
+	resp, err := NewTopicCreateTransaction().
+		SetAdminKey(env.Client.GetOperatorPublicKey()).
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		Execute(env.Client)
+
+	require.NoError(t, err)
+
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	time.Sleep(3 * time.Second)
+
+	topicID := *receipt.TopicID
+	assert.NotNil(t, topicID)
+
+	_, err = NewTopicMessageQuery().
+		SetTopicID(topicID).
+		SetStartTime(time.Unix(0, 0)).
+		SetLimit(1).
+		SetCompletionHandler(func() {
+			atomic.StoreInt32(&finished, 1)
+		}).
+		Subscribe(env.Client, func(message TopicMessage) {
+			println(string(message.Contents))
+			atomic.StoreInt32(&finished, 1)
+		})
+	require.NoError(t, err)
+
+	resp, err = NewTopicMessageSubmitTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetMessage(1234). // wrong message type
+		SetTopicID(topicID).
+		Execute(env.Client)
+	require.ErrorContains(t, err, "no transactions to execute")
 }
