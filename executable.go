@@ -365,7 +365,7 @@ func _Execute(client *Client, e Executable) (interface{}, error) {
 }
 
 func _DelayForAttempt(logID string, backoff time.Duration, attempt int64, logger Logger, err error) {
-	logger.Debug("retrying request attempt", "requestId", logID, "delay", backoff, "attempt", attempt+1, "error", err)
+	logger.Trace("retrying request attempt", "requestId", logID, "delay", backoff, "attempt", attempt+1, "error", err)
 
 	time.Sleep(backoff)
 }

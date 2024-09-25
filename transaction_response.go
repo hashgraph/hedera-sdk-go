@@ -38,7 +38,7 @@ type TransactionResponse struct {
 	NodeID                 AccountID
 	Hash                   []byte
 	ValidateStatus         bool
-	Transaction            []byte
+	Transaction            TransactionInterface
 }
 
 // MarshalJSON returns the JSON representation of the TransactionResponse.
@@ -53,10 +53,9 @@ func (response TransactionResponse) MarshalJSON() ([]byte, error) {
 }
 
 // retryTransaction is a helper function to retry a transaction that was throttled
-func retryTransaction(client *Client, transaction []byte) (TransactionReceipt, error) {
+func retryTransaction(client *Client, transaction TransactionInterface) (TransactionReceipt, error) {
 	fmt.Println("Transaction was throttled, retrying...")
-	tx, _ := TransactionFromBytes(transaction)
-	resp, err := TransactionExecute(tx, client)
+	resp, err := TransactionExecute(transaction, client)
 	if err != nil {
 		return TransactionReceipt{}, err
 	}

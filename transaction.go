@@ -4578,6 +4578,16 @@ func TransactionToBytes(transaction interface{}) ([]byte, error) { // nolint
 		return i.ToBytes()
 	case *TransferTransaction:
 		return i.ToBytes()
+	case *TokenUpdateNfts:
+		return i.ToBytes()
+	case *TokenRejectTransaction:
+		return i.ToBytes()
+	case *TokenAirdropTransaction:
+		return i.ToBytes()
+	case *TokenCancelAirdropTransaction:
+		return i.ToBytes()
+	case *TokenClaimAirdropTransaction:
+		return i.ToBytes()
 	default:
 		return nil, errors.New("(BUG) non-exhaustive switch statement")
 	}
@@ -4749,6 +4759,16 @@ func TransactionExecute(transaction interface{}, client *Client) (TransactionRes
 		return i.Execute(client)
 	case *TransferTransaction:
 		return i.Execute(client)
+	case *TokenUpdateNfts:
+		return i.Execute(client)
+	case *TokenRejectTransaction:
+		return i.Execute(client)
+	case *TokenAirdropTransaction:
+		return i.Execute(client)
+	case *TokenCancelAirdropTransaction:
+		return i.Execute(client)
+	case *TokenClaimAirdropTransaction:
+		return i.Execute(client)
 	default:
 		return TransactionResponse{}, errors.New("(BUG) non-exhaustive switch statement")
 	}
@@ -4900,15 +4920,14 @@ func (tx *Transaction) execute(client *Client, e TransactionInterface) (Transact
 	}
 	originalTxID := tx.GetTransactionID()
 	e.regenerateID(client)
-	txBytes, _ := TransactionToBytes(e)
 	return TransactionResponse{
 		TransactionID:  originalTxID,
 		NodeID:         resp.(TransactionResponse).NodeID,
 		Hash:           resp.(TransactionResponse).Hash,
 		ValidateStatus: true,
-		// set the txBytes in the response, in case of throttle error in the receipt
+		// set the tx in the response, in case of throttle error in the receipt
 		// we can use this to re-submit the transaction
-		Transaction: txBytes,
+		Transaction: e,
 	}, nil
 }
 
