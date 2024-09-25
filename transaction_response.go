@@ -2,7 +2,6 @@ package hedera
 
 import (
 	"encoding/hex"
-	"fmt"
 
 	jsoniter "github.com/json-iterator/go"
 )
@@ -54,7 +53,6 @@ func (response TransactionResponse) MarshalJSON() ([]byte, error) {
 
 // retryTransaction is a helper function to retry a transaction that was throttled
 func retryTransaction(client *Client, transaction TransactionInterface) (TransactionReceipt, error) {
-	fmt.Println("Transaction was throttled, retrying...")
 	resp, err := TransactionExecute(transaction, client)
 	if err != nil {
 		return TransactionReceipt{}, err
