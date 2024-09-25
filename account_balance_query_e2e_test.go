@@ -24,7 +24,6 @@ package hedera
  */
 
 import (
-	"fmt"
 	"strings"
 	"testing"
 
@@ -234,9 +233,6 @@ func TestIntegrationAccountBalanceQueryCanConnectToMainnetTls(t *testing.T) {
 			Execute(client)
 		if err == nil {
 			succeededOnce = true
-			fmt.Println("succeeded for ", address, accountID)
-		} else {
-			fmt.Println("failed for ", address, accountID)
 		}
 	}
 	assert.True(t, succeededOnce)
