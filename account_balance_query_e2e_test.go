@@ -227,7 +227,6 @@ func TestIntegrationAccountBalanceQueryCanConnectToMainnetTls(t *testing.T) {
 			t.Errorf("Expected entry key to end with ':50212', but got %s", address)
 		}
 
-		fmt.Println(address, accountID)
 		accountIDs := []AccountID{accountID}
 		_, err := NewAccountBalanceQuery().
 			SetNodeAccountIDs(accountIDs).
