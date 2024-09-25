@@ -56,6 +56,7 @@ func TestIntegrationScheduleCreateTransactionCanExecute(t *testing.T) {
 	require.NoError(t, err)
 
 	transactionReceipt, err := createResponse.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
 
 	transactionID := TransactionIDGenerate(env.OperatorID)
 	newAccountID := *transactionReceipt.AccountID

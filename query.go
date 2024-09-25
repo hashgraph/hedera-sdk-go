@@ -263,7 +263,6 @@ func (q *Query) shouldRetry(e Executable, response interface{}) _ExecutionState 
 		StatusPlatformTransactionNotCreated: true,
 		StatusPlatformNotActive:             true,
 		StatusBusy:                          true,
-		StatusThrottledAtConsensus:          true,
 	}
 
 	if retryableStatuses[status] {
