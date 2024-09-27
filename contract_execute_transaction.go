@@ -50,13 +50,15 @@ func NewContractExecuteTransaction() *ContractExecuteTransaction {
 }
 
 func _ContractExecuteTransactionFromProtobuf(tx Transaction[*ContractExecuteTransaction], pb *services.TransactionBody) *ContractExecuteTransaction {
-	return &ContractExecuteTransaction{
+	contractExecuteTransaction := &ContractExecuteTransaction{
 		Transaction: &tx,
 		contractID:  _ContractIDFromProtobuf(pb.GetContractCall().GetContractID()),
 		gas:         pb.GetContractCall().GetGas(),
 		amount:      pb.GetContractCall().GetAmount(),
 		parameters:  pb.GetContractCall().GetFunctionParameters(),
 	}
+	contractExecuteTransaction.childTransaction = contractExecuteTransaction
+	return contractExecuteTransaction
 }
 
 // SetContractID sets the contract instance to call.

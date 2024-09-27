@@ -77,7 +77,7 @@ func _ContractCreateTransactionFromProtobuf(tx Transaction[*ContractCreateTransa
 		autoRenewAccountID = _AccountIDFromProtobuf(pb.GetContractCreateInstance().GetAutoRenewAccountId())
 	}
 
-	return &ContractCreateTransaction{
+	contractCreateTransaction := &ContractCreateTransaction{
 		Transaction:                   &tx,
 		byteCodeFileID:                _FileIDFromProtobuf(pb.GetContractCreateInstance().GetFileID()),
 		adminKey:                      key,
@@ -93,6 +93,8 @@ func _ContractCreateTransactionFromProtobuf(tx Transaction[*ContractCreateTransa
 		stakedNodeID:                  &stakedNodeID,
 		declineReward:                 pb.GetContractCreateInstance().GetDeclineReward(),
 	}
+	contractCreateTransaction.childTransaction = contractCreateTransaction
+	return contractCreateTransaction
 }
 
 // SetBytecodeFileID

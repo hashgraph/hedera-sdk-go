@@ -57,10 +57,12 @@ func _AccountAllowanceDeleteTransactionFromProtobuf(tx Transaction[*AccountAllow
 		nftWipe = append(nftWipe, &temp)
 	}
 
-	return &AccountAllowanceDeleteTransaction{
+	accountAllowanceDeleteTransaction := &AccountAllowanceDeleteTransaction{
 		Transaction: &tx,
 		nftWipe:     nftWipe,
 	}
+	accountAllowanceDeleteTransaction.childTransaction = accountAllowanceDeleteTransaction
+	return accountAllowanceDeleteTransaction
 }
 
 // Deprecated

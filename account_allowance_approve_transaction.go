@@ -78,12 +78,14 @@ func _AccountAllowanceApproveTransactionFromProtobuf(tx Transaction[*AccountAllo
 		nftApproval = append(nftApproval, &temp)
 	}
 
-	return &AccountAllowanceApproveTransaction{
+	accountAllowanceApproveTransaction := &AccountAllowanceApproveTransaction{
 		Transaction:     &tx,
 		hbarAllowances:  accountApproval,
 		tokenAllowances: tokenApproval,
 		nftAllowances:   nftApproval,
 	}
+	accountAllowanceApproveTransaction.childTransaction = accountAllowanceApproveTransaction
+	return accountAllowanceApproveTransaction
 }
 
 func (tx *AccountAllowanceApproveTransaction) _ApproveHbarApproval(ownerAccountID *AccountID, id AccountID, amount Hbar) *AccountAllowanceApproveTransaction {

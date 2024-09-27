@@ -89,12 +89,14 @@ func _TransferTransactionFromProtobuf(tx Transaction[*TransferTransaction], pb *
 		}
 	}
 
-	return &TransferTransaction{
+	transferTransaction := &TransferTransaction{
 		Transaction:    &tx,
 		hbarTransfers:  _HbarTransferFromProtobuf(pb.GetCryptoTransfer().GetTransfers().GetAccountAmounts()),
 		tokenTransfers: tokenTransfers,
 		nftTransfers:   nftTransfers,
 	}
+	tx.childTransaction = transferTransaction
+	return transferTransaction
 }
 
 // SetTokenTransferApproval Sets the desired token unit balance adjustments
