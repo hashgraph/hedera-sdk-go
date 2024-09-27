@@ -35,7 +35,7 @@ import (
 // and the new key. The old key must sign for security. The new key must sign as a safeguard to
 // avoid accidentally changing to an invalid key, and then having no way to recover.
 type AccountUpdateTransaction struct {
-	Transaction
+	*Transaction[*AccountUpdateTransaction]
 	accountID                     *AccountID
 	proxyAccountID                *AccountID
 	key                           Key
@@ -58,16 +58,16 @@ type AccountUpdateTransaction struct {
 // and the new key. The old key must sign for security. The new key must sign as a safeguard to
 // avoid accidentally changing to an invalid key, and then having no way to recover.
 func NewAccountUpdateTransaction() *AccountUpdateTransaction {
-	tx := AccountUpdateTransaction{
-		Transaction: _NewTransaction(),
-	}
+	tx := &AccountUpdateTransaction{}
+	tx.Transaction = _NewTransaction(tx)
+
 	tx.SetAutoRenewPeriod(7890000 * time.Second)
 	tx._SetDefaultMaxTransactionFee(NewHbar(2))
 
-	return &tx
+	return tx
 }
 
-func _AccountUpdateTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *AccountUpdateTransaction {
+func _AccountUpdateTransactionFromProtobuf(tx Transaction[*AccountUpdateTransaction], pb *services.TransactionBody) *AccountUpdateTransaction {
 	key, _ := _KeyFromProtobuf(pb.GetCryptoUpdateAccount().GetKey())
 	var receiverSignatureRequired bool
 
@@ -89,7 +89,7 @@ func _AccountUpdateTransactionFromProtobuf(tx Transaction, pb *services.Transact
 	}
 
 	return &AccountUpdateTransaction{
-		Transaction:                   tx,
+		Transaction:                   &tx,
 		accountID:                     _AccountIDFromProtobuf(pb.GetCryptoUpdateAccount().GetAccountIDToUpdate()),
 		key:                           key,
 		autoRenewPeriod:               &autoRenew,
@@ -277,144 +277,6 @@ func (tx *AccountUpdateTransaction) SetAccountMemo(memo string) *AccountUpdateTr
 
 func (tx *AccountUpdateTransaction) GetAccountMemo() string {
 	return tx.memo
-}
-
-// ---- Required Interfaces ---- //
-
-// Sign uses the provided privateKey to sign the transaction.
-func (tx *AccountUpdateTransaction) Sign(
-	privateKey PrivateKey,
-) *AccountUpdateTransaction {
-	tx.Transaction.Sign(privateKey)
-	return tx
-}
-
-// SignWithOperator signs the transaction with client's operator privateKey.
-func (tx *AccountUpdateTransaction) SignWithOperator(
-	client *Client,
-) (*AccountUpdateTransaction, error) {
-	// If the transaction is not signed by the _Operator, we need
-	// to sign the transaction with the _Operator
-	_, err := tx.Transaction.signWithOperator(client, tx)
-	if err != nil {
-		return nil, err
-	}
-	return tx, nil
-}
-
-// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
-// with the publicKey as the map key.
-func (tx *AccountUpdateTransaction) SignWith(
-	publicKey PublicKey,
-	signer TransactionSigner,
-) *AccountUpdateTransaction {
-	tx.Transaction.SignWith(publicKey, signer)
-	return tx
-}
-
-// AddSignature adds a signature to the transaction.
-func (tx *AccountUpdateTransaction) AddSignature(publicKey PublicKey, signature []byte) *AccountUpdateTransaction {
-	tx.Transaction.AddSignature(publicKey, signature)
-	return tx
-}
-
-// When execution is attempted, a single attempt will timeout when tx deadline is reached. (The SDK may subsequently retry the execution.)
-func (tx *AccountUpdateTransaction) SetGrpcDeadline(deadline *time.Duration) *AccountUpdateTransaction {
-	tx.Transaction.SetGrpcDeadline(deadline)
-	return tx
-}
-
-func (tx *AccountUpdateTransaction) Freeze() (*AccountUpdateTransaction, error) {
-	return tx.FreezeWith(nil)
-}
-
-func (tx *AccountUpdateTransaction) FreezeWith(client *Client) (*AccountUpdateTransaction, error) {
-	_, err := tx.Transaction.freezeWith(client, tx)
-	return tx, err
-}
-
-// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
-func (tx *AccountUpdateTransaction) SetMaxTransactionFee(fee Hbar) *AccountUpdateTransaction {
-	tx._RequireNotFrozen()
-	tx.Transaction.SetMaxTransactionFee(fee)
-	return tx
-}
-
-// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
-func (tx *AccountUpdateTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *AccountUpdateTransaction {
-	tx._RequireNotFrozen()
-	tx.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
-	return tx
-}
-
-// SetTransactionMemo sets the memo for this AccountUpdateTransaction.
-func (tx *AccountUpdateTransaction) SetTransactionMemo(memo string) *AccountUpdateTransaction {
-	tx._RequireNotFrozen()
-	tx.Transaction.SetTransactionMemo(memo)
-	return tx
-}
-
-// SetTransactionValidDuration sets the valid duration for this AccountUpdateTransaction.
-func (tx *AccountUpdateTransaction) SetTransactionValidDuration(duration time.Duration) *AccountUpdateTransaction {
-	tx._RequireNotFrozen()
-	tx.Transaction.SetTransactionValidDuration(duration)
-	return tx
-}
-
-// ToBytes serialise the tx to bytes, no matter if it is signed (locked), or not
-func (tx *AccountUpdateTransaction) ToBytes() ([]byte, error) {
-	bytes, err := tx.Transaction.toBytes(tx)
-	if err != nil {
-		return nil, err
-	}
-	return bytes, nil
-}
-
-// SetTransactionID sets the TransactionID for this AccountUpdateTransaction.
-func (tx *AccountUpdateTransaction) SetTransactionID(transactionID TransactionID) *AccountUpdateTransaction {
-	tx._RequireNotFrozen()
-
-	tx.Transaction.SetTransactionID(transactionID)
-	return tx
-}
-
-// SetNodeAccountIDs sets the _Node AccountID for this AccountUpdateTransaction.
-func (tx *AccountUpdateTransaction) SetNodeAccountIDs(nodeID []AccountID) *AccountUpdateTransaction {
-	tx._RequireNotFrozen()
-	tx.Transaction.SetNodeAccountIDs(nodeID)
-	return tx
-}
-
-// SetMaxRetry sets the max number of errors before execution will fail.
-func (tx *AccountUpdateTransaction) SetMaxRetry(count int) *AccountUpdateTransaction {
-	tx.Transaction.SetMaxRetry(count)
-	return tx
-}
-
-// SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (tx *AccountUpdateTransaction) SetMaxBackoff(max time.Duration) *AccountUpdateTransaction {
-	tx.Transaction.SetMaxBackoff(max)
-	return tx
-}
-
-// SetMinBackoff sets the minimum amount of time to wait between retries.
-func (tx *AccountUpdateTransaction) SetMinBackoff(min time.Duration) *AccountUpdateTransaction {
-	tx.Transaction.SetMinBackoff(min)
-	return tx
-}
-
-func (tx *AccountUpdateTransaction) SetLogLevel(level LogLevel) *AccountUpdateTransaction {
-	tx.Transaction.SetLogLevel(level)
-	return tx
-}
-
-func (tx *AccountUpdateTransaction) Execute(client *Client) (TransactionResponse, error) {
-	return tx.Transaction.execute(client, tx)
-}
-
-func (tx *AccountUpdateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	return tx.Transaction.schedule(tx)
 }
 
 // ----------- Overridden functions ----------------

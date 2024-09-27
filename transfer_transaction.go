@@ -22,7 +22,6 @@ package hedera
 
 import (
 	"sort"
-	"time"
 
 	"google.golang.org/protobuf/types/known/wrapperspb"
 
@@ -40,7 +39,7 @@ import (
 // accounts, and for any receiving accounts that have receiverSigRequired == true. The signatures
 // are in the same order as the accounts, skipping those accounts that don't need a signature.
 type TransferTransaction struct {
-	Transaction
+	*Transaction[*TransferTransaction]
 	tokenTransfers map[TokenID]*_TokenTransfer
 	hbarTransfers  []*_HbarTransfer
 	nftTransfers   map[TokenID][]*_TokenNftTransfer
@@ -57,19 +56,19 @@ type TransferTransaction struct {
 // accounts, and for any receiving accounts that have receiverSigRequired == true. The signatures
 // are in the same order as the accounts, skipping those accounts that don't need a signature.
 func NewTransferTransaction() *TransferTransaction {
-	tx := TransferTransaction{
-		Transaction:    _NewTransaction(),
+	tx := &TransferTransaction{
 		tokenTransfers: make(map[TokenID]*_TokenTransfer),
 		hbarTransfers:  make([]*_HbarTransfer, 0),
 		nftTransfers:   make(map[TokenID][]*_TokenNftTransfer),
 	}
+	tx.Transaction = _NewTransaction(tx)
 
 	tx._SetDefaultMaxTransactionFee(NewHbar(1))
 
-	return &tx
+	return tx
 }
 
-func _TransferTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *TransferTransaction {
+func _TransferTransactionFromProtobuf(tx Transaction[*TransferTransaction], pb *services.TransactionBody) *TransferTransaction {
 	tokenTransfers := make(map[TokenID]*_TokenTransfer)
 	nftTransfers := make(map[TokenID][]*_TokenNftTransfer)
 
@@ -91,7 +90,7 @@ func _TransferTransactionFromProtobuf(tx Transaction, pb *services.TransactionBo
 	}
 
 	return &TransferTransaction{
-		Transaction:    tx,
+		Transaction:    &tx,
 		hbarTransfers:  _HbarTransferFromProtobuf(pb.GetCryptoTransfer().GetTransfers().GetAccountAmounts()),
 		tokenTransfers: tokenTransfers,
 		nftTransfers:   nftTransfers,
@@ -441,131 +440,6 @@ func (tx *TransferTransaction) AddApprovedNftTransfer(nftID NftID, sender Accoun
 	})
 
 	return tx
-}
-
-// ---- Required Interfaces ---- //
-
-// Sign uses the provided privateKey to sign the transaction.
-func (tx *TransferTransaction) Sign(privateKey PrivateKey) *TransferTransaction {
-	tx.Transaction.Sign(privateKey)
-	return tx
-}
-
-// SignWithOperator signs the transaction with client's operator privateKey.
-func (tx *TransferTransaction) SignWithOperator(client *Client) (*TransferTransaction, error) {
-	_, err := tx.Transaction.signWithOperator(client, tx)
-	if err != nil {
-		return nil, err
-	}
-	return tx, nil
-}
-
-// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
-// with the publicKey as the map key.
-func (tx *TransferTransaction) SignWith(
-	publicKey PublicKey,
-	signer TransactionSigner,
-) *TransferTransaction {
-	tx.Transaction.SignWith(publicKey, signer)
-	return tx
-}
-
-// AddSignature adds a signature to the transaction.
-func (tx *TransferTransaction) AddSignature(publicKey PublicKey, signature []byte) *TransferTransaction {
-	tx.Transaction.AddSignature(publicKey, signature)
-	return tx
-}
-
-// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (tx *TransferTransaction) SetGrpcDeadline(deadline *time.Duration) *TransferTransaction {
-	tx.Transaction.SetGrpcDeadline(deadline)
-	return tx
-}
-
-func (tx *TransferTransaction) Freeze() (*TransferTransaction, error) {
-	return tx.FreezeWith(nil)
-}
-
-func (tx *TransferTransaction) FreezeWith(client *Client) (*TransferTransaction, error) {
-	_, err := tx.Transaction.freezeWith(client, tx)
-	return tx, err
-}
-
-// SetMaxTransactionFee sets the max transaction fee for this TransferTransaction.
-func (tx *TransferTransaction) SetMaxTransactionFee(fee Hbar) *TransferTransaction {
-	tx.Transaction.SetMaxTransactionFee(fee)
-	return tx
-}
-
-// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
-func (tx *TransferTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *TransferTransaction {
-	tx.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
-	return tx
-}
-
-// SetTransactionMemo sets the memo for this TransferTransaction.
-func (tx *TransferTransaction) SetTransactionMemo(memo string) *TransferTransaction {
-	tx.Transaction.SetTransactionMemo(memo)
-	return tx
-}
-
-// SetTransactionValidDuration sets the valid duration for this TransferTransaction.
-func (tx *TransferTransaction) SetTransactionValidDuration(duration time.Duration) *TransferTransaction {
-	tx.Transaction.SetTransactionValidDuration(duration)
-	return tx
-}
-
-// ToBytes serialise the tx to bytes, no matter if it is signed (locked), or not
-func (tx *TransferTransaction) ToBytes() ([]byte, error) {
-	bytes, err := tx.Transaction.toBytes(tx)
-	if err != nil {
-		return nil, err
-	}
-	return bytes, nil
-}
-
-// SetTransactionID sets the TransactionID for this TransferTransaction.
-func (tx *TransferTransaction) SetTransactionID(transactionID TransactionID) *TransferTransaction {
-	tx.Transaction.SetTransactionID(transactionID)
-	return tx
-}
-
-// SetNodeAccountIDs sets the _Node AccountID for this TransferTransaction.
-func (tx *TransferTransaction) SetNodeAccountIDs(nodeID []AccountID) *TransferTransaction {
-	tx.Transaction.SetNodeAccountIDs(nodeID)
-	return tx
-}
-
-// SetMaxRetry sets the max number of errors before execution will fail.
-func (tx *TransferTransaction) SetMaxRetry(count int) *TransferTransaction {
-	tx.Transaction.SetMaxRetry(count)
-	return tx
-}
-
-// SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (tx *TransferTransaction) SetMaxBackoff(max time.Duration) *TransferTransaction {
-	tx.Transaction.SetMaxBackoff(max)
-	return tx
-}
-
-// SetMinBackoff sets the minimum amount of time to wait between retries.
-func (tx *TransferTransaction) SetMinBackoff(min time.Duration) *TransferTransaction {
-	tx.Transaction.SetMinBackoff(min)
-	return tx
-}
-
-func (tx *TransferTransaction) SetLogLevel(level LogLevel) *TransferTransaction {
-	tx.Transaction.SetLogLevel(level)
-	return tx
-}
-
-func (tx *TransferTransaction) Execute(client *Client) (TransactionResponse, error) {
-	return tx.Transaction.execute(client, tx)
-}
-
-func (tx *TransferTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	return tx.Transaction.schedule(tx)
 }
 
 // ----------- Overridden functions ----------------

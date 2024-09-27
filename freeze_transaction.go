@@ -27,7 +27,7 @@ import (
 )
 
 type FreezeTransaction struct {
-	Transaction
+	*Transaction[*FreezeTransaction]
 	startTime  time.Time
 	endTime    time.Time
 	fileID     *FileID
@@ -36,16 +36,15 @@ type FreezeTransaction struct {
 }
 
 func NewFreezeTransaction() *FreezeTransaction {
-	tx := FreezeTransaction{
-		Transaction: _NewTransaction(),
-	}
+	tx := &FreezeTransaction{}
+	tx.Transaction = _NewTransaction(tx)
 
 	tx._SetDefaultMaxTransactionFee(NewHbar(2))
 
-	return &tx
+	return tx
 }
 
-func _FreezeTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *FreezeTransaction {
+func _FreezeTransactionFromProtobuf(tx Transaction[*FreezeTransaction], pb *services.TransactionBody) *FreezeTransaction {
 	startTime := time.Date(
 		time.Now().Year(), time.Now().Month(), time.Now().Day(),
 		int(pb.GetFreeze().GetStartHour()), int(pb.GetFreeze().GetStartMin()), // nolint
@@ -59,7 +58,7 @@ func _FreezeTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody
 	)
 
 	return &FreezeTransaction{
-		Transaction: tx,
+		Transaction: &tx,
 		startTime:   startTime,
 		endTime:     endTime,
 		fileID:      _FileIDFromProtobuf(pb.GetFreeze().GetUpdateFile()),
@@ -119,143 +118,6 @@ func (tx *FreezeTransaction) GetFileHash() []byte {
 	return tx.fileHash
 }
 
-// ---- Required Interfaces ---- //
-
-// Sign uses the provided privateKey to sign the transaction.
-func (tx *FreezeTransaction) Sign(
-	privateKey PrivateKey,
-) *FreezeTransaction {
-	tx.Transaction.Sign(privateKey)
-	return tx
-}
-
-// SignWithOperator signs the transaction with client's operator privateKey.
-func (tx *FreezeTransaction) SignWithOperator(
-	client *Client,
-) (*FreezeTransaction, error) {
-	// If the transaction is not signed by the _Operator, we need
-	// to sign the transaction with the _Operator
-	_, err := tx.Transaction.signWithOperator(client, tx)
-	if err != nil {
-		return nil, err
-	}
-	return tx, nil
-}
-
-// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
-// with the publicKey as the map key.
-func (tx *FreezeTransaction) SignWith(
-	publicKey PublicKey,
-	signer TransactionSigner,
-) *FreezeTransaction {
-	tx.Transaction.SignWith(publicKey, signer)
-	return tx
-}
-
-// AddSignature adds a signature to the transaction.
-func (tx *FreezeTransaction) AddSignature(publicKey PublicKey, signature []byte) *FreezeTransaction {
-	tx.Transaction.AddSignature(publicKey, signature)
-	return tx
-}
-
-func (tx *FreezeTransaction) Freeze() (*FreezeTransaction, error) {
-	return tx.FreezeWith(nil)
-}
-
-func (tx *FreezeTransaction) FreezeWith(client *Client) (*FreezeTransaction, error) {
-	_, err := tx.Transaction.freezeWith(client, tx)
-	return tx, err
-}
-
-// GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
-func (tx *FreezeTransaction) GetMaxTransactionFee() Hbar {
-	return tx.Transaction.GetMaxTransactionFee()
-}
-
-// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
-func (tx *FreezeTransaction) SetMaxTransactionFee(fee Hbar) *FreezeTransaction {
-	tx._RequireNotFrozen()
-	tx.Transaction.SetMaxTransactionFee(fee)
-	return tx
-}
-
-// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
-func (tx *FreezeTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *FreezeTransaction {
-	tx._RequireNotFrozen()
-	tx.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
-	return tx
-}
-
-// SetTransactionMemo sets the memo for this FreezeTransaction.
-func (tx *FreezeTransaction) SetTransactionMemo(memo string) *FreezeTransaction {
-	tx._RequireNotFrozen()
-	tx.Transaction.SetTransactionMemo(memo)
-	return tx
-}
-
-// SetTransactionValidDuration sets the valid duration for this FreezeTransaction.
-func (tx *FreezeTransaction) SetTransactionValidDuration(duration time.Duration) *FreezeTransaction {
-	tx._RequireNotFrozen()
-	tx.Transaction.SetTransactionValidDuration(duration)
-	return tx
-}
-
-// ToBytes serialise the tx to bytes, no matter if it is signed (locked), or not
-func (tx *FreezeTransaction) ToBytes() ([]byte, error) {
-	bytes, err := tx.Transaction.toBytes(tx)
-	if err != nil {
-		return nil, err
-	}
-	return bytes, nil
-}
-
-// SetTransactionID sets the TransactionID for this FreezeTransaction.
-func (tx *FreezeTransaction) SetTransactionID(transactionID TransactionID) *FreezeTransaction {
-	tx._RequireNotFrozen()
-
-	tx.Transaction.SetTransactionID(transactionID)
-	return tx
-}
-
-// SetNodeAccountID sets the _Node AccountID for this FreezeTransaction.
-func (tx *FreezeTransaction) SetNodeAccountIDs(nodeID []AccountID) *FreezeTransaction {
-	tx._RequireNotFrozen()
-	tx.Transaction.SetNodeAccountIDs(nodeID)
-	return tx
-}
-
-// SetMaxRetry sets the max number of errors before execution will fail.
-func (tx *FreezeTransaction) SetMaxRetry(count int) *FreezeTransaction {
-	tx.Transaction.SetMaxRetry(count)
-	return tx
-}
-
-// SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (tx *FreezeTransaction) SetMaxBackoff(max time.Duration) *FreezeTransaction {
-	tx.Transaction.SetMaxBackoff(max)
-	return tx
-}
-
-// SetMinBackoff sets the minimum amount of time to wait between retries.
-func (tx *FreezeTransaction) SetMinBackoff(min time.Duration) *FreezeTransaction {
-	tx.Transaction.SetMinBackoff(min)
-	return tx
-}
-
-func (tx *FreezeTransaction) SetLogLevel(level LogLevel) *FreezeTransaction {
-	tx.Transaction.SetLogLevel(level)
-	return tx
-}
-
-func (tx *FreezeTransaction) Execute(client *Client) (TransactionResponse, error) {
-	return tx.Transaction.execute(client, tx)
-}
-
-func (tx *FreezeTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	return tx.Transaction.schedule(tx)
-}
-
 // ----------- Overridden functions ----------------
 
 func (tx *FreezeTransaction) getName() string {
@@ -301,4 +163,8 @@ func (tx *FreezeTransaction) getMethod(channel *_Channel) _Method {
 }
 func (tx *FreezeTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
+}
+
+func (tx *FreezeTransaction) validateNetworkOnIDs(client *Client) error {
+	return nil
 }

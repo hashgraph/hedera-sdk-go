@@ -21,8 +21,6 @@ package hedera
  */
 
 import (
-	"time"
-
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
@@ -38,7 +36,7 @@ import (
 // Once executed the Account is marked as Unfrozen and will be able to receive or send tokens. The
 // operation is idempotent.
 type TokenUnfreezeTransaction struct {
-	Transaction
+	*Transaction[*TokenUnfreezeTransaction]
 	tokenID   *TokenID
 	accountID *AccountID
 }
@@ -55,18 +53,17 @@ type TokenUnfreezeTransaction struct {
 // Once executed the Account is marked as Unfrozen and will be able to receive or send tokens. The
 // operation is idempotent.
 func NewTokenUnfreezeTransaction() *TokenUnfreezeTransaction {
-	tx := TokenUnfreezeTransaction{
-		Transaction: _NewTransaction(),
-	}
+	tx := &TokenUnfreezeTransaction{}
+	tx.Transaction = _NewTransaction(tx)
 
 	tx._SetDefaultMaxTransactionFee(NewHbar(30))
 
-	return &tx
+	return tx
 }
 
-func _TokenUnfreezeTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *TokenUnfreezeTransaction {
+func _TokenUnfreezeTransactionFromProtobuf(tx Transaction[*TokenUnfreezeTransaction], pb *services.TransactionBody) *TokenUnfreezeTransaction {
 	return &TokenUnfreezeTransaction{
-		Transaction: tx,
+		Transaction: &tx,
 		tokenID:     _TokenIDFromProtobuf(pb.GetTokenUnfreeze().GetToken()),
 		accountID:   _AccountIDFromProtobuf(pb.GetTokenUnfreeze().GetAccount()),
 	}
@@ -103,131 +100,6 @@ func (tx *TokenUnfreezeTransaction) GetAccountID() AccountID {
 	}
 
 	return *tx.accountID
-}
-
-// ---- Required Interfaces ---- //
-
-// Sign uses the provided privateKey to sign the transaction.
-func (tx *TokenUnfreezeTransaction) Sign(privateKey PrivateKey) *TokenUnfreezeTransaction {
-	tx.Transaction.Sign(privateKey)
-	return tx
-}
-
-// SignWithOperator signs the transaction with client's operator privateKey.
-func (tx *TokenUnfreezeTransaction) SignWithOperator(client *Client) (*TokenUnfreezeTransaction, error) {
-	_, err := tx.Transaction.signWithOperator(client, tx)
-	if err != nil {
-		return nil, err
-	}
-	return tx, nil
-}
-
-// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
-// with the publicKey as the map key.
-func (tx *TokenUnfreezeTransaction) SignWith(
-	publicKey PublicKey,
-	signer TransactionSigner,
-) *TokenUnfreezeTransaction {
-	tx.Transaction.SignWith(publicKey, signer)
-	return tx
-}
-
-// AddSignature adds a signature to the transaction.
-func (tx *TokenUnfreezeTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenUnfreezeTransaction {
-	tx.Transaction.AddSignature(publicKey, signature)
-	return tx
-}
-
-// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (tx *TokenUnfreezeTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenUnfreezeTransaction {
-	tx.Transaction.SetGrpcDeadline(deadline)
-	return tx
-}
-
-func (tx *TokenUnfreezeTransaction) Freeze() (*TokenUnfreezeTransaction, error) {
-	return tx.FreezeWith(nil)
-}
-
-func (tx *TokenUnfreezeTransaction) FreezeWith(client *Client) (*TokenUnfreezeTransaction, error) {
-	_, err := tx.Transaction.freezeWith(client, tx)
-	return tx, err
-}
-
-// SetMaxTransactionFee sets the max transaction fee for this TokenUnfreezeTransaction.
-func (tx *TokenUnfreezeTransaction) SetMaxTransactionFee(fee Hbar) *TokenUnfreezeTransaction {
-	tx.Transaction.SetMaxTransactionFee(fee)
-	return tx
-}
-
-// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
-func (tx *TokenUnfreezeTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *TokenUnfreezeTransaction {
-	tx.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
-	return tx
-}
-
-// SetTransactionMemo sets the memo for this TokenUnfreezeTransaction.
-func (tx *TokenUnfreezeTransaction) SetTransactionMemo(memo string) *TokenUnfreezeTransaction {
-	tx.Transaction.SetTransactionMemo(memo)
-	return tx
-}
-
-// SetTransactionValidDuration sets the valid duration for this TokenUnfreezeTransaction.
-func (tx *TokenUnfreezeTransaction) SetTransactionValidDuration(duration time.Duration) *TokenUnfreezeTransaction {
-	tx.Transaction.SetTransactionValidDuration(duration)
-	return tx
-}
-
-// ToBytes serialise the tx to bytes, no matter if it is signed (locked), or not
-func (tx *TokenUnfreezeTransaction) ToBytes() ([]byte, error) {
-	bytes, err := tx.Transaction.toBytes(tx)
-	if err != nil {
-		return nil, err
-	}
-	return bytes, nil
-}
-
-// SetTransactionID sets the TransactionID for this TokenUnfreezeTransaction.
-func (tx *TokenUnfreezeTransaction) SetTransactionID(transactionID TransactionID) *TokenUnfreezeTransaction {
-	tx.Transaction.SetTransactionID(transactionID)
-	return tx
-}
-
-// SetNodeAccountIDs sets the _Node AccountID for this TokenUnfreezeTransaction.
-func (tx *TokenUnfreezeTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenUnfreezeTransaction {
-	tx.Transaction.SetNodeAccountIDs(nodeID)
-	return tx
-}
-
-// SetMaxRetry sets the max number of errors before execution will fail.
-func (tx *TokenUnfreezeTransaction) SetMaxRetry(count int) *TokenUnfreezeTransaction {
-	tx.Transaction.SetMaxRetry(count)
-	return tx
-}
-
-// SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (tx *TokenUnfreezeTransaction) SetMaxBackoff(max time.Duration) *TokenUnfreezeTransaction {
-	tx.Transaction.SetMaxBackoff(max)
-	return tx
-}
-
-// SetMinBackoff sets the minimum amount of time to wait between retries.
-func (tx *TokenUnfreezeTransaction) SetMinBackoff(min time.Duration) *TokenUnfreezeTransaction {
-	tx.Transaction.SetMinBackoff(min)
-	return tx
-}
-
-func (tx *TokenUnfreezeTransaction) SetLogLevel(level LogLevel) *TokenUnfreezeTransaction {
-	tx.Transaction.SetLogLevel(level)
-	return tx
-}
-
-func (tx *TokenUnfreezeTransaction) Execute(client *Client) (TransactionResponse, error) {
-	return tx.Transaction.execute(client, tx)
-}
-
-func (tx *TokenUnfreezeTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	return tx.Transaction.schedule(tx)
 }
 
 // ----------- Overridden functions ----------------

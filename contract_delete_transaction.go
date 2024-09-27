@@ -22,14 +22,12 @@ package hedera
 
 import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
-
-	"time"
 )
 
 // ContractDeleteTransaction marks a contract as deleted and transfers its remaining hBars, if any, to a
 // designated receiver. After a contract is deleted, it can no longer be called.
 type ContractDeleteTransaction struct {
-	Transaction
+	*Transaction[*ContractDeleteTransaction]
 	contractID        *ContractID
 	transferContactID *ContractID
 	transferAccountID *AccountID
@@ -39,17 +37,16 @@ type ContractDeleteTransaction struct {
 // NewContractDeleteTransaction creates ContractDeleteTransaction which marks a contract as deleted and transfers its remaining hBars, if any, to a
 // designated receiver. After a contract is deleted, it can no longer be called.
 func NewContractDeleteTransaction() *ContractDeleteTransaction {
-	tx := ContractDeleteTransaction{
-		Transaction: _NewTransaction(),
-	}
+	tx := &ContractDeleteTransaction{}
+	tx.Transaction = _NewTransaction(tx)
 	tx._SetDefaultMaxTransactionFee(NewHbar(2))
 
-	return &tx
+	return tx
 }
 
-func _ContractDeleteTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *ContractDeleteTransaction {
+func _ContractDeleteTransactionFromProtobuf(tx Transaction[*ContractDeleteTransaction], pb *services.TransactionBody) *ContractDeleteTransaction {
 	return &ContractDeleteTransaction{
-		Transaction:       tx,
+		Transaction:       &tx,
 		contractID:        _ContractIDFromProtobuf(pb.GetContractDeleteInstance().GetContractID()),
 		transferContactID: _ContractIDFromProtobuf(pb.GetContractDeleteInstance().GetTransferContractID()),
 		transferAccountID: _AccountIDFromProtobuf(pb.GetContractDeleteInstance().GetTransferAccountID()),
@@ -123,141 +120,6 @@ func (tx *ContractDeleteTransaction) SetPermanentRemoval(remove bool) *ContractD
 // GetPermanentRemoval returns true if this is a "synthetic" system transaction.
 func (tx *ContractDeleteTransaction) GetPermanentRemoval() bool {
 	return tx.permanentRemoval
-}
-
-// ---- Required Interfaces ---- //
-
-// Sign uses the provided privateKey to sign the transaction.
-func (tx *ContractDeleteTransaction) Sign(
-	privateKey PrivateKey,
-) *ContractDeleteTransaction {
-	tx.Transaction.Sign(privateKey)
-	return tx
-}
-
-// SignWithOperator signs the transaction with client's operator privateKey.
-func (tx *ContractDeleteTransaction) SignWithOperator(
-	client *Client,
-) (*ContractDeleteTransaction, error) {
-	_, err := tx.Transaction.signWithOperator(client, tx)
-	if err != nil {
-		return nil, err
-	}
-	return tx, nil
-}
-
-// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
-// with the publicKey as the map key.
-func (tx *ContractDeleteTransaction) SignWith(
-	publicKey PublicKey,
-	signer TransactionSigner,
-) *ContractDeleteTransaction {
-	tx.Transaction.SignWith(publicKey, signer)
-	return tx
-}
-
-func (tx *ContractDeleteTransaction) AddSignature(publicKey PublicKey, signature []byte) *ContractDeleteTransaction {
-	tx.Transaction.AddSignature(publicKey, signature)
-	return tx
-}
-
-// When execution is attempted, a single attempt will timeout when tx deadline is reached. (The SDK may subsequently retry the execution.)
-func (tx *ContractDeleteTransaction) SetGrpcDeadline(deadline *time.Duration) *ContractDeleteTransaction {
-	tx.Transaction.SetGrpcDeadline(deadline)
-	return tx
-}
-
-func (tx *ContractDeleteTransaction) Freeze() (*ContractDeleteTransaction, error) {
-	return tx.FreezeWith(nil)
-}
-
-func (tx *ContractDeleteTransaction) FreezeWith(client *Client) (*ContractDeleteTransaction, error) {
-	_, err := tx.Transaction.freezeWith(client, tx)
-	return tx, err
-}
-
-// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
-func (tx *ContractDeleteTransaction) SetMaxTransactionFee(fee Hbar) *ContractDeleteTransaction {
-	tx._RequireNotFrozen()
-	tx.Transaction.SetMaxTransactionFee(fee)
-	return tx
-}
-
-// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
-func (tx *ContractDeleteTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *ContractDeleteTransaction {
-	tx._RequireNotFrozen()
-	tx.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
-	return tx
-}
-
-// SetTransactionMemo sets the memo for this ContractDeleteTransaction.
-func (tx *ContractDeleteTransaction) SetTransactionMemo(memo string) *ContractDeleteTransaction {
-	tx._RequireNotFrozen()
-	tx.Transaction.SetTransactionMemo(memo)
-	return tx
-}
-
-// SetTransactionValidDuration sets the valid duration for this ContractDeleteTransaction.
-func (tx *ContractDeleteTransaction) SetTransactionValidDuration(duration time.Duration) *ContractDeleteTransaction {
-	tx._RequireNotFrozen()
-	tx.Transaction.SetTransactionValidDuration(duration)
-	return tx
-}
-
-// ToBytes serialise the tx to bytes, no matter if it is signed (locked), or not
-func (tx *ContractDeleteTransaction) ToBytes() ([]byte, error) {
-	bytes, err := tx.Transaction.toBytes(tx)
-	if err != nil {
-		return nil, err
-	}
-	return bytes, nil
-}
-
-// SetTransactionID sets the TransactionID for this ContractDeleteTransaction.
-func (tx *ContractDeleteTransaction) SetTransactionID(transactionID TransactionID) *ContractDeleteTransaction {
-	tx._RequireNotFrozen()
-
-	tx.Transaction.SetTransactionID(transactionID)
-	return tx
-}
-
-// SetNodeAccountIDs sets the _Node AccountID for this ContractDeleteTransaction.
-func (tx *ContractDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *ContractDeleteTransaction {
-	tx._RequireNotFrozen()
-	tx.Transaction.SetNodeAccountIDs(nodeID)
-	return tx
-}
-
-// SetMaxRetry sets the max number of errors before execution will fail.
-func (tx *ContractDeleteTransaction) SetMaxRetry(count int) *ContractDeleteTransaction {
-	tx.Transaction.SetMaxRetry(count)
-	return tx
-}
-
-// SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (tx *ContractDeleteTransaction) SetMaxBackoff(max time.Duration) *ContractDeleteTransaction {
-	tx.Transaction.SetMaxBackoff(max)
-	return tx
-}
-
-// SetMinBackoff sets the minimum amount of time to wait between retries.
-func (tx *ContractDeleteTransaction) SetMinBackoff(min time.Duration) *ContractDeleteTransaction {
-	tx.Transaction.SetMinBackoff(min)
-	return tx
-}
-
-func (tx *ContractDeleteTransaction) SetLogLevel(level LogLevel) *ContractDeleteTransaction {
-	tx.Transaction.SetLogLevel(level)
-	return tx
-}
-
-func (tx *ContractDeleteTransaction) Execute(client *Client) (TransactionResponse, error) {
-	return tx.Transaction.execute(client, tx)
-}
-
-func (tx *ContractDeleteTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	return tx.Transaction.schedule(tx)
 }
 
 // ----------- Overridden functions ----------------

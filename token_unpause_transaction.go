@@ -21,8 +21,6 @@ package hedera
  */
 
 import (
-	"time"
-
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
@@ -34,7 +32,7 @@ import (
 // Once executed the Token is marked as Unpaused and can be used in Transactions.
 // The operation is idempotent - becomes a no-op if the Token is already unpaused.
 type TokenUnpauseTransaction struct {
-	Transaction
+	*Transaction[*TokenUnpauseTransaction]
 	tokenID *TokenID
 }
 
@@ -46,18 +44,17 @@ type TokenUnpauseTransaction struct {
 // Once executed the Token is marked as Unpaused and can be used in Transactions.
 // The operation is idempotent - becomes a no-op if the Token is already unpaused.
 func NewTokenUnpauseTransaction() *TokenUnpauseTransaction {
-	tx := TokenUnpauseTransaction{
-		Transaction: _NewTransaction(),
-	}
+	tx := &TokenUnpauseTransaction{}
+	tx.Transaction = _NewTransaction(tx)
 
 	tx._SetDefaultMaxTransactionFee(NewHbar(30))
 
-	return &tx
+	return tx
 }
 
-func _TokenUnpauseTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *TokenUnpauseTransaction {
+func _TokenUnpauseTransactionFromProtobuf(tx Transaction[*TokenUnpauseTransaction], pb *services.TransactionBody) *TokenUnpauseTransaction {
 	return &TokenUnpauseTransaction{
-		Transaction: tx,
+		Transaction: &tx,
 		tokenID:     _TokenIDFromProtobuf(pb.GetTokenDeletion().GetToken()),
 	}
 }
@@ -76,131 +73,6 @@ func (tx *TokenUnpauseTransaction) GetTokenID() TokenID {
 	}
 
 	return *tx.tokenID
-}
-
-// ---- Required Interfaces ---- //
-
-// Sign uses the provided privateKey to sign the transaction.
-func (tx *TokenUnpauseTransaction) Sign(privateKey PrivateKey) *TokenUnpauseTransaction {
-	tx.Transaction.Sign(privateKey)
-	return tx
-}
-
-// SignWithOperator signs the transaction with client's operator privateKey.
-func (tx *TokenUnpauseTransaction) SignWithOperator(client *Client) (*TokenUnpauseTransaction, error) {
-	_, err := tx.Transaction.signWithOperator(client, tx)
-	if err != nil {
-		return nil, err
-	}
-	return tx, nil
-}
-
-// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
-// with the publicKey as the map key.
-func (tx *TokenUnpauseTransaction) SignWith(
-	publicKey PublicKey,
-	signer TransactionSigner,
-) *TokenUnpauseTransaction {
-	tx.Transaction.SignWith(publicKey, signer)
-	return tx
-}
-
-// AddSignature adds a signature to the transaction.
-func (tx *TokenUnpauseTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenUnpauseTransaction {
-	tx.Transaction.AddSignature(publicKey, signature)
-	return tx
-}
-
-// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (tx *TokenUnpauseTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenUnpauseTransaction {
-	tx.Transaction.SetGrpcDeadline(deadline)
-	return tx
-}
-
-func (tx *TokenUnpauseTransaction) Freeze() (*TokenUnpauseTransaction, error) {
-	return tx.FreezeWith(nil)
-}
-
-func (tx *TokenUnpauseTransaction) FreezeWith(client *Client) (*TokenUnpauseTransaction, error) {
-	_, err := tx.Transaction.freezeWith(client, tx)
-	return tx, err
-}
-
-// SetMaxTransactionFee sets the max transaction fee for this TokenUnpauseTransaction.
-func (tx *TokenUnpauseTransaction) SetMaxTransactionFee(fee Hbar) *TokenUnpauseTransaction {
-	tx.Transaction.SetMaxTransactionFee(fee)
-	return tx
-}
-
-// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
-func (tx *TokenUnpauseTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *TokenUnpauseTransaction {
-	tx.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
-	return tx
-}
-
-// SetTransactionMemo sets the memo for this TokenUnpauseTransaction.
-func (tx *TokenUnpauseTransaction) SetTransactionMemo(memo string) *TokenUnpauseTransaction {
-	tx.Transaction.SetTransactionMemo(memo)
-	return tx
-}
-
-// SetTransactionValidDuration sets the valid duration for this TokenUnpauseTransaction.
-func (tx *TokenUnpauseTransaction) SetTransactionValidDuration(duration time.Duration) *TokenUnpauseTransaction {
-	tx.Transaction.SetTransactionValidDuration(duration)
-	return tx
-}
-
-// ToBytes serialise the tx to bytes, no matter if it is signed (locked), or not
-func (tx *TokenUnpauseTransaction) ToBytes() ([]byte, error) {
-	bytes, err := tx.Transaction.toBytes(tx)
-	if err != nil {
-		return nil, err
-	}
-	return bytes, nil
-}
-
-// SetTransactionID sets the TransactionID for this TokenUnpauseTransaction.
-func (tx *TokenUnpauseTransaction) SetTransactionID(transactionID TransactionID) *TokenUnpauseTransaction {
-	tx.Transaction.SetTransactionID(transactionID)
-	return tx
-}
-
-// SetNodeAccountIDs sets the _Node AccountID for this TokenUnpauseTransaction.
-func (tx *TokenUnpauseTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenUnpauseTransaction {
-	tx.Transaction.SetNodeAccountIDs(nodeID)
-	return tx
-}
-
-// SetMaxRetry sets the max number of errors before execution will fail.
-func (tx *TokenUnpauseTransaction) SetMaxRetry(count int) *TokenUnpauseTransaction {
-	tx.Transaction.SetMaxRetry(count)
-	return tx
-}
-
-// SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (tx *TokenUnpauseTransaction) SetMaxBackoff(max time.Duration) *TokenUnpauseTransaction {
-	tx.Transaction.SetMaxBackoff(max)
-	return tx
-}
-
-// SetMinBackoff sets the minimum amount of time to wait between retries.
-func (tx *TokenUnpauseTransaction) SetMinBackoff(min time.Duration) *TokenUnpauseTransaction {
-	tx.Transaction.SetMinBackoff(min)
-	return tx
-}
-
-func (tx *TokenUnpauseTransaction) SetLogLevel(level LogLevel) *TokenUnpauseTransaction {
-	tx.Transaction.SetLogLevel(level)
-	return tx
-}
-
-func (tx *TokenUnpauseTransaction) Execute(client *Client) (TransactionResponse, error) {
-	return tx.Transaction.execute(client, tx)
-}
-
-func (tx *TokenUnpauseTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	return tx.Transaction.schedule(tx)
 }
 
 // ----------- Overridden functions ----------------

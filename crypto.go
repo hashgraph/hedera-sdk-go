@@ -25,6 +25,7 @@ import (
 	"crypto/sha512"
 	"encoding/binary"
 	"encoding/hex"
+	"fmt"
 	"io"
 	"math/big"
 	"strings"
@@ -859,10 +860,39 @@ func (pk PublicKey) _ToSignaturePairProtobuf(signature []byte) *services.Signatu
 	return &services.SignaturePair{}
 }
 
+func castTransaction(tx any) (*Transaction[TransactionInterface], error) {
+	// TODO
+	switch typedTx := tx.(type) {
+	case *Transaction[*FileDeleteTransaction]:
+		return &Transaction[TransactionInterface]{
+			childTransaction:         typedTx.childTransaction,
+			transactionValidDuration: typedTx.transactionValidDuration,
+			transactions:             typedTx.transactions,
+			signedTransactions:       typedTx.signedTransactions,
+			freezeError:              typedTx.freezeError,
+			regenerateTransactionID:  typedTx.regenerateTransactionID,
+			executable:               typedTx.executable,
+		}, nil
+	case *Transaction[*ContractCreateTransaction]:
+		return &Transaction[TransactionInterface]{
+			childTransaction:         typedTx.childTransaction,
+			transactionValidDuration: typedTx.transactionValidDuration,
+			transactions:             typedTx.transactions,
+			signedTransactions:       typedTx.signedTransactions,
+			freezeError:              typedTx.freezeError,
+			regenerateTransactionID:  typedTx.regenerateTransactionID,
+			executable:               typedTx.executable,
+		}, nil
+	default:
+		return nil, fmt.Errorf("unsupported transaction type")
+	}
+}
+
 // SignTransaction signes the transaction and adds the signature to the transaction
-func (sk PrivateKey) SignTransaction(tx *Transaction) ([]byte, error) {
+func (sk PrivateKey) SignTransaction(tx any) ([]byte, error) {
+	txn, _ := castTransaction(tx)
 	if sk.ecdsaPrivateKey != nil {
-		b, err := sk.ecdsaPrivateKey._SignTransaction(tx)
+		b, err := sk.ecdsaPrivateKey._SignTransaction(txn)
 		if err != nil {
 			return []byte{}, err
 		}
@@ -871,7 +901,7 @@ func (sk PrivateKey) SignTransaction(tx *Transaction) ([]byte, error) {
 	}
 
 	if sk.ed25519PrivateKey != nil {
-		b, err := sk.ed25519PrivateKey._SignTransaction(tx)
+		b, err := sk.ed25519PrivateKey._SignTransaction(txn)
 		if err != nil {
 			return []byte{}, err
 		}
@@ -894,7 +924,7 @@ func (pk PublicKey) Verify(message []byte, signature []byte) bool {
 	return false
 }
 
-func (pk PublicKey) VerifyTransaction(transaction Transaction) bool {
+func (pk PublicKey) VerifyTransaction(transaction Transaction[TransactionInterface]) bool {
 	if pk.ecdsaPublicKey != nil {
 		return pk.ecdsaPublicKey._VerifyTransaction(transaction)
 	}

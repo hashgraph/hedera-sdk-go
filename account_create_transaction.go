@@ -37,7 +37,7 @@ import (
 // The current API ignores shardID, realmID, and newRealmAdminKey, and creates everything in shard 0 and realm 0,
 // with a null key. Future versions of the API will support multiple realms and multiple shards.
 type AccountCreateTransaction struct {
-	Transaction
+	*Transaction[*AccountCreateTransaction]
 	proxyAccountID                *AccountID
 	key                           Key
 	initialBalance                uint64
@@ -54,17 +54,16 @@ type AccountCreateTransaction struct {
 // NewAccountCreateTransaction creates an AccountCreateTransaction transaction which can be used to construct and
 // execute a Crypto Create Transaction.
 func NewAccountCreateTransaction() *AccountCreateTransaction {
-	tx := AccountCreateTransaction{
-		Transaction: _NewTransaction(),
-	}
+	tx := &AccountCreateTransaction{}
+	tx.Transaction = _NewTransaction(tx)
 
 	tx.SetAutoRenewPeriod(7890000 * time.Second)
 	tx._SetDefaultMaxTransactionFee(NewHbar(5))
 
-	return &tx
+	return tx
 }
 
-func _AccountCreateTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *AccountCreateTransaction {
+func _AccountCreateTransactionFromProtobuf(tx Transaction[*AccountCreateTransaction], pb *services.TransactionBody) *AccountCreateTransaction {
 	key, _ := _KeyFromProtobuf(pb.GetCryptoCreateAccount().GetKey())
 	renew := _DurationFromProtobuf(pb.GetCryptoCreateAccount().GetAutoRenewPeriod())
 
@@ -79,7 +78,7 @@ func _AccountCreateTransactionFromProtobuf(tx Transaction, pb *services.Transact
 	}
 
 	body := AccountCreateTransaction{
-		Transaction:                   tx,
+		Transaction:                   &tx,
 		key:                           key,
 		initialBalance:                pb.GetCryptoCreateAccount().InitialBalance,
 		autoRenewPeriod:               &renew,
@@ -261,141 +260,6 @@ func (tx *AccountCreateTransaction) SetReceiverSignatureRequired(required bool) 
 // GetReceiverSignatureRequired returns the receiverSigRequired flag.
 func (tx *AccountCreateTransaction) GetReceiverSignatureRequired() bool {
 	return tx.receiverSignatureRequired
-}
-
-// ---- Required Interfaces ---- //
-
-// Sign uses the provided privateKey to sign the transaction.
-func (tx *AccountCreateTransaction) Sign(
-	privateKey PrivateKey,
-) *AccountCreateTransaction {
-	tx.Transaction.Sign(privateKey)
-	return tx
-}
-
-// SignWithOperator signs the transaction with client's operator privateKey.
-func (tx *AccountCreateTransaction) SignWithOperator(
-	client *Client,
-) (*AccountCreateTransaction, error) {
-	_, err := tx.Transaction.signWithOperator(client, tx)
-	if err != nil {
-		return nil, err
-	}
-	return tx, nil
-}
-
-// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
-// with the publicKey as the map key.
-func (tx *AccountCreateTransaction) SignWith(
-	publicKey PublicKey,
-	signer TransactionSigner,
-) *AccountCreateTransaction {
-	tx.Transaction.SignWith(publicKey, signer)
-	return tx
-}
-
-// AddSignature adds a signature to the transaction.
-func (tx *AccountCreateTransaction) AddSignature(publicKey PublicKey, signature []byte) *AccountCreateTransaction {
-	tx.Transaction.AddSignature(publicKey, signature)
-	return tx
-}
-
-// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (tx *AccountCreateTransaction) SetGrpcDeadline(deadline *time.Duration) *AccountCreateTransaction {
-	tx.Transaction.SetGrpcDeadline(deadline)
-	return tx
-}
-
-func (tx *AccountCreateTransaction) Freeze() (*AccountCreateTransaction, error) {
-	return tx.FreezeWith(nil)
-}
-
-func (tx *AccountCreateTransaction) FreezeWith(client *Client) (*AccountCreateTransaction, error) {
-	_, err := tx.Transaction.freezeWith(client, tx)
-	return tx, err
-}
-
-// GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
-func (tx *AccountCreateTransaction) GetMaxTransactionFee() Hbar {
-	return tx.Transaction.GetMaxTransactionFee()
-}
-
-// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
-func (tx *AccountCreateTransaction) SetMaxTransactionFee(fee Hbar) *AccountCreateTransaction {
-	tx._RequireNotFrozen()
-	tx.Transaction.SetMaxTransactionFee(fee)
-	return tx
-}
-
-// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
-func (tx *AccountCreateTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *AccountCreateTransaction {
-	tx.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
-	return tx
-}
-
-// SetTransactionMemo sets the memo for this AccountCreateTransaction.
-func (tx *AccountCreateTransaction) SetTransactionMemo(memo string) *AccountCreateTransaction {
-	tx.Transaction.SetTransactionMemo(memo)
-	return tx
-}
-
-// SetTransactionValidDuration sets the valid duration for this AccountCreateTransaction.
-func (tx *AccountCreateTransaction) SetTransactionValidDuration(duration time.Duration) *AccountCreateTransaction {
-	tx.Transaction.SetTransactionValidDuration(duration)
-	return tx
-}
-
-// ToBytes serialise the tx to bytes, no matter if it is signed (locked), or not
-func (tx *AccountCreateTransaction) ToBytes() ([]byte, error) {
-	bytes, err := tx.Transaction.toBytes(tx)
-	if err != nil {
-		return nil, err
-	}
-	return bytes, nil
-}
-
-// SetTransactionID sets the TransactionID for this AccountCreateTransaction.
-func (tx *AccountCreateTransaction) SetTransactionID(transactionID TransactionID) *AccountCreateTransaction {
-	tx.Transaction.SetTransactionID(transactionID)
-	return tx
-}
-
-// SetNodeAccountIDs sets the _Node AccountID for this AccountCreateTransaction.
-func (tx *AccountCreateTransaction) SetNodeAccountIDs(nodeID []AccountID) *AccountCreateTransaction {
-	tx.Transaction.SetNodeAccountIDs(nodeID)
-	return tx
-}
-
-// SetMaxRetry sets the max number of errors before execution will fail.
-func (tx *AccountCreateTransaction) SetMaxRetry(count int) *AccountCreateTransaction {
-	tx.Transaction.SetMaxRetry(count)
-	return tx
-}
-
-// SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (tx *AccountCreateTransaction) SetMaxBackoff(max time.Duration) *AccountCreateTransaction {
-	tx.Transaction.SetMaxBackoff(max)
-	return tx
-}
-
-// SetMinBackoff sets the minimum amount of time to wait between retries.
-func (tx *AccountCreateTransaction) SetMinBackoff(min time.Duration) *AccountCreateTransaction {
-	tx.Transaction.SetMinBackoff(min)
-	return tx
-}
-
-func (tx *AccountCreateTransaction) SetLogLevel(level LogLevel) *AccountCreateTransaction {
-	tx.Transaction.SetLogLevel(level)
-	return tx
-}
-
-func (tx *AccountCreateTransaction) Execute(client *Client) (TransactionResponse, error) {
-	return tx.Transaction.execute(client, tx)
-}
-
-func (tx *AccountCreateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	return tx.Transaction.schedule(tx)
 }
 
 // ----------- Overridden functions ----------------

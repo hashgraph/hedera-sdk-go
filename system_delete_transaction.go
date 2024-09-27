@@ -34,7 +34,7 @@ import (
 // When a smart contract is deleted, the cryptocurrency account within it continues
 // to exist, and is not affected by the expiration time here.
 type SystemDeleteTransaction struct {
-	Transaction
+	*Transaction[*SystemDeleteTransaction]
 	contractID     *ContractID
 	fileID         *FileID
 	expirationTime *time.Time
@@ -43,22 +43,21 @@ type SystemDeleteTransaction struct {
 // NewSystemDeleteTransaction creates a SystemDeleteTransaction transaction which can be
 // used to construct and execute a System Delete Transaction.
 func NewSystemDeleteTransaction() *SystemDeleteTransaction {
-	tx := SystemDeleteTransaction{
-		Transaction: _NewTransaction(),
-	}
+	tx := &SystemDeleteTransaction{}
+	tx.Transaction = _NewTransaction(tx)
 	tx._SetDefaultMaxTransactionFee(NewHbar(2))
 
-	return &tx
+	return tx
 }
 
-func _SystemDeleteTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *SystemDeleteTransaction {
+func _SystemDeleteTransactionFromProtobuf(tx Transaction[*SystemDeleteTransaction], pb *services.TransactionBody) *SystemDeleteTransaction {
 	expiration := time.Date(
 		time.Now().Year(), time.Now().Month(), time.Now().Day(),
 		time.Now().Hour(), time.Now().Minute(),
 		int(pb.GetSystemDelete().ExpirationTime.Seconds), time.Now().Nanosecond(), time.Now().Location(),
 	)
 	return &SystemDeleteTransaction{
-		Transaction:    tx,
+		Transaction:    &tx,
 		contractID:     _ContractIDFromProtobuf(pb.GetSystemDelete().GetContractID()),
 		fileID:         _FileIDFromProtobuf(pb.GetSystemDelete().GetFileID()),
 		expirationTime: &expiration,
@@ -111,131 +110,6 @@ func (tx *SystemDeleteTransaction) GetFileID() FileID {
 	}
 
 	return *tx.fileID
-}
-
-// ---- Required Interfaces ---- //
-
-// Sign uses the provided privateKey to sign the transaction.
-func (tx *SystemDeleteTransaction) Sign(privateKey PrivateKey) *SystemDeleteTransaction {
-	tx.Transaction.Sign(privateKey)
-	return tx
-}
-
-// SignWithOperator signs the transaction with client's operator privateKey.
-func (tx *SystemDeleteTransaction) SignWithOperator(client *Client) (*SystemDeleteTransaction, error) {
-	_, err := tx.Transaction.signWithOperator(client, tx)
-	if err != nil {
-		return nil, err
-	}
-	return tx, nil
-}
-
-// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
-// with the publicKey as the map key.
-func (tx *SystemDeleteTransaction) SignWith(
-	publicKey PublicKey,
-	signer TransactionSigner,
-) *SystemDeleteTransaction {
-	tx.Transaction.SignWith(publicKey, signer)
-	return tx
-}
-
-// AddSignature adds a signature to the transaction.
-func (tx *SystemDeleteTransaction) AddSignature(publicKey PublicKey, signature []byte) *SystemDeleteTransaction {
-	tx.Transaction.AddSignature(publicKey, signature)
-	return tx
-}
-
-// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (tx *SystemDeleteTransaction) SetGrpcDeadline(deadline *time.Duration) *SystemDeleteTransaction {
-	tx.Transaction.SetGrpcDeadline(deadline)
-	return tx
-}
-
-func (tx *SystemDeleteTransaction) Freeze() (*SystemDeleteTransaction, error) {
-	return tx.FreezeWith(nil)
-}
-
-func (tx *SystemDeleteTransaction) FreezeWith(client *Client) (*SystemDeleteTransaction, error) {
-	_, err := tx.Transaction.freezeWith(client, tx)
-	return tx, err
-}
-
-// SetMaxTransactionFee sets the max transaction fee for this SystemDeleteTransaction.
-func (tx *SystemDeleteTransaction) SetMaxTransactionFee(fee Hbar) *SystemDeleteTransaction {
-	tx.Transaction.SetMaxTransactionFee(fee)
-	return tx
-}
-
-// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
-func (tx *SystemDeleteTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *SystemDeleteTransaction {
-	tx.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
-	return tx
-}
-
-// SetTransactionMemo sets the memo for this SystemDeleteTransaction.
-func (tx *SystemDeleteTransaction) SetTransactionMemo(memo string) *SystemDeleteTransaction {
-	tx.Transaction.SetTransactionMemo(memo)
-	return tx
-}
-
-// SetTransactionValidDuration sets the valid duration for this SystemDeleteTransaction.
-func (tx *SystemDeleteTransaction) SetTransactionValidDuration(duration time.Duration) *SystemDeleteTransaction {
-	tx.Transaction.SetTransactionValidDuration(duration)
-	return tx
-}
-
-// ToBytes serialise the tx to bytes, no matter if it is signed (locked), or not
-func (tx *SystemDeleteTransaction) ToBytes() ([]byte, error) {
-	bytes, err := tx.Transaction.toBytes(tx)
-	if err != nil {
-		return nil, err
-	}
-	return bytes, nil
-}
-
-// SetTransactionID sets the TransactionID for this SystemDeleteTransaction.
-func (tx *SystemDeleteTransaction) SetTransactionID(transactionID TransactionID) *SystemDeleteTransaction {
-	tx.Transaction.SetTransactionID(transactionID)
-	return tx
-}
-
-// SetNodeAccountIDs sets the _Node AccountID for this SystemDeleteTransaction.
-func (tx *SystemDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *SystemDeleteTransaction {
-	tx.Transaction.SetNodeAccountIDs(nodeID)
-	return tx
-}
-
-// SetMaxRetry sets the max number of errors before execution will fail.
-func (tx *SystemDeleteTransaction) SetMaxRetry(count int) *SystemDeleteTransaction {
-	tx.Transaction.SetMaxRetry(count)
-	return tx
-}
-
-// SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (tx *SystemDeleteTransaction) SetMaxBackoff(max time.Duration) *SystemDeleteTransaction {
-	tx.Transaction.SetMaxBackoff(max)
-	return tx
-}
-
-// SetMinBackoff sets the minimum amount of time to wait between retries.
-func (tx *SystemDeleteTransaction) SetMinBackoff(min time.Duration) *SystemDeleteTransaction {
-	tx.Transaction.SetMinBackoff(min)
-	return tx
-}
-
-func (tx *SystemDeleteTransaction) SetLogLevel(level LogLevel) *SystemDeleteTransaction {
-	tx.Transaction.SetLogLevel(level)
-	return tx
-}
-
-func (tx *SystemDeleteTransaction) Execute(client *Client) (TransactionResponse, error) {
-	return tx.Transaction.execute(client, tx)
-}
-
-func (tx *SystemDeleteTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	return tx.Transaction.schedule(tx)
 }
 
 // ----------- Overridden functions ----------------

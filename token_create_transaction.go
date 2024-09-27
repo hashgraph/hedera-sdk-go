@@ -67,7 +67,7 @@ import (
 // If a FINITE TokenSupplyType is used, maxSupply should be explicitly set to a
 // non-negative value. If it is not, the transaction will resolve to INVALID_TOKEN_MAX_SUPPLY.
 type TokenCreateTransaction struct {
-	Transaction
+	*Transaction[*TokenCreateTransaction]
 	treasuryAccountID  *AccountID
 	autoRenewAccountID *AccountID
 	customFees         []Fee
@@ -134,18 +134,17 @@ type TokenCreateTransaction struct {
 // If a FINITE TokenSupplyType is used, maxSupply should be explicitly set to a
 // non-negative value. If it is not, the transaction will resolve to INVALID_TOKEN_MAX_SUPPLY.
 func NewTokenCreateTransaction() *TokenCreateTransaction {
-	tx := TokenCreateTransaction{
-		Transaction: _NewTransaction(),
-	}
+	tx := &TokenCreateTransaction{}
+	tx.Transaction = _NewTransaction(tx)
 
 	tx.SetAutoRenewPeriod(7890000 * time.Second)
 	tx._SetDefaultMaxTransactionFee(NewHbar(40))
 	tx.SetTokenType(TokenTypeFungibleCommon)
 
-	return &tx
+	return tx
 }
 
-func _TokenCreateTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *TokenCreateTransaction {
+func _TokenCreateTransactionFromProtobuf(tx Transaction[*TokenCreateTransaction], pb *services.TransactionBody) *TokenCreateTransaction {
 	customFees := make([]Fee, 0)
 
 	for _, fee := range pb.GetTokenCreation().GetCustomFees() {
@@ -166,7 +165,7 @@ func _TokenCreateTransactionFromProtobuf(tx Transaction, pb *services.Transactio
 	autoRenew := _DurationFromProtobuf(pb.GetTokenCreation().GetAutoRenewPeriod())
 
 	return &TokenCreateTransaction{
-		Transaction:        tx,
+		Transaction:        &tx,
 		treasuryAccountID:  _AccountIDFromProtobuf(pb.GetTokenCreation().GetTreasury()),
 		autoRenewAccountID: _AccountIDFromProtobuf(pb.GetTokenCreation().GetAutoRenewAccount()),
 		customFees:         customFees,
@@ -485,131 +484,6 @@ func (tx *TokenCreateTransaction) GetAutoRenewPeriod() time.Duration {
 	}
 
 	return time.Duration(0)
-}
-
-// ---- Required Interfaces ---- //
-
-// Sign uses the provided privateKey to sign the transaction.
-func (tx *TokenCreateTransaction) Sign(privateKey PrivateKey) *TokenCreateTransaction {
-	tx.Transaction.Sign(privateKey)
-	return tx
-}
-
-// SignWithOperator signs the transaction with client's operator privateKey.
-func (tx *TokenCreateTransaction) SignWithOperator(client *Client) (*TokenCreateTransaction, error) {
-	_, err := tx.Transaction.signWithOperator(client, tx)
-	if err != nil {
-		return nil, err
-	}
-	return tx, nil
-}
-
-// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
-// with the publicKey as the map key.
-func (tx *TokenCreateTransaction) SignWith(
-	publicKey PublicKey,
-	signer TransactionSigner,
-) *TokenCreateTransaction {
-	tx.Transaction.SignWith(publicKey, signer)
-	return tx
-}
-
-// AddSignature adds a signature to the transaction.
-func (tx *TokenCreateTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenCreateTransaction {
-	tx.Transaction.AddSignature(publicKey, signature)
-	return tx
-}
-
-// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (tx *TokenCreateTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenCreateTransaction {
-	tx.Transaction.SetGrpcDeadline(deadline)
-	return tx
-}
-
-func (tx *TokenCreateTransaction) Freeze() (*TokenCreateTransaction, error) {
-	return tx.FreezeWith(nil)
-}
-
-func (tx *TokenCreateTransaction) FreezeWith(client *Client) (*TokenCreateTransaction, error) {
-	_, err := tx.Transaction.freezeWith(client, tx)
-	return tx, err
-}
-
-// SetMaxTransactionFee sets the max transaction fee for this TokenCreateTransaction.
-func (tx *TokenCreateTransaction) SetMaxTransactionFee(fee Hbar) *TokenCreateTransaction {
-	tx.Transaction.SetMaxTransactionFee(fee)
-	return tx
-}
-
-// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
-func (tx *TokenCreateTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *TokenCreateTransaction {
-	tx.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
-	return tx
-}
-
-// SetTransactionMemo sets the memo for this TokenCreateTransaction.
-func (tx *TokenCreateTransaction) SetTransactionMemo(memo string) *TokenCreateTransaction {
-	tx.Transaction.SetTransactionMemo(memo)
-	return tx
-}
-
-// SetTransactionValidDuration sets the valid duration for this TokenCreateTransaction.
-func (tx *TokenCreateTransaction) SetTransactionValidDuration(duration time.Duration) *TokenCreateTransaction {
-	tx.Transaction.SetTransactionValidDuration(duration)
-	return tx
-}
-
-// ToBytes serialise the tx to bytes, no matter if it is signed (locked), or not
-func (tx *TokenCreateTransaction) ToBytes() ([]byte, error) {
-	bytes, err := tx.Transaction.toBytes(tx)
-	if err != nil {
-		return nil, err
-	}
-	return bytes, nil
-}
-
-// SetTransactionID sets the TransactionID for this TokenCreateTransaction.
-func (tx *TokenCreateTransaction) SetTransactionID(transactionID TransactionID) *TokenCreateTransaction {
-	tx.Transaction.SetTransactionID(transactionID)
-	return tx
-}
-
-// SetNodeAccountIDs sets the _Node AccountID for this TokenCreateTransaction.
-func (tx *TokenCreateTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenCreateTransaction {
-	tx.Transaction.SetNodeAccountIDs(nodeID)
-	return tx
-}
-
-// SetMaxRetry sets the max number of errors before execution will fail.
-func (tx *TokenCreateTransaction) SetMaxRetry(count int) *TokenCreateTransaction {
-	tx.Transaction.SetMaxRetry(count)
-	return tx
-}
-
-// SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (tx *TokenCreateTransaction) SetMaxBackoff(max time.Duration) *TokenCreateTransaction {
-	tx.Transaction.SetMaxBackoff(max)
-	return tx
-}
-
-// SetMinBackoff sets the minimum amount of time to wait between retries.
-func (tx *TokenCreateTransaction) SetMinBackoff(min time.Duration) *TokenCreateTransaction {
-	tx.Transaction.SetMinBackoff(min)
-	return tx
-}
-
-func (tx *TokenCreateTransaction) SetLogLevel(level LogLevel) *TokenCreateTransaction {
-	tx.Transaction.SetLogLevel(level)
-	return tx
-}
-
-func (tx *TokenCreateTransaction) Execute(client *Client) (TransactionResponse, error) {
-	return tx.Transaction.execute(client, tx)
-}
-
-func (tx *TokenCreateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	return tx.Transaction.schedule(tx)
 }
 
 // ----------- Overridden functions ----------------

@@ -157,10 +157,12 @@ func (scheduleInfo *ScheduleInfo) GetScheduledTransaction() (ITransaction, error
 		Memo:           pb.Memo,
 	}
 
-	tx := Transaction{
+	tx := Transaction[*ContractExecuteTransaction]{
 		transactionFee: pb.GetTransactionFee(),
 		memo:           pb.GetMemo(),
 	}
+
+	// TODO do this in the base transaction
 
 	switch pb.Data.(type) {
 	case *services.SchedulableTransactionBody_ContractCall:

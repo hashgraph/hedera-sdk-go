@@ -32,7 +32,7 @@ import (
 // FileCreateTransaction, then it can be created with the first part of its contents, and then appended multiple times
 // to create the entire file.
 type FileAppendTransaction struct {
-	Transaction
+	*Transaction[*FileAppendTransaction]
 	maxChunks uint64
 	contents  []byte
 	fileID    *FileID
@@ -42,20 +42,20 @@ type FileAppendTransaction struct {
 // NewFileAppendTransaction creates a FileAppendTransaction transaction which can be
 // used to construct and execute a File Append Transaction.
 func NewFileAppendTransaction() *FileAppendTransaction {
-	tx := FileAppendTransaction{
-		Transaction: _NewTransaction(),
-		maxChunks:   20,
-		contents:    make([]byte, 0),
-		chunkSize:   2048,
+	tx := &FileAppendTransaction{
+		maxChunks: 20,
+		contents:  make([]byte, 0),
+		chunkSize: 2048,
 	}
+	tx.Transaction = _NewTransaction(tx)
 	tx._SetDefaultMaxTransactionFee(NewHbar(5))
 
-	return &tx
+	return tx
 }
 
-func _FileAppendTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *FileAppendTransaction {
+func _FileAppendTransactionFromProtobuf(tx Transaction[*FileAppendTransaction], pb *services.TransactionBody) *FileAppendTransaction {
 	return &FileAppendTransaction{
-		Transaction: tx,
+		Transaction: &tx,
 		maxChunks:   20,
 		contents:    pb.GetFileAppend().GetContents(),
 		chunkSize:   2048,
@@ -113,55 +113,6 @@ func (tx *FileAppendTransaction) SetContents(contents []byte) *FileAppendTransac
 // GetContents returns the bytes to append to the contents of the file.
 func (tx *FileAppendTransaction) GetContents() []byte {
 	return tx.contents
-}
-
-// ---- Required Interfaces ---- //
-
-// Sign uses the provided privateKey to sign the transaction.
-func (tx *FileAppendTransaction) Sign(
-	privateKey PrivateKey,
-) *FileAppendTransaction {
-	tx.Transaction.Sign(privateKey)
-	return tx
-}
-
-// SignWithOperator signs the transaction with client's operator privateKey.
-func (tx *FileAppendTransaction) SignWithOperator(
-	client *Client,
-) (*FileAppendTransaction, error) {
-	// If the transaction is not signed by the _Operator, we need
-	// to sign the transaction with the _Operator
-	_, err := tx.Transaction.signWithOperator(client, tx)
-	if err != nil {
-		return nil, err
-	}
-	return tx, nil
-}
-
-// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
-// with the publicKey as the map key.
-func (tx *FileAppendTransaction) SignWith(
-	publicKey PublicKey,
-	signer TransactionSigner,
-) *FileAppendTransaction {
-	tx.Transaction.SignWith(publicKey, signer)
-	return tx
-}
-
-// AddSignature adds a signature to the transaction.
-func (tx *FileAppendTransaction) AddSignature(publicKey PublicKey, signature []byte) *FileAppendTransaction {
-	tx.Transaction.AddSignature(publicKey, signature)
-	return tx
-}
-
-// When execution is attempted, a single attempt will timeout when tx deadline is reached. (The SDK may subsequently retry the execution.)
-func (tx *FileAppendTransaction) SetGrpcDeadline(deadline *time.Duration) *FileAppendTransaction {
-	tx.Transaction.SetGrpcDeadline(deadline)
-	return tx
-}
-
-func (tx *FileAppendTransaction) Freeze() (*FileAppendTransaction, error) {
-	return tx.FreezeWith(nil)
 }
 
 func (tx *FileAppendTransaction) FreezeWith(client *Client) (*FileAppendTransaction, error) {
@@ -242,82 +193,6 @@ func (tx *FileAppendTransaction) FreezeWith(client *Client) (*FileAppendTransact
 	}
 
 	return tx, nil
-}
-
-// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
-func (tx *FileAppendTransaction) SetMaxTransactionFee(fee Hbar) *FileAppendTransaction {
-	tx._RequireNotFrozen()
-	tx.Transaction.SetMaxTransactionFee(fee)
-	return tx
-}
-
-// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
-func (tx *FileAppendTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *FileAppendTransaction {
-	tx._RequireNotFrozen()
-	tx.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
-	return tx
-}
-
-// SetTransactionMemo sets the memo for this FileAppendTransaction.
-func (tx *FileAppendTransaction) SetTransactionMemo(memo string) *FileAppendTransaction {
-	tx._RequireNotFrozen()
-	tx.Transaction.SetTransactionMemo(memo)
-	return tx
-}
-
-// SetTransactionValidDuration sets the valid duration for this FileAppendTransaction.
-func (tx *FileAppendTransaction) SetTransactionValidDuration(duration time.Duration) *FileAppendTransaction {
-	tx._RequireNotFrozen()
-	tx.Transaction.SetTransactionValidDuration(duration)
-	return tx
-}
-
-// ToBytes serialise the tx to bytes, no matter if it is signed (locked), or not
-func (tx *FileAppendTransaction) ToBytes() ([]byte, error) {
-	bytes, err := tx.Transaction.toBytes(tx)
-	if err != nil {
-		return nil, err
-	}
-	return bytes, nil
-}
-
-// SetTransactionID sets the TransactionID for this FileAppendTransaction.
-func (tx *FileAppendTransaction) SetTransactionID(transactionID TransactionID) *FileAppendTransaction {
-	tx._RequireNotFrozen()
-
-	tx.Transaction.SetTransactionID(transactionID)
-	return tx
-}
-
-// SetNodeAccountID sets the _Node AccountID for this FileAppendTransaction.
-func (tx *FileAppendTransaction) SetNodeAccountIDs(nodeAccountIDs []AccountID) *FileAppendTransaction {
-	tx._RequireNotFrozen()
-	tx.Transaction.SetNodeAccountIDs(nodeAccountIDs)
-	return tx
-}
-
-// SetMaxRetry sets the max number of errors before execution will fail.
-func (tx *FileAppendTransaction) SetMaxRetry(count int) *FileAppendTransaction {
-	tx.Transaction.SetMaxRetry(count)
-	return tx
-}
-
-// SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (tx *FileAppendTransaction) SetMaxBackoff(max time.Duration) *FileAppendTransaction {
-	tx.Transaction.SetMaxBackoff(max)
-	return tx
-}
-
-// SetMinBackoff sets the minimum amount of time to wait between retries.
-func (tx *FileAppendTransaction) SetMinBackoff(min time.Duration) *FileAppendTransaction {
-	tx.Transaction.SetMinBackoff(min)
-	return tx
-}
-
-func (tx *FileAppendTransaction) SetLogLevel(level LogLevel) *FileAppendTransaction {
-	tx.Transaction.SetLogLevel(level)
-	return tx
 }
 
 // Execute executes the Transaction with the provided client
@@ -413,7 +288,7 @@ func (tx *FileAppendTransaction) Schedule() (*ScheduleCreateTransaction, error) 
 		}
 	}
 
-	return tx.Transaction.schedule(tx)
+	return tx.Transaction.Schedule()
 }
 
 // ----------- Overridden functions ----------------

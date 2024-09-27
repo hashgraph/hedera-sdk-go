@@ -37,7 +37,7 @@ import (
 // associated. To modify the list of keys in a livehash, the livehash should first be deleted, then
 // recreated with a new list of keys.
 type LiveHashAddTransaction struct {
-	Transaction
+	*Transaction[*LiveHashAddTransaction]
 	accountID *AccountID
 	hash      []byte
 	keys      *KeyList
@@ -54,19 +54,18 @@ type LiveHashAddTransaction struct {
 // associated. To modify the list of keys in a livehash, the livehash should first be deleted, then
 // recreated with a new list of keys.
 func NewLiveHashAddTransaction() *LiveHashAddTransaction {
-	tx := LiveHashAddTransaction{
-		Transaction: _NewTransaction(),
-	}
+	tx := &LiveHashAddTransaction{}
+	tx.Transaction = _NewTransaction(tx)
 	tx._SetDefaultMaxTransactionFee(NewHbar(2))
-	return &tx
+	return tx
 }
 
-func _LiveHashAddTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *LiveHashAddTransaction {
+func _LiveHashAddTransactionFromProtobuf(tx Transaction[*LiveHashAddTransaction], pb *services.TransactionBody) *LiveHashAddTransaction {
 	keys, _ := _KeyListFromProtobuf(pb.GetCryptoAddLiveHash().LiveHash.GetKeys())
 	duration := _DurationFromProtobuf(pb.GetCryptoAddLiveHash().LiveHash.Duration)
 
 	return &LiveHashAddTransaction{
-		Transaction: tx,
+		Transaction: &tx,
 		accountID:   _AccountIDFromProtobuf(pb.GetCryptoAddLiveHash().GetLiveHash().GetAccountId()),
 		hash:        pb.GetCryptoAddLiveHash().LiveHash.Hash,
 		keys:        &keys,
@@ -144,147 +143,6 @@ func (tx *LiveHashAddTransaction) GetAccountID() AccountID {
 	}
 
 	return *tx.accountID
-}
-
-// ---- Required Interfaces ---- //
-
-// Sign uses the provided privateKey to sign the transaction.
-func (tx *LiveHashAddTransaction) Sign(
-	privateKey PrivateKey,
-) *LiveHashAddTransaction {
-	tx.Transaction.Sign(privateKey)
-	return tx
-}
-
-// SignWithOperator signs the transaction with client's operator privateKey.
-func (tx *LiveHashAddTransaction) SignWithOperator(
-	client *Client,
-) (*LiveHashAddTransaction, error) {
-	// If the transaction is not signed by the _Operator, we need
-	// to sign the transaction with the _Operator
-	_, err := tx.Transaction.signWithOperator(client, tx)
-	if err != nil {
-		return nil, err
-	}
-	return tx, nil
-}
-
-// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
-// with the publicKey as the map key.
-func (tx *LiveHashAddTransaction) SignWith(
-	publicKey PublicKey,
-	signer TransactionSigner,
-) *LiveHashAddTransaction {
-	tx.Transaction.SignWith(publicKey, signer)
-	return tx
-}
-
-// AddSignature adds a signature to the transaction.
-func (tx *LiveHashAddTransaction) AddSignature(publicKey PublicKey, signature []byte) *LiveHashAddTransaction {
-	tx.Transaction.AddSignature(publicKey, signature)
-	return tx
-}
-
-func (tx *LiveHashAddTransaction) Freeze() (*LiveHashAddTransaction, error) {
-	return tx.FreezeWith(nil)
-}
-
-func (tx *LiveHashAddTransaction) FreezeWith(client *Client) (*LiveHashAddTransaction, error) {
-	_, err := tx.Transaction.freezeWith(client, tx)
-	return tx, err
-}
-
-// GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
-func (tx *LiveHashAddTransaction) GetMaxTransactionFee() Hbar {
-	return tx.Transaction.GetMaxTransactionFee()
-}
-
-// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
-func (tx *LiveHashAddTransaction) SetMaxTransactionFee(fee Hbar) *LiveHashAddTransaction {
-	tx._RequireNotFrozen()
-	tx.Transaction.SetMaxTransactionFee(fee)
-	return tx
-}
-
-// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
-func (tx *LiveHashAddTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *LiveHashAddTransaction {
-	tx._RequireNotFrozen()
-	tx.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
-	return tx
-}
-
-// SetTransactionMemo sets the memo for this LiveHashAddTransaction.
-func (tx *LiveHashAddTransaction) SetTransactionMemo(memo string) *LiveHashAddTransaction {
-	tx._RequireNotFrozen()
-	tx.Transaction.SetTransactionMemo(memo)
-	return tx
-}
-
-// SetTransactionValidDuration sets the valid duration for this LiveHashAddTransaction.
-func (tx *LiveHashAddTransaction) SetTransactionValidDuration(duration time.Duration) *LiveHashAddTransaction {
-	tx.Transaction.SetTransactionValidDuration(duration)
-	return tx
-}
-
-// ToBytes serialise the tx to bytes, no matter if it is signed (locked), or not
-func (tx *LiveHashAddTransaction) ToBytes() ([]byte, error) {
-	bytes, err := tx.Transaction.toBytes(tx)
-	if err != nil {
-		return nil, err
-	}
-	return bytes, nil
-}
-
-// GetTransactionID gets the TransactionID for this	 LiveHashAddTransaction.
-func (tx *LiveHashAddTransaction) GetTransactionID() TransactionID {
-	return tx.Transaction.GetTransactionID()
-}
-
-// SetTransactionID sets the TransactionID for this LiveHashAddTransaction.
-func (tx *LiveHashAddTransaction) SetTransactionID(transactionID TransactionID) *LiveHashAddTransaction {
-	tx._RequireNotFrozen()
-
-	tx.Transaction.SetTransactionID(transactionID)
-	return tx
-}
-
-// SetNodeAccountID sets the _Node AccountID for this LiveHashAddTransaction.
-func (tx *LiveHashAddTransaction) SetNodeAccountIDs(nodeID []AccountID) *LiveHashAddTransaction {
-	tx._RequireNotFrozen()
-	tx.Transaction.SetNodeAccountIDs(nodeID)
-	return tx
-}
-
-// SetMaxRetry sets the max number of errors before execution will fail.
-func (tx *LiveHashAddTransaction) SetMaxRetry(count int) *LiveHashAddTransaction {
-	tx.Transaction.SetMaxRetry(count)
-	return tx
-}
-
-// SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (tx *LiveHashAddTransaction) SetMaxBackoff(max time.Duration) *LiveHashAddTransaction {
-	tx.Transaction.SetMaxBackoff(max)
-	return tx
-}
-
-// SetMinBackoff sets the minimum amount of time to wait between retries.
-func (tx *LiveHashAddTransaction) SetMinBackoff(min time.Duration) *LiveHashAddTransaction {
-	tx.Transaction.SetMinBackoff(min)
-	return tx
-}
-
-func (tx *LiveHashAddTransaction) SetLogLevel(level LogLevel) *LiveHashAddTransaction {
-	tx.Transaction.SetLogLevel(level)
-	return tx
-}
-
-func (tx *LiveHashAddTransaction) Execute(client *Client) (TransactionResponse, error) {
-	return tx.Transaction.execute(client, tx)
-}
-
-func (tx *LiveHashAddTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	return tx.Transaction.schedule(tx)
 }
 
 // ----------- Overridden functions ----------------

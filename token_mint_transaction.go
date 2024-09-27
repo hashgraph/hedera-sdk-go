@@ -21,8 +21,6 @@ package hedera
  */
 
 import (
-	"time"
-
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
@@ -34,7 +32,7 @@ import (
 // Token A has 2 decimals. In order to mint 100 tokens, one must provide amount of 10000. In order
 // to mint 100.55 tokens, one must provide amount of 10055.
 type TokenMintTransaction struct {
-	Transaction
+	*Transaction[*TokenMintTransaction]
 	tokenID *TokenID
 	amount  uint64
 	meta    [][]byte
@@ -48,18 +46,17 @@ type TokenMintTransaction struct {
 // Token A has 2 decimals. In order to mint 100 tokens, one must provide amount of 10000. In order
 // to mint 100.55 tokens, one must provide amount of 10055.
 func NewTokenMintTransaction() *TokenMintTransaction {
-	tx := TokenMintTransaction{
-		Transaction: _NewTransaction(),
-	}
+	tx := &TokenMintTransaction{}
+	tx.Transaction = _NewTransaction(tx)
 
 	tx._SetDefaultMaxTransactionFee(NewHbar(30))
 
-	return &tx
+	return tx
 }
 
-func _TokenMintTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *TokenMintTransaction {
+func _TokenMintTransactionFromProtobuf(tx Transaction[*TokenMintTransaction], pb *services.TransactionBody) *TokenMintTransaction {
 	return &TokenMintTransaction{
-		Transaction: tx,
+		Transaction: &tx,
 		tokenID:     _TokenIDFromProtobuf(pb.GetTokenMint().GetToken()),
 		amount:      pb.GetTokenMint().GetAmount(),
 		meta:        pb.GetTokenMint().GetMetadata(),
@@ -121,131 +118,6 @@ func (tx *TokenMintTransaction) SetMetadata(meta []byte) *TokenMintTransaction {
 // GetMetadatas returns the metadata that are being created.
 func (tx *TokenMintTransaction) GetMetadatas() [][]byte {
 	return tx.meta
-}
-
-// ---- Required Interfaces ---- //
-
-// Sign uses the provided privateKey to sign the transaction.
-func (tx *TokenMintTransaction) Sign(privateKey PrivateKey) *TokenMintTransaction {
-	tx.Transaction.Sign(privateKey)
-	return tx
-}
-
-// SignWithOperator signs the transaction with client's operator privateKey.
-func (tx *TokenMintTransaction) SignWithOperator(client *Client) (*TokenMintTransaction, error) {
-	_, err := tx.Transaction.signWithOperator(client, tx)
-	if err != nil {
-		return nil, err
-	}
-	return tx, nil
-}
-
-// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
-// with the publicKey as the map key.
-func (tx *TokenMintTransaction) SignWith(
-	publicKey PublicKey,
-	signer TransactionSigner,
-) *TokenMintTransaction {
-	tx.Transaction.SignWith(publicKey, signer)
-	return tx
-}
-
-// AddSignature adds a signature to the transaction.
-func (tx *TokenMintTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenMintTransaction {
-	tx.Transaction.AddSignature(publicKey, signature)
-	return tx
-}
-
-// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (tx *TokenMintTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenMintTransaction {
-	tx.Transaction.SetGrpcDeadline(deadline)
-	return tx
-}
-
-func (tx *TokenMintTransaction) Freeze() (*TokenMintTransaction, error) {
-	return tx.FreezeWith(nil)
-}
-
-func (tx *TokenMintTransaction) FreezeWith(client *Client) (*TokenMintTransaction, error) {
-	_, err := tx.Transaction.freezeWith(client, tx)
-	return tx, err
-}
-
-// SetMaxTransactionFee sets the max transaction fee for this TokenMintTransaction.
-func (tx *TokenMintTransaction) SetMaxTransactionFee(fee Hbar) *TokenMintTransaction {
-	tx.Transaction.SetMaxTransactionFee(fee)
-	return tx
-}
-
-// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
-func (tx *TokenMintTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *TokenMintTransaction {
-	tx.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
-	return tx
-}
-
-// SetTransactionMemo sets the memo for this TokenMintTransaction.
-func (tx *TokenMintTransaction) SetTransactionMemo(memo string) *TokenMintTransaction {
-	tx.Transaction.SetTransactionMemo(memo)
-	return tx
-}
-
-// SetTransactionValidDuration sets the valid duration for this TokenMintTransaction.
-func (tx *TokenMintTransaction) SetTransactionValidDuration(duration time.Duration) *TokenMintTransaction {
-	tx.Transaction.SetTransactionValidDuration(duration)
-	return tx
-}
-
-// ToBytes serialise the tx to bytes, no matter if it is signed (locked), or not
-func (tx *TokenMintTransaction) ToBytes() ([]byte, error) {
-	bytes, err := tx.Transaction.toBytes(tx)
-	if err != nil {
-		return nil, err
-	}
-	return bytes, nil
-}
-
-// SetTransactionID sets the TransactionID for this TokenMintTransaction.
-func (tx *TokenMintTransaction) SetTransactionID(transactionID TransactionID) *TokenMintTransaction {
-	tx.Transaction.SetTransactionID(transactionID)
-	return tx
-}
-
-// SetNodeAccountIDs sets the _Node AccountID for this TokenMintTransaction.
-func (tx *TokenMintTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenMintTransaction {
-	tx.Transaction.SetNodeAccountIDs(nodeID)
-	return tx
-}
-
-// SetMaxRetry sets the max number of errors before execution will fail.
-func (tx *TokenMintTransaction) SetMaxRetry(count int) *TokenMintTransaction {
-	tx.Transaction.SetMaxRetry(count)
-	return tx
-}
-
-// SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (tx *TokenMintTransaction) SetMaxBackoff(max time.Duration) *TokenMintTransaction {
-	tx.Transaction.SetMaxBackoff(max)
-	return tx
-}
-
-// SetMinBackoff sets the minimum amount of time to wait between retries.
-func (tx *TokenMintTransaction) SetMinBackoff(min time.Duration) *TokenMintTransaction {
-	tx.Transaction.SetMinBackoff(min)
-	return tx
-}
-
-func (tx *TokenMintTransaction) SetLogLevel(level LogLevel) *TokenMintTransaction {
-	tx.Transaction.SetLogLevel(level)
-	return tx
-}
-
-func (tx *TokenMintTransaction) Execute(client *Client) (TransactionResponse, error) {
-	return tx.Transaction.execute(client, tx)
-}
-
-func (tx *TokenMintTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	return tx.Transaction.schedule(tx)
 }
 
 // ----------- Overridden functions ----------------
