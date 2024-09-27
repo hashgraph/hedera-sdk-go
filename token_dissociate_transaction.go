@@ -203,3 +203,7 @@ func (tx *TokenDissociateTransaction) getMethod(channel *_Channel) _Method {
 func (tx *TokenDissociateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
+
+func (tx *TokenDissociateTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction[*TokenDissociateTransaction](tx.Transaction)
+}

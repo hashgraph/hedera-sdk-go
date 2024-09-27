@@ -206,6 +206,11 @@ func (tx *TokenAssociateTransaction) getMethod(channel *_Channel) _Method {
 		transaction: channel._GetToken().AssociateTokens,
 	}
 }
+
 func (tx *TokenAssociateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
+}
+
+func (tx *TokenAssociateTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction[*TokenAssociateTransaction](tx.Transaction)
 }

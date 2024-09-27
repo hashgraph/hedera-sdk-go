@@ -48,6 +48,7 @@ type TransactionInterface interface {
 	buildScheduled() (*services.SchedulableTransactionBody, error)
 	preFreezeWith(*Client)
 	regenerateID(*Client) bool
+	getBaseTransaction() *Transaction[TransactionInterface]
 }
 
 // Transaction is base struct for all transactions that may be built and submitted to Hedera.
@@ -77,6 +78,7 @@ func _NewTransaction[T TransactionInterface](concreteTransaction T) *Transaction
 	minBackoff := 250 * time.Millisecond
 	maxBackoff := 8 * time.Second
 	return &Transaction[T]{
+		childTransaction:         concreteTransaction,
 		transactionValidDuration: &duration,
 		transactions:             _NewLockableSlice(),
 		signedTransactions:       _NewLockableSlice(),
@@ -94,6 +96,153 @@ func _NewTransaction[T TransactionInterface](concreteTransaction T) *Transaction
 
 func (tx *Transaction[T]) GetSignedTransactionBodyBytes(transactionIndex int) []byte {
 	return tx.signedTransactions._Get(transactionIndex).(*services.SignedTransaction).GetBodyBytes()
+}
+
+// Helper function to cast any type of transaction to the base transaction
+func castFromAnyToBaseTransaction(tx any) (*Transaction[TransactionInterface], error) { // nolint
+	switch t := tx.(type) {
+	case *Transaction[*ContractExecuteTransaction]:
+		return castFromConcreteToBaseTransaction(t), nil
+	case *Transaction[*ContractCreateTransaction]:
+		return castFromConcreteToBaseTransaction(t), nil
+	case *Transaction[*ContractUpdateTransaction]:
+		return castFromConcreteToBaseTransaction(t), nil
+	case *Transaction[*ContractDeleteTransaction]:
+		return castFromConcreteToBaseTransaction(t), nil
+	case *Transaction[*LiveHashAddTransaction]:
+		return castFromConcreteToBaseTransaction(t), nil
+	case *Transaction[*AccountCreateTransaction]:
+		return castFromConcreteToBaseTransaction(t), nil
+	case *Transaction[*AccountDeleteTransaction]:
+		return castFromConcreteToBaseTransaction(t), nil
+	case *Transaction[*LiveHashDeleteTransaction]:
+		return castFromConcreteToBaseTransaction(t), nil
+	case *Transaction[*TransferTransaction]:
+		return castFromConcreteToBaseTransaction(t), nil
+	case *Transaction[*AccountUpdateTransaction]:
+		return castFromConcreteToBaseTransaction(t), nil
+	case *Transaction[*FileAppendTransaction]:
+		return castFromConcreteToBaseTransaction(t), nil
+	case *Transaction[*FileCreateTransaction]:
+		return castFromConcreteToBaseTransaction(t), nil
+	case *Transaction[*FileDeleteTransaction]:
+		return castFromConcreteToBaseTransaction(t), nil
+	case *Transaction[*FileUpdateTransaction]:
+		return castFromConcreteToBaseTransaction(t), nil
+	case *Transaction[*SystemDeleteTransaction]:
+		return castFromConcreteToBaseTransaction(t), nil
+	case *Transaction[*SystemUndeleteTransaction]:
+		return castFromConcreteToBaseTransaction(t), nil
+	case *Transaction[*FreezeTransaction]:
+		return castFromConcreteToBaseTransaction(t), nil
+	case *Transaction[*TopicCreateTransaction]:
+		return castFromConcreteToBaseTransaction(t), nil
+	case *Transaction[*TopicUpdateTransaction]:
+		return castFromConcreteToBaseTransaction(t), nil
+	case *Transaction[*AccountAllowanceApproveTransaction]:
+		return castFromConcreteToBaseTransaction(t), nil
+	case *Transaction[*AccountAllowanceDeleteTransaction]:
+		return castFromConcreteToBaseTransaction(t), nil
+	case *Transaction[*TopicDeleteTransaction]:
+		return castFromConcreteToBaseTransaction(t), nil
+	case *Transaction[*TopicMessageSubmitTransaction]:
+		return castFromConcreteToBaseTransaction(t), nil
+	case *Transaction[*TokenCreateTransaction]:
+		return castFromConcreteToBaseTransaction(t), nil
+	case *Transaction[*TokenFreezeTransaction]:
+		return castFromConcreteToBaseTransaction(t), nil
+	case *Transaction[*TokenUnfreezeTransaction]:
+		return castFromConcreteToBaseTransaction(t), nil
+	case *Transaction[*TokenGrantKycTransaction]:
+		return castFromConcreteToBaseTransaction(t), nil
+	case *Transaction[*TokenRevokeKycTransaction]:
+		return castFromConcreteToBaseTransaction(t), nil
+	case *Transaction[*TokenDeleteTransaction]:
+		return castFromConcreteToBaseTransaction(t), nil
+	case *Transaction[*TokenUpdateTransaction]:
+		return castFromConcreteToBaseTransaction(t), nil
+	case *Transaction[*TokenMintTransaction]:
+		return castFromConcreteToBaseTransaction(t), nil
+	case *Transaction[*TokenBurnTransaction]:
+		return castFromConcreteToBaseTransaction(t), nil
+	case *Transaction[*TokenWipeTransaction]:
+		return castFromConcreteToBaseTransaction(t), nil
+	case *Transaction[*TokenAssociateTransaction]:
+		return castFromConcreteToBaseTransaction(t), nil
+	case *Transaction[*TokenDissociateTransaction]:
+		return castFromConcreteToBaseTransaction(t), nil
+	case *Transaction[*ScheduleCreateTransaction]:
+		return castFromConcreteToBaseTransaction(t), nil
+	case *Transaction[*TokenFeeScheduleUpdateTransaction]:
+		return castFromConcreteToBaseTransaction(t), nil
+	case *Transaction[*ScheduleDeleteTransaction]:
+		return castFromConcreteToBaseTransaction(t), nil
+	case *Transaction[*ScheduleSignTransaction]:
+		return castFromConcreteToBaseTransaction(t), nil
+	case *Transaction[*TokenPauseTransaction]:
+		return castFromConcreteToBaseTransaction(t), nil
+	case *Transaction[*TokenUnpauseTransaction]:
+		return castFromConcreteToBaseTransaction(t), nil
+	case *Transaction[*EthereumTransaction]:
+		return castFromConcreteToBaseTransaction(t), nil
+	case *Transaction[*PrngTransaction]:
+		return castFromConcreteToBaseTransaction(t), nil
+	case *Transaction[*TokenUpdateNfts]:
+		return castFromConcreteToBaseTransaction(t), nil
+	case *Transaction[*TokenRejectTransaction]:
+		return castFromConcreteToBaseTransaction(t), nil
+	case *Transaction[*NodeCreateTransaction]:
+		return castFromConcreteToBaseTransaction(t), nil
+	case *Transaction[*NodeUpdateTransaction]:
+		return castFromConcreteToBaseTransaction(t), nil
+	case *Transaction[*NodeDeleteTransaction]:
+		return castFromConcreteToBaseTransaction(t), nil
+	case *Transaction[*TokenAirdropTransaction]:
+		return castFromConcreteToBaseTransaction(t), nil
+	case *Transaction[*TokenClaimAirdropTransaction]:
+		return castFromConcreteToBaseTransaction(t), nil
+	case *Transaction[*TokenCancelAirdropTransaction]:
+		return castFromConcreteToBaseTransaction(t), nil
+	default:
+		return nil, fmt.Errorf("unsupported transaction type")
+	}
+}
+
+// Helper function to cast the concrete Transaction to the generic Transaction
+func castFromConcreteToBaseTransaction[T TransactionInterface](tx *Transaction[T]) *Transaction[TransactionInterface] {
+	return &Transaction[TransactionInterface]{
+		executable:               tx.executable,
+		childTransaction:         tx.childTransaction,
+		transactionFee:           tx.transactionFee,
+		defaultMaxTransactionFee: tx.defaultMaxTransactionFee,
+		memo:                     tx.memo,
+		transactionValidDuration: tx.transactionValidDuration,
+		transactionID:            tx.transactionID,
+		transactions:             tx.transactions,
+		signedTransactions:       tx.signedTransactions,
+		publicKeys:               tx.publicKeys,
+		transactionSigners:       tx.transactionSigners,
+		freezeError:              tx.freezeError,
+		regenerateTransactionID:  tx.regenerateTransactionID,
+	}
+}
+
+// Helper function to cast the generic Transaction to another type
+func castFromBaseTransactionToConcreteTransaction[T TransactionInterface](tx Transaction[TransactionInterface]) Transaction[T] {
+	return Transaction[T]{
+		executable:               tx.executable,
+		transactionFee:           tx.transactionFee,
+		defaultMaxTransactionFee: tx.defaultMaxTransactionFee,
+		memo:                     tx.memo,
+		transactionValidDuration: tx.transactionValidDuration,
+		transactionID:            tx.transactionID,
+		transactions:             tx.transactions,
+		signedTransactions:       tx.signedTransactions,
+		publicKeys:               tx.publicKeys,
+		transactionSigners:       tx.transactionSigners,
+		freezeError:              tx.freezeError,
+		regenerateTransactionID:  tx.regenerateTransactionID,
+	}
 }
 
 // TransactionFromBytes converts transaction bytes to a related *transaction.
@@ -228,107 +377,107 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 
 	switch first.Data.(type) {
 	case *services.TransactionBody_ContractCall:
-		return *_ContractExecuteTransactionFromProtobuf(tx, first), nil
+		return _ContractExecuteTransactionFromProtobuf(castFromBaseTransactionToConcreteTransaction[*ContractExecuteTransaction](tx), first), nil
 	case *services.TransactionBody_ContractCreateInstance:
-		return *_ContractCreateTransactionFromProtobuf(tx, first), nil
+		return _ContractCreateTransactionFromProtobuf(castFromBaseTransactionToConcreteTransaction[*ContractCreateTransaction](tx), first), nil
 	case *services.TransactionBody_ContractUpdateInstance:
-		return *_ContractUpdateTransactionFromProtobuf(tx, first), nil
-	case *services.TransactionBody_ContractDeleteInstance:
-		return *_ContractDeleteTransactionFromProtobuf(tx, first), nil
-	case *services.TransactionBody_CryptoAddLiveHash:
-		return *_LiveHashAddTransactionFromProtobuf(tx, first), nil
-	case *services.TransactionBody_CryptoCreateAccount:
-		return *_AccountCreateTransactionFromProtobuf(tx, first), nil
-	case *services.TransactionBody_CryptoDelete:
-		return *_AccountDeleteTransactionFromProtobuf(tx, first), nil
-	case *services.TransactionBody_CryptoDeleteLiveHash:
-		return *_LiveHashDeleteTransactionFromProtobuf(tx, first), nil
-	case *services.TransactionBody_CryptoTransfer:
-		return *_TransferTransactionFromProtobuf(tx, first), nil
-	case *services.TransactionBody_CryptoUpdateAccount:
-		return *_AccountUpdateTransactionFromProtobuf(tx, first), nil
+		return _ContractUpdateTransactionFromProtobuf(castFromBaseTransactionToConcreteTransaction[*ContractUpdateTransaction](tx), first), nil
 	case *services.TransactionBody_CryptoApproveAllowance:
-		return *_AccountAllowanceApproveTransactionFromProtobuf(tx, first), nil
+		return _AccountAllowanceApproveTransactionFromProtobuf(castFromBaseTransactionToConcreteTransaction[*AccountAllowanceApproveTransaction](tx), first), nil
 	case *services.TransactionBody_CryptoDeleteAllowance:
-		return *_AccountAllowanceDeleteTransactionFromProtobuf(tx, first), nil
+		return _AccountAllowanceDeleteTransactionFromProtobuf(castFromBaseTransactionToConcreteTransaction[*AccountAllowanceDeleteTransaction](tx), first), nil
+	case *services.TransactionBody_ContractDeleteInstance:
+		return _ContractDeleteTransactionFromProtobuf(castFromBaseTransactionToConcreteTransaction[*ContractDeleteTransaction](tx), first), nil
+	case *services.TransactionBody_CryptoAddLiveHash:
+		return _LiveHashAddTransactionFromProtobuf(castFromBaseTransactionToConcreteTransaction[*LiveHashAddTransaction](tx), first), nil
+	case *services.TransactionBody_CryptoCreateAccount:
+		return _AccountCreateTransactionFromProtobuf(castFromBaseTransactionToConcreteTransaction[*AccountCreateTransaction](tx), first), nil
+	case *services.TransactionBody_CryptoDelete:
+		return _AccountDeleteTransactionFromProtobuf(castFromBaseTransactionToConcreteTransaction[*AccountDeleteTransaction](tx), first), nil
+	case *services.TransactionBody_CryptoDeleteLiveHash:
+		return _LiveHashDeleteTransactionFromProtobuf(castFromBaseTransactionToConcreteTransaction[*LiveHashDeleteTransaction](tx), first), nil
+	case *services.TransactionBody_CryptoTransfer:
+		return _TransferTransactionFromProtobuf(castFromBaseTransactionToConcreteTransaction[*TransferTransaction](tx), first), nil
+	case *services.TransactionBody_CryptoUpdateAccount:
+		return _AccountUpdateTransactionFromProtobuf(castFromBaseTransactionToConcreteTransaction[*AccountUpdateTransaction](tx), first), nil
 	case *services.TransactionBody_FileAppend:
-		return *_FileAppendTransactionFromProtobuf(tx, first), nil
+		return _FileAppendTransactionFromProtobuf(castFromBaseTransactionToConcreteTransaction[*FileAppendTransaction](tx), first), nil
 	case *services.TransactionBody_FileCreate:
-		return *_FileCreateTransactionFromProtobuf(tx, first), nil
+		return _FileCreateTransactionFromProtobuf(castFromBaseTransactionToConcreteTransaction[*FileCreateTransaction](tx), first), nil
 	case *services.TransactionBody_FileDelete:
-		return *_FileDeleteTransactionFromProtobuf(tx, first), nil
+		return _FileDeleteTransactionFromProtobuf(castFromBaseTransactionToConcreteTransaction[*FileDeleteTransaction](tx), first), nil
 	case *services.TransactionBody_FileUpdate:
-		return *_FileUpdateTransactionFromProtobuf(tx, first), nil
+		return _FileUpdateTransactionFromProtobuf(castFromBaseTransactionToConcreteTransaction[*FileUpdateTransaction](tx), first), nil
 	case *services.TransactionBody_SystemDelete:
-		return *_SystemDeleteTransactionFromProtobuf(tx, first), nil
+		return _SystemDeleteTransactionFromProtobuf(castFromBaseTransactionToConcreteTransaction[*SystemDeleteTransaction](tx), first), nil
 	case *services.TransactionBody_SystemUndelete:
-		return *_SystemUndeleteTransactionFromProtobuf(tx, first), nil
+		return _SystemUndeleteTransactionFromProtobuf(castFromBaseTransactionToConcreteTransaction[*SystemUndeleteTransaction](tx), first), nil
 	case *services.TransactionBody_Freeze:
-		return *_FreezeTransactionFromProtobuf(tx, first), nil
+		return _FreezeTransactionFromProtobuf(castFromBaseTransactionToConcreteTransaction[*FreezeTransaction](tx), first), nil
 	case *services.TransactionBody_ConsensusCreateTopic:
-		return *_TopicCreateTransactionFromProtobuf(tx, first), nil
+		return _TopicCreateTransactionFromProtobuf(castFromBaseTransactionToConcreteTransaction[*TopicCreateTransaction](tx), first), nil
 	case *services.TransactionBody_ConsensusUpdateTopic:
-		return *_TopicUpdateTransactionFromProtobuf(tx, first), nil
+		return _TopicUpdateTransactionFromProtobuf(castFromBaseTransactionToConcreteTransaction[*TopicUpdateTransaction](tx), first), nil
 	case *services.TransactionBody_ConsensusDeleteTopic:
-		return *_TopicDeleteTransactionFromProtobuf(tx, first), nil
+		return _TopicDeleteTransactionFromProtobuf(castFromBaseTransactionToConcreteTransaction[*TopicDeleteTransaction](tx), first), nil
 	case *services.TransactionBody_ConsensusSubmitMessage:
-		return *_TopicMessageSubmitTransactionFromProtobuf(tx, first), nil
+		return _TopicMessageSubmitTransactionFromProtobuf(castFromBaseTransactionToConcreteTransaction[*TopicMessageSubmitTransaction](tx), first), nil
 	case *services.TransactionBody_TokenCreation:
-		return *_TokenCreateTransactionFromProtobuf(tx, first), nil
+		return _TokenCreateTransactionFromProtobuf(castFromBaseTransactionToConcreteTransaction[*TokenCreateTransaction](tx), first), nil
 	case *services.TransactionBody_TokenFreeze:
-		return *_TokenFreezeTransactionFromProtobuf(tx, first), nil
+		return _TokenFreezeTransactionFromProtobuf(castFromBaseTransactionToConcreteTransaction[*TokenFreezeTransaction](tx), first), nil
 	case *services.TransactionBody_TokenUnfreeze:
-		return *_TokenUnfreezeTransactionFromProtobuf(tx, first), nil
+		return _TokenUnfreezeTransactionFromProtobuf(castFromBaseTransactionToConcreteTransaction[*TokenUnfreezeTransaction](tx), first), nil
 	case *services.TransactionBody_TokenGrantKyc:
-		return *_TokenGrantKycTransactionFromProtobuf(tx, first), nil
+		return _TokenGrantKycTransactionFromProtobuf(castFromBaseTransactionToConcreteTransaction[*TokenGrantKycTransaction](tx), first), nil
 	case *services.TransactionBody_TokenRevokeKyc:
-		return *_TokenRevokeKycTransactionFromProtobuf(tx, first), nil
+		return _TokenRevokeKycTransactionFromProtobuf(castFromBaseTransactionToConcreteTransaction[*TokenRevokeKycTransaction](tx), first), nil
 	case *services.TransactionBody_TokenDeletion:
-		return *_TokenDeleteTransactionFromProtobuf(tx, first), nil
+		return _TokenDeleteTransactionFromProtobuf(castFromBaseTransactionToConcreteTransaction[*TokenDeleteTransaction](tx), first), nil
 	case *services.TransactionBody_TokenUpdate:
-		return *_TokenUpdateTransactionFromProtobuf(tx, first), nil
+		return _TokenUpdateTransactionFromProtobuf(castFromBaseTransactionToConcreteTransaction[*TokenUpdateTransaction](tx), first), nil
 	case *services.TransactionBody_TokenMint:
-		return *_TokenMintTransactionFromProtobuf(tx, first), nil
+		return _TokenMintTransactionFromProtobuf(castFromBaseTransactionToConcreteTransaction[*TokenMintTransaction](tx), first), nil
 	case *services.TransactionBody_TokenBurn:
-		return *_TokenBurnTransactionFromProtobuf(tx, first), nil
+		return _TokenBurnTransactionFromProtobuf(castFromBaseTransactionToConcreteTransaction[*TokenBurnTransaction](tx), first), nil
 	case *services.TransactionBody_TokenWipe:
-		return *_TokenWipeTransactionFromProtobuf(tx, first), nil
+		return _TokenWipeTransactionFromProtobuf(castFromBaseTransactionToConcreteTransaction[*TokenWipeTransaction](tx), first), nil
 	case *services.TransactionBody_TokenAssociate:
-		return *_TokenAssociateTransactionFromProtobuf(tx, first), nil
+		return _TokenAssociateTransactionFromProtobuf(castFromBaseTransactionToConcreteTransaction[*TokenAssociateTransaction](tx), first), nil
 	case *services.TransactionBody_TokenDissociate:
-		return *_TokenDissociateTransactionFromProtobuf(tx, first), nil
+		return _TokenDissociateTransactionFromProtobuf(castFromBaseTransactionToConcreteTransaction[*TokenDissociateTransaction](tx), first), nil
 	case *services.TransactionBody_ScheduleCreate:
-		return *_ScheduleCreateTransactionFromProtobuf(tx, first), nil
-	case *services.TransactionBody_ScheduleSign:
-		return *_ScheduleSignTransactionFromProtobuf(tx, first), nil
-	case *services.TransactionBody_ScheduleDelete:
-		return *_ScheduleDeleteTransactionFromProtobuf(tx, first), nil
+		return _ScheduleCreateTransactionFromProtobuf(castFromBaseTransactionToConcreteTransaction[*ScheduleCreateTransaction](tx), first), nil
 	case *services.TransactionBody_TokenFeeScheduleUpdate:
-		return *_TokenFeeScheduleUpdateTransactionFromProtobuf(tx, first), nil
+		return _TokenFeeScheduleUpdateTransactionFromProtobuf(castFromBaseTransactionToConcreteTransaction[*TokenFeeScheduleUpdateTransaction](tx), first), nil
+	case *services.TransactionBody_ScheduleDelete:
+		return _ScheduleDeleteTransactionFromProtobuf(castFromBaseTransactionToConcreteTransaction[*ScheduleDeleteTransaction](tx), first), nil
+	case *services.TransactionBody_ScheduleSign:
+		return _ScheduleSignTransactionFromProtobuf(castFromBaseTransactionToConcreteTransaction[*ScheduleSignTransaction](tx), first), nil
 	case *services.TransactionBody_TokenPause:
-		return *_TokenPauseTransactionFromProtobuf(tx, first), nil
+		return _TokenPauseTransactionFromProtobuf(castFromBaseTransactionToConcreteTransaction[*TokenPauseTransaction](tx), first), nil
 	case *services.TransactionBody_TokenUnpause:
-		return *_TokenUnpauseTransactionFromProtobuf(tx, first), nil
+		return _TokenUnpauseTransactionFromProtobuf(castFromBaseTransactionToConcreteTransaction[*TokenUnpauseTransaction](tx), first), nil
 	case *services.TransactionBody_EthereumTransaction:
-		return *_EthereumTransactionFromProtobuf(tx, first), nil
+		return _EthereumTransactionFromProtobuf(castFromBaseTransactionToConcreteTransaction[*EthereumTransaction](tx), first), nil
 	case *services.TransactionBody_UtilPrng:
-		return *_PrngTransactionFromProtobuf(tx, first), nil
+		return _PrngTransactionFromProtobuf(castFromBaseTransactionToConcreteTransaction[*PrngTransaction](tx), first), nil
 	case *services.TransactionBody_TokenUpdateNfts:
-		return *_NewTokenUpdateNftsTransactionFromProtobuf(tx, first), nil
+		return _NewTokenUpdateNftsTransactionFromProtobuf(castFromBaseTransactionToConcreteTransaction[*TokenUpdateNfts](tx), first), nil
 	case *services.TransactionBody_TokenReject:
-		return *_TokenRejectTransactionFromProtobuf(tx, first), nil
+		return _TokenRejectTransactionFromProtobuf(castFromBaseTransactionToConcreteTransaction[*TokenRejectTransaction](tx), first), nil
 	case *services.TransactionBody_NodeCreate:
-		return *_NodeCreateTransactionFromProtobuf(tx, first), nil
+		return _NodeCreateTransactionFromProtobuf(castFromBaseTransactionToConcreteTransaction[*NodeCreateTransaction](tx), first), nil
 	case *services.TransactionBody_NodeUpdate:
-		return *_NodeUpdateTransactionFromProtobuf(tx, first), nil
+		return _NodeUpdateTransactionFromProtobuf(castFromBaseTransactionToConcreteTransaction[*NodeUpdateTransaction](tx), first), nil
 	case *services.TransactionBody_NodeDelete:
-		return *_NodeDeleteTransactionFromProtobuf(tx, first), nil
+		return _NodeDeleteTransactionFromProtobuf(castFromBaseTransactionToConcreteTransaction[*NodeDeleteTransaction](tx), first), nil
 	case *services.TransactionBody_TokenAirdrop:
-		return *_TokenAirdropTransactionFromProtobuf(tx, first), nil
+		return _TokenAirdropTransactionFromProtobuf(castFromBaseTransactionToConcreteTransaction[*TokenAirdropTransaction](tx), first), nil
 	case *services.TransactionBody_TokenClaimAirdrop:
-		return *_TokenClaimAirdropTransactionFromProtobuf(tx, first), nil
+		return _TokenClaimAirdropTransactionFromProtobuf(castFromBaseTransactionToConcreteTransaction[*TokenClaimAirdropTransaction](tx), first), nil
 	case *services.TransactionBody_TokenCancelAirdrop:
-		return *_TokenCancelAirdropTransactionFromProtobuf(tx, first), nil
+		return _TokenCancelAirdropTransactionFromProtobuf(castFromBaseTransactionToConcreteTransaction[*TokenCancelAirdropTransaction](tx), first), nil
 	default:
 		return nil, errFailedToDeserializeBytes
 	}
@@ -892,11 +1041,6 @@ func (tx *Transaction[T]) getLogID(transactionInterface Executable) string {
 	return fmt.Sprintf("%s:%d", transactionInterface.getName(), timestamp.UnixNano())
 }
 
-// Building empty object as "default" implementation. All inhertents must implement their own implementation.
-func (tx *Transaction[T]) buildScheduled() (*services.SchedulableTransactionBody, error) {
-	return &services.SchedulableTransactionBody{}, nil
-}
-
 // ------------ Executable Functions ------------
 func (tx *Transaction[T]) shouldRetry(_ Executable, response interface{}) _ExecutionState {
 	status := Status(response.(*services.TransactionResponse).NodeTransactionPrecheckCode)
@@ -1026,7 +1170,7 @@ func (tx *Transaction[T]) Execute(client *Client) (TransactionResponse, error) {
 		ValidateStatus: true,
 		// set the tx in the response, in case of throttle error in the receipt
 		// we can use this to re-submit the transaction
-		Transaction: tx.childTransaction,
+		Transaction: *tx.childTransaction.getBaseTransaction(),
 	}, nil
 }
 
@@ -1156,4 +1300,11 @@ func (tx *Transaction[T]) SetMaxRetry(max int) T {
 	return tx.childTransaction
 }
 
-// create new transaction with transaction interface generic from concrete transaction generic
+func (tx *Transaction[T]) GetLogLevel() *LogLevel {
+	return tx.logLevel
+}
+
+func (tx *Transaction[T]) SetLogLevel(level LogLevel) T {
+	tx.logLevel = &level
+	return tx.childTransaction
+}

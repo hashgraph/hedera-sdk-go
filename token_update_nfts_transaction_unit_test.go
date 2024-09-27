@@ -131,7 +131,7 @@ func TestUnitTokenUpdateNftsTransactionGet(t *testing.T) {
 	require.NoError(t, err)
 	txFromBytes, err := TransactionFromBytes(byt)
 	require.NoError(t, err)
-	sig, err := newKey.SignTransaction(&transaction.Transaction)
+	sig, err := newKey.SignTransaction(transaction.Transaction)
 	require.NoError(t, err)
 	require.NotNil(t, transaction.getName())
 	require.NotNil(t, transaction.GetMaxRetry())

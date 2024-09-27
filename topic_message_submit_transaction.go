@@ -331,3 +331,7 @@ func (tx *TopicMessageSubmitTransaction) ExecuteAll(
 func (tx *TopicMessageSubmitTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
+
+func (tx *TopicMessageSubmitTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction[*TopicMessageSubmitTransaction](tx.Transaction)
+}

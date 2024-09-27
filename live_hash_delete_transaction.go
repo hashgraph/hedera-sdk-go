@@ -135,6 +135,11 @@ func (tx *LiveHashDeleteTransaction) getMethod(channel *_Channel) _Method {
 		transaction: channel._GetCrypto().DeleteLiveHash,
 	}
 }
+
 func (tx *LiveHashDeleteTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
+}
+
+func (tx *LiveHashDeleteTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction[*LiveHashDeleteTransaction](tx.Transaction)
 }

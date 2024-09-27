@@ -290,7 +290,7 @@ func TestUnitContractExecuteTransactionCoverage(t *testing.T) {
 	require.NoError(t, err)
 	txFromBytes, err := TransactionFromBytes(byt)
 	require.NoError(t, err)
-	sig, err := newKey.SignTransaction(transaction.Transaction.childTransaction)
+	sig, err := newKey.SignTransaction(transaction.Transaction)
 	require.NoError(t, err)
 
 	_, err = transaction.GetTransactionHash()
@@ -304,7 +304,7 @@ func TestUnitContractExecuteTransactionCoverage(t *testing.T) {
 	require.NoError(t, err)
 	transaction.getName()
 	switch b := txFromBytes.(type) {
-	case ContractExecuteTransaction:
+	case *ContractExecuteTransaction:
 		b.AddSignature(newKey.PublicKey(), sig)
 	}
 }

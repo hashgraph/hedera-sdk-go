@@ -47,6 +47,7 @@ type TokenPauseTransaction struct {
 // The operation is idempotent - becomes a no-op if the Token is already Paused.
 func NewTokenPauseTransaction() *TokenPauseTransaction {
 	tx := &TokenPauseTransaction{}
+	tx.Transaction = _NewTransaction(tx)
 
 	tx._SetDefaultMaxTransactionFee(NewHbar(30))
 
@@ -134,4 +135,8 @@ func (tx *TokenPauseTransaction) getMethod(channel *_Channel) _Method {
 
 func (tx *TokenPauseTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
+}
+
+func (tx *TokenPauseTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction[*TokenPauseTransaction](tx.Transaction)
 }

@@ -168,3 +168,7 @@ func (tx *EthereumTransaction) getMethod(channel *_Channel) _Method {
 		transaction: channel._GetContract().CallEthereum,
 	}
 }
+
+func (tx *EthereumTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction[*EthereumTransaction](tx.Transaction)
+}

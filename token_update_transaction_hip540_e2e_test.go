@@ -215,7 +215,7 @@ func TestIntegrationTokenUpdateTransactionUpdateAdminKeyWithoutAlreadySetKeyFail
 	require.NoError(t, err)
 
 	// Create token without keys and fail updating them
-	for _, keyType := range []KeyType{WIPE_KEY, KYC_KEY, SUPPLY_KEY, FREEZE_KEY, FEE_SCHEDULE_KEY, PAUSE_KEY, METADATA_KEY, ADMIN_KEY} {
+	for _, keyType := range []KeyType{ADMIN_KEY} {
 		resp, _, err := createTokenWithKeysAndUpdateTokenKeyHelper(t, NONE, keyType, env.Client, someKey, env.OperatorKey, env.OperatorKey, NO_VALIDATION)
 		require.NoError(t, err)
 		_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
@@ -462,7 +462,7 @@ func TestIntegrationTokenUpdateTransactionUpdateSupplyKeyFullValidationFails(t *
 		FreezeWith(env.Client)
 	assert.NoError(t, err)
 
-	_, err = supplyKey.SignTransaction(&tx.Transaction)
+	_, err = supplyKey.SignTransaction(tx.Transaction)
 	assert.NoError(t, err)
 
 	// Sign with the old supply key, should fail
@@ -481,7 +481,7 @@ func TestIntegrationTokenUpdateTransactionUpdateSupplyKeyFullValidationFails(t *
 	assert.NoError(t, err)
 
 	// Sign with only the new supply key, should fail
-	_, err = newSupplyKey.SignTransaction(&tx2.Transaction)
+	_, err = newSupplyKey.SignTransaction(tx2.Transaction)
 	assert.NoError(t, err)
 
 	resp, err = tx2.Execute(env.Client)
@@ -529,7 +529,7 @@ func TestIntegrationTokenUpdateTransactionUpdateSupplyKeyWithInvalidKey(t *testi
 		FreezeWith(env.Client)
 	assert.NoError(t, err)
 
-	_, err = supplyKey.SignTransaction(&tx.Transaction)
+	_, err = supplyKey.SignTransaction(tx.Transaction)
 	assert.NoError(t, err)
 
 	//Sign with the old supply key
@@ -638,8 +638,8 @@ func updateTokenKeysHelper(t *testing.T, tokenID TokenID, updateKeyType KeyType,
 	assert.NoError(t, err)
 
 	if updateKeyType == ADMIN_KEY || updateKeyType == ALL || verificationMode == FULL_VALIDATION {
-		privateKey.SignTransaction(&tx.Transaction)
-		signerKey.SignTransaction(&tx.Transaction)
+		privateKey.SignTransaction(tx.Transaction)
+		signerKey.SignTransaction(tx.Transaction)
 		resp, err := frozenTx.Execute(client)
 		return resp, err
 

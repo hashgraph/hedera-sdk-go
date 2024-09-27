@@ -614,3 +614,7 @@ func (tx *TransferTransaction) getMethod(channel *_Channel) _Method {
 func (this *TransferTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return this.buildScheduled()
 }
+
+func (tx *TransferTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction[*TransferTransaction](tx.Transaction)
+}

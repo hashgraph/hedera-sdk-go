@@ -234,7 +234,7 @@ func TestUnitNodeDeleteTransactionCoverage(t *testing.T) {
 	require.NoError(t, err)
 	_, err = TransactionFromBytes(byt)
 	require.NoError(t, err)
-	_, err = key.SignTransaction(&trx.Transaction)
+	_, err = key.SignTransaction(trx.Transaction)
 	require.NoError(t, err)
 
 	_, err = trx.GetTransactionHash()

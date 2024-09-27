@@ -320,3 +320,7 @@ func (tx *NodeUpdateTransaction) preFreezeWith(client *Client) {
 func (tx *NodeUpdateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
+
+func (tx *NodeUpdateTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction[*NodeUpdateTransaction](tx.Transaction)
+}

@@ -168,3 +168,7 @@ func (tx *FreezeTransaction) _ConstructScheduleProtobuf() (*services.Schedulable
 func (tx *FreezeTransaction) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
+
+func (tx *FreezeTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction[*FreezeTransaction](tx.Transaction)
+}

@@ -289,6 +289,11 @@ func (tx *TopicUpdateTransaction) getMethod(channel *_Channel) _Method {
 		transaction: channel._GetTopic().UpdateTopic,
 	}
 }
+
 func (tx *TopicUpdateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
+}
+
+func (tx *TopicUpdateTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction[*TopicUpdateTransaction](tx.Transaction)
 }

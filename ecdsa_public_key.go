@@ -242,7 +242,7 @@ func (pk _ECDSAPublicKey) _Verify(message []byte, signature []byte) bool {
 	return crypto.VerifySignature(pk._BytesRaw(), message, signature)
 }
 
-func (pk _ECDSAPublicKey) _VerifyTransaction(tx Transaction[TransactionInterface]) bool {
+func (pk _ECDSAPublicKey) _VerifyTransaction(tx *Transaction[TransactionInterface]) bool {
 	if tx.signedTransactions._Length() == 0 {
 		return false
 	}

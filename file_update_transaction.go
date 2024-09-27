@@ -215,11 +215,17 @@ func (tx *FileUpdateTransaction) buildProtoBody() *services.FileUpdateTransactio
 
 	return body
 }
+
 func (tx *FileUpdateTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetFile().UpdateFile,
 	}
 }
+
 func (tx *FileUpdateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
+}
+
+func (tx *FileUpdateTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction[*FileUpdateTransaction](tx.Transaction)
 }

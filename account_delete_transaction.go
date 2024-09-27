@@ -34,14 +34,12 @@ type AccountDeleteTransaction struct {
 	deleteAccountID   *AccountID
 }
 
-func _AccountDeleteTransactionFromProtobuf(transaction Transaction[*AccountDeleteTransaction], pb *services.TransactionBody) *AccountDeleteTransaction {
-	tx := &AccountDeleteTransaction{
+func _AccountDeleteTransactionFromProtobuf(tx Transaction[*AccountDeleteTransaction], pb *services.TransactionBody) *AccountDeleteTransaction {
+	return &AccountDeleteTransaction{
+		Transaction:       &tx,
 		transferAccountID: _AccountIDFromProtobuf(pb.GetCryptoDelete().GetTransferAccountID()),
 		deleteAccountID:   _AccountIDFromProtobuf(pb.GetCryptoDelete().GetDeleteAccountID()),
 	}
-	tx.Transaction = _NewTransaction(tx)
-
-	return tx
 }
 
 // NewAccountDeleteTransaction creates AccountDeleteTransaction which marks an account as deleted, moving all its current hbars to another account. It will remain in
@@ -156,4 +154,8 @@ func (tx *AccountDeleteTransaction) getMethod(channel *_Channel) _Method {
 
 func (tx *AccountDeleteTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
+}
+
+func (tx *AccountDeleteTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction[*AccountDeleteTransaction](tx.Transaction)
 }

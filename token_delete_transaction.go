@@ -129,6 +129,11 @@ func (tx *TokenDeleteTransaction) getMethod(channel *_Channel) _Method {
 		transaction: channel._GetToken().DeleteToken,
 	}
 }
+
 func (tx *TokenDeleteTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
+}
+
+func (tx *TokenDeleteTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction[*TokenDeleteTransaction](tx.Transaction)
 }

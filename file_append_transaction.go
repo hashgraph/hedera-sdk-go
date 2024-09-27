@@ -352,3 +352,7 @@ func (tx *FileAppendTransaction) getMethod(channel *_Channel) _Method {
 func (tx *FileAppendTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
+
+func (tx *FileAppendTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction[*FileAppendTransaction](tx.Transaction)
+}

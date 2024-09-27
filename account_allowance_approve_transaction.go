@@ -371,3 +371,7 @@ func (tx *AccountAllowanceApproveTransaction) getMethod(channel *_Channel) _Meth
 func (tx *AccountAllowanceApproveTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
+
+func (tx *AccountAllowanceApproveTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction)
+}

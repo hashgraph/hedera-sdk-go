@@ -209,6 +209,11 @@ func (tx *LiveHashAddTransaction) getMethod(channel *_Channel) _Method {
 		transaction: channel._GetCrypto().AddLiveHash,
 	}
 }
+
 func (tx *LiveHashAddTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
+}
+
+func (tx *LiveHashAddTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction[*LiveHashAddTransaction](tx.Transaction)
 }

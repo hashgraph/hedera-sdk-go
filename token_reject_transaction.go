@@ -223,3 +223,7 @@ func (tx *TokenRejectTransaction) getMethod(channel *_Channel) _Method {
 func (tx *TokenRejectTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
+
+func (tx *TokenRejectTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction[*TokenRejectTransaction](tx.Transaction)
+}

@@ -131,3 +131,7 @@ func (tx *TokenUpdateNfts) getMethod(channel *_Channel) _Method {
 func (tx *TokenUpdateNfts) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
+
+func (tx *TokenUpdateNfts) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction[*TokenUpdateNfts](tx.Transaction)
+}

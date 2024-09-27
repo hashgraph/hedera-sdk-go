@@ -99,7 +99,7 @@ func TestUnitTokenCancelAirdropTransactionFromBytes(t *testing.T) {
 	require.NoError(t, err)
 
 	switch tx := deserializedTransaction.(type) {
-	case TokenCancelAirdropTransaction:
+	case *TokenCancelAirdropTransaction:
 		assert.Equal(t, transaction.GetPendingAirdropIds(), tx.GetPendingAirdropIds())
 	default:
 		t.Fatalf("expected TokenCancelAirdropTransaction, got %T", deserializedTransaction)

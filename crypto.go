@@ -25,7 +25,6 @@ import (
 	"crypto/sha512"
 	"encoding/binary"
 	"encoding/hex"
-	"fmt"
 	"io"
 	"math/big"
 	"strings"
@@ -860,37 +859,13 @@ func (pk PublicKey) _ToSignaturePairProtobuf(signature []byte) *services.Signatu
 	return &services.SignaturePair{}
 }
 
-func castTransaction(tx any) (*Transaction[TransactionInterface], error) {
-	// TODO
-	switch typedTx := tx.(type) {
-	case *Transaction[*FileDeleteTransaction]:
-		return &Transaction[TransactionInterface]{
-			childTransaction:         typedTx.childTransaction,
-			transactionValidDuration: typedTx.transactionValidDuration,
-			transactions:             typedTx.transactions,
-			signedTransactions:       typedTx.signedTransactions,
-			freezeError:              typedTx.freezeError,
-			regenerateTransactionID:  typedTx.regenerateTransactionID,
-			executable:               typedTx.executable,
-		}, nil
-	case *Transaction[*ContractCreateTransaction]:
-		return &Transaction[TransactionInterface]{
-			childTransaction:         typedTx.childTransaction,
-			transactionValidDuration: typedTx.transactionValidDuration,
-			transactions:             typedTx.transactions,
-			signedTransactions:       typedTx.signedTransactions,
-			freezeError:              typedTx.freezeError,
-			regenerateTransactionID:  typedTx.regenerateTransactionID,
-			executable:               typedTx.executable,
-		}, nil
-	default:
-		return nil, fmt.Errorf("unsupported transaction type")
-	}
-}
-
 // SignTransaction signes the transaction and adds the signature to the transaction
 func (sk PrivateKey) SignTransaction(tx any) ([]byte, error) {
-	txn, _ := castTransaction(tx)
+	txn, err := castFromAnyToBaseTransaction(tx)
+	if err != nil {
+		return []byte{}, err
+	}
+
 	if sk.ecdsaPrivateKey != nil {
 		b, err := sk.ecdsaPrivateKey._SignTransaction(txn)
 		if err != nil {
@@ -924,13 +899,19 @@ func (pk PublicKey) Verify(message []byte, signature []byte) bool {
 	return false
 }
 
-func (pk PublicKey) VerifyTransaction(transaction Transaction[TransactionInterface]) bool {
+func (pk PublicKey) VerifyTransaction(transaction any) bool {
+	tx, err := castFromAnyToBaseTransaction(transaction)
+
+	if err != nil {
+		return false
+	}
+
 	if pk.ecdsaPublicKey != nil {
-		return pk.ecdsaPublicKey._VerifyTransaction(transaction)
+		return pk.ecdsaPublicKey._VerifyTransaction(tx)
 	}
 
 	if pk.ed25519PublicKey != nil {
-		return pk.ed25519PublicKey._VerifyTransaction(transaction)
+		return pk.ed25519PublicKey._VerifyTransaction(tx)
 	}
 
 	return false

@@ -111,3 +111,7 @@ func (tx *PrngTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTr
 func (tx *PrngTransaction) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
+
+func (tx *PrngTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction[*PrngTransaction](tx.Transaction)
+}

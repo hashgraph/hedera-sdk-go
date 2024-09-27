@@ -25,7 +25,6 @@ package hedera
 
 import (
 	"fmt"
-	"reflect"
 	"testing"
 	"time"
 
@@ -63,9 +62,9 @@ func TestUnitTransactionSerializationDeserialization(t *testing.T) {
 	deserializedTX, err := TransactionFromBytes(txBytes)
 	require.NoError(t, err)
 
-	var deserializedTXTyped TransferTransaction
+	var deserializedTXTyped *TransferTransaction
 	switch tx := deserializedTX.(type) {
-	case TransferTransaction:
+	case *TransferTransaction:
 		deserializedTXTyped = tx
 	default:
 		panic("Transaction was not TransferTransaction")
@@ -130,9 +129,10 @@ func TestUnitTransactionValidateBodiesEqual(t *testing.T) {
 	deserializedTX, err := TransactionFromBytes(list)
 	require.NoError(t, err)
 
-	var deserializedTXTyped AccountCreateTransaction
+	// TODO investigate previous behavior
+	var deserializedTXTyped *AccountCreateTransaction
 	switch tx := deserializedTX.(type) {
-	case AccountCreateTransaction:
+	case *AccountCreateTransaction:
 		deserializedTXTyped = tx
 	default:
 		panic("Transaction was not AccountCreateTransaction")
@@ -282,7 +282,8 @@ func TestUnitTransactionToFromBytes(t *testing.T) {
 
 	newTransaction, err := TransactionFromBytes(txBytes)
 
-	_ = protobuf.Unmarshal(newTransaction.(TransferTransaction).signedTransactions._Get(0).(*services.SignedTransaction).BodyBytes, &tx)
+	// TODO investigate previous behavior
+	_ = protobuf.Unmarshal(newTransaction.(*TransferTransaction).signedTransactions._Get(0).(*services.SignedTransaction).BodyBytes, &tx)
 	require.Equal(t, tx.TransactionID.String(), testTransactionID._ToProtobuf().String())
 	require.Equal(t, tx.NodeAccountID.String(), node[0]._ToProtobuf().String())
 	require.Equal(t, tx.Memo, "go sdk example multi_app_transfer/main.go")
@@ -355,7 +356,7 @@ func TestUnitTransactionToFromBytesWithClient(t *testing.T) {
 
 	newTransaction, err := TransactionFromBytes(txBytes)
 
-	_ = protobuf.Unmarshal(newTransaction.(TransferTransaction).signedTransactions._Get(0).(*services.SignedTransaction).BodyBytes, &tx)
+	_ = protobuf.Unmarshal(newTransaction.(*TransferTransaction).signedTransactions._Get(0).(*services.SignedTransaction).BodyBytes, &tx)
 	require.NotNil(t, tx.TransactionID, tx.NodeAccountID)
 	require.Equal(t, tx.TransactionID.String(), initialTxID.String())
 	require.Equal(t, tx.NodeAccountID.String(), initialNode.String())
@@ -425,581 +426,582 @@ func TestUnitQueryRegression(t *testing.T) {
 		},
 	})
 }
-func TestUnitTransactionInitFeeMaxTransactionWithouthSettingFee(t *testing.T) {
-	t.Parallel()
-
-	//Default Max Fee for TransferTransaction
-	fee := NewHbar(1)
-	client, err := _NewMockClient()
-	client.SetLedgerID(*NewLedgerIDTestnet())
-	require.NoError(t, err)
-	transaction, err := NewTransferTransaction().
-		AddHbarTransfer(AccountID{Account: 2}, HbarFromTinybar(-100)).
-		AddHbarTransfer(AccountID{Account: 3}, HbarFromTinybar(100)).
-		FreezeWith(client)
-	require.NoError(t, err)
-	require.Equal(t, uint64(fee.AsTinybar()), transaction.transactionFee)
-}
-
-func TestUnitTransactionInitFeeMaxTransactionFeeSetExplicitly(t *testing.T) {
-	t.Parallel()
-
-	clientMaxFee := NewHbar(14)
-	explicitMaxFee := NewHbar(15)
-	client, err := _NewMockClient()
-	client.SetLedgerID(*NewLedgerIDTestnet())
-	client.SetDefaultMaxTransactionFee(clientMaxFee)
-	require.NoError(t, err)
-	transaction, err := NewTransferTransaction().
-		AddHbarTransfer(AccountID{Account: 2}, HbarFromTinybar(-100)).
-		AddHbarTransfer(AccountID{Account: 3}, HbarFromTinybar(100)).
-		SetMaxTransactionFee(explicitMaxFee).
-		FreezeWith(client)
-	require.NoError(t, err)
-	require.Equal(t, uint64(explicitMaxFee.AsTinybar()), transaction.transactionFee)
-}
-
-func TestUnitTransactionInitFeeMaxTransactionFromClientDefault(t *testing.T) {
-	t.Parallel()
-
-	fee := NewHbar(14)
-	client, err := _NewMockClient()
-	client.SetLedgerID(*NewLedgerIDTestnet())
-	client.SetDefaultMaxTransactionFee(fee)
-	require.NoError(t, err)
-	transaction, err := NewTransferTransaction().
-		AddHbarTransfer(AccountID{Account: 2}, HbarFromTinybar(-100)).
-		AddHbarTransfer(AccountID{Account: 3}, HbarFromTinybar(100)).
-		FreezeWith(client)
-	require.NoError(t, err)
-	require.Equal(t, uint64(fee.AsTinybar()), transaction.transactionFee)
-}
-
-func TestUnitTransactionSignSwitchCases(t *testing.T) {
-	t.Parallel()
-
-	newKey, client, nodeAccountId := signSwitchCaseaSetup(t)
-
-	txs := []Executable{
-		NewAccountCreateTransaction(),
-		NewAccountDeleteTransaction(),
-		NewAccountUpdateTransaction(),
-		NewAccountAllowanceApproveTransaction(),
-		NewAccountAllowanceDeleteTransaction(),
-		NewFileCreateTransaction(),
-		NewFileDeleteTransaction(),
-		NewFileUpdateTransaction(),
-		NewLiveHashAddTransaction(),
-		NewLiveHashDeleteTransaction(),
-		NewTokenAssociateTransaction(),
-		NewTokenBurnTransaction(),
-		NewTokenCreateTransaction(),
-		NewTokenDeleteTransaction(),
-		NewTokenDissociateTransaction(),
-		NewTokenFeeScheduleUpdateTransaction(),
-		NewTokenFreezeTransaction(),
-		NewTokenGrantKycTransaction(),
-		NewTokenMintTransaction(),
-		NewTokenRevokeKycTransaction(),
-		NewTokenUnfreezeTransaction(),
-		NewTokenUpdateTransaction(),
-		NewTokenWipeTransaction(),
-		NewTopicCreateTransaction(),
-		NewTopicDeleteTransaction(),
-		NewTopicUpdateTransaction(),
-		NewTransferTransaction(),
-	}
-
-	for _, tx := range txs {
-
-		txVal, signature, transferTxBytes := signSwitchCaseaHelper(t, tx, newKey, client)
-
-		signTests := signTestsForTransaction(txVal, newKey, signature, client)
-
-		for _, tt := range signTests {
-			t.Run(tt.name, func(t *testing.T) {
-				transactionInterface, err := TransactionFromBytes(transferTxBytes)
-				require.NoError(t, err)
-
-				tx, err := tt.sign(transactionInterface, newKey)
-				assert.NoError(t, err)
-				assert.NotEmpty(t, tx)
-
-				signs, err := TransactionGetSignatures(transactionInterface)
-				assert.NoError(t, err)
-
-				// verify with range because var signs = map[AccountID]map[*PublicKey][]byte, where *PublicKey is unknown memory address
-				for key := range signs[nodeAccountId] {
-					assert.Equal(t, signs[nodeAccountId][key], signature)
-				}
-			})
-		}
-	}
-}
-
-func TestUnitTransactionSignSwitchCasesPointers(t *testing.T) {
-	t.Parallel()
-
-	newKey, client, nodeAccountId := signSwitchCaseaSetup(t)
-
-	txs := []interface{}{
-		NewAccountCreateTransaction(),
-		NewAccountDeleteTransaction(),
-		NewAccountUpdateTransaction(),
-		NewAccountAllowanceApproveTransaction(),
-		NewAccountAllowanceDeleteTransaction(),
-		NewFileCreateTransaction(),
-		NewFileDeleteTransaction(),
-		NewFileUpdateTransaction(),
-		NewLiveHashAddTransaction(),
-		NewLiveHashDeleteTransaction(),
-		NewTokenAssociateTransaction(),
-		NewTokenBurnTransaction(),
-		NewTokenCreateTransaction(),
-		NewTokenDeleteTransaction(),
-		NewTokenDissociateTransaction(),
-		NewTokenFeeScheduleUpdateTransaction(),
-		NewTokenFreezeTransaction(),
-		NewTokenGrantKycTransaction(),
-		NewTokenMintTransaction(),
-		NewTokenRevokeKycTransaction(),
-		NewTokenUnfreezeTransaction(),
-		NewTokenUpdateTransaction(),
-		NewTokenWipeTransaction(),
-		NewTopicCreateTransaction(),
-		NewTopicDeleteTransaction(),
-		NewTopicUpdateTransaction(),
-		NewTransferTransaction(),
-	}
-
-	for _, tx := range txs {
-
-		txVal, signature, transferTxBytes := signSwitchCaseaHelper(t, tx, newKey, client)
-		signTests := signTestsForTransaction(txVal, newKey, signature, client)
-
-		for _, tt := range signTests {
-			t.Run(tt.name, func(t *testing.T) {
-				transactionInterface, err := TransactionFromBytes(transferTxBytes)
-				require.NoError(t, err)
-
-				// Convert the transactionInterface to a pointer
-				ptr := reflect.New(reflect.TypeOf(transactionInterface))
-				ptr.Elem().Set(reflect.ValueOf(transactionInterface))
-
-				tx, err := tt.sign(ptr.Interface(), newKey)
-				assert.NoError(t, err)
-				assert.NotEmpty(t, tx)
-
-				signs, err := TransactionGetSignatures(ptr.Interface())
-				assert.NoError(t, err)
-
-				// verify with range because var signs = map[AccountID]map[*PublicKey][]byte, where *PublicKey is unknown memory address
-				for key := range signs[nodeAccountId] {
-					assert.Equal(t, signs[nodeAccountId][key], signature)
-				}
-			})
-		}
-	}
-}
-
-func TestUnitTransactionAttributes(t *testing.T) {
-	t.Parallel()
-
-	client, err := _NewMockClient()
-	require.NoError(t, err)
-	client.SetLedgerID(*NewLedgerIDTestnet())
-	nodeAccountIds := client.network._GetNodeAccountIDsForExecute()
-
-	txs := []interface{}{
-		NewAccountCreateTransaction(),
-		NewAccountDeleteTransaction(),
-		NewAccountUpdateTransaction(),
-		NewAccountAllowanceApproveTransaction(),
-		NewAccountAllowanceDeleteTransaction(),
-		NewContractCreateTransaction(),
-		NewContractDeleteTransaction(),
-		NewContractExecuteTransaction(),
-		NewContractUpdateTransaction(),
-		NewFileAppendTransaction(),
-		NewFileCreateTransaction(),
-		NewFileDeleteTransaction(),
-		NewFileUpdateTransaction(),
-		NewLiveHashAddTransaction(),
-		NewLiveHashDeleteTransaction(),
-		NewScheduleCreateTransaction(),
-		NewScheduleDeleteTransaction(),
-		NewScheduleSignTransaction(),
-		NewSystemDeleteTransaction(),
-		NewSystemUndeleteTransaction(),
-		NewTokenAssociateTransaction(),
-		NewTokenBurnTransaction(),
-		NewTokenCreateTransaction(),
-		NewTokenDeleteTransaction(),
-		NewTokenDissociateTransaction(),
-		NewTokenFeeScheduleUpdateTransaction(),
-		NewTokenFreezeTransaction(),
-		NewTokenGrantKycTransaction(),
-		NewTokenMintTransaction(),
-		NewTokenRevokeKycTransaction(),
-		NewTokenUnfreezeTransaction(),
-		NewTokenUpdateTransaction(),
-		NewTokenWipeTransaction(),
-		NewTopicCreateTransaction(),
-		NewTopicDeleteTransaction(),
-		NewTopicUpdateTransaction(),
-		NewTransferTransaction(),
-	}
-
-	for _, tx := range txs {
-		txName := reflect.TypeOf(tx).Elem().Name()
-
-		tests := createTransactionTests(txName, nodeAccountIds)
-
-		for _, tt := range tests {
-			t.Run(tt.name, func(t *testing.T) {
-				txSet, err := tt.set(tx)
-				require.NoError(t, err)
-
-				txGet, err := tt.get(txSet)
-				require.NoError(t, err)
-
-				tt.assert(t, txGet)
-			})
-		}
-	}
-}
-
-func TestUnitTransactionAttributesDereferanced(t *testing.T) {
-	t.Parallel()
-
-	client, err := _NewMockClient()
-	require.NoError(t, err)
-	client.SetLedgerID(*NewLedgerIDTestnet())
-	nodeAccountIds := client.network._GetNodeAccountIDsForExecute()
-
-	txs := []interface{}{
-		NewAccountCreateTransaction(),
-		NewAccountDeleteTransaction(),
-		NewAccountUpdateTransaction(),
-		NewAccountAllowanceApproveTransaction(),
-		NewAccountAllowanceDeleteTransaction(),
-		NewContractCreateTransaction(),
-		NewContractDeleteTransaction(),
-		NewContractExecuteTransaction(),
-		NewContractUpdateTransaction(),
-		NewFileAppendTransaction(),
-		NewFileCreateTransaction(),
-		NewFileDeleteTransaction(),
-		NewFileUpdateTransaction(),
-		NewLiveHashAddTransaction(),
-		NewLiveHashDeleteTransaction(),
-		NewScheduleCreateTransaction(),
-		NewScheduleDeleteTransaction(),
-		NewScheduleSignTransaction(),
-		NewSystemDeleteTransaction(),
-		NewSystemUndeleteTransaction(),
-		NewTokenAssociateTransaction(),
-		NewTokenBurnTransaction(),
-		NewTokenCreateTransaction(),
-		NewTokenDeleteTransaction(),
-		NewTokenDissociateTransaction(),
-		NewTokenFeeScheduleUpdateTransaction(),
-		NewTokenFreezeTransaction(),
-		NewTokenGrantKycTransaction(),
-		NewTokenMintTransaction(),
-		NewTokenRevokeKycTransaction(),
-		NewTokenUnfreezeTransaction(),
-		NewTokenUpdateTransaction(),
-		NewTokenWipeTransaction(),
-		NewTopicCreateTransaction(),
-		NewTopicDeleteTransaction(),
-		NewTopicUpdateTransaction(),
-		NewTransferTransaction(),
-	}
-
-	for _, tx := range txs {
-		txName := reflect.TypeOf(tx).Elem().Name()
-
-		tests := createTransactionTests(txName, nodeAccountIds)
-
-		for _, tt := range tests {
-			t.Run(tt.name, func(t *testing.T) {
-				txValue := reflect.ValueOf(tx).Elem().Interface()
-				txSet, err := tt.set(txValue)
-				require.NoError(t, err)
-
-				txGet, err := tt.get(txSet)
-				require.NoError(t, err)
-
-				tt.assert(t, txGet)
-			})
-		}
-	}
-}
-
-func TestUnitTransactionAttributesSerialization(t *testing.T) {
-	t.Parallel()
-
-	client, err := _NewMockClient()
-	require.NoError(t, err)
-	client.SetLedgerID(*NewLedgerIDTestnet())
-
-	txs := []interface{}{
-		NewAccountCreateTransaction(),
-		NewAccountDeleteTransaction(),
-		NewAccountUpdateTransaction(),
-		NewAccountAllowanceApproveTransaction(),
-		NewAccountAllowanceDeleteTransaction(),
-		NewContractCreateTransaction(),
-		NewContractDeleteTransaction(),
-		NewContractExecuteTransaction(),
-		NewContractUpdateTransaction(),
-		NewFileCreateTransaction(),
-		NewFileDeleteTransaction(),
-		NewFileUpdateTransaction(),
-		NewLiveHashAddTransaction(),
-		NewLiveHashDeleteTransaction(),
-		NewScheduleCreateTransaction(),
-		NewScheduleDeleteTransaction(),
-		NewScheduleSignTransaction(),
-		NewSystemDeleteTransaction(),
-		NewSystemUndeleteTransaction(),
-		NewTokenAssociateTransaction(),
-		NewTokenBurnTransaction(),
-		NewTokenCreateTransaction(),
-		NewTokenDeleteTransaction(),
-		NewTokenDissociateTransaction(),
-		NewTokenFeeScheduleUpdateTransaction(),
-		NewTokenFreezeTransaction(),
-		NewTokenGrantKycTransaction(),
-		NewTokenMintTransaction(),
-		NewTokenRevokeKycTransaction(),
-		NewTokenUnfreezeTransaction(),
-		NewTokenUpdateTransaction(),
-		NewTokenWipeTransaction(),
-		NewTopicCreateTransaction(),
-		NewTopicDeleteTransaction(),
-		NewTopicUpdateTransaction(),
-		NewTransferTransaction(),
-	}
-
-	for _, tx := range txs {
-		txName := reflect.TypeOf(tx).Elem().Name()
-
-		// Get the reflect.Value of the pointer to the Transaction
-		txPtr := reflect.ValueOf(tx)
-		txPtr.MethodByName("FreezeWith").Call([]reflect.Value{reflect.ValueOf(client)})
-
-		tests := []struct {
-			name string
-			act  func(transactionInterface interface{})
-		}{
-			{
-				name: "TransactionString/" + txName,
-				act: func(transactionInterface interface{}) {
-					txString, err := TransactionString(transactionInterface)
-					require.NoError(t, err)
-					require.NotEmpty(t, txString)
-				},
-			},
-			{
-				name: "TransactionToBytes/" + txName,
-				act: func(transactionInterface interface{}) {
-					txBytes, err := TransactionToBytes(transactionInterface)
-					require.NoError(t, err)
-					require.NotEmpty(t, txBytes)
-				},
-			},
-		}
-
-		for _, tt := range tests {
-			t.Run(tt.name, func(t *testing.T) {
-				tt.act(tx)
-				txValue := reflect.ValueOf(tx).Elem().Interface()
-				tt.act(txValue)
-			})
-		}
-	}
-}
-
-func signSwitchCaseaSetup(t *testing.T) (PrivateKey, *Client, AccountID) {
-	newKey, err := GeneratePrivateKey()
-	require.NoError(t, err)
-
-	client, err := _NewMockClient()
-	require.NoError(t, err)
-	client.SetLedgerID(*NewLedgerIDTestnet())
-
-	nodeAccountIds := client.network._GetNodeAccountIDsForExecute()
-	nodeAccountId := nodeAccountIds[0]
-
-	return newKey, client, nodeAccountId
-}
-
-func signSwitchCaseaHelper(t *testing.T, tx interface{}, newKey PrivateKey, client *Client) (txVal reflect.Value, signature []byte, transferTxBytes []byte) {
-	// Get the reflect.Value of the pointer to the transaction
-	txPtr := reflect.ValueOf(tx)
-	txPtr.MethodByName("FreezeWith").Call([]reflect.Value{reflect.ValueOf(client)})
-
-	// Get the reflect.Value of the transaction
-	txVal = txPtr.Elem()
-
-	// Get the transaction field by name
-	txField := txVal.FieldByName("Transaction")
-
-	// Get the value of the Transaction field
-	txValue := txField.Interface().(Transaction)
-
-	refl_signature := reflect.ValueOf(newKey).MethodByName("SignTransaction").Call([]reflect.Value{reflect.ValueOf(&txValue)})
-	signature = refl_signature[0].Interface().([]byte)
-
-	transferTxBytes, err := TransactionToBytes(tx)
-	assert.NoError(t, err)
-	assert.NotEmpty(t, transferTxBytes)
-
-	return txVal, signature, transferTxBytes
-}
-
-func signTestsForTransaction(txVal reflect.Value, newKey PrivateKey, signature []byte, client *Client) []struct {
-	name string
-	sign func(transactionInterface interface{}, key Key) (interface{}, error)
-} {
-	return []struct {
-		name string
-		sign func(transactionInterface interface{}, key Key) (interface{}, error)
-	}{
-		{
-			name: "TransactionSign/" + txVal.Type().Name(),
-			sign: func(transactionInterface interface{}, key Key) (interface{}, error) {
-				privateKey, ok := key.(PrivateKey)
-				if !ok {
-					panic("key is not a PrivateKey")
-				}
-				return TransactionSign(transactionInterface, privateKey)
-			},
-		},
-		{
-			name: "TransactionSignWith/" + txVal.Type().Name(),
-			sign: func(transactionInterface interface{}, key Key) (interface{}, error) {
-				return TransactionSignWth(transactionInterface, newKey.PublicKey(), newKey.Sign)
-			},
-		},
-		{
-			name: "TransactionSignWithOperator/" + txVal.Type().Name(),
-			sign: func(transactionInterface interface{}, key Key) (interface{}, error) {
-				return TransactionSignWithOperator(transactionInterface, client)
-			},
-		},
-		{
-			name: "TransactionAddSignature/" + txVal.Type().Name(),
-			sign: func(transactionInterface interface{}, key Key) (interface{}, error) {
-				return TransactionAddSignature(transactionInterface, newKey.PublicKey(), signature)
-			},
-		},
-	}
-}
-
-type transactionTest struct {
-	name   string
-	set    func(transactionInterface interface{}) (interface{}, error)
-	get    func(transactionInterface interface{}) (interface{}, error)
-	assert func(t *testing.T, actual interface{})
-}
-
-func createTransactionTests(txName string, nodeAccountIds []AccountID) []transactionTest {
-	return []transactionTest{
-		{
-			name: "TransactionTransactionID/" + txName,
-			set: func(transactionInterface interface{}) (interface{}, error) {
-				transactionID := TransactionID{AccountID: &AccountID{Account: 9999}, ValidStart: &time.Time{}, scheduled: false, Nonce: nil}
-				return TransactionSetTransactionID(transactionInterface, transactionID)
-			},
-			get: func(transactionInterface interface{}) (interface{}, error) {
-				return TransactionGetTransactionID(transactionInterface)
-			},
-			assert: func(t *testing.T, actual interface{}) {
-				transactionID := TransactionID{AccountID: &AccountID{Account: 9999}, ValidStart: &time.Time{}, scheduled: false, Nonce: nil}
-				A := actual.(TransactionID)
-
-				require.Equal(t, transactionID.AccountID, A.AccountID)
-			},
-		},
-		{
-			name: "TransactionTransactionMemo/" + txName,
-			set: func(transactionInterface interface{}) (interface{}, error) {
-				return TransactionSetTransactionMemo(transactionInterface, "test memo")
-			},
-			get: func(transactionInterface interface{}) (interface{}, error) {
-				return TransactionGetTransactionMemo(transactionInterface)
-			},
-			assert: func(t *testing.T, actual interface{}) {
-				require.Equal(t, "test memo", actual)
-			},
-		},
-		{
-			name: "TransactionMaxTransactionFee/" + txName,
-			set: func(transactionInterface interface{}) (interface{}, error) {
-				return TransactionSetMaxTransactionFee(transactionInterface, NewHbar(1))
-			},
-			get: func(transactionInterface interface{}) (interface{}, error) {
-				return TransactionGetMaxTransactionFee(transactionInterface)
-			},
-			assert: func(t *testing.T, actual interface{}) {
-				require.Equal(t, NewHbar(1), actual)
-			},
-		},
-		{
-			name: "TransactionTransactionValidDuration/" + txName,
-			set: func(transactionInterface interface{}) (interface{}, error) {
-				return TransactionSetTransactionValidDuration(transactionInterface, time.Second*10)
-			},
-			get: func(transactionInterface interface{}) (interface{}, error) {
-				return TransactionGetTransactionValidDuration(transactionInterface)
-			},
-			assert: func(t *testing.T, actual interface{}) {
-				require.Equal(t, time.Second*10, actual)
-			},
-		},
-		{
-			name: "TransactionNodeAccountIDs/" + txName,
-			set: func(transactionInterface interface{}) (interface{}, error) {
-				return TransactionSetNodeAccountIDs(transactionInterface, nodeAccountIds)
-			},
-			get: func(transactionInterface interface{}) (interface{}, error) {
-				return TransactionGetNodeAccountIDs(transactionInterface)
-			},
-			assert: func(t *testing.T, actual interface{}) {
-				require.Equal(t, nodeAccountIds, actual)
-			},
-		},
-		{
-			name: "TransactionMinBackoff/" + txName,
-			set: func(transactionInterface interface{}) (interface{}, error) {
-				tx, _ := TransactionSetMaxBackoff(transactionInterface, time.Second*200)
-				return TransactionSetMinBackoff(tx, time.Second*10)
-			},
-			get: func(transactionInterface interface{}) (interface{}, error) {
-				return TransactionGetMinBackoff(transactionInterface)
-			},
-			assert: func(t *testing.T, actual interface{}) {
-				require.Equal(t, time.Second*10, actual)
-			},
-		},
-		{
-			name: "TransactionMaxBackoff/" + txName,
-			set: func(transactionInterface interface{}) (interface{}, error) {
-				return TransactionSetMaxBackoff(transactionInterface, time.Second*200)
-			},
-			get: func(transactionInterface interface{}) (interface{}, error) {
-				return TransactionGetMaxBackoff(transactionInterface)
-			},
-			assert: func(t *testing.T, actual interface{}) {
-				require.Equal(t, time.Second*200, actual)
-			},
-		},
-	}
-}
-
-// TransactionGetTransactionHash //needs to be tested in e2e tests
-// TransactionGetTransactionHashPerNode //needs to be tested in e2e tests
-// TransactionExecute //needs to be tested in e2e tests
+
+// func TestUnitTransactionInitFeeMaxTransactionWithouthSettingFee(t *testing.T) {
+// 	t.Parallel()
+
+// 	//Default Max Fee for TransferTransaction
+// 	fee := NewHbar(1)
+// 	client, err := _NewMockClient()
+// 	client.SetLedgerID(*NewLedgerIDTestnet())
+// 	require.NoError(t, err)
+// 	transaction, err := NewTransferTransaction().
+// 		AddHbarTransfer(AccountID{Account: 2}, HbarFromTinybar(-100)).
+// 		AddHbarTransfer(AccountID{Account: 3}, HbarFromTinybar(100)).
+// 		FreezeWith(client)
+// 	require.NoError(t, err)
+// 	require.Equal(t, uint64(fee.AsTinybar()), transaction.transactionFee)
+// }
+
+// func TestUnitTransactionInitFeeMaxTransactionFeeSetExplicitly(t *testing.T) {
+// 	t.Parallel()
+
+// 	clientMaxFee := NewHbar(14)
+// 	explicitMaxFee := NewHbar(15)
+// 	client, err := _NewMockClient()
+// 	client.SetLedgerID(*NewLedgerIDTestnet())
+// 	client.SetDefaultMaxTransactionFee(clientMaxFee)
+// 	require.NoError(t, err)
+// 	transaction, err := NewTransferTransaction().
+// 		AddHbarTransfer(AccountID{Account: 2}, HbarFromTinybar(-100)).
+// 		AddHbarTransfer(AccountID{Account: 3}, HbarFromTinybar(100)).
+// 		SetMaxTransactionFee(explicitMaxFee).
+// 		FreezeWith(client)
+// 	require.NoError(t, err)
+// 	require.Equal(t, uint64(explicitMaxFee.AsTinybar()), transaction.transactionFee)
+// }
+
+// func TestUnitTransactionInitFeeMaxTransactionFromClientDefault(t *testing.T) {
+// 	t.Parallel()
+
+// 	fee := NewHbar(14)
+// 	client, err := _NewMockClient()
+// 	client.SetLedgerID(*NewLedgerIDTestnet())
+// 	client.SetDefaultMaxTransactionFee(fee)
+// 	require.NoError(t, err)
+// 	transaction, err := NewTransferTransaction().
+// 		AddHbarTransfer(AccountID{Account: 2}, HbarFromTinybar(-100)).
+// 		AddHbarTransfer(AccountID{Account: 3}, HbarFromTinybar(100)).
+// 		FreezeWith(client)
+// 	require.NoError(t, err)
+// 	require.Equal(t, uint64(fee.AsTinybar()), transaction.transactionFee)
+// }
+
+// func TestUnitTransactionSignSwitchCases(t *testing.T) {
+// 	t.Parallel()
+
+// 	newKey, client, nodeAccountId := signSwitchCaseaSetup(t)
+
+// 	txs := []Executable{
+// 		NewAccountCreateTransaction(),
+// 		NewAccountDeleteTransaction(),
+// 		NewAccountUpdateTransaction(),
+// 		NewAccountAllowanceApproveTransaction(),
+// 		NewAccountAllowanceDeleteTransaction(),
+// 		NewFileCreateTransaction(),
+// 		NewFileDeleteTransaction(),
+// 		NewFileUpdateTransaction(),
+// 		NewLiveHashAddTransaction(),
+// 		NewLiveHashDeleteTransaction(),
+// 		NewTokenAssociateTransaction(),
+// 		NewTokenBurnTransaction(),
+// 		NewTokenCreateTransaction(),
+// 		NewTokenDeleteTransaction(),
+// 		NewTokenDissociateTransaction(),
+// 		NewTokenFeeScheduleUpdateTransaction(),
+// 		NewTokenFreezeTransaction(),
+// 		NewTokenGrantKycTransaction(),
+// 		NewTokenMintTransaction(),
+// 		NewTokenRevokeKycTransaction(),
+// 		NewTokenUnfreezeTransaction(),
+// 		NewTokenUpdateTransaction(),
+// 		NewTokenWipeTransaction(),
+// 		NewTopicCreateTransaction(),
+// 		NewTopicDeleteTransaction(),
+// 		NewTopicUpdateTransaction(),
+// 		NewTransferTransaction(),
+// 	}
+
+// 	for _, tx := range txs {
+
+// 		txVal, signature, transferTxBytes := signSwitchCaseaHelper(t, tx, newKey, client)
+
+// 		signTests := signTestsForTransaction(txVal, newKey, signature, client)
+
+// 		for _, tt := range signTests {
+// 			t.Run(tt.name, func(t *testing.T) {
+// 				transactionInterface, err := TransactionFromBytes(transferTxBytes)
+// 				require.NoError(t, err)
+
+// 				tx, err := tt.sign(transactionInterface, newKey)
+// 				assert.NoError(t, err)
+// 				assert.NotEmpty(t, tx)
+
+// 				signs, err := TransactionGetSignatures(transactionInterface)
+// 				assert.NoError(t, err)
+
+// 				// verify with range because var signs = map[AccountID]map[*PublicKey][]byte, where *PublicKey is unknown memory address
+// 				for key := range signs[nodeAccountId] {
+// 					assert.Equal(t, signs[nodeAccountId][key], signature)
+// 				}
+// 			})
+// 		}
+// 	}
+// }
+
+// func TestUnitTransactionSignSwitchCasesPointers(t *testing.T) {
+// 	t.Parallel()
+
+// 	newKey, client, nodeAccountId := signSwitchCaseaSetup(t)
+
+// 	txs := []interface{}{
+// 		NewAccountCreateTransaction(),
+// 		NewAccountDeleteTransaction(),
+// 		NewAccountUpdateTransaction(),
+// 		NewAccountAllowanceApproveTransaction(),
+// 		NewAccountAllowanceDeleteTransaction(),
+// 		NewFileCreateTransaction(),
+// 		NewFileDeleteTransaction(),
+// 		NewFileUpdateTransaction(),
+// 		NewLiveHashAddTransaction(),
+// 		NewLiveHashDeleteTransaction(),
+// 		NewTokenAssociateTransaction(),
+// 		NewTokenBurnTransaction(),
+// 		NewTokenCreateTransaction(),
+// 		NewTokenDeleteTransaction(),
+// 		NewTokenDissociateTransaction(),
+// 		NewTokenFeeScheduleUpdateTransaction(),
+// 		NewTokenFreezeTransaction(),
+// 		NewTokenGrantKycTransaction(),
+// 		NewTokenMintTransaction(),
+// 		NewTokenRevokeKycTransaction(),
+// 		NewTokenUnfreezeTransaction(),
+// 		NewTokenUpdateTransaction(),
+// 		NewTokenWipeTransaction(),
+// 		NewTopicCreateTransaction(),
+// 		NewTopicDeleteTransaction(),
+// 		NewTopicUpdateTransaction(),
+// 		NewTransferTransaction(),
+// 	}
+
+// 	for _, tx := range txs {
+
+// 		txVal, signature, transferTxBytes := signSwitchCaseaHelper(t, tx, newKey, client)
+// 		signTests := signTestsForTransaction(txVal, newKey, signature, client)
+
+// 		for _, tt := range signTests {
+// 			t.Run(tt.name, func(t *testing.T) {
+// 				transactionInterface, err := TransactionFromBytes(transferTxBytes)
+// 				require.NoError(t, err)
+
+// 				// Convert the transactionInterface to a pointer
+// 				ptr := reflect.New(reflect.TypeOf(transactionInterface))
+// 				ptr.Elem().Set(reflect.ValueOf(transactionInterface))
+
+// 				tx, err := tt.sign(ptr.Interface(), newKey)
+// 				assert.NoError(t, err)
+// 				assert.NotEmpty(t, tx)
+
+// 				signs, err := TransactionGetSignatures(ptr.Interface())
+// 				assert.NoError(t, err)
+
+// 				// verify with range because var signs = map[AccountID]map[*PublicKey][]byte, where *PublicKey is unknown memory address
+// 				for key := range signs[nodeAccountId] {
+// 					assert.Equal(t, signs[nodeAccountId][key], signature)
+// 				}
+// 			})
+// 		}
+// 	}
+// }
+
+// func TestUnitTransactionAttributes(t *testing.T) {
+// 	t.Parallel()
+
+// 	client, err := _NewMockClient()
+// 	require.NoError(t, err)
+// 	client.SetLedgerID(*NewLedgerIDTestnet())
+// 	nodeAccountIds := client.network._GetNodeAccountIDsForExecute()
+
+// 	txs := []interface{}{
+// 		NewAccountCreateTransaction(),
+// 		NewAccountDeleteTransaction(),
+// 		NewAccountUpdateTransaction(),
+// 		NewAccountAllowanceApproveTransaction(),
+// 		NewAccountAllowanceDeleteTransaction(),
+// 		NewContractCreateTransaction(),
+// 		NewContractDeleteTransaction(),
+// 		NewContractExecuteTransaction(),
+// 		NewContractUpdateTransaction(),
+// 		NewFileAppendTransaction(),
+// 		NewFileCreateTransaction(),
+// 		NewFileDeleteTransaction(),
+// 		NewFileUpdateTransaction(),
+// 		NewLiveHashAddTransaction(),
+// 		NewLiveHashDeleteTransaction(),
+// 		NewScheduleCreateTransaction(),
+// 		NewScheduleDeleteTransaction(),
+// 		NewScheduleSignTransaction(),
+// 		NewSystemDeleteTransaction(),
+// 		NewSystemUndeleteTransaction(),
+// 		NewTokenAssociateTransaction(),
+// 		NewTokenBurnTransaction(),
+// 		NewTokenCreateTransaction(),
+// 		NewTokenDeleteTransaction(),
+// 		NewTokenDissociateTransaction(),
+// 		NewTokenFeeScheduleUpdateTransaction(),
+// 		NewTokenFreezeTransaction(),
+// 		NewTokenGrantKycTransaction(),
+// 		NewTokenMintTransaction(),
+// 		NewTokenRevokeKycTransaction(),
+// 		NewTokenUnfreezeTransaction(),
+// 		NewTokenUpdateTransaction(),
+// 		NewTokenWipeTransaction(),
+// 		NewTopicCreateTransaction(),
+// 		NewTopicDeleteTransaction(),
+// 		NewTopicUpdateTransaction(),
+// 		NewTransferTransaction(),
+// 	}
+
+// 	for _, tx := range txs {
+// 		txName := reflect.TypeOf(tx).Elem().Name()
+
+// 		tests := createTransactionTests(txName, nodeAccountIds)
+
+// 		for _, tt := range tests {
+// 			t.Run(tt.name, func(t *testing.T) {
+// 				txSet, err := tt.set(tx)
+// 				require.NoError(t, err)
+
+// 				txGet, err := tt.get(txSet)
+// 				require.NoError(t, err)
+
+// 				tt.assert(t, txGet)
+// 			})
+// 		}
+// 	}
+// }
+
+// func TestUnitTransactionAttributesDereferanced(t *testing.T) {
+// 	t.Parallel()
+
+// 	client, err := _NewMockClient()
+// 	require.NoError(t, err)
+// 	client.SetLedgerID(*NewLedgerIDTestnet())
+// 	nodeAccountIds := client.network._GetNodeAccountIDsForExecute()
+
+// 	txs := []interface{}{
+// 		NewAccountCreateTransaction(),
+// 		NewAccountDeleteTransaction(),
+// 		NewAccountUpdateTransaction(),
+// 		NewAccountAllowanceApproveTransaction(),
+// 		NewAccountAllowanceDeleteTransaction(),
+// 		NewContractCreateTransaction(),
+// 		NewContractDeleteTransaction(),
+// 		NewContractExecuteTransaction(),
+// 		NewContractUpdateTransaction(),
+// 		NewFileAppendTransaction(),
+// 		NewFileCreateTransaction(),
+// 		NewFileDeleteTransaction(),
+// 		NewFileUpdateTransaction(),
+// 		NewLiveHashAddTransaction(),
+// 		NewLiveHashDeleteTransaction(),
+// 		NewScheduleCreateTransaction(),
+// 		NewScheduleDeleteTransaction(),
+// 		NewScheduleSignTransaction(),
+// 		NewSystemDeleteTransaction(),
+// 		NewSystemUndeleteTransaction(),
+// 		NewTokenAssociateTransaction(),
+// 		NewTokenBurnTransaction(),
+// 		NewTokenCreateTransaction(),
+// 		NewTokenDeleteTransaction(),
+// 		NewTokenDissociateTransaction(),
+// 		NewTokenFeeScheduleUpdateTransaction(),
+// 		NewTokenFreezeTransaction(),
+// 		NewTokenGrantKycTransaction(),
+// 		NewTokenMintTransaction(),
+// 		NewTokenRevokeKycTransaction(),
+// 		NewTokenUnfreezeTransaction(),
+// 		NewTokenUpdateTransaction(),
+// 		NewTokenWipeTransaction(),
+// 		NewTopicCreateTransaction(),
+// 		NewTopicDeleteTransaction(),
+// 		NewTopicUpdateTransaction(),
+// 		NewTransferTransaction(),
+// 	}
+
+// 	for _, tx := range txs {
+// 		txName := reflect.TypeOf(tx).Elem().Name()
+
+// 		tests := createTransactionTests(txName, nodeAccountIds)
+
+// 		for _, tt := range tests {
+// 			t.Run(tt.name, func(t *testing.T) {
+// 				txValue := reflect.ValueOf(tx).Elem().Interface()
+// 				txSet, err := tt.set(txValue)
+// 				require.NoError(t, err)
+
+// 				txGet, err := tt.get(txSet)
+// 				require.NoError(t, err)
+
+// 				tt.assert(t, txGet)
+// 			})
+// 		}
+// 	}
+// }
+
+// func TestUnitTransactionAttributesSerialization(t *testing.T) {
+// 	t.Parallel()
+
+// 	client, err := _NewMockClient()
+// 	require.NoError(t, err)
+// 	client.SetLedgerID(*NewLedgerIDTestnet())
+
+// 	txs := []interface{}{
+// 		NewAccountCreateTransaction(),
+// 		NewAccountDeleteTransaction(),
+// 		NewAccountUpdateTransaction(),
+// 		NewAccountAllowanceApproveTransaction(),
+// 		NewAccountAllowanceDeleteTransaction(),
+// 		NewContractCreateTransaction(),
+// 		NewContractDeleteTransaction(),
+// 		NewContractExecuteTransaction(),
+// 		NewContractUpdateTransaction(),
+// 		NewFileCreateTransaction(),
+// 		NewFileDeleteTransaction(),
+// 		NewFileUpdateTransaction(),
+// 		NewLiveHashAddTransaction(),
+// 		NewLiveHashDeleteTransaction(),
+// 		NewScheduleCreateTransaction(),
+// 		NewScheduleDeleteTransaction(),
+// 		NewScheduleSignTransaction(),
+// 		NewSystemDeleteTransaction(),
+// 		NewSystemUndeleteTransaction(),
+// 		NewTokenAssociateTransaction(),
+// 		NewTokenBurnTransaction(),
+// 		NewTokenCreateTransaction(),
+// 		NewTokenDeleteTransaction(),
+// 		NewTokenDissociateTransaction(),
+// 		NewTokenFeeScheduleUpdateTransaction(),
+// 		NewTokenFreezeTransaction(),
+// 		NewTokenGrantKycTransaction(),
+// 		NewTokenMintTransaction(),
+// 		NewTokenRevokeKycTransaction(),
+// 		NewTokenUnfreezeTransaction(),
+// 		NewTokenUpdateTransaction(),
+// 		NewTokenWipeTransaction(),
+// 		NewTopicCreateTransaction(),
+// 		NewTopicDeleteTransaction(),
+// 		NewTopicUpdateTransaction(),
+// 		NewTransferTransaction(),
+// 	}
+
+// 	for _, tx := range txs {
+// 		txName := reflect.TypeOf(tx).Elem().Name()
+
+// 		// Get the reflect.Value of the pointer to the Transaction
+// 		txPtr := reflect.ValueOf(tx)
+// 		txPtr.MethodByName("FreezeWith").Call([]reflect.Value{reflect.ValueOf(client)})
+
+// 		tests := []struct {
+// 			name string
+// 			act  func(transactionInterface interface{})
+// 		}{
+// 			{
+// 				name: "TransactionString/" + txName,
+// 				act: func(transactionInterface interface{}) {
+// 					txString, err := TransactionString(transactionInterface)
+// 					require.NoError(t, err)
+// 					require.NotEmpty(t, txString)
+// 				},
+// 			},
+// 			{
+// 				name: "TransactionToBytes/" + txName,
+// 				act: func(transactionInterface interface{}) {
+// 					txBytes, err := TransactionToBytes(transactionInterface)
+// 					require.NoError(t, err)
+// 					require.NotEmpty(t, txBytes)
+// 				},
+// 			},
+// 		}
+
+// 		for _, tt := range tests {
+// 			t.Run(tt.name, func(t *testing.T) {
+// 				tt.act(tx)
+// 				txValue := reflect.ValueOf(tx).Elem().Interface()
+// 				tt.act(txValue)
+// 			})
+// 		}
+// 	}
+// }
+
+// func signSwitchCaseaSetup(t *testing.T) (PrivateKey, *Client, AccountID) {
+// 	newKey, err := GeneratePrivateKey()
+// 	require.NoError(t, err)
+
+// 	client, err := _NewMockClient()
+// 	require.NoError(t, err)
+// 	client.SetLedgerID(*NewLedgerIDTestnet())
+
+// 	nodeAccountIds := client.network._GetNodeAccountIDsForExecute()
+// 	nodeAccountId := nodeAccountIds[0]
+
+// 	return newKey, client, nodeAccountId
+// }
+
+// func signSwitchCaseaHelper(t *testing.T, tx interface{}, newKey PrivateKey, client *Client) (txVal reflect.Value, signature []byte, transferTxBytes []byte) {
+// 	// Get the reflect.Value of the pointer to the transaction
+// 	txPtr := reflect.ValueOf(tx)
+// 	txPtr.MethodByName("FreezeWith").Call([]reflect.Value{reflect.ValueOf(client)})
+
+// 	// Get the reflect.Value of the transaction
+// 	txVal = txPtr.Elem()
+
+// 	// Get the transaction field by name
+// 	txField := txVal.FieldByName("Transaction")
+
+// 	// Get the value of the Transaction field
+// 	txValue := txField.Interface().(Transaction)
+
+// 	refl_signature := reflect.ValueOf(newKey).MethodByName("SignTransaction").Call([]reflect.Value{reflect.ValueOf(&txValue)})
+// 	signature = refl_signature[0].Interface().([]byte)
+
+// 	transferTxBytes, err := TransactionToBytes(tx)
+// 	assert.NoError(t, err)
+// 	assert.NotEmpty(t, transferTxBytes)
+
+// 	return txVal, signature, transferTxBytes
+// }
+
+// func signTestsForTransaction(txVal reflect.Value, newKey PrivateKey, signature []byte, client *Client) []struct {
+// 	name string
+// 	sign func(transactionInterface interface{}, key Key) (interface{}, error)
+// } {
+// 	return []struct {
+// 		name string
+// 		sign func(transactionInterface interface{}, key Key) (interface{}, error)
+// 	}{
+// 		{
+// 			name: "TransactionSign/" + txVal.Type().Name(),
+// 			sign: func(transactionInterface interface{}, key Key) (interface{}, error) {
+// 				privateKey, ok := key.(PrivateKey)
+// 				if !ok {
+// 					panic("key is not a PrivateKey")
+// 				}
+// 				return TransactionSign(transactionInterface, privateKey)
+// 			},
+// 		},
+// 		{
+// 			name: "TransactionSignWith/" + txVal.Type().Name(),
+// 			sign: func(transactionInterface interface{}, key Key) (interface{}, error) {
+// 				return TransactionSignWth(transactionInterface, newKey.PublicKey(), newKey.Sign)
+// 			},
+// 		},
+// 		{
+// 			name: "TransactionSignWithOperator/" + txVal.Type().Name(),
+// 			sign: func(transactionInterface interface{}, key Key) (interface{}, error) {
+// 				return TransactionSignWithOperator(transactionInterface, client)
+// 			},
+// 		},
+// 		{
+// 			name: "TransactionAddSignature/" + txVal.Type().Name(),
+// 			sign: func(transactionInterface interface{}, key Key) (interface{}, error) {
+// 				return TransactionAddSignature(transactionInterface, newKey.PublicKey(), signature)
+// 			},
+// 		},
+// 	}
+// }
+
+// type transactionTest struct {
+// 	name   string
+// 	set    func(transactionInterface interface{}) (interface{}, error)
+// 	get    func(transactionInterface interface{}) (interface{}, error)
+// 	assert func(t *testing.T, actual interface{})
+// }
+
+// func createTransactionTests(txName string, nodeAccountIds []AccountID) []transactionTest {
+// 	return []transactionTest{
+// 		{
+// 			name: "TransactionTransactionID/" + txName,
+// 			set: func(transactionInterface interface{}) (interface{}, error) {
+// 				transactionID := TransactionID{AccountID: &AccountID{Account: 9999}, ValidStart: &time.Time{}, scheduled: false, Nonce: nil}
+// 				return TransactionSetTransactionID(transactionInterface, transactionID)
+// 			},
+// 			get: func(transactionInterface interface{}) (interface{}, error) {
+// 				return TransactionGetTransactionID(transactionInterface)
+// 			},
+// 			assert: func(t *testing.T, actual interface{}) {
+// 				transactionID := TransactionID{AccountID: &AccountID{Account: 9999}, ValidStart: &time.Time{}, scheduled: false, Nonce: nil}
+// 				A := actual.(TransactionID)
+
+// 				require.Equal(t, transactionID.AccountID, A.AccountID)
+// 			},
+// 		},
+// 		{
+// 			name: "TransactionTransactionMemo/" + txName,
+// 			set: func(transactionInterface interface{}) (interface{}, error) {
+// 				return TransactionSetTransactionMemo(transactionInterface, "test memo")
+// 			},
+// 			get: func(transactionInterface interface{}) (interface{}, error) {
+// 				return TransactionGetTransactionMemo(transactionInterface)
+// 			},
+// 			assert: func(t *testing.T, actual interface{}) {
+// 				require.Equal(t, "test memo", actual)
+// 			},
+// 		},
+// 		{
+// 			name: "TransactionMaxTransactionFee/" + txName,
+// 			set: func(transactionInterface interface{}) (interface{}, error) {
+// 				return TransactionSetMaxTransactionFee(transactionInterface, NewHbar(1))
+// 			},
+// 			get: func(transactionInterface interface{}) (interface{}, error) {
+// 				return TransactionGetMaxTransactionFee(transactionInterface)
+// 			},
+// 			assert: func(t *testing.T, actual interface{}) {
+// 				require.Equal(t, NewHbar(1), actual)
+// 			},
+// 		},
+// 		{
+// 			name: "TransactionTransactionValidDuration/" + txName,
+// 			set: func(transactionInterface interface{}) (interface{}, error) {
+// 				return TransactionSetTransactionValidDuration(transactionInterface, time.Second*10)
+// 			},
+// 			get: func(transactionInterface interface{}) (interface{}, error) {
+// 				return TransactionGetTransactionValidDuration(transactionInterface)
+// 			},
+// 			assert: func(t *testing.T, actual interface{}) {
+// 				require.Equal(t, time.Second*10, actual)
+// 			},
+// 		},
+// 		{
+// 			name: "TransactionNodeAccountIDs/" + txName,
+// 			set: func(transactionInterface interface{}) (interface{}, error) {
+// 				return TransactionSetNodeAccountIDs(transactionInterface, nodeAccountIds)
+// 			},
+// 			get: func(transactionInterface interface{}) (interface{}, error) {
+// 				return TransactionGetNodeAccountIDs(transactionInterface)
+// 			},
+// 			assert: func(t *testing.T, actual interface{}) {
+// 				require.Equal(t, nodeAccountIds, actual)
+// 			},
+// 		},
+// 		{
+// 			name: "TransactionMinBackoff/" + txName,
+// 			set: func(transactionInterface interface{}) (interface{}, error) {
+// 				tx, _ := TransactionSetMaxBackoff(transactionInterface, time.Second*200)
+// 				return TransactionSetMinBackoff(tx, time.Second*10)
+// 			},
+// 			get: func(transactionInterface interface{}) (interface{}, error) {
+// 				return TransactionGetMinBackoff(transactionInterface)
+// 			},
+// 			assert: func(t *testing.T, actual interface{}) {
+// 				require.Equal(t, time.Second*10, actual)
+// 			},
+// 		},
+// 		{
+// 			name: "TransactionMaxBackoff/" + txName,
+// 			set: func(transactionInterface interface{}) (interface{}, error) {
+// 				return TransactionSetMaxBackoff(transactionInterface, time.Second*200)
+// 			},
+// 			get: func(transactionInterface interface{}) (interface{}, error) {
+// 				return TransactionGetMaxBackoff(transactionInterface)
+// 			},
+// 			assert: func(t *testing.T, actual interface{}) {
+// 				require.Equal(t, time.Second*200, actual)
+// 			},
+// 		},
+// 	}
+// }
+
+// // TransactionGetTransactionHash //needs to be tested in e2e tests
+// // TransactionGetTransactionHashPerNode //needs to be tested in e2e tests
+// // TransactionExecute //needs to be tested in e2e tests

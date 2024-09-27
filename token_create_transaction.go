@@ -633,3 +633,7 @@ func (tx *TokenCreateTransaction) preFreezeWith(client *Client) {
 func (tx *TokenCreateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
+
+func (tx *TokenCreateTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction[*TokenCreateTransaction](tx.Transaction)
+}

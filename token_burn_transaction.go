@@ -187,6 +187,11 @@ func (tx *TokenBurnTransaction) getMethod(channel *_Channel) _Method {
 		transaction: channel._GetToken().BurnToken,
 	}
 }
+
 func (tx *TokenBurnTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
+}
+
+func (tx *TokenBurnTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction[*TokenBurnTransaction](tx.Transaction)
 }

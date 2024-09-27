@@ -48,10 +48,11 @@ type ScheduleSignTransaction struct {
 // Upon SUCCESS, the receipt includes the scheduledTransactionID to use to query
 // for the record of the scheduled transaction's execution (if it occurs).
 func NewScheduleSignTransaction() *ScheduleSignTransaction {
-	tx := ScheduleSignTransaction{}
+	tx := &ScheduleSignTransaction{}
+	tx.Transaction = _NewTransaction(tx)
 	tx._SetDefaultMaxTransactionFee(NewHbar(5))
 
-	return &tx
+	return tx
 }
 
 func _ScheduleSignTransactionFromProtobuf(tx Transaction[*ScheduleSignTransaction], pb *services.TransactionBody) *ScheduleSignTransaction {
@@ -130,4 +131,8 @@ func (tx *ScheduleSignTransaction) getMethod(channel *_Channel) _Method {
 
 func (tx *ScheduleSignTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
+}
+
+func (tx *ScheduleSignTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction[*ScheduleSignTransaction](tx.Transaction)
 }

@@ -272,7 +272,7 @@ func TestUnitTopicMessageSubmitTransactionCoverage(t *testing.T) {
 	require.NoError(t, err)
 	txFromBytes, err := TransactionFromBytes(byt)
 	require.NoError(t, err)
-	sig, err := newKey.SignTransaction(&transaction.Transaction)
+	sig, err := newKey.SignTransaction(transaction.Transaction)
 	require.NoError(t, err)
 
 	_, err = transaction.GetTransactionHash()
@@ -315,7 +315,7 @@ func TestUnitTopicMessageSubmitTransactionSerialization(t *testing.T) {
 	txParsed, err := TransactionFromBytes(txBytes)
 	require.NoError(t, err)
 
-	result, ok := txParsed.(TopicMessageSubmitTransaction)
+	result, ok := txParsed.(*TopicMessageSubmitTransaction)
 	require.True(t, ok)
 
 	require.Equal(t, transactionID.AccountID, result.GetTransactionID().AccountID)
@@ -338,7 +338,7 @@ func TestUnitTopicMessageSubmitTransactionSetMessage(t *testing.T) {
 	txParsed, err := TransactionFromBytes(txBytes)
 	require.NoError(t, err)
 
-	result, ok := txParsed.(TopicMessageSubmitTransaction)
+	result, ok := txParsed.(*TopicMessageSubmitTransaction)
 	require.True(t, ok)
 
 	require.Equal(t, transaction.GetMessage(), result.GetMessage())
