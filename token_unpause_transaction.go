@@ -52,10 +52,9 @@ func NewTokenUnpauseTransaction() *TokenUnpauseTransaction {
 	return tx
 }
 
-func _TokenUnpauseTransactionFromProtobuf(tx Transaction[*TokenUnpauseTransaction], pb *services.TransactionBody) *TokenUnpauseTransaction {
+func _TokenUnpauseTransactionFromProtobuf(pb *services.TransactionBody) *TokenUnpauseTransaction {
 	return &TokenUnpauseTransaction{
-		Transaction: &tx,
-		tokenID:     _TokenIDFromProtobuf(pb.GetTokenDeletion().GetToken()),
+		tokenID: _TokenIDFromProtobuf(pb.GetTokenDeletion().GetToken()),
 	}
 }
 

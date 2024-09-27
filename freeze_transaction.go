@@ -44,7 +44,7 @@ func NewFreezeTransaction() *FreezeTransaction {
 	return tx
 }
 
-func _FreezeTransactionFromProtobuf(tx Transaction[*FreezeTransaction], pb *services.TransactionBody) *FreezeTransaction {
+func _FreezeTransactionFromProtobuf(pb *services.TransactionBody) *FreezeTransaction {
 	startTime := time.Date(
 		time.Now().Year(), time.Now().Month(), time.Now().Day(),
 		int(pb.GetFreeze().GetStartHour()), int(pb.GetFreeze().GetStartMin()), // nolint
@@ -58,11 +58,10 @@ func _FreezeTransactionFromProtobuf(tx Transaction[*FreezeTransaction], pb *serv
 	)
 
 	return &FreezeTransaction{
-		Transaction: &tx,
-		startTime:   startTime,
-		endTime:     endTime,
-		fileID:      _FileIDFromProtobuf(pb.GetFreeze().GetUpdateFile()),
-		fileHash:    pb.GetFreeze().FileHash,
+		startTime: startTime,
+		endTime:   endTime,
+		fileID:    _FileIDFromProtobuf(pb.GetFreeze().GetUpdateFile()),
+		fileHash:  pb.GetFreeze().FileHash,
 	}
 }
 

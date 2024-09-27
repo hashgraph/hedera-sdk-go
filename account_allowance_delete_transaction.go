@@ -49,7 +49,7 @@ func NewAccountAllowanceDeleteTransaction() *AccountAllowanceDeleteTransaction {
 	return tx
 }
 
-func _AccountAllowanceDeleteTransactionFromProtobuf(tx Transaction[*AccountAllowanceDeleteTransaction], pb *services.TransactionBody) *AccountAllowanceDeleteTransaction {
+func _AccountAllowanceDeleteTransactionFromProtobuf(pb *services.TransactionBody) *AccountAllowanceDeleteTransaction {
 	nftWipe := make([]*TokenNftAllowance, 0)
 
 	for _, ap := range pb.GetCryptoDeleteAllowance().GetNftAllowances() {
@@ -57,12 +57,9 @@ func _AccountAllowanceDeleteTransactionFromProtobuf(tx Transaction[*AccountAllow
 		nftWipe = append(nftWipe, &temp)
 	}
 
-	accountAllowanceDeleteTransaction := &AccountAllowanceDeleteTransaction{
-		Transaction: &tx,
-		nftWipe:     nftWipe,
+	return &AccountAllowanceDeleteTransaction{
+		nftWipe: nftWipe,
 	}
-	accountAllowanceDeleteTransaction.childTransaction = accountAllowanceDeleteTransaction
-	return accountAllowanceDeleteTransaction
 }
 
 // Deprecated

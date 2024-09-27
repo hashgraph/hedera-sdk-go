@@ -54,17 +54,16 @@ func NewTokenRejectTransaction() *TokenRejectTransaction {
 	return tx
 }
 
-func _TokenRejectTransactionFromProtobuf(tx Transaction[*TokenRejectTransaction], pb *services.TransactionBody) *TokenRejectTransaction {
+func _TokenRejectTransactionFromProtobuf(pb *services.TransactionBody) *TokenRejectTransaction {
 	rejectTransaction := &TokenRejectTransaction{
-		Transaction: &tx,
-		ownerID:     _AccountIDFromProtobuf(pb.GetTokenReject().Owner),
+		ownerID: _AccountIDFromProtobuf(pb.GetTokenReject().Owner),
 	}
 
 	for _, rejection := range pb.GetTokenReject().Rejections {
 		if rejection.GetFungibleToken() != nil {
-			rejectTransaction.AddTokenID(*_TokenIDFromProtobuf(rejection.GetFungibleToken()))
+			rejectTransaction.tokenIDs = append(rejectTransaction.tokenIDs, *_TokenIDFromProtobuf(rejection.GetFungibleToken()))
 		} else if rejection.GetNft() != nil {
-			rejectTransaction.AddNftID(_NftIDFromProtobuf(rejection.GetNft()))
+			rejectTransaction.nftIDs = append(rejectTransaction.nftIDs, _NftIDFromProtobuf(rejection.GetNft()))
 		}
 	}
 

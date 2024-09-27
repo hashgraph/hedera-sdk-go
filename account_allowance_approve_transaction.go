@@ -58,7 +58,7 @@ func NewAccountAllowanceApproveTransaction() *AccountAllowanceApproveTransaction
 	return tx
 }
 
-func _AccountAllowanceApproveTransactionFromProtobuf(tx Transaction[*AccountAllowanceApproveTransaction], pb *services.TransactionBody) *AccountAllowanceApproveTransaction {
+func _AccountAllowanceApproveTransactionFromProtobuf(pb *services.TransactionBody) *AccountAllowanceApproveTransaction {
 	accountApproval := make([]*HbarAllowance, 0)
 	tokenApproval := make([]*TokenAllowance, 0)
 	nftApproval := make([]*TokenNftAllowance, 0)
@@ -78,14 +78,11 @@ func _AccountAllowanceApproveTransactionFromProtobuf(tx Transaction[*AccountAllo
 		nftApproval = append(nftApproval, &temp)
 	}
 
-	accountAllowanceApproveTransaction := &AccountAllowanceApproveTransaction{
-		Transaction:     &tx,
+	return &AccountAllowanceApproveTransaction{
 		hbarAllowances:  accountApproval,
 		tokenAllowances: tokenApproval,
 		nftAllowances:   nftApproval,
 	}
-	accountAllowanceApproveTransaction.childTransaction = accountAllowanceApproveTransaction
-	return accountAllowanceApproveTransaction
 }
 
 func (tx *AccountAllowanceApproveTransaction) _ApproveHbarApproval(ownerAccountID *AccountID, id AccountID, amount Hbar) *AccountAllowanceApproveTransaction {

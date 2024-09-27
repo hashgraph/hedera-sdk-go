@@ -61,11 +61,10 @@ func NewTokenUnfreezeTransaction() *TokenUnfreezeTransaction {
 	return tx
 }
 
-func _TokenUnfreezeTransactionFromProtobuf(tx Transaction[*TokenUnfreezeTransaction], pb *services.TransactionBody) *TokenUnfreezeTransaction {
+func _TokenUnfreezeTransactionFromProtobuf(pb *services.TransactionBody) *TokenUnfreezeTransaction {
 	return &TokenUnfreezeTransaction{
-		Transaction: &tx,
-		tokenID:     _TokenIDFromProtobuf(pb.GetTokenUnfreeze().GetToken()),
-		accountID:   _AccountIDFromProtobuf(pb.GetTokenUnfreeze().GetAccount()),
+		tokenID:   _TokenIDFromProtobuf(pb.GetTokenUnfreeze().GetToken()),
+		accountID: _AccountIDFromProtobuf(pb.GetTokenUnfreeze().GetAccount()),
 	}
 }
 

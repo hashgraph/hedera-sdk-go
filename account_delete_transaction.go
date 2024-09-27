@@ -34,9 +34,8 @@ type AccountDeleteTransaction struct {
 	deleteAccountID   *AccountID
 }
 
-func _AccountDeleteTransactionFromProtobuf(tx Transaction[*AccountDeleteTransaction], pb *services.TransactionBody) *AccountDeleteTransaction {
+func _AccountDeleteTransactionFromProtobuf(pb *services.TransactionBody) *AccountDeleteTransaction {
 	return &AccountDeleteTransaction{
-		Transaction:       &tx,
 		transferAccountID: _AccountIDFromProtobuf(pb.GetCryptoDelete().GetTransferAccountID()),
 		deleteAccountID:   _AccountIDFromProtobuf(pb.GetCryptoDelete().GetDeleteAccountID()),
 	}

@@ -55,10 +55,9 @@ func NewNodeDeleteTransaction() *NodeDeleteTransaction {
 	return tx
 }
 
-func _NodeDeleteTransactionFromProtobuf(tx Transaction[*NodeDeleteTransaction], pb *services.TransactionBody) *NodeDeleteTransaction {
+func _NodeDeleteTransactionFromProtobuf(pb *services.TransactionBody) *NodeDeleteTransaction {
 	return &NodeDeleteTransaction{
-		Transaction: &tx,
-		nodeID:      pb.GetNodeDelete().NodeId,
+		nodeID: pb.GetNodeDelete().NodeId,
 	}
 }
 

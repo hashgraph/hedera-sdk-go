@@ -46,7 +46,7 @@ func NewTokenAirdropTransaction() *TokenAirdropTransaction {
 	return tx
 }
 
-func _TokenAirdropTransactionFromProtobuf(tx Transaction[*TokenAirdropTransaction], pb *services.TransactionBody) *TokenAirdropTransaction {
+func _TokenAirdropTransactionFromProtobuf(pb *services.TransactionBody) *TokenAirdropTransaction {
 	tokenTransfers := make(map[TokenID]*_TokenTransfer)
 	nftTransfers := make(map[TokenID][]*_TokenNftTransfer)
 
@@ -68,7 +68,6 @@ func _TokenAirdropTransactionFromProtobuf(tx Transaction[*TokenAirdropTransactio
 	}
 
 	return &TokenAirdropTransaction{
-		Transaction:    &tx,
 		tokenTransfers: tokenTransfers,
 		nftTransfers:   nftTransfers,
 	}

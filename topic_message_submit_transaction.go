@@ -54,12 +54,11 @@ func NewTopicMessageSubmitTransaction() *TopicMessageSubmitTransaction {
 	return tx
 }
 
-func _TopicMessageSubmitTransactionFromProtobuf(tx Transaction[*TopicMessageSubmitTransaction], pb *services.TransactionBody) *TopicMessageSubmitTransaction {
+func _TopicMessageSubmitTransactionFromProtobuf(pb *services.TransactionBody) *TopicMessageSubmitTransaction {
 	return &TopicMessageSubmitTransaction{
-		Transaction: &tx,
-		maxChunks:   20,
-		message:     pb.GetConsensusSubmitMessage().GetMessage(),
-		topicID:     _TopicIDFromProtobuf(pb.GetConsensusSubmitMessage().GetTopicID()),
+		maxChunks: 20,
+		message:   pb.GetConsensusSubmitMessage().GetMessage(),
+		topicID:   _TopicIDFromProtobuf(pb.GetConsensusSubmitMessage().GetTopicID()),
 	}
 }
 

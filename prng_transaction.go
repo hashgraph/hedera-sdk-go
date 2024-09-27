@@ -41,10 +41,9 @@ func NewPrngTransaction() *PrngTransaction {
 	return tx
 }
 
-func _PrngTransactionFromProtobuf(tx Transaction[*PrngTransaction], pb *services.TransactionBody) *PrngTransaction {
+func _PrngTransactionFromProtobuf(pb *services.TransactionBody) *PrngTransaction {
 	return &PrngTransaction{
-		Transaction: &tx,
-		rang:        uint32(pb.GetUtilPrng().GetRange()),
+		rang: uint32(pb.GetUtilPrng().GetRange()),
 	}
 }
 

@@ -54,12 +54,11 @@ func NewTokenMintTransaction() *TokenMintTransaction {
 	return tx
 }
 
-func _TokenMintTransactionFromProtobuf(tx Transaction[*TokenMintTransaction], pb *services.TransactionBody) *TokenMintTransaction {
+func _TokenMintTransactionFromProtobuf(pb *services.TransactionBody) *TokenMintTransaction {
 	return &TokenMintTransaction{
-		Transaction: &tx,
-		tokenID:     _TokenIDFromProtobuf(pb.GetTokenMint().GetToken()),
-		amount:      pb.GetTokenMint().GetAmount(),
-		meta:        pb.GetTokenMint().GetMetadata(),
+		tokenID: _TokenIDFromProtobuf(pb.GetTokenMint().GetToken()),
+		amount:  pb.GetTokenMint().GetAmount(),
+		meta:    pb.GetTokenMint().GetMetadata(),
 	}
 }
 

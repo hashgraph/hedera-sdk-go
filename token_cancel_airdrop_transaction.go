@@ -40,16 +40,14 @@ func NewTokenCancelAirdropTransaction() *TokenCancelAirdropTransaction {
 	return tx
 }
 
-func _TokenCancelAirdropTransactionFromProtobuf(tx Transaction[*TokenCancelAirdropTransaction], pb *services.TransactionBody) *TokenCancelAirdropTransaction {
-	TokenCancel := &TokenCancelAirdropTransaction{
-		Transaction: &tx,
-	}
+func _TokenCancelAirdropTransactionFromProtobuf(pb *services.TransactionBody) *TokenCancelAirdropTransaction {
+	tokenCancelTransaction := &TokenCancelAirdropTransaction{}
 
 	for _, pendingAirdrops := range pb.GetTokenCancelAirdrop().PendingAirdrops {
-		TokenCancel.pendingAirdropIds = append(TokenCancel.pendingAirdropIds, _PendingAirdropIdFromProtobuf(pendingAirdrops))
+		tokenCancelTransaction.pendingAirdropIds = append(tokenCancelTransaction.pendingAirdropIds, _PendingAirdropIdFromProtobuf(pendingAirdrops))
 	}
 
-	return TokenCancel
+	return tokenCancelTransaction
 }
 
 // SetPendingAirdropIds sets the pending airdrop IDs for this TokenCancelAirdropTransaction.

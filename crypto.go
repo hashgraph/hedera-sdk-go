@@ -864,7 +864,8 @@ func (pk PublicKey) _ToSignaturePairProtobuf(signature []byte) *services.Signatu
 func (sk PrivateKey) SignTransaction(tx any) ([]byte, error) {
 	val := reflect.ValueOf(tx)
 	if val.Kind() == reflect.Ptr && val.Elem().Kind() == reflect.Struct {
-		baseTx, err := castFromAnyToBaseTransaction(tx)
+		// create new transaction with TransactionInterface generic
+		baseTx, err := getInterfaceGenericTransaction(tx)
 		if err != nil {
 			return []byte{}, err
 		}
@@ -875,7 +876,7 @@ func (sk PrivateKey) SignTransaction(tx any) ([]byte, error) {
 				return []byte{}, err
 			}
 
-			concreteTx, err := castBaseToConcreteTransaction(*baseTx)
+			concreteTx, err := getConcreteGenericTransaction(*baseTx)
 			if err != nil {
 				return []byte{}, err
 			}
@@ -890,7 +891,7 @@ func (sk PrivateKey) SignTransaction(tx any) ([]byte, error) {
 				return []byte{}, err
 			}
 
-			concreteTx, err := castBaseToConcreteTransaction(*baseTx)
+			concreteTx, err := getConcreteGenericTransaction(*baseTx)
 			if err != nil {
 				return []byte{}, err
 			}
@@ -918,7 +919,7 @@ func (pk PublicKey) Verify(message []byte, signature []byte) bool {
 }
 
 func (pk PublicKey) VerifyTransaction(transaction any) bool {
-	tx, err := castFromAnyToBaseTransaction(transaction)
+	tx, err := getInterfaceGenericTransaction(transaction)
 
 	if err != nil {
 		return false

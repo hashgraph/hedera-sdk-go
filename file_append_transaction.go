@@ -53,13 +53,12 @@ func NewFileAppendTransaction() *FileAppendTransaction {
 	return tx
 }
 
-func _FileAppendTransactionFromProtobuf(tx Transaction[*FileAppendTransaction], pb *services.TransactionBody) *FileAppendTransaction {
+func _FileAppendTransactionFromProtobuf(pb *services.TransactionBody) *FileAppendTransaction {
 	return &FileAppendTransaction{
-		Transaction: &tx,
-		maxChunks:   20,
-		contents:    pb.GetFileAppend().GetContents(),
-		chunkSize:   2048,
-		fileID:      _FileIDFromProtobuf(pb.GetFileAppend().GetFileID()),
+		maxChunks: 20,
+		contents:  pb.GetFileAppend().GetContents(),
+		chunkSize: 2048,
+		fileID:    _FileIDFromProtobuf(pb.GetFileAppend().GetFileID()),
 	}
 }
 

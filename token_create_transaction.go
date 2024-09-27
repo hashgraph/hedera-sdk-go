@@ -144,7 +144,7 @@ func NewTokenCreateTransaction() *TokenCreateTransaction {
 	return tx
 }
 
-func _TokenCreateTransactionFromProtobuf(tx Transaction[*TokenCreateTransaction], pb *services.TransactionBody) *TokenCreateTransaction {
+func _TokenCreateTransactionFromProtobuf(pb *services.TransactionBody) *TokenCreateTransaction {
 	customFees := make([]Fee, 0)
 
 	for _, fee := range pb.GetTokenCreation().GetCustomFees() {
@@ -165,7 +165,6 @@ func _TokenCreateTransactionFromProtobuf(tx Transaction[*TokenCreateTransaction]
 	autoRenew := _DurationFromProtobuf(pb.GetTokenCreation().GetAutoRenewPeriod())
 
 	return &TokenCreateTransaction{
-		Transaction:        &tx,
 		treasuryAccountID:  _AccountIDFromProtobuf(pb.GetTokenCreation().GetTreasury()),
 		autoRenewAccountID: _AccountIDFromProtobuf(pb.GetTokenCreation().GetAutoRenewAccount()),
 		customFees:         customFees,

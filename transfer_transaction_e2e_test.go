@@ -177,7 +177,7 @@ func TestIntegrationTransferTransactionCanTransferFromBytes(t *testing.T) {
 	transactionInterface, err := TransactionFromBytes(transferTxBytes)
 	require.NoError(t, err)
 
-	transferTransaction := transactionInterface.(*TransferTransaction)
+	transferTransaction := transactionInterface.(TransferTransaction)
 
 	resp, err = transferTransaction.Execute(env.Client)
 	require.NoError(t, err)
@@ -223,9 +223,9 @@ func TestIntegrationTransferTransactionCanTransferFromBytesAfter(t *testing.T) {
 	transactionInterface, err := TransactionFromBytes(transferTxBytes)
 	require.NoError(t, err)
 
-	transferTransaction := transactionInterface.(*TransferTransaction)
+	transferTransaction := transactionInterface.(TransferTransaction)
 
-	transferTransaction = transferTransaction.Sign(newKey)
+	transferTransaction = *transferTransaction.Sign(newKey)
 	require.NoError(t, err)
 
 	resp, err = transferTransaction.Execute(env.Client)
@@ -274,9 +274,9 @@ func TestIntegrationTransferTransactionCanTransferSignature(t *testing.T) {
 	transactionInterface, err := TransactionFromBytes(transferTxBytes)
 	require.NoError(t, err)
 
-	transferTransaction := transactionInterface.(*TransferTransaction)
+	transferTransaction := transactionInterface.(TransferTransaction)
 
-	transferTransaction = transferTransaction.AddSignature(newKey.PublicKey(), signature)
+	transferTransaction = *transferTransaction.AddSignature(newKey.PublicKey(), signature)
 
 	resp, err = transferTransaction.Execute(env.Client)
 	require.NoError(t, err)

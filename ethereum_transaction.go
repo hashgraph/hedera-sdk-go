@@ -45,9 +45,8 @@ func NewEthereumTransaction() *EthereumTransaction {
 	return tx
 }
 
-func _EthereumTransactionFromProtobuf(tx Transaction[*EthereumTransaction], pb *services.TransactionBody) *EthereumTransaction {
+func _EthereumTransactionFromProtobuf(pb *services.TransactionBody) *EthereumTransaction {
 	return &EthereumTransaction{
-		Transaction:   &tx,
 		ethereumData:  pb.GetEthereumTransaction().EthereumData,
 		callData:      _FileIDFromProtobuf(pb.GetEthereumTransaction().CallData),
 		MaxGasAllowed: pb.GetEthereumTransaction().MaxGasAllowance,

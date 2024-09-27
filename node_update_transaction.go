@@ -65,7 +65,7 @@ func NewNodeUpdateTransaction() *NodeUpdateTransaction {
 	return tx
 }
 
-func _NodeUpdateTransactionFromProtobuf(tx Transaction[*NodeUpdateTransaction], pb *services.TransactionBody) *NodeUpdateTransaction {
+func _NodeUpdateTransactionFromProtobuf(pb *services.TransactionBody) *NodeUpdateTransaction {
 	adminKey, err := _KeyFromProtobuf(pb.GetNodeUpdate().GetAdminKey())
 	if err != nil {
 		return &NodeUpdateTransaction{}
@@ -97,7 +97,6 @@ func _NodeUpdateTransactionFromProtobuf(tx Transaction[*NodeUpdateTransaction], 
 	}
 
 	return &NodeUpdateTransaction{
-		Transaction:         &tx,
 		nodeID:              pb.GetNodeUpdate().GetNodeId(),
 		accountID:           accountID,
 		description:         description,

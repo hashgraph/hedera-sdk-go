@@ -67,7 +67,7 @@ func NewAccountUpdateTransaction() *AccountUpdateTransaction {
 	return tx
 }
 
-func _AccountUpdateTransactionFromProtobuf(tx Transaction[*AccountUpdateTransaction], pb *services.TransactionBody) *AccountUpdateTransaction {
+func _AccountUpdateTransactionFromProtobuf(pb *services.TransactionBody) *AccountUpdateTransaction {
 	key, _ := _KeyFromProtobuf(pb.GetCryptoUpdateAccount().GetKey())
 	var receiverSignatureRequired bool
 
@@ -89,7 +89,6 @@ func _AccountUpdateTransactionFromProtobuf(tx Transaction[*AccountUpdateTransact
 	}
 
 	return &AccountUpdateTransaction{
-		Transaction:                   &tx,
 		accountID:                     _AccountIDFromProtobuf(pb.GetCryptoUpdateAccount().GetAccountIDToUpdate()),
 		key:                           key,
 		autoRenewPeriod:               &autoRenew,

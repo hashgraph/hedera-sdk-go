@@ -63,7 +63,7 @@ func NewAccountCreateTransaction() *AccountCreateTransaction {
 	return tx
 }
 
-func _AccountCreateTransactionFromProtobuf(tx Transaction[*AccountCreateTransaction], pb *services.TransactionBody) *AccountCreateTransaction {
+func _AccountCreateTransactionFromProtobuf(pb *services.TransactionBody) *AccountCreateTransaction {
 	key, _ := _KeyFromProtobuf(pb.GetCryptoCreateAccount().GetKey())
 	renew := _DurationFromProtobuf(pb.GetCryptoCreateAccount().GetAutoRenewPeriod())
 
@@ -78,7 +78,6 @@ func _AccountCreateTransactionFromProtobuf(tx Transaction[*AccountCreateTransact
 	}
 
 	body := AccountCreateTransaction{
-		Transaction:                   &tx,
 		key:                           key,
 		initialBalance:                pb.GetCryptoCreateAccount().InitialBalance,
 		autoRenewPeriod:               &renew,

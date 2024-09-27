@@ -75,13 +75,12 @@ func NewTokenWipeTransaction() *TokenWipeTransaction {
 	return tx
 }
 
-func _TokenWipeTransactionFromProtobuf(tx Transaction[*TokenWipeTransaction], pb *services.TransactionBody) *TokenWipeTransaction {
+func _TokenWipeTransactionFromProtobuf(pb *services.TransactionBody) *TokenWipeTransaction {
 	return &TokenWipeTransaction{
-		Transaction: &tx,
-		tokenID:     _TokenIDFromProtobuf(pb.GetTokenWipe().GetToken()),
-		accountID:   _AccountIDFromProtobuf(pb.GetTokenWipe().GetAccount()),
-		amount:      pb.GetTokenWipe().Amount,
-		serial:      pb.GetTokenWipe().GetSerialNumbers(),
+		tokenID:   _TokenIDFromProtobuf(pb.GetTokenWipe().GetToken()),
+		accountID: _AccountIDFromProtobuf(pb.GetTokenWipe().GetAccount()),
+		amount:    pb.GetTokenWipe().Amount,
+		serial:    pb.GetTokenWipe().GetSerialNumbers(),
 	}
 }
 

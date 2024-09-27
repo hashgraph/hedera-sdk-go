@@ -41,10 +41,9 @@ func NewTopicDeleteTransaction() *TopicDeleteTransaction {
 	return tx
 }
 
-func _TopicDeleteTransactionFromProtobuf(tx Transaction[*TopicDeleteTransaction], pb *services.TransactionBody) *TopicDeleteTransaction {
+func _TopicDeleteTransactionFromProtobuf(pb *services.TransactionBody) *TopicDeleteTransaction {
 	return &TopicDeleteTransaction{
-		Transaction: &tx,
-		topicID:     _TopicIDFromProtobuf(pb.GetConsensusDeleteTopic().GetTopicID()),
+		topicID: _TopicIDFromProtobuf(pb.GetConsensusDeleteTopic().GetTopicID()),
 	}
 }
 

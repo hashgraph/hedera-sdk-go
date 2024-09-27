@@ -56,7 +56,7 @@ func NewScheduleCreateTransaction() *ScheduleCreateTransaction {
 	return tx
 }
 
-func _ScheduleCreateTransactionFromProtobuf(tx Transaction[*ScheduleCreateTransaction], pb *services.TransactionBody) *ScheduleCreateTransaction {
+func _ScheduleCreateTransactionFromProtobuf(pb *services.TransactionBody) *ScheduleCreateTransaction {
 	key, _ := _KeyFromProtobuf(pb.GetScheduleCreate().GetAdminKey())
 	var expirationTime time.Time
 	if pb.GetScheduleCreate().GetExpirationTime() != nil {
@@ -64,7 +64,6 @@ func _ScheduleCreateTransactionFromProtobuf(tx Transaction[*ScheduleCreateTransa
 	}
 
 	return &ScheduleCreateTransaction{
-		Transaction:     &tx,
 		payerAccountID:  _AccountIDFromProtobuf(pb.GetScheduleCreate().GetPayerAccountID()),
 		adminKey:        key,
 		schedulableBody: pb.GetScheduleCreate().GetScheduledTransactionBody(),

@@ -50,10 +50,9 @@ func NewFileDeleteTransaction() *FileDeleteTransaction {
 	return tx
 }
 
-func _FileDeleteTransactionFromProtobuf(tx Transaction[*FileDeleteTransaction], pb *services.TransactionBody) *FileDeleteTransaction {
+func _FileDeleteTransactionFromProtobuf(pb *services.TransactionBody) *FileDeleteTransaction {
 	return &FileDeleteTransaction{
-		Transaction: &tx,
-		fileID:      _FileIDFromProtobuf(pb.GetFileDelete().GetFileID()),
+		fileID: _FileIDFromProtobuf(pb.GetFileDelete().GetFileID()),
 	}
 }
 

@@ -57,12 +57,11 @@ func NewFileUpdateTransaction() *FileUpdateTransaction {
 	return tx
 }
 
-func _FileUpdateTransactionFromProtobuf(tx Transaction[*FileUpdateTransaction], pb *services.TransactionBody) *FileUpdateTransaction {
+func _FileUpdateTransactionFromProtobuf(pb *services.TransactionBody) *FileUpdateTransaction {
 	keys, _ := _KeyListFromProtobuf(pb.GetFileUpdate().GetKeys())
 	expiration := _TimeFromProtobuf(pb.GetFileUpdate().GetExpirationTime())
 
 	return &FileUpdateTransaction{
-		Transaction:    &tx,
 		fileID:         _FileIDFromProtobuf(pb.GetFileUpdate().GetFileID()),
 		keys:           &keys,
 		expirationTime: &expiration,

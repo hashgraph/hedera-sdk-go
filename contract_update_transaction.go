@@ -80,7 +80,7 @@ func NewContractUpdateTransaction() *ContractUpdateTransaction {
 	return tx
 }
 
-func _ContractUpdateTransactionFromProtobuf(tx Transaction[*ContractUpdateTransaction], pb *services.TransactionBody) *ContractUpdateTransaction {
+func _ContractUpdateTransactionFromProtobuf(pb *services.TransactionBody) *ContractUpdateTransaction {
 	key, _ := _KeyFromProtobuf(pb.GetContractUpdateInstance().AdminKey)
 	autoRenew := _DurationFromProtobuf(pb.GetContractUpdateInstance().GetAutoRenewPeriod())
 	expiration := _TimeFromProtobuf(pb.GetContractUpdateInstance().GetExpirationTime())
@@ -105,8 +105,7 @@ func _ContractUpdateTransactionFromProtobuf(tx Transaction[*ContractUpdateTransa
 		autoRenewAccountID = _AccountIDFromProtobuf(pb.GetContractUpdateInstance().GetAutoRenewAccountId())
 	}
 
-	contractUpdateTransaction := &ContractUpdateTransaction{
-		Transaction:                   &tx,
+	return &ContractUpdateTransaction{
 		contractID:                    _ContractIDFromProtobuf(pb.GetContractUpdateInstance().GetContractID()),
 		adminKey:                      key,
 		autoRenewPeriod:               &autoRenew,
@@ -118,8 +117,6 @@ func _ContractUpdateTransactionFromProtobuf(tx Transaction[*ContractUpdateTransa
 		stakedNodeID:                  &stakedNodeID,
 		declineReward:                 pb.GetContractUpdateInstance().GetDeclineReward().GetValue(),
 	}
-	contractUpdateTransaction.childTransaction = contractUpdateTransaction
-	return contractUpdateTransaction
 }
 
 // SetContractID sets The Contract ID instance to update (this can't be changed on the contract)

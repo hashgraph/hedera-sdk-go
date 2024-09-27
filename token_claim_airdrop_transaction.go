@@ -39,16 +39,14 @@ func NewTokenClaimAirdropTransaction() *TokenClaimAirdropTransaction {
 	return tx
 }
 
-func _TokenClaimAirdropTransactionFromProtobuf(tx Transaction[*TokenClaimAirdropTransaction], pb *services.TransactionBody) *TokenClaimAirdropTransaction {
-	tokenClaim := &TokenClaimAirdropTransaction{
-		Transaction: &tx,
-	}
+func _TokenClaimAirdropTransactionFromProtobuf(pb *services.TransactionBody) *TokenClaimAirdropTransaction {
+	tokenClaimTransaction := &TokenClaimAirdropTransaction{}
 
 	for _, pendingAirdrops := range pb.GetTokenClaimAirdrop().PendingAirdrops {
-		tokenClaim.pendingAirdropIds = append(tokenClaim.pendingAirdropIds, _PendingAirdropIdFromProtobuf(pendingAirdrops))
+		tokenClaimTransaction.pendingAirdropIds = append(tokenClaimTransaction.pendingAirdropIds, _PendingAirdropIdFromProtobuf(pendingAirdrops))
 	}
 
-	return tokenClaim
+	return tokenClaimTransaction
 }
 
 // SetPendingAirdropIds sets the pending airdrop IDs for this TokenClaimAirdropTransaction.

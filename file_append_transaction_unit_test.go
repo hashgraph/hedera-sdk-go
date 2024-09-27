@@ -389,8 +389,7 @@ func TestUnitFileAppendTransactionSerialization(t *testing.T) {
 
 	fmt.Println(reflect.TypeOf(txParsed))
 
-	// TODO investigate previous behavior
-	result, ok := txParsed.(*FileAppendTransaction)
+	result, ok := txParsed.(FileAppendTransaction)
 	require.True(t, ok)
 
 	require.Equal(t, transactionID.AccountID, result.GetTransactionID().AccountID)

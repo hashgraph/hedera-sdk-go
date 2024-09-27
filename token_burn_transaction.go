@@ -56,12 +56,11 @@ func NewTokenBurnTransaction() *TokenBurnTransaction {
 	return tx
 }
 
-func _TokenBurnTransactionFromProtobuf(tx Transaction[*TokenBurnTransaction], pb *services.TransactionBody) *TokenBurnTransaction {
+func _TokenBurnTransactionFromProtobuf(pb *services.TransactionBody) *TokenBurnTransaction {
 	return &TokenBurnTransaction{
-		Transaction: &tx,
-		tokenID:     _TokenIDFromProtobuf(pb.GetTokenBurn().Token),
-		amount:      pb.GetTokenBurn().GetAmount(),
-		serial:      pb.GetTokenBurn().GetSerialNumbers(),
+		tokenID: _TokenIDFromProtobuf(pb.GetTokenBurn().Token),
+		amount:  pb.GetTokenBurn().GetAmount(),
+		serial:  pb.GetTokenBurn().GetSerialNumbers(),
 	}
 }
 

@@ -59,20 +59,17 @@ func NewTokenFeeScheduleUpdateTransaction() *TokenFeeScheduleUpdateTransaction {
 	return tx
 }
 
-func _TokenFeeScheduleUpdateTransactionFromProtobuf(tx Transaction[*TokenFeeScheduleUpdateTransaction], pb *services.TransactionBody) *TokenFeeScheduleUpdateTransaction {
+func _TokenFeeScheduleUpdateTransactionFromProtobuf(pb *services.TransactionBody) *TokenFeeScheduleUpdateTransaction {
 	customFees := make([]Fee, 0)
 
 	for _, fee := range pb.GetTokenFeeScheduleUpdate().GetCustomFees() {
 		customFees = append(customFees, _CustomFeeFromProtobuf(fee))
 	}
 
-	tokenFeeScheduleTransaction := &TokenFeeScheduleUpdateTransaction{
-		Transaction: &tx,
-		tokenID:     _TokenIDFromProtobuf(pb.GetTokenFeeScheduleUpdate().TokenId),
-		customFees:  customFees,
+	return &TokenFeeScheduleUpdateTransaction{
+		tokenID:    _TokenIDFromProtobuf(pb.GetTokenFeeScheduleUpdate().TokenId),
+		customFees: customFees,
 	}
-	tokenFeeScheduleTransaction.childTransaction = tokenFeeScheduleTransaction
-	return tokenFeeScheduleTransaction
 }
 
 // SetTokenID Sets the token whose fee schedule is to be updated

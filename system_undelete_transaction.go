@@ -42,11 +42,10 @@ func NewSystemUndeleteTransaction() *SystemUndeleteTransaction {
 	return tx
 }
 
-func _SystemUndeleteTransactionFromProtobuf(tx Transaction[*SystemUndeleteTransaction], pb *services.TransactionBody) *SystemUndeleteTransaction {
+func _SystemUndeleteTransactionFromProtobuf(pb *services.TransactionBody) *SystemUndeleteTransaction {
 	return &SystemUndeleteTransaction{
-		Transaction: &tx,
-		contractID:  _ContractIDFromProtobuf(pb.GetSystemUndelete().GetContractID()),
-		fileID:      _FileIDFromProtobuf(pb.GetSystemUndelete().GetFileID()),
+		contractID: _ContractIDFromProtobuf(pb.GetSystemUndelete().GetContractID()),
+		fileID:     _FileIDFromProtobuf(pb.GetSystemUndelete().GetFileID()),
 	}
 }
 

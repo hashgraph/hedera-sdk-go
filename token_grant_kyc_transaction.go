@@ -59,11 +59,10 @@ func NewTokenGrantKycTransaction() *TokenGrantKycTransaction {
 	return tx
 }
 
-func _TokenGrantKycTransactionFromProtobuf(tx Transaction[*TokenGrantKycTransaction], pb *services.TransactionBody) *TokenGrantKycTransaction {
+func _TokenGrantKycTransactionFromProtobuf(pb *services.TransactionBody) *TokenGrantKycTransaction {
 	return &TokenGrantKycTransaction{
-		Transaction: &tx,
-		tokenID:     _TokenIDFromProtobuf(pb.GetTokenGrantKyc().GetToken()),
-		accountID:   _AccountIDFromProtobuf(pb.GetTokenGrantKyc().GetAccount()),
+		tokenID:   _TokenIDFromProtobuf(pb.GetTokenGrantKyc().GetToken()),
+		accountID: _AccountIDFromProtobuf(pb.GetTokenGrantKyc().GetAccount()),
 	}
 }
 

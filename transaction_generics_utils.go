@@ -23,8 +23,7 @@ import "fmt"
  */
 
 // TODO find a way to test this for future tranasctions
-
-func castFromAnyToBaseTransaction(tx any) (*Transaction[TransactionInterface], error) { // nolint
+func getInterfaceGenericTransaction(tx any) (*Transaction[TransactionInterface], error) { // nolint
 	if s, ok := tx.(*Transaction[*ContractExecuteTransaction]); ok {
 		return castFromConcreteToBaseTransaction(s), nil
 	}
@@ -182,110 +181,110 @@ func castFromAnyToBaseTransaction(tx any) (*Transaction[TransactionInterface], e
 }
 
 // Helper function to cast any type of transaction to the base transaction
-func castBaseToConcreteTransaction(baseTx Transaction[TransactionInterface]) (any, error) { // nolint
+func getConcreteGenericTransaction(baseTx Transaction[TransactionInterface]) (any, error) { // nolint
 	switch baseTx.childTransaction.(type) {
 	case *ContractExecuteTransaction:
-		return castFromBaseToConcreteTransaction[*ContractExecuteTransaction](baseTx), nil
+		return *castFromBaseToConcreteTransaction[*ContractExecuteTransaction](baseTx), nil
 	case *TokenFeeScheduleUpdateTransaction:
-		return castFromBaseToConcreteTransaction[*TokenFeeScheduleUpdateTransaction](baseTx), nil
+		return *castFromBaseToConcreteTransaction[*TokenFeeScheduleUpdateTransaction](baseTx), nil
 	case *ContractCreateTransaction:
-		return castFromBaseToConcreteTransaction[*ContractCreateTransaction](baseTx), nil
+		return *castFromBaseToConcreteTransaction[*ContractCreateTransaction](baseTx), nil
 	case *ContractUpdateTransaction:
-		return castFromBaseToConcreteTransaction[*ContractUpdateTransaction](baseTx), nil
+		return *castFromBaseToConcreteTransaction[*ContractUpdateTransaction](baseTx), nil
 	case *ContractDeleteTransaction:
-		return castFromBaseToConcreteTransaction[*ContractDeleteTransaction](baseTx), nil
+		return *castFromBaseToConcreteTransaction[*ContractDeleteTransaction](baseTx), nil
 	case *AccountAllowanceApproveTransaction:
-		return castFromBaseToConcreteTransaction[*AccountAllowanceApproveTransaction](baseTx), nil
+		return *castFromBaseToConcreteTransaction[*AccountAllowanceApproveTransaction](baseTx), nil
 	case *AccountAllowanceDeleteTransaction:
-		return castFromBaseToConcreteTransaction[*AccountAllowanceDeleteTransaction](baseTx), nil
+		return *castFromBaseToConcreteTransaction[*AccountAllowanceDeleteTransaction](baseTx), nil
 	case *LiveHashAddTransaction:
-		return castFromBaseToConcreteTransaction[*LiveHashAddTransaction](baseTx), nil
+		return *castFromBaseToConcreteTransaction[*LiveHashAddTransaction](baseTx), nil
 	case *AccountCreateTransaction:
-		return castFromBaseToConcreteTransaction[*AccountCreateTransaction](baseTx), nil
+		return *castFromBaseToConcreteTransaction[*AccountCreateTransaction](baseTx), nil
 	case *AccountDeleteTransaction:
-		return castFromBaseToConcreteTransaction[*AccountDeleteTransaction](baseTx), nil
+		return *castFromBaseToConcreteTransaction[*AccountDeleteTransaction](baseTx), nil
 	case *LiveHashDeleteTransaction:
-		return castFromBaseToConcreteTransaction[*LiveHashDeleteTransaction](baseTx), nil
+		return *castFromBaseToConcreteTransaction[*LiveHashDeleteTransaction](baseTx), nil
 	case *TransferTransaction:
-		return castFromBaseToConcreteTransaction[*TransferTransaction](baseTx), nil
+		return *castFromBaseToConcreteTransaction[*TransferTransaction](baseTx), nil
 	case *AccountUpdateTransaction:
-		return castFromBaseToConcreteTransaction[*AccountUpdateTransaction](baseTx), nil
+		return *castFromBaseToConcreteTransaction[*AccountUpdateTransaction](baseTx), nil
 	case *FileAppendTransaction:
-		return castFromBaseToConcreteTransaction[*FileAppendTransaction](baseTx), nil
+		return *castFromBaseToConcreteTransaction[*FileAppendTransaction](baseTx), nil
 	case *FileCreateTransaction:
-		return castFromBaseToConcreteTransaction[*FileCreateTransaction](baseTx), nil
+		return *castFromBaseToConcreteTransaction[*FileCreateTransaction](baseTx), nil
 	case *FileDeleteTransaction:
-		return castFromBaseToConcreteTransaction[*FileDeleteTransaction](baseTx), nil
+		return *castFromBaseToConcreteTransaction[*FileDeleteTransaction](baseTx), nil
 	case *FileUpdateTransaction:
-		return castFromBaseToConcreteTransaction[*FileUpdateTransaction](baseTx), nil
+		return *castFromBaseToConcreteTransaction[*FileUpdateTransaction](baseTx), nil
 	case *SystemDeleteTransaction:
-		return castFromBaseToConcreteTransaction[*SystemDeleteTransaction](baseTx), nil
+		return *castFromBaseToConcreteTransaction[*SystemDeleteTransaction](baseTx), nil
 	case *SystemUndeleteTransaction:
-		return castFromBaseToConcreteTransaction[*SystemUndeleteTransaction](baseTx), nil
+		return *castFromBaseToConcreteTransaction[*SystemUndeleteTransaction](baseTx), nil
 	case *FreezeTransaction:
-		return castFromBaseToConcreteTransaction[*FreezeTransaction](baseTx), nil
+		return *castFromBaseToConcreteTransaction[*FreezeTransaction](baseTx), nil
 	case *TopicCreateTransaction:
-		return castFromBaseToConcreteTransaction[*TopicCreateTransaction](baseTx), nil
+		return *castFromBaseToConcreteTransaction[*TopicCreateTransaction](baseTx), nil
 	case *TopicUpdateTransaction:
-		return castFromBaseToConcreteTransaction[*TopicUpdateTransaction](baseTx), nil
+		return *castFromBaseToConcreteTransaction[*TopicUpdateTransaction](baseTx), nil
 	case *TopicDeleteTransaction:
-		return castFromBaseToConcreteTransaction[*TopicDeleteTransaction](baseTx), nil
+		return *castFromBaseToConcreteTransaction[*TopicDeleteTransaction](baseTx), nil
 	case *TopicMessageSubmitTransaction:
-		return castFromBaseToConcreteTransaction[*TopicMessageSubmitTransaction](baseTx), nil
+		return *castFromBaseToConcreteTransaction[*TopicMessageSubmitTransaction](baseTx), nil
 	case *TokenCreateTransaction:
-		return castFromBaseToConcreteTransaction[*TokenCreateTransaction](baseTx), nil
+		return *castFromBaseToConcreteTransaction[*TokenCreateTransaction](baseTx), nil
 	case *TokenFreezeTransaction:
-		return castFromBaseToConcreteTransaction[*TokenFreezeTransaction](baseTx), nil
+		return *castFromBaseToConcreteTransaction[*TokenFreezeTransaction](baseTx), nil
 	case *TokenUnfreezeTransaction:
-		return castFromBaseToConcreteTransaction[*TokenUnfreezeTransaction](baseTx), nil
+		return *castFromBaseToConcreteTransaction[*TokenUnfreezeTransaction](baseTx), nil
 	case *TokenGrantKycTransaction:
-		return castFromBaseToConcreteTransaction[*TokenGrantKycTransaction](baseTx), nil
+		return *castFromBaseToConcreteTransaction[*TokenGrantKycTransaction](baseTx), nil
 	case *TokenRevokeKycTransaction:
-		return castFromBaseToConcreteTransaction[*TokenRevokeKycTransaction](baseTx), nil
+		return *castFromBaseToConcreteTransaction[*TokenRevokeKycTransaction](baseTx), nil
 	case *TokenDeleteTransaction:
-		return castFromBaseToConcreteTransaction[*TokenDeleteTransaction](baseTx), nil
+		return *castFromBaseToConcreteTransaction[*TokenDeleteTransaction](baseTx), nil
 	case *TokenUpdateTransaction:
-		return castFromBaseToConcreteTransaction[*TokenUpdateTransaction](baseTx), nil
+		return *castFromBaseToConcreteTransaction[*TokenUpdateTransaction](baseTx), nil
 	case *TokenMintTransaction:
-		return castFromBaseToConcreteTransaction[*TokenMintTransaction](baseTx), nil
+		return *castFromBaseToConcreteTransaction[*TokenMintTransaction](baseTx), nil
 	case *TokenBurnTransaction:
-		return castFromBaseToConcreteTransaction[*TokenBurnTransaction](baseTx), nil
+		return *castFromBaseToConcreteTransaction[*TokenBurnTransaction](baseTx), nil
 	case *TokenWipeTransaction:
-		return castFromBaseToConcreteTransaction[*TokenWipeTransaction](baseTx), nil
+		return *castFromBaseToConcreteTransaction[*TokenWipeTransaction](baseTx), nil
 	case *TokenAssociateTransaction:
-		return castFromBaseToConcreteTransaction[*TokenAssociateTransaction](baseTx), nil
+		return *castFromBaseToConcreteTransaction[*TokenAssociateTransaction](baseTx), nil
 	case *TokenDissociateTransaction:
-		return castFromBaseToConcreteTransaction[*TokenDissociateTransaction](baseTx), nil
+		return *castFromBaseToConcreteTransaction[*TokenDissociateTransaction](baseTx), nil
 	case *ScheduleCreateTransaction:
-		return castFromBaseToConcreteTransaction[*ScheduleCreateTransaction](baseTx), nil
+		return *castFromBaseToConcreteTransaction[*ScheduleCreateTransaction](baseTx), nil
 	case *ScheduleDeleteTransaction:
-		return castFromBaseToConcreteTransaction[*ScheduleDeleteTransaction](baseTx), nil
+		return *castFromBaseToConcreteTransaction[*ScheduleDeleteTransaction](baseTx), nil
 	case *ScheduleSignTransaction:
-		return castFromBaseToConcreteTransaction[*ScheduleSignTransaction](baseTx), nil
+		return *castFromBaseToConcreteTransaction[*ScheduleSignTransaction](baseTx), nil
 	case *TokenPauseTransaction:
-		return castFromBaseToConcreteTransaction[*TokenPauseTransaction](baseTx), nil
+		return *castFromBaseToConcreteTransaction[*TokenPauseTransaction](baseTx), nil
 	case *TokenUnpauseTransaction:
-		return castFromBaseToConcreteTransaction[*TokenUnpauseTransaction](baseTx), nil
+		return *castFromBaseToConcreteTransaction[*TokenUnpauseTransaction](baseTx), nil
 	case *EthereumTransaction:
-		return castFromBaseToConcreteTransaction[*EthereumTransaction](baseTx), nil
+		return *castFromBaseToConcreteTransaction[*EthereumTransaction](baseTx), nil
 	case *PrngTransaction:
-		return castFromBaseToConcreteTransaction[*PrngTransaction](baseTx), nil
+		return *castFromBaseToConcreteTransaction[*PrngTransaction](baseTx), nil
 	case *TokenUpdateNfts:
-		return castFromBaseToConcreteTransaction[*TokenUpdateNfts](baseTx), nil
+		return *castFromBaseToConcreteTransaction[*TokenUpdateNfts](baseTx), nil
 	case *TokenRejectTransaction:
-		return castFromBaseToConcreteTransaction[*TokenRejectTransaction](baseTx), nil
+		return *castFromBaseToConcreteTransaction[*TokenRejectTransaction](baseTx), nil
 	case *NodeCreateTransaction:
-		return castFromBaseToConcreteTransaction[*NodeCreateTransaction](baseTx), nil
+		return *castFromBaseToConcreteTransaction[*NodeCreateTransaction](baseTx), nil
 	case *NodeUpdateTransaction:
-		return castFromBaseToConcreteTransaction[*NodeUpdateTransaction](baseTx), nil
+		return *castFromBaseToConcreteTransaction[*NodeUpdateTransaction](baseTx), nil
 	case *NodeDeleteTransaction:
-		return castFromBaseToConcreteTransaction[*NodeDeleteTransaction](baseTx), nil
+		return *castFromBaseToConcreteTransaction[*NodeDeleteTransaction](baseTx), nil
 	case *TokenAirdropTransaction:
-		return castFromBaseToConcreteTransaction[*TokenAirdropTransaction](baseTx), nil
+		return *castFromBaseToConcreteTransaction[*TokenAirdropTransaction](baseTx), nil
 	case *TokenClaimAirdropTransaction:
-		return castFromBaseToConcreteTransaction[*TokenClaimAirdropTransaction](baseTx), nil
+		return *castFromBaseToConcreteTransaction[*TokenClaimAirdropTransaction](baseTx), nil
 	case *TokenCancelAirdropTransaction:
-		return castFromBaseToConcreteTransaction[*TokenCancelAirdropTransaction](baseTx), nil
+		return *castFromBaseToConcreteTransaction[*TokenCancelAirdropTransaction](baseTx), nil
 	default:
 		return nil, fmt.Errorf("unsupported transaction type")
 	}
@@ -311,8 +310,8 @@ func castFromConcreteToBaseTransaction[T TransactionInterface](baseTx *Transacti
 }
 
 // Helper function to cast the generic Transaction to another type
-func castFromBaseToConcreteTransaction[T TransactionInterface](baseTx Transaction[TransactionInterface]) Transaction[T] {
-	concreteTx := Transaction[T]{
+func castFromBaseToConcreteTransaction[T TransactionInterface](baseTx Transaction[TransactionInterface]) *Transaction[T] {
+	concreteTx := &Transaction[T]{
 		executable:               baseTx.executable,
 		transactionFee:           baseTx.transactionFee,
 		defaultMaxTransactionFee: baseTx.defaultMaxTransactionFee,

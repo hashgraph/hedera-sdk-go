@@ -50,10 +50,9 @@ func NewTokenDeleteTransaction() *TokenDeleteTransaction {
 	return tx
 }
 
-func _TokenDeleteTransactionFromProtobuf(tx Transaction[*TokenDeleteTransaction], pb *services.TransactionBody) *TokenDeleteTransaction {
+func _TokenDeleteTransactionFromProtobuf(pb *services.TransactionBody) *TokenDeleteTransaction {
 	return &TokenDeleteTransaction{
-		Transaction: &tx,
-		tokenID:     _TokenIDFromProtobuf(pb.GetTokenDeletion().GetToken()),
+		tokenID: _TokenIDFromProtobuf(pb.GetTokenDeletion().GetToken()),
 	}
 }
 

@@ -62,9 +62,9 @@ func TestUnitTransactionSerializationDeserialization(t *testing.T) {
 	deserializedTX, err := TransactionFromBytes(txBytes)
 	require.NoError(t, err)
 
-	var deserializedTXTyped *TransferTransaction
+	var deserializedTXTyped TransferTransaction
 	switch tx := deserializedTX.(type) {
-	case *TransferTransaction:
+	case TransferTransaction:
 		deserializedTXTyped = tx
 	default:
 		panic("Transaction was not TransferTransaction")
@@ -130,9 +130,9 @@ func TestUnitTransactionValidateBodiesEqual(t *testing.T) {
 	require.NoError(t, err)
 
 	// TODO investigate previous behavior
-	var deserializedTXTyped *AccountCreateTransaction
+	var deserializedTXTyped AccountCreateTransaction
 	switch tx := deserializedTX.(type) {
-	case *AccountCreateTransaction:
+	case AccountCreateTransaction:
 		deserializedTXTyped = tx
 	default:
 		panic("Transaction was not AccountCreateTransaction")
@@ -283,7 +283,7 @@ func TestUnitTransactionToFromBytes(t *testing.T) {
 	newTransaction, err := TransactionFromBytes(txBytes)
 
 	// TODO investigate previous behavior
-	_ = protobuf.Unmarshal(newTransaction.(*TransferTransaction).signedTransactions._Get(0).(*services.SignedTransaction).BodyBytes, &tx)
+	_ = protobuf.Unmarshal(newTransaction.(TransferTransaction).signedTransactions._Get(0).(*services.SignedTransaction).BodyBytes, &tx)
 	require.Equal(t, tx.TransactionID.String(), testTransactionID._ToProtobuf().String())
 	require.Equal(t, tx.NodeAccountID.String(), node[0]._ToProtobuf().String())
 	require.Equal(t, tx.Memo, "go sdk example multi_app_transfer/main.go")
@@ -356,7 +356,7 @@ func TestUnitTransactionToFromBytesWithClient(t *testing.T) {
 
 	newTransaction, err := TransactionFromBytes(txBytes)
 
-	_ = protobuf.Unmarshal(newTransaction.(*TransferTransaction).signedTransactions._Get(0).(*services.SignedTransaction).BodyBytes, &tx)
+	_ = protobuf.Unmarshal(newTransaction.(TransferTransaction).signedTransactions._Get(0).(*services.SignedTransaction).BodyBytes, &tx)
 	require.NotNil(t, tx.TransactionID, tx.NodeAccountID)
 	require.Equal(t, tx.TransactionID.String(), initialTxID.String())
 	require.Equal(t, tx.NodeAccountID.String(), initialNode.String())

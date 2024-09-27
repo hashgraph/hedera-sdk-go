@@ -44,9 +44,8 @@ func NewContractDeleteTransaction() *ContractDeleteTransaction {
 	return tx
 }
 
-func _ContractDeleteTransactionFromProtobuf(tx Transaction[*ContractDeleteTransaction], pb *services.TransactionBody) *ContractDeleteTransaction {
+func _ContractDeleteTransactionFromProtobuf(pb *services.TransactionBody) *ContractDeleteTransaction {
 	return &ContractDeleteTransaction{
-		Transaction:       &tx,
 		contractID:        _ContractIDFromProtobuf(pb.GetContractDeleteInstance().GetContractID()),
 		transferContactID: _ContractIDFromProtobuf(pb.GetContractDeleteInstance().GetTransferContractID()),
 		transferAccountID: _AccountIDFromProtobuf(pb.GetContractDeleteInstance().GetTransferAccountID()),

@@ -43,10 +43,9 @@ func NewScheduleDeleteTransaction() *ScheduleDeleteTransaction {
 	return tx
 }
 
-func _ScheduleDeleteTransactionFromProtobuf(tx Transaction[*ScheduleDeleteTransaction], pb *services.TransactionBody) *ScheduleDeleteTransaction {
+func _ScheduleDeleteTransactionFromProtobuf(pb *services.TransactionBody) *ScheduleDeleteTransaction {
 	return &ScheduleDeleteTransaction{
-		Transaction: &tx,
-		scheduleID:  _ScheduleIDFromProtobuf(pb.GetScheduleDelete().GetScheduleID()),
+		scheduleID: _ScheduleIDFromProtobuf(pb.GetScheduleDelete().GetScheduleID()),
 	}
 }
 

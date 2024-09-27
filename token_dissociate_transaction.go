@@ -69,7 +69,7 @@ func NewTokenDissociateTransaction() *TokenDissociateTransaction {
 	return tx
 }
 
-func _TokenDissociateTransactionFromProtobuf(tx Transaction[*TokenDissociateTransaction], pb *services.TransactionBody) *TokenDissociateTransaction {
+func _TokenDissociateTransactionFromProtobuf(pb *services.TransactionBody) *TokenDissociateTransaction {
 	tokens := make([]TokenID, 0)
 	for _, token := range pb.GetTokenDissociate().Tokens {
 		if tokenID := _TokenIDFromProtobuf(token); tokenID != nil {
@@ -78,9 +78,8 @@ func _TokenDissociateTransactionFromProtobuf(tx Transaction[*TokenDissociateTran
 	}
 
 	return &TokenDissociateTransaction{
-		Transaction: &tx,
-		accountID:   _AccountIDFromProtobuf(pb.GetTokenDissociate().GetAccount()),
-		tokens:      tokens,
+		accountID: _AccountIDFromProtobuf(pb.GetTokenDissociate().GetAccount()),
+		tokens:    tokens,
 	}
 }
 

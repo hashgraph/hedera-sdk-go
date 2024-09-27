@@ -67,7 +67,7 @@ func NewNodeCreateTransaction() *NodeCreateTransaction {
 	return tx
 }
 
-func _NodeCreateTransactionFromProtobuf(tx Transaction[*NodeCreateTransaction], pb *services.TransactionBody) *NodeCreateTransaction {
+func _NodeCreateTransactionFromProtobuf(pb *services.TransactionBody) *NodeCreateTransaction {
 	adminKey, err := _KeyFromProtobuf(pb.GetNodeCreate().GetAdminKey())
 	if err != nil {
 		return &NodeCreateTransaction{}
@@ -84,7 +84,6 @@ func _NodeCreateTransactionFromProtobuf(tx Transaction[*NodeCreateTransaction], 
 	}
 
 	return &NodeCreateTransaction{
-		Transaction:         &tx,
 		accountID:           accountID,
 		description:         pb.GetNodeCreate().GetDescription(),
 		gossipEndpoints:     gossipEndpoints,

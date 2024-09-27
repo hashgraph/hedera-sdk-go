@@ -53,14 +53,13 @@ func NewTopicUpdateTransaction() *TopicUpdateTransaction {
 	return tx
 }
 
-func _TopicUpdateTransactionFromProtobuf(tx Transaction[*TopicUpdateTransaction], pb *services.TransactionBody) *TopicUpdateTransaction {
+func _TopicUpdateTransactionFromProtobuf(pb *services.TransactionBody) *TopicUpdateTransaction {
 	adminKey, _ := _KeyFromProtobuf(pb.GetConsensusUpdateTopic().GetAdminKey())
 	submitKey, _ := _KeyFromProtobuf(pb.GetConsensusUpdateTopic().GetSubmitKey())
 
 	expirationTime := _TimeFromProtobuf(pb.GetConsensusUpdateTopic().GetExpirationTime())
 	autoRenew := _DurationFromProtobuf(pb.GetConsensusUpdateTopic().GetAutoRenewPeriod())
 	return &TopicUpdateTransaction{
-		Transaction:        &tx,
 		topicID:            _TopicIDFromProtobuf(pb.GetConsensusUpdateTopic().GetTopicID()),
 		autoRenewAccountID: _AccountIDFromProtobuf(pb.GetConsensusUpdateTopic().GetAutoRenewAccount()),
 		adminKey:           adminKey,

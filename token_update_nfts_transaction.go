@@ -18,9 +18,8 @@ func NewTokenUpdateNftsTransaction() *TokenUpdateNfts {
 	return tx
 }
 
-func _NewTokenUpdateNftsTransactionFromProtobuf(tx Transaction[*TokenUpdateNfts], pb *services.TransactionBody) *TokenUpdateNfts {
+func _TokenUpdateNftsTransactionFromProtobuf(pb *services.TransactionBody) *TokenUpdateNfts {
 	return &TokenUpdateNfts{
-		Transaction:   &tx,
 		tokenID:       _TokenIDFromProtobuf(pb.GetTokenUpdateNfts().GetToken()),
 		serialNumbers: append([]int64{}, pb.GetTokenUpdateNfts().GetSerialNumbers()...),
 	}

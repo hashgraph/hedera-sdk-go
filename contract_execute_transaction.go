@@ -49,16 +49,13 @@ func NewContractExecuteTransaction() *ContractExecuteTransaction {
 	return tx
 }
 
-func _ContractExecuteTransactionFromProtobuf(tx Transaction[*ContractExecuteTransaction], pb *services.TransactionBody) *ContractExecuteTransaction {
-	contractExecuteTransaction := &ContractExecuteTransaction{
-		Transaction: &tx,
-		contractID:  _ContractIDFromProtobuf(pb.GetContractCall().GetContractID()),
-		gas:         pb.GetContractCall().GetGas(),
-		amount:      pb.GetContractCall().GetAmount(),
-		parameters:  pb.GetContractCall().GetFunctionParameters(),
+func _ContractExecuteTransactionFromProtobuf(pb *services.TransactionBody) *ContractExecuteTransaction {
+	return &ContractExecuteTransaction{
+		contractID: _ContractIDFromProtobuf(pb.GetContractCall().GetContractID()),
+		gas:        pb.GetContractCall().GetGas(),
+		amount:     pb.GetContractCall().GetAmount(),
+		parameters: pb.GetContractCall().GetFunctionParameters(),
 	}
-	contractExecuteTransaction.childTransaction = contractExecuteTransaction
-	return contractExecuteTransaction
 }
 
 // SetContractID sets the contract instance to call.

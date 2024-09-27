@@ -101,7 +101,7 @@ func NewTokenUpdateTransaction() *TokenUpdateTransaction {
 	return &tx
 }
 
-func _TokenUpdateTransactionFromProtobuf(tx Transaction[*TokenUpdateTransaction], pb *services.TransactionBody) *TokenUpdateTransaction {
+func _TokenUpdateTransactionFromProtobuf(pb *services.TransactionBody) *TokenUpdateTransaction {
 	adminKey, _ := _KeyFromProtobuf(pb.GetTokenUpdate().GetAdminKey())
 	kycKey, _ := _KeyFromProtobuf(pb.GetTokenUpdate().GetKycKey())
 	freezeKey, _ := _KeyFromProtobuf(pb.GetTokenUpdate().GetFreezeKey())
@@ -126,7 +126,6 @@ func _TokenUpdateTransactionFromProtobuf(tx Transaction[*TokenUpdateTransaction]
 	}
 
 	return &TokenUpdateTransaction{
-		Transaction:              &tx,
 		tokenID:                  _TokenIDFromProtobuf(pb.GetTokenUpdate().GetToken()),
 		treasuryAccountID:        _AccountIDFromProtobuf(pb.GetTokenUpdate().GetTreasury()),
 		autoRenewAccountID:       _AccountIDFromProtobuf(pb.GetTokenUpdate().GetAutoRenewAccount()),

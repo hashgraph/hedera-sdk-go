@@ -68,7 +68,7 @@ func NewTransferTransaction() *TransferTransaction {
 	return tx
 }
 
-func _TransferTransactionFromProtobuf(tx Transaction[*TransferTransaction], pb *services.TransactionBody) *TransferTransaction {
+func _TransferTransactionFromProtobuf(pb *services.TransactionBody) *TransferTransaction {
 	tokenTransfers := make(map[TokenID]*_TokenTransfer)
 	nftTransfers := make(map[TokenID][]*_TokenNftTransfer)
 
@@ -89,14 +89,11 @@ func _TransferTransactionFromProtobuf(tx Transaction[*TransferTransaction], pb *
 		}
 	}
 
-	transferTransaction := &TransferTransaction{
-		Transaction:    &tx,
+	return &TransferTransaction{
 		hbarTransfers:  _HbarTransferFromProtobuf(pb.GetCryptoTransfer().GetTransfers().GetAccountAmounts()),
 		tokenTransfers: tokenTransfers,
 		nftTransfers:   nftTransfers,
 	}
-	tx.childTransaction = transferTransaction
-	return transferTransaction
 }
 
 // SetTokenTransferApproval Sets the desired token unit balance adjustments
