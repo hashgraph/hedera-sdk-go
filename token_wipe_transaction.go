@@ -223,5 +223,9 @@ func (tx *TokenWipeTransaction) _ConstructScheduleProtobuf() (*services.Schedula
 }
 
 func (tx *TokenWipeTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction[*TokenWipeTransaction](tx.Transaction)
+	return castFromConcreteToBaseTransaction(tx.Transaction)
+}
+
+func (tx *TokenWipeTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
+	tx.Transaction = castFromBaseToConcreteTransaction[*TokenWipeTransaction](baseTx)
 }

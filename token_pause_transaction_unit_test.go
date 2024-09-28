@@ -265,7 +265,7 @@ func TestUnitTokenUnpauseTransactionCoverage(t *testing.T) {
 	require.NoError(t, err)
 	txFromBytes, err := TransactionFromBytes(byt)
 	require.NoError(t, err)
-	sig, err := newKey.SignTransaction(transaction.Transaction)
+	sig, err := newKey.SignTransaction(transaction)
 	require.NoError(t, err)
 
 	_, err = transaction.GetTransactionHash()
@@ -352,7 +352,7 @@ func TestUnitTokenPauseTransaction_AddSignature(t *testing.T) {
 
 	privateKey, _ := PrivateKeyGenerateEd25519()
 
-	signature, err := privateKey.SignTransaction(transaction.Transaction)
+	signature, err := privateKey.SignTransaction(transaction)
 	require.NoError(t, err)
 
 	signs, err := transaction.GetSignatures()

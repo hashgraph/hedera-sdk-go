@@ -228,3 +228,7 @@ func (tx *FileUpdateTransaction) _ConstructScheduleProtobuf() (*services.Schedul
 func (tx *FileUpdateTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
 	return castFromConcreteToBaseTransaction[*FileUpdateTransaction](tx.Transaction)
 }
+
+func (tx *FileUpdateTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
+	tx.Transaction = castFromBaseToConcreteTransaction[*FileUpdateTransaction](baseTx)
+}

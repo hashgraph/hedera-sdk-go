@@ -204,5 +204,9 @@ func (this *AccountAllowanceDeleteTransaction) _ConstructScheduleProtobuf() (*se
 }
 
 func (tx *AccountAllowanceDeleteTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction[*AccountAllowanceDeleteTransaction](tx.Transaction)
+	return castFromConcreteToBaseTransaction(tx.Transaction)
+}
+
+func (tx *AccountAllowanceDeleteTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
+	tx.Transaction = castFromBaseToConcreteTransaction[*AccountAllowanceDeleteTransaction](baseTx)
 }

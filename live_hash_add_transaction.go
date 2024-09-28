@@ -214,5 +214,9 @@ func (tx *LiveHashAddTransaction) _ConstructScheduleProtobuf() (*services.Schedu
 }
 
 func (tx *LiveHashAddTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction[*LiveHashAddTransaction](tx.Transaction)
+	return castFromConcreteToBaseTransaction(tx.Transaction)
+}
+
+func (tx *LiveHashAddTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
+	tx.Transaction = castFromBaseToConcreteTransaction[*LiveHashAddTransaction](baseTx)
 }

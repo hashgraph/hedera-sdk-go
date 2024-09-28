@@ -60,9 +60,9 @@ func TestUnitAccountAllowanceDeleteTransactionCoverage(t *testing.T) {
 	require.NoError(t, err)
 	txFromBytesI, err := TransactionFromBytes(byt)
 	require.NoError(t, err)
-	txFromBytes, ok := txFromBytesI.(*AccountAllowanceDeleteTransaction)
+	txFromBytes, ok := txFromBytesI.(AccountAllowanceDeleteTransaction)
 	require.True(t, ok)
-	sig, err := newKey.SignTransaction(transaction.Transaction)
+	sig, err := newKey.SignTransaction(transaction)
 	require.NoError(t, err)
 
 	_, err = transaction.GetTransactionHash()

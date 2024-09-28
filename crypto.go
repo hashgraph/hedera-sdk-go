@@ -27,7 +27,6 @@ import (
 	"encoding/hex"
 	"io"
 	"math/big"
-	"reflect"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/crypto"
@@ -860,50 +859,56 @@ func (pk PublicKey) _ToSignaturePairProtobuf(signature []byte) *services.Signatu
 	return &services.SignaturePair{}
 }
 
+// // SignTransaction signes the transaction and adds the signature to the transaction
+// func (sk PrivateKey) SignTransaction(tx any) ([]byte, error) {
+// 	baseTx := tx.(*Transaction[TransactionInterface])
+
+// 	if sk.ecdsaPrivateKey != nil {
+// 		b, err := sk.ecdsaPrivateKey._SignTransaction(baseTx)
+// 		if err != nil {
+// 			return []byte{}, err
+// 		}
+
+// 		return b, nil
+// 	}
+
+// 	if sk.ed25519PrivateKey != nil {
+// 		b, err := sk.ed25519PrivateKey._SignTransaction(baseTx)
+// 		if err != nil {
+// 			return []byte{}, err
+// 		}
+
+// 		return b, nil
+// 	}
+
+// 	return []byte{}, errors.New("key type not supported, only ed25519 and ECDSASecp256K1 are supported right now")
+// }
+
 // SignTransaction signes the transaction and adds the signature to the transaction
-func (sk PrivateKey) SignTransaction(tx any) ([]byte, error) {
-	val := reflect.ValueOf(tx)
-	if val.Kind() == reflect.Ptr && val.Elem().Kind() == reflect.Struct {
-		// create new transaction with TransactionInterface generic
-		baseTx, err := getInterfaceGenericTransaction(tx)
+func (sk PrivateKey) SignTransaction(tx TransactionInterface) ([]byte, error) {
+	baseTx := tx.getBaseTransaction()
+
+	if sk.ecdsaPrivateKey != nil {
+		b, err := sk.ecdsaPrivateKey._SignTransaction(baseTx)
 		if err != nil {
 			return []byte{}, err
 		}
+		tx.setBaseTransaction(*baseTx)
 
-		if sk.ecdsaPrivateKey != nil {
-			b, err := sk.ecdsaPrivateKey._SignTransaction(baseTx)
-			if err != nil {
-				return []byte{}, err
-			}
-
-			concreteTx, err := getConcreteGenericTransaction(*baseTx)
-			if err != nil {
-				return []byte{}, err
-			}
-			val.Elem().Set(reflect.ValueOf(concreteTx))
-
-			return b, nil
-		}
-
-		if sk.ed25519PrivateKey != nil {
-			b, err := sk.ed25519PrivateKey._SignTransaction(baseTx)
-			if err != nil {
-				return []byte{}, err
-			}
-
-			concreteTx, err := getConcreteGenericTransaction(*baseTx)
-			if err != nil {
-				return []byte{}, err
-			}
-			val.Elem().Set(reflect.ValueOf(concreteTx))
-
-			return b, nil
-		}
-
-		return []byte{}, errors.New("key type not supported, only ed25519 and ECDSASecp256K1 are supported right now")
-	} else {
-		return []byte{}, errors.New("Passed value is not a pointer to a struct")
+		return b, nil
 	}
+
+	if sk.ed25519PrivateKey != nil {
+		b, err := sk.ed25519PrivateKey._SignTransaction(baseTx)
+		if err != nil {
+			return []byte{}, err
+		}
+		tx.setBaseTransaction(*baseTx)
+
+		return b, nil
+	}
+
+	return []byte{}, errors.New("key type not supported, only ed25519 and ECDSASecp256K1 are supported right now")
 }
 
 func (pk PublicKey) Verify(message []byte, signature []byte) bool {
@@ -918,19 +923,15 @@ func (pk PublicKey) Verify(message []byte, signature []byte) bool {
 	return false
 }
 
-func (pk PublicKey) VerifyTransaction(transaction any) bool {
-	tx, err := getInterfaceGenericTransaction(transaction)
-
-	if err != nil {
-		return false
-	}
+func (pk PublicKey) VerifyTransaction(tx TransactionInterface) bool {
+	baseTx := tx.getBaseTransaction()
 
 	if pk.ecdsaPublicKey != nil {
-		return pk.ecdsaPublicKey._VerifyTransaction(tx)
+		return pk.ecdsaPublicKey._VerifyTransaction(baseTx)
 	}
 
 	if pk.ed25519PublicKey != nil {
-		return pk.ed25519PublicKey._VerifyTransaction(tx)
+		return pk.ed25519PublicKey._VerifyTransaction(baseTx)
 	}
 
 	return false

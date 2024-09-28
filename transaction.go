@@ -46,9 +46,10 @@ type TransactionInterface interface {
 
 	build() *services.TransactionBody
 	buildScheduled() (*services.SchedulableTransactionBody, error)
-	preFreezeWith(*Client)
+	preFreezeWith(*Client) // TODO remove
 	regenerateID(*Client) bool
 	getBaseTransaction() *Transaction[TransactionInterface]
+	setBaseTransaction(Transaction[TransactionInterface])
 }
 
 // Transaction is base struct for all transactions that may be built and submitted to Hedera.

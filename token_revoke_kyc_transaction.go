@@ -171,5 +171,9 @@ func (tx *TokenRevokeKycTransaction) _ConstructScheduleProtobuf() (*services.Sch
 }
 
 func (tx *TokenRevokeKycTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction[*TokenRevokeKycTransaction](tx.Transaction)
+	return castFromConcreteToBaseTransaction(tx.Transaction)
+}
+
+func (tx *TokenRevokeKycTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
+	tx.Transaction = castFromBaseToConcreteTransaction[*TokenRevokeKycTransaction](baseTx)
 }

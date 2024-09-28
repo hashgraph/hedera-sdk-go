@@ -169,5 +169,9 @@ func (tx *EthereumTransaction) getMethod(channel *_Channel) _Method {
 }
 
 func (tx *EthereumTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction[*EthereumTransaction](tx.Transaction)
+	return castFromConcreteToBaseTransaction(tx.Transaction)
+}
+
+func (tx *EthereumTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
+	tx.Transaction = castFromBaseToConcreteTransaction[*EthereumTransaction](baseTx)
 }

@@ -250,5 +250,9 @@ func (tx *ScheduleCreateTransaction) _ConstructScheduleProtobuf() (*services.Sch
 }
 
 func (tx *ScheduleCreateTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction[*ScheduleCreateTransaction](tx.Transaction)
+	return castFromConcreteToBaseTransaction(tx.Transaction)
+}
+
+func (tx *ScheduleCreateTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
+	tx.Transaction = castFromBaseToConcreteTransaction[*ScheduleCreateTransaction](baseTx)
 }

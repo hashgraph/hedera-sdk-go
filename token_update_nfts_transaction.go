@@ -132,5 +132,9 @@ func (tx *TokenUpdateNfts) _ConstructScheduleProtobuf() (*services.SchedulableTr
 }
 
 func (tx *TokenUpdateNfts) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction[*TokenUpdateNfts](tx.Transaction)
+	return castFromConcreteToBaseTransaction(tx.Transaction)
+}
+
+func (tx *TokenUpdateNfts) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
+	tx.Transaction = castFromBaseToConcreteTransaction[*TokenUpdateNfts](baseTx)
 }

@@ -112,5 +112,9 @@ func (tx *PrngTransaction) validateNetworkOnIDs(client *Client) error {
 }
 
 func (tx *PrngTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction[*PrngTransaction](tx.Transaction)
+	return castFromConcreteToBaseTransaction(tx.Transaction)
+}
+
+func (tx *PrngTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
+	tx.Transaction = castFromBaseToConcreteTransaction[*PrngTransaction](baseTx)
 }

@@ -200,5 +200,9 @@ func (tx *SystemDeleteTransaction) _ConstructScheduleProtobuf() (*services.Sched
 }
 
 func (tx *SystemDeleteTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction[*SystemDeleteTransaction](tx.Transaction)
+	return castFromConcreteToBaseTransaction(tx.Transaction)
+}
+
+func (tx *SystemDeleteTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
+	tx.Transaction = castFromBaseToConcreteTransaction[*SystemDeleteTransaction](baseTx)
 }

@@ -171,5 +171,9 @@ func (tx *TokenGrantKycTransaction) _ConstructScheduleProtobuf() (*services.Sche
 }
 
 func (tx *TokenGrantKycTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction[*TokenGrantKycTransaction](tx.Transaction)
+	return castFromConcreteToBaseTransaction(tx.Transaction)
+}
+
+func (tx *TokenGrantKycTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
+	tx.Transaction = castFromBaseToConcreteTransaction[*TokenGrantKycTransaction](baseTx)
 }

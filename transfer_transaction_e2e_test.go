@@ -269,7 +269,7 @@ func TestIntegrationTransferTransactionCanTransferSignature(t *testing.T) {
 	transferTxBytes, err := transferTx.ToBytes()
 	require.NoError(t, err)
 
-	signature, err := newKey.SignTransaction(transferTx.Transaction)
+	signature, err := newKey.SignTransaction(transferTx)
 
 	transactionInterface, err := TransactionFromBytes(transferTxBytes)
 	require.NoError(t, err)

@@ -150,5 +150,9 @@ func (tx *TokenClaimAirdropTransaction) _ConstructScheduleProtobuf() (*services.
 }
 
 func (tx *TokenClaimAirdropTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction[*TokenClaimAirdropTransaction](tx.Transaction)
+	return castFromConcreteToBaseTransaction(tx.Transaction)
+}
+
+func (tx *TokenClaimAirdropTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
+	tx.Transaction = castFromBaseToConcreteTransaction[*TokenClaimAirdropTransaction](baseTx)
 }

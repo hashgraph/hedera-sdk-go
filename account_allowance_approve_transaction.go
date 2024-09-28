@@ -374,3 +374,7 @@ func (tx *AccountAllowanceApproveTransaction) _ConstructScheduleProtobuf() (*ser
 func (tx *AccountAllowanceApproveTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
 	return castFromConcreteToBaseTransaction(tx.Transaction)
 }
+
+func (tx *AccountAllowanceApproveTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
+	tx.Transaction = castFromBaseToConcreteTransaction[*AccountAllowanceApproveTransaction](baseTx)
+}

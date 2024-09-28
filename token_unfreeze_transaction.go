@@ -173,5 +173,9 @@ func (tx *TokenUnfreezeTransaction) _ConstructScheduleProtobuf() (*services.Sche
 }
 
 func (tx *TokenUnfreezeTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction[*TokenUnfreezeTransaction](tx.Transaction)
+	return castFromConcreteToBaseTransaction(tx.Transaction)
+}
+
+func (tx *TokenUnfreezeTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
+	tx.Transaction = castFromBaseToConcreteTransaction[*TokenUnfreezeTransaction](baseTx)
 }

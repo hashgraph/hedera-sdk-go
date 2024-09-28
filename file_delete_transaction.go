@@ -130,5 +130,9 @@ func (tx *FileDeleteTransaction) _ConstructScheduleProtobuf() (*services.Schedul
 }
 
 func (tx *FileDeleteTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction[*FileDeleteTransaction](tx.Transaction)
+	return castFromConcreteToBaseTransaction(tx.Transaction)
+}
+
+func (tx *FileDeleteTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
+	tx.Transaction = castFromBaseToConcreteTransaction[*FileDeleteTransaction](baseTx)
 }

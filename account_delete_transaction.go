@@ -156,5 +156,9 @@ func (tx *AccountDeleteTransaction) _ConstructScheduleProtobuf() (*services.Sche
 }
 
 func (tx *AccountDeleteTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction[*AccountDeleteTransaction](tx.Transaction)
+	return castFromConcreteToBaseTransaction(tx.Transaction)
+}
+
+func (tx *AccountDeleteTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
+	tx.Transaction = castFromBaseToConcreteTransaction[*AccountDeleteTransaction](baseTx)
 }

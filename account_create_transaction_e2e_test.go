@@ -165,7 +165,7 @@ func TestIntegrationAccountCreateTransactionAddSignature(t *testing.T) {
 	updateBytes, err := tx.ToBytes()
 	require.NoError(t, err)
 
-	sig1, err := newKey.SignTransaction(tx.Transaction)
+	sig1, err := newKey.SignTransaction(tx)
 	require.NoError(t, err)
 
 	tx2, err := TransactionFromBytes(updateBytes)

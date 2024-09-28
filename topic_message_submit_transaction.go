@@ -332,5 +332,9 @@ func (tx *TopicMessageSubmitTransaction) _ConstructScheduleProtobuf() (*services
 }
 
 func (tx *TopicMessageSubmitTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction[*TopicMessageSubmitTransaction](tx.Transaction)
+	return castFromConcreteToBaseTransaction(tx.Transaction)
+}
+
+func (tx *TopicMessageSubmitTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
+	tx.Transaction = castFromBaseToConcreteTransaction[*TopicMessageSubmitTransaction](baseTx)
 }

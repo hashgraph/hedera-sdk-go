@@ -192,5 +192,9 @@ func (tx *TokenBurnTransaction) _ConstructScheduleProtobuf() (*services.Schedula
 }
 
 func (tx *TokenBurnTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction[*TokenBurnTransaction](tx.Transaction)
+	return castFromConcreteToBaseTransaction(tx.Transaction)
+}
+
+func (tx *TokenBurnTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
+	tx.Transaction = castFromBaseToConcreteTransaction[*TokenBurnTransaction](baseTx)
 }

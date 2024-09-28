@@ -538,5 +538,9 @@ func (tx *TokenUpdateTransaction) _ConstructScheduleProtobuf() (*services.Schedu
 }
 
 func (tx *TokenUpdateTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction[*TokenUpdateTransaction](tx.Transaction)
+	return castFromConcreteToBaseTransaction(tx.Transaction)
+}
+
+func (tx *TokenUpdateTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
+	tx.Transaction = castFromBaseToConcreteTransaction[*TokenUpdateTransaction](baseTx)
 }

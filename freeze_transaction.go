@@ -169,5 +169,9 @@ func (tx *FreezeTransaction) validateNetworkOnIDs(client *Client) error {
 }
 
 func (tx *FreezeTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction[*FreezeTransaction](tx.Transaction)
+	return castFromConcreteToBaseTransaction(tx.Transaction)
+}
+
+func (tx *FreezeTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
+	tx.Transaction = castFromBaseToConcreteTransaction[*FreezeTransaction](baseTx)
 }

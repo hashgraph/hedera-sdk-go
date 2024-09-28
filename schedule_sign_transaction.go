@@ -133,5 +133,9 @@ func (tx *ScheduleSignTransaction) _ConstructScheduleProtobuf() (*services.Sched
 }
 
 func (tx *ScheduleSignTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction[*ScheduleSignTransaction](tx.Transaction)
+	return castFromConcreteToBaseTransaction(tx.Transaction)
+}
+
+func (tx *ScheduleSignTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
+	tx.Transaction = castFromBaseToConcreteTransaction[*ScheduleSignTransaction](baseTx)
 }

@@ -224,5 +224,9 @@ func (tx *TokenRejectTransaction) _ConstructScheduleProtobuf() (*services.Schedu
 }
 
 func (tx *TokenRejectTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction[*TokenRejectTransaction](tx.Transaction)
+	return castFromConcreteToBaseTransaction(tx.Transaction)
+}
+
+func (tx *TokenRejectTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
+	tx.Transaction = castFromBaseToConcreteTransaction[*TokenRejectTransaction](baseTx)
 }

@@ -348,7 +348,7 @@ func TestUnitScheduleCreateTransactionCoverage(t *testing.T) {
 	require.NoError(t, err)
 	_, err = TransactionFromBytes(byt)
 	require.NoError(t, err)
-	_, err = newKey.SignTransaction(transaction.Transaction)
+	_, err = newKey.SignTransaction(transaction)
 	require.NoError(t, err)
 
 	_, err = transaction.GetTransactionHash()
@@ -472,7 +472,7 @@ func TestUnitScheduleDeleteTransactionCoverage(t *testing.T) {
 	require.NoError(t, err)
 	_, err = TransactionFromBytes(byt)
 	require.NoError(t, err)
-	_, err = newKey.SignTransaction(transaction.Transaction)
+	_, err = newKey.SignTransaction(transaction)
 	require.NoError(t, err)
 
 	_, err = transaction.GetTransactionHash()

@@ -510,5 +510,9 @@ func (tx *TokenAirdropTransaction) _ConstructScheduleProtobuf() (*services.Sched
 }
 
 func (tx *TokenAirdropTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction[*TokenAirdropTransaction](tx.Transaction)
+	return castFromConcreteToBaseTransaction(tx.Transaction)
+}
+
+func (tx *TokenAirdropTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
+	tx.Transaction = castFromBaseToConcreteTransaction[*TokenAirdropTransaction](baseTx)
 }
