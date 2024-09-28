@@ -53,7 +53,7 @@ func (response TransactionResponse) MarshalJSON() ([]byte, error) {
 }
 
 // retryTransaction is a helper function to retry a transaction that was throttled
-func retryTransaction(client *Client, transaction Transaction[TransactionInterface]) (TransactionReceipt, error) {
+func retryTransaction(client *Client, transaction TransactionInterface) (TransactionReceipt, error) {
 	resp, err := transaction.Execute(client)
 	if err != nil {
 		return TransactionReceipt{}, err
@@ -74,8 +74,7 @@ func (response TransactionResponse) GetReceipt(client *Client) (TransactionRecei
 
 	for receipt.Status == StatusThrottledAtConsensus {
 		time.Sleep(250 * time.Second)
-		baseTransaction := response.Transaction.getBaseTransaction()
-		receipt, err = retryTransaction(client, *baseTransaction)
+		receipt, err = retryTransaction(client, response.Transaction)
 	}
 
 	if err != nil {

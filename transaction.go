@@ -38,13 +38,16 @@ import (
 type TransactionInterface interface {
 	Executable
 
+	Execute(client *Client) (TransactionResponse, error)
 	build() *services.TransactionBody
 	buildScheduled() (*services.SchedulableTransactionBody, error)
 	preFreezeWith(*Client)
 	regenerateID(*Client) bool
+	// NOTE: Any changes to the baseTransaction retuned by getBaseTransaction()
+	// should be manually set back to the transaction object using setBaseTransaction()
 	getBaseTransaction() *Transaction[TransactionInterface]
-	constructScheduleProtobuf() (*services.SchedulableTransactionBody, error)
 	setBaseTransaction(Transaction[TransactionInterface])
+	constructScheduleProtobuf() (*services.SchedulableTransactionBody, error)
 }
 
 // Transaction is base struct for all transactions that may be built and submitted to Hedera.
@@ -1206,7 +1209,7 @@ func (tx *Transaction[T]) Execute(client *Client) (TransactionResponse, error) {
 		}, err
 	}
 	originalTxID := tx.GetTransactionID()
-	tx.childTransaction.regenerateID(client)
+	tx.regenerateID(client)
 	return TransactionResponse{
 		TransactionID:  originalTxID,
 		NodeID:         resp.(TransactionResponse).NodeID,
@@ -1351,4 +1354,8 @@ func (tx *Transaction[T]) GetLogLevel() *LogLevel {
 func (tx *Transaction[T]) SetLogLevel(level LogLevel) T {
 	tx.logLevel = &level
 	return tx.childTransaction
+}
+
+func TransactionExecute(tx TransactionInterface, client *Client) (TransactionResponse, error) {
+	return tx.Execute(client)
 }

@@ -177,9 +177,7 @@ func TestIntegrationTransferTransactionCanTransferFromBytes(t *testing.T) {
 	transactionInterface, err := TransactionFromBytes(transferTxBytes)
 	require.NoError(t, err)
 
-	transferTransaction := transactionInterface.(*TransferTransaction)
-
-	resp, err = transferTransaction.Execute(env.Client)
+	resp, err = transactionInterface.Execute(env.Client)
 	require.NoError(t, err)
 
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
