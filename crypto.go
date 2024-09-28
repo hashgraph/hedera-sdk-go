@@ -859,31 +859,6 @@ func (pk PublicKey) _ToSignaturePairProtobuf(signature []byte) *services.Signatu
 	return &services.SignaturePair{}
 }
 
-// // SignTransaction signes the transaction and adds the signature to the transaction
-// func (sk PrivateKey) SignTransaction(tx any) ([]byte, error) {
-// 	baseTx := tx.(*Transaction[TransactionInterface])
-
-// 	if sk.ecdsaPrivateKey != nil {
-// 		b, err := sk.ecdsaPrivateKey._SignTransaction(baseTx)
-// 		if err != nil {
-// 			return []byte{}, err
-// 		}
-
-// 		return b, nil
-// 	}
-
-// 	if sk.ed25519PrivateKey != nil {
-// 		b, err := sk.ed25519PrivateKey._SignTransaction(baseTx)
-// 		if err != nil {
-// 			return []byte{}, err
-// 		}
-
-// 		return b, nil
-// 	}
-
-// 	return []byte{}, errors.New("key type not supported, only ed25519 and ECDSASecp256K1 are supported right now")
-// }
-
 // SignTransaction signes the transaction and adds the signature to the transaction
 func (sk PrivateKey) SignTransaction(tx TransactionInterface) ([]byte, error) {
 	baseTx := tx.getBaseTransaction()

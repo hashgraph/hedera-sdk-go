@@ -137,7 +137,7 @@ func TestUnitTransferTransactionOrdered(t *testing.T) {
 	require.NoError(t, err)
 
 	switch tx := transferTransactionFromBytes.(type) {
-	case TransferTransaction:
+	case *TransferTransaction:
 		require.Equal(t, tx.nftTransfers[tokenID1], transferTransaction.nftTransfers[tokenID1])
 	}
 

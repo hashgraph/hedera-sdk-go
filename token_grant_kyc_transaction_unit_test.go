@@ -237,7 +237,7 @@ func TestUnitTokenGrantKycTransactionCoverage(t *testing.T) {
 	require.NoError(t, err)
 	transaction.getName()
 	switch b := txFromBytes.(type) {
-	case TokenGrantKycTransaction:
+	case *TokenGrantKycTransaction:
 		b.AddSignature(newKey.PublicKey(), sig)
 	}
 }

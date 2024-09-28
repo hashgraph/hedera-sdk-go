@@ -66,7 +66,7 @@ func TestIntegrationTransactionAddSignature(t *testing.T) {
 	tx2, err := TransactionFromBytes(updateBytes)
 	require.NoError(t, err)
 
-	if newTx, ok := tx2.(AccountDeleteTransaction); ok {
+	if newTx, ok := tx2.(*AccountDeleteTransaction); ok {
 		resp, err = newTx.AddSignature(newKey.PublicKey(), sig1).Execute(env.Client)
 		require.NoError(t, err)
 	}
@@ -265,7 +265,7 @@ func DisabledTestTransactionFromBytes(t *testing.T) { // nolint
 	env := NewIntegrationTestEnv(t)
 
 	switch tx := transaction.(type) {
-	case TransferTransaction:
+	case *TransferTransaction:
 		assert.Equal(t, tx.GetHbarTransfers()[AccountID{0, 0, 542348, nil, nil, nil}].AsTinybar(), int64(-10))
 		assert.Equal(t, tx.GetHbarTransfers()[AccountID{0, 0, 47439, nil, nil, nil}].AsTinybar(), int64(10))
 

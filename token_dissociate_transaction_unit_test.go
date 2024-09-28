@@ -243,7 +243,7 @@ func TestUnitTokenDissociateTransactionCoverage(t *testing.T) {
 	require.NoError(t, err)
 	transaction.getName()
 	switch b := txFromBytes.(type) {
-	case TokenDissociateTransaction:
+	case *TokenDissociateTransaction:
 		b.AddSignature(newKey.PublicKey(), sig)
 	}
 }

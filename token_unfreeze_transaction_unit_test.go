@@ -209,7 +209,7 @@ func TestUnitTokenUnfreezeTransactionCoverage(t *testing.T) {
 	require.NoError(t, err)
 	transaction.getName()
 	switch b := txFromBytes.(type) {
-	case TokenUnfreezeTransaction:
+	case *TokenUnfreezeTransaction:
 		b.AddSignature(newKey.PublicKey(), sig)
 	}
 }

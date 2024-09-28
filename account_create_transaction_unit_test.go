@@ -349,7 +349,7 @@ func TestUnitAccountCreateTransactionCoverage(t *testing.T) {
 	require.NoError(t, err)
 	trx.getName()
 	switch b := txFromBytes.(type) {
-	case AccountCreateTransaction:
+	case *AccountCreateTransaction:
 		b.AddSignature(key.PublicKey(), sig)
 	}
 }

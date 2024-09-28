@@ -92,7 +92,7 @@ func TestUnitLiveHashDeleteTransactionCoverage(t *testing.T) {
 	require.NoError(t, err)
 	transaction.getName()
 	switch b := txFromBytes.(type) {
-	case LiveHashDeleteTransaction:
+	case *LiveHashDeleteTransaction:
 		b.AddSignature(newKey.PublicKey(), sig)
 	}
 }

@@ -147,7 +147,7 @@ func TestUnitEthereumTransactionCoverage(t *testing.T) {
 	require.NoError(t, err)
 	transaction.getName()
 	switch b := txFromBytes.(type) {
-	case EthereumTransaction:
+	case *EthereumTransaction:
 		b.AddSignature(newKey.PublicKey(), sig)
 	}
 }

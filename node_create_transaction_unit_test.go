@@ -351,7 +351,7 @@ func TestUnitNodeCreateTransactionCoverage(t *testing.T) {
 	require.NoError(t, err)
 	trx.getName()
 	switch b := txFromBytes.(type) {
-	case NodeCreateTransaction:
+	case *NodeCreateTransaction:
 		b.AddSignature(key.PublicKey(), sig)
 	}
 }

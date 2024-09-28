@@ -278,7 +278,7 @@ func TestUnitTokenUnpauseTransactionCoverage(t *testing.T) {
 	require.NoError(t, err)
 	transaction.getName()
 	switch b := txFromBytes.(type) {
-	case TokenUnpauseTransaction:
+	case *TokenUnpauseTransaction:
 		b.AddSignature(newKey.PublicKey(), sig)
 	}
 }

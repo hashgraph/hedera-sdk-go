@@ -43,7 +43,7 @@ func TestIntegrationClientCanExecuteSerializedTransactionFromAnotherClient(t *te
 	txBytes, err := tx.ToBytes()
 	FromBytes, err := TransactionFromBytes(txBytes)
 	require.NoError(t, err)
-	txFromBytes, ok := FromBytes.(TransferTransaction)
+	txFromBytes, ok := FromBytes.(*TransferTransaction)
 	require.True(t, ok)
 	resp, err := txFromBytes.Execute(client2)
 	require.NoError(t, err)
@@ -77,7 +77,7 @@ func TestIntegrationClientCanFailGracefullyWhenDoesNotHaveNodeOfAnotherClient(t 
 	txBytes, err := tx.ToBytes()
 	FromBytes, err := TransactionFromBytes(txBytes)
 	require.NoError(t, err)
-	txFromBytes, ok := FromBytes.(TransferTransaction)
+	txFromBytes, ok := FromBytes.(*TransferTransaction)
 	require.True(t, ok)
 
 	// Try to execute it with the second client, which does not have the node

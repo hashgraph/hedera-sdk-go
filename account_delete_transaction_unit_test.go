@@ -224,7 +224,7 @@ func TestUnitAccountDeleteTransactionTransactionCoverage(t *testing.T) {
 	transaction.GetTransferAccountID()
 	transaction.getName()
 	switch b := txFromBytes.(type) {
-	case AccountDeleteTransaction:
+	case *AccountDeleteTransaction:
 		b.AddSignature(newKey.PublicKey(), sig)
 	}
 }

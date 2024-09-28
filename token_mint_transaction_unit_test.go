@@ -238,7 +238,7 @@ func TestUnitTokenMintTransactionCoverage(t *testing.T) {
 	require.NoError(t, err)
 	transaction.getName()
 	switch b := txFromBytes.(type) {
-	case TokenMintTransaction:
+	case *TokenMintTransaction:
 		b.AddSignature(newKey.PublicKey(), sig)
 	}
 }

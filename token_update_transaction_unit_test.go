@@ -171,7 +171,7 @@ func TestUnitTokenUpdateTransactionGet(t *testing.T) {
 	transaction.GetMaxBackoff()
 	transaction.GetMinBackoff()
 	switch b := txFromBytes.(type) {
-	case TokenUpdateTransaction:
+	case *TokenUpdateTransaction:
 		b.AddSignature(newKey.PublicKey(), sig)
 	}
 }
