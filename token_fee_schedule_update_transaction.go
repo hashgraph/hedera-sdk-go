@@ -166,7 +166,7 @@ func (tx *TokenFeeScheduleUpdateTransaction) getMethod(channel *_Channel) _Metho
 	}
 }
 
-func (tx *TokenFeeScheduleUpdateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx *TokenFeeScheduleUpdateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 

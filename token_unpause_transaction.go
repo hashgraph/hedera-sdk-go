@@ -131,7 +131,7 @@ func (tx *TokenUnpauseTransaction) getMethod(channel *_Channel) _Method {
 	}
 }
 
-func (tx *TokenUnpauseTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx *TokenUnpauseTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 

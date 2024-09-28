@@ -278,12 +278,7 @@ func (tx *NodeCreateTransaction) getMethod(channel *_Channel) _Method {
 	}
 }
 
-// TODO might be useless
-func (tx *NodeCreateTransaction) preFreezeWith(client *Client) {
-	// No special actions needed.
-}
-
-func (tx *NodeCreateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx *NodeCreateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 

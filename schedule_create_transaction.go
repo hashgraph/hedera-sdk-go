@@ -166,10 +166,10 @@ func (tx *ScheduleCreateTransaction) GetScheduleMemo() string {
 }
 
 // SetScheduledTransaction Sets the scheduled transaction
-func (tx *ScheduleCreateTransaction) SetScheduledTransaction(scheduledTx ITransaction) (*ScheduleCreateTransaction, error) {
+func (tx *ScheduleCreateTransaction) SetScheduledTransaction(scheduledTx TransactionInterface) (*ScheduleCreateTransaction, error) {
 	tx._RequireNotFrozen()
 
-	scheduled, err := scheduledTx._ConstructScheduleProtobuf()
+	scheduled, err := scheduledTx.constructScheduleProtobuf()
 	if err != nil {
 		return tx, err
 	}
@@ -245,7 +245,7 @@ func (tx *ScheduleCreateTransaction) getMethod(channel *_Channel) _Method {
 	}
 }
 
-func (tx *ScheduleCreateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx *ScheduleCreateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 

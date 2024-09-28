@@ -367,7 +367,7 @@ func (tx *AccountAllowanceApproveTransaction) getMethod(channel *_Channel) _Meth
 	}
 }
 
-func (tx *AccountAllowanceApproveTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx *AccountAllowanceApproveTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 

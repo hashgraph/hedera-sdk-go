@@ -166,7 +166,7 @@ func (tx *TokenRevokeKycTransaction) getMethod(channel *_Channel) _Method {
 	}
 }
 
-func (tx *TokenRevokeKycTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx *TokenRevokeKycTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 

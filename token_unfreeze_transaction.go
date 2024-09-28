@@ -168,7 +168,7 @@ func (tx *TokenUnfreezeTransaction) getMethod(channel *_Channel) _Method {
 	}
 }
 
-func (tx *TokenUnfreezeTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx *TokenUnfreezeTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 

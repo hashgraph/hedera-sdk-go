@@ -205,7 +205,7 @@ func (tx *FileCreateTransaction) getMethod(channel *_Channel) _Method {
 		transaction: channel._GetFile().CreateFile,
 	}
 }
-func (tx *FileCreateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx *FileCreateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 

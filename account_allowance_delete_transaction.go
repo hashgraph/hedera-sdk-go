@@ -199,7 +199,7 @@ func (tx *AccountAllowanceDeleteTransaction) getMethod(channel *_Channel) _Metho
 	}
 }
 
-func (this *AccountAllowanceDeleteTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (this *AccountAllowanceDeleteTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return this.buildScheduled()
 }
 

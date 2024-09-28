@@ -160,7 +160,7 @@ func (tx *FreezeTransaction) getMethod(channel *_Channel) _Method {
 		transaction: channel._GetFreeze().Freeze,
 	}
 }
-func (tx *FreezeTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx *FreezeTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 

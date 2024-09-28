@@ -610,7 +610,7 @@ func (tx *TransferTransaction) getMethod(channel *_Channel) _Method {
 	}
 }
 
-func (this *TransferTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (this *TransferTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return this.buildScheduled()
 }
 

@@ -409,7 +409,7 @@ func (tx *ContractCreateTransaction) getMethod(channel *_Channel) _Method {
 	}
 }
 
-func (tx *ContractCreateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx *ContractCreateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 

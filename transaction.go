@@ -35,20 +35,15 @@ import (
 	protobuf "google.golang.org/protobuf/proto"
 )
 
-// transaction contains the protobuf of a prepared transaction which can be signed and executed.
-
-type ITransaction interface {
-	_ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error)
-}
-
 type TransactionInterface interface {
 	Executable
 
 	build() *services.TransactionBody
 	buildScheduled() (*services.SchedulableTransactionBody, error)
-	preFreezeWith(*Client) // TODO remove
+	preFreezeWith(*Client)
 	regenerateID(*Client) bool
 	getBaseTransaction() *Transaction[TransactionInterface]
+	constructScheduleProtobuf() (*services.SchedulableTransactionBody, error)
 	setBaseTransaction(Transaction[TransactionInterface])
 }
 
@@ -487,6 +482,316 @@ func TransactionFromBytes(data []byte) (any, error) { // nolint
 		return *tokenRejectTransaction, nil
 	default:
 		return nil, errFailedToDeserializeBytes
+	}
+}
+
+func transactionFromScheduledTransaction(scheduledBody *services.SchedulableTransactionBody) (TransactionInterface, error) { // nolint
+	pbBody := &services.TransactionBody{}
+
+	baseTx := Transaction[TransactionInterface]{
+		transactionFee: scheduledBody.GetTransactionFee(),
+		memo:           scheduledBody.GetMemo(),
+	}
+
+	switch scheduledBody.Data.(type) {
+	case *services.SchedulableTransactionBody_ContractCall:
+		pbBody.Data = &services.TransactionBody_ContractCall{
+			ContractCall: scheduledBody.GetContractCall(),
+		}
+		tx := _ContractExecuteTransactionFromProtobuf(pbBody)
+		baseTx.childTransaction = tx
+		tx.setBaseTransaction(baseTx)
+		return tx, nil
+	case *services.SchedulableTransactionBody_ContractCreateInstance:
+		pbBody.Data = &services.TransactionBody_ContractCreateInstance{
+			ContractCreateInstance: scheduledBody.GetContractCreateInstance(),
+		}
+		tx := _ContractCreateTransactionFromProtobuf(pbBody)
+		baseTx.childTransaction = tx
+		tx.setBaseTransaction(baseTx)
+		return tx, nil
+	case *services.SchedulableTransactionBody_ContractUpdateInstance:
+		pbBody.Data = &services.TransactionBody_ContractUpdateInstance{
+			ContractUpdateInstance: scheduledBody.GetContractUpdateInstance(),
+		}
+		tx := _ContractUpdateTransactionFromProtobuf(pbBody)
+		baseTx.childTransaction = tx
+		tx.setBaseTransaction(baseTx)
+		return tx, nil
+	case *services.SchedulableTransactionBody_CryptoApproveAllowance:
+		pbBody.Data = &services.TransactionBody_CryptoApproveAllowance{
+			CryptoApproveAllowance: scheduledBody.GetCryptoApproveAllowance(),
+		}
+		tx := _AccountAllowanceApproveTransactionFromProtobuf(pbBody)
+		baseTx.childTransaction = tx
+		tx.setBaseTransaction(baseTx)
+		return tx, nil
+	case *services.SchedulableTransactionBody_CryptoDeleteAllowance:
+		pbBody.Data = &services.TransactionBody_CryptoDeleteAllowance{
+			CryptoDeleteAllowance: scheduledBody.GetCryptoDeleteAllowance(),
+		}
+		tx := _AccountAllowanceDeleteTransactionFromProtobuf(pbBody)
+		baseTx.childTransaction = tx
+		tx.setBaseTransaction(baseTx)
+		return tx, nil
+	case *services.SchedulableTransactionBody_ContractDeleteInstance:
+		pbBody.Data = &services.TransactionBody_ContractDeleteInstance{
+			ContractDeleteInstance: scheduledBody.GetContractDeleteInstance(),
+		}
+		tx := _ContractDeleteTransactionFromProtobuf(pbBody)
+		baseTx.childTransaction = tx
+		tx.setBaseTransaction(baseTx)
+		return tx, nil
+	case *services.SchedulableTransactionBody_CryptoCreateAccount:
+		pbBody.Data = &services.TransactionBody_CryptoCreateAccount{
+			CryptoCreateAccount: scheduledBody.GetCryptoCreateAccount(),
+		}
+		tx := _AccountCreateTransactionFromProtobuf(pbBody)
+		baseTx.childTransaction = tx
+		tx.setBaseTransaction(baseTx)
+		return tx, nil
+	case *services.SchedulableTransactionBody_CryptoDelete:
+		pbBody.Data = &services.TransactionBody_CryptoDelete{
+			CryptoDelete: scheduledBody.GetCryptoDelete(),
+		}
+		tx := _AccountDeleteTransactionFromProtobuf(pbBody)
+		baseTx.childTransaction = tx
+		tx.setBaseTransaction(baseTx)
+		return tx, nil
+	case *services.SchedulableTransactionBody_CryptoTransfer:
+		pbBody.Data = &services.TransactionBody_CryptoTransfer{
+			CryptoTransfer: scheduledBody.GetCryptoTransfer(),
+		}
+		tx := _TransferTransactionFromProtobuf(pbBody)
+		baseTx.childTransaction = tx
+		tx.setBaseTransaction(baseTx)
+		return tx, nil
+	case *services.SchedulableTransactionBody_CryptoUpdateAccount:
+		pbBody.Data = &services.TransactionBody_CryptoUpdateAccount{
+			CryptoUpdateAccount: scheduledBody.GetCryptoUpdateAccount(),
+		}
+		tx := _AccountUpdateTransactionFromProtobuf(pbBody)
+		baseTx.childTransaction = tx
+		tx.setBaseTransaction(baseTx)
+		return tx, nil
+	case *services.SchedulableTransactionBody_FileAppend:
+		pbBody.Data = &services.TransactionBody_FileAppend{
+			FileAppend: scheduledBody.GetFileAppend(),
+		}
+		tx := _FileAppendTransactionFromProtobuf(pbBody)
+		baseTx.childTransaction = tx
+		tx.setBaseTransaction(baseTx)
+		return tx, nil
+	case *services.SchedulableTransactionBody_FileCreate:
+		pbBody.Data = &services.TransactionBody_FileCreate{
+			FileCreate: scheduledBody.GetFileCreate(),
+		}
+		tx := _FileCreateTransactionFromProtobuf(pbBody)
+		baseTx.childTransaction = tx
+		tx.setBaseTransaction(baseTx)
+		return tx, nil
+	case *services.SchedulableTransactionBody_FileDelete:
+		pbBody.Data = &services.TransactionBody_FileDelete{
+			FileDelete: scheduledBody.GetFileDelete(),
+		}
+		tx := _FileDeleteTransactionFromProtobuf(pbBody)
+		baseTx.childTransaction = tx
+		tx.setBaseTransaction(baseTx)
+		return tx, nil
+	case *services.SchedulableTransactionBody_FileUpdate:
+		pbBody.Data = &services.TransactionBody_FileUpdate{
+			FileUpdate: scheduledBody.GetFileUpdate(),
+		}
+		tx := _FileUpdateTransactionFromProtobuf(pbBody)
+		baseTx.childTransaction = tx
+		tx.setBaseTransaction(baseTx)
+		return tx, nil
+	case *services.SchedulableTransactionBody_SystemDelete:
+		pbBody.Data = &services.TransactionBody_SystemDelete{
+			SystemDelete: scheduledBody.GetSystemDelete(),
+		}
+		tx := _SystemDeleteTransactionFromProtobuf(pbBody)
+		baseTx.childTransaction = tx
+		tx.setBaseTransaction(baseTx)
+		return tx, nil
+	case *services.SchedulableTransactionBody_SystemUndelete:
+		pbBody.Data = &services.TransactionBody_SystemUndelete{
+			SystemUndelete: scheduledBody.GetSystemUndelete(),
+		}
+		tx := _SystemUndeleteTransactionFromProtobuf(pbBody)
+		baseTx.childTransaction = tx
+		tx.setBaseTransaction(baseTx)
+		return tx, nil
+	case *services.SchedulableTransactionBody_Freeze:
+		pbBody.Data = &services.TransactionBody_Freeze{
+			Freeze: scheduledBody.GetFreeze(),
+		}
+		tx := _FreezeTransactionFromProtobuf(pbBody)
+		baseTx.childTransaction = tx
+		tx.setBaseTransaction(baseTx)
+		return tx, nil
+	case *services.SchedulableTransactionBody_ConsensusCreateTopic:
+		pbBody.Data = &services.TransactionBody_ConsensusCreateTopic{
+			ConsensusCreateTopic: scheduledBody.GetConsensusCreateTopic(),
+		}
+		tx := _TopicCreateTransactionFromProtobuf(pbBody)
+		baseTx.childTransaction = tx
+		tx.setBaseTransaction(baseTx)
+		return tx, nil
+	case *services.SchedulableTransactionBody_ConsensusUpdateTopic:
+		pbBody.Data = &services.TransactionBody_ConsensusUpdateTopic{
+			ConsensusUpdateTopic: scheduledBody.GetConsensusUpdateTopic(),
+		}
+		tx := _TopicUpdateTransactionFromProtobuf(pbBody)
+		baseTx.childTransaction = tx
+		tx.setBaseTransaction(baseTx)
+		return tx, nil
+	case *services.SchedulableTransactionBody_ConsensusDeleteTopic:
+		pbBody.Data = &services.TransactionBody_ConsensusDeleteTopic{
+			ConsensusDeleteTopic: scheduledBody.GetConsensusDeleteTopic(),
+		}
+		tx := _TopicDeleteTransactionFromProtobuf(pbBody)
+		baseTx.childTransaction = tx
+		tx.setBaseTransaction(baseTx)
+		return tx, nil
+	case *services.SchedulableTransactionBody_ConsensusSubmitMessage:
+		pbBody.Data = &services.TransactionBody_ConsensusSubmitMessage{
+			ConsensusSubmitMessage: scheduledBody.GetConsensusSubmitMessage(),
+		}
+		tx := _TopicMessageSubmitTransactionFromProtobuf(pbBody)
+		baseTx.childTransaction = tx
+		tx.setBaseTransaction(baseTx)
+		return tx, nil
+	case *services.SchedulableTransactionBody_TokenCreation:
+		pbBody.Data = &services.TransactionBody_TokenCreation{
+			TokenCreation: scheduledBody.GetTokenCreation(),
+		}
+		tx := _TokenCreateTransactionFromProtobuf(pbBody)
+		baseTx.childTransaction = tx
+		tx.setBaseTransaction(baseTx)
+		return tx, nil
+	case *services.SchedulableTransactionBody_TokenFreeze:
+		pbBody.Data = &services.TransactionBody_TokenFreeze{
+			TokenFreeze: scheduledBody.GetTokenFreeze(),
+		}
+		tx := _TokenFreezeTransactionFromProtobuf(pbBody)
+		baseTx.childTransaction = tx
+		tx.setBaseTransaction(baseTx)
+		return tx, nil
+	case *services.SchedulableTransactionBody_TokenUnfreeze:
+		pbBody.Data = &services.TransactionBody_TokenUnfreeze{
+			TokenUnfreeze: scheduledBody.GetTokenUnfreeze(),
+		}
+		tx := _TokenUnfreezeTransactionFromProtobuf(pbBody)
+		baseTx.childTransaction = tx
+		tx.setBaseTransaction(baseTx)
+		return tx, nil
+	case *services.SchedulableTransactionBody_TokenGrantKyc:
+		pbBody.Data = &services.TransactionBody_TokenGrantKyc{
+			TokenGrantKyc: scheduledBody.GetTokenGrantKyc(),
+		}
+		tx := _TokenGrantKycTransactionFromProtobuf(pbBody)
+		baseTx.childTransaction = tx
+		tx.setBaseTransaction(baseTx)
+		return tx, nil
+	case *services.SchedulableTransactionBody_TokenRevokeKyc:
+		pbBody.Data = &services.TransactionBody_TokenRevokeKyc{
+			TokenRevokeKyc: scheduledBody.GetTokenRevokeKyc(),
+		}
+		tx := _TokenRevokeKycTransactionFromProtobuf(pbBody)
+		baseTx.childTransaction = tx
+		tx.setBaseTransaction(baseTx)
+		return tx, nil
+	case *services.SchedulableTransactionBody_TokenDeletion:
+		pbBody.Data = &services.TransactionBody_TokenDeletion{
+			TokenDeletion: scheduledBody.GetTokenDeletion(),
+		}
+		tx := _TokenDeleteTransactionFromProtobuf(pbBody)
+		baseTx.childTransaction = tx
+		tx.setBaseTransaction(baseTx)
+		return tx, nil
+	case *services.SchedulableTransactionBody_TokenUpdate:
+		pbBody.Data = &services.TransactionBody_TokenUpdate{
+			TokenUpdate: scheduledBody.GetTokenUpdate(),
+		}
+		tx := _TokenUpdateTransactionFromProtobuf(pbBody)
+		baseTx.childTransaction = tx
+		tx.setBaseTransaction(baseTx)
+		return tx, nil
+	case *services.SchedulableTransactionBody_TokenMint:
+		pbBody.Data = &services.TransactionBody_TokenMint{
+			TokenMint: scheduledBody.GetTokenMint(),
+		}
+		tx := _TokenMintTransactionFromProtobuf(pbBody)
+		baseTx.childTransaction = tx
+		tx.setBaseTransaction(baseTx)
+		return tx, nil
+	case *services.SchedulableTransactionBody_TokenBurn:
+		pbBody.Data = &services.TransactionBody_TokenBurn{
+			TokenBurn: scheduledBody.GetTokenBurn(),
+		}
+		tx := _TokenBurnTransactionFromProtobuf(pbBody)
+		baseTx.childTransaction = tx
+		tx.setBaseTransaction(baseTx)
+		return tx, nil
+	case *services.SchedulableTransactionBody_TokenWipe:
+		pbBody.Data = &services.TransactionBody_TokenWipe{
+			TokenWipe: scheduledBody.GetTokenWipe(),
+		}
+		tx := _TokenWipeTransactionFromProtobuf(pbBody)
+		baseTx.childTransaction = tx
+		tx.setBaseTransaction(baseTx)
+		return tx, nil
+	case *services.SchedulableTransactionBody_TokenAssociate:
+		pbBody.Data = &services.TransactionBody_TokenAssociate{
+			TokenAssociate: scheduledBody.GetTokenAssociate(),
+		}
+		tx := _TokenAssociateTransactionFromProtobuf(pbBody)
+		baseTx.childTransaction = tx
+		tx.setBaseTransaction(baseTx)
+		return tx, nil
+	case *services.SchedulableTransactionBody_TokenDissociate:
+		pbBody.Data = &services.TransactionBody_TokenDissociate{
+			TokenDissociate: scheduledBody.GetTokenDissociate(),
+		}
+		tx := _TokenDissociateTransactionFromProtobuf(pbBody)
+		baseTx.childTransaction = tx
+		tx.setBaseTransaction(baseTx)
+		return tx, nil
+	case *services.SchedulableTransactionBody_ScheduleDelete:
+		pbBody.Data = &services.TransactionBody_ScheduleDelete{
+			ScheduleDelete: scheduledBody.GetScheduleDelete(),
+		}
+		tx := _ScheduleDeleteTransactionFromProtobuf(pbBody)
+		baseTx.childTransaction = tx
+		tx.setBaseTransaction(baseTx)
+		return tx, nil
+	case *services.SchedulableTransactionBody_TokenPause:
+		pbBody.Data = &services.TransactionBody_TokenPause{
+			TokenPause: scheduledBody.GetTokenPause(),
+		}
+		tx := _TokenPauseTransactionFromProtobuf(pbBody)
+		baseTx.childTransaction = tx
+		tx.setBaseTransaction(baseTx)
+		return tx, nil
+	case *services.SchedulableTransactionBody_TokenUnpause:
+		pbBody.Data = &services.TransactionBody_TokenUnpause{
+			TokenUnpause: scheduledBody.GetTokenUnpause(),
+		}
+		tx := _TokenUnpauseTransactionFromProtobuf(pbBody)
+		baseTx.childTransaction = tx
+		tx.setBaseTransaction(baseTx)
+		return tx, nil
+	case *services.SchedulableTransactionBody_UtilPrng:
+		pbBody.Data = &services.TransactionBody_UtilPrng{
+			UtilPrng: scheduledBody.GetUtilPrng(),
+		}
+		tx := _PrngTransactionFromProtobuf(pbBody)
+		baseTx.childTransaction = tx
+		tx.setBaseTransaction(baseTx)
+		return tx, nil
+	default:
+		return nil, errors.New("(BUG) non-exhaustive switch statement")
 	}
 }
 
@@ -1039,8 +1344,7 @@ func (tx *Transaction[T]) AddSignature(publicKey PublicKey, signature []byte) T 
 }
 
 func (tx *Transaction[T]) preFreezeWith(*Client) {
-	// NO-OP
-	// TODO
+	// No-op for every transaction except TokenCreateTransaction
 }
 
 func (tx *Transaction[T]) getLogID(transactionInterface Executable) string {

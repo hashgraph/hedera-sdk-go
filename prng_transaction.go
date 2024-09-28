@@ -103,7 +103,7 @@ func (tx *PrngTransaction) getMethod(channel *_Channel) _Method {
 		transaction: channel._GetUtil().Prng,
 	}
 }
-func (tx *PrngTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx *PrngTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 

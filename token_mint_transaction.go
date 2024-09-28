@@ -183,7 +183,7 @@ func (tx *TokenMintTransaction) getMethod(channel *_Channel) _Method {
 	}
 }
 
-func (tx *TokenMintTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx *TokenMintTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 

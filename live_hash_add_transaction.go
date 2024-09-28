@@ -209,7 +209,7 @@ func (tx *LiveHashAddTransaction) getMethod(channel *_Channel) _Method {
 	}
 }
 
-func (tx *LiveHashAddTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx *LiveHashAddTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 

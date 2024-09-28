@@ -348,7 +348,7 @@ func (tx *FileAppendTransaction) getMethod(channel *_Channel) _Method {
 	}
 }
 
-func (tx *FileAppendTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx *FileAppendTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 

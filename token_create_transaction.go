@@ -629,7 +629,7 @@ func (tx *TokenCreateTransaction) preFreezeWith(client *Client) {
 	}
 }
 
-func (tx *TokenCreateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx *TokenCreateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 

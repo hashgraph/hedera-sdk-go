@@ -289,7 +289,7 @@ func (tx *TopicUpdateTransaction) getMethod(channel *_Channel) _Method {
 	}
 }
 
-func (tx *TopicUpdateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx *TopicUpdateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 

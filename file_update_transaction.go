@@ -221,7 +221,7 @@ func (tx *FileUpdateTransaction) getMethod(channel *_Channel) _Method {
 	}
 }
 
-func (tx *FileUpdateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx *FileUpdateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 

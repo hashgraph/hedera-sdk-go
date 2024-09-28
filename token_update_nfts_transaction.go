@@ -127,7 +127,7 @@ func (tx *TokenUpdateNfts) getMethod(channel *_Channel) _Method {
 	}
 }
 
-func (tx *TokenUpdateNfts) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx *TokenUpdateNfts) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 

@@ -421,7 +421,7 @@ func (tx *ContractUpdateTransaction) getMethod(channel *_Channel) _Method {
 		transaction: channel._GetContract().UpdateContract,
 	}
 }
-func (tx *ContractUpdateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx *ContractUpdateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 

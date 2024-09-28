@@ -117,11 +117,7 @@ func (tx *NodeDeleteTransaction) getMethod(channel *_Channel) _Method {
 	}
 }
 
-func (tx *NodeDeleteTransaction) preFreezeWith(client *Client) {
-	// No special actions needed.
-}
-
-func (tx *NodeDeleteTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx *NodeDeleteTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 

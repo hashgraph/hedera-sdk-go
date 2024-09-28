@@ -159,7 +159,11 @@ func (tx *EthereumTransaction) build() *services.TransactionBody {
 }
 
 func (tx *EthereumTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
-	return nil, errors.New("cannot schedule `EthereumTransaction")
+	return nil, errors.New("cannot schedule `EthereumTransaction`")
+}
+
+func (tx *EthereumTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	return tx.buildScheduled()
 }
 
 func (tx *EthereumTransaction) getMethod(channel *_Channel) _Method {

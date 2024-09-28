@@ -312,11 +312,7 @@ func (tx *NodeUpdateTransaction) getMethod(channel *_Channel) _Method {
 	}
 }
 
-func (tx *NodeUpdateTransaction) preFreezeWith(client *Client) {
-	// No special actions needed.
-}
-
-func (tx *NodeUpdateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx *NodeUpdateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 

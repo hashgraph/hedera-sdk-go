@@ -125,7 +125,7 @@ func (tx *FileDeleteTransaction) getMethod(channel *_Channel) _Method {
 		transaction: channel._GetFile().DeleteFile,
 	}
 }
-func (tx *FileDeleteTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx *FileDeleteTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 

@@ -195,7 +195,7 @@ func (tx *SystemDeleteTransaction) getMethod(channel *_Channel) _Method {
 	}
 }
 
-func (tx *SystemDeleteTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx *SystemDeleteTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 

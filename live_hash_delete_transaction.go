@@ -135,7 +135,7 @@ func (tx *LiveHashDeleteTransaction) getMethod(channel *_Channel) _Method {
 	}
 }
 
-func (tx *LiveHashDeleteTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx *LiveHashDeleteTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 
