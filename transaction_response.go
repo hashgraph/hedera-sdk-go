@@ -2,6 +2,7 @@ package hedera
 
 import (
 	"encoding/hex"
+	"time"
 
 	jsoniter "github.com/json-iterator/go"
 )
@@ -37,7 +38,7 @@ type TransactionResponse struct {
 	NodeID                 AccountID
 	Hash                   []byte
 	ValidateStatus         bool
-	Transaction            Transaction[TransactionInterface]
+	Transaction            TransactionInterface
 }
 
 // MarshalJSON returns the JSON representation of the TransactionResponse.
@@ -72,7 +73,9 @@ func (response TransactionResponse) GetReceipt(client *Client) (TransactionRecei
 		Execute(client)
 
 	for receipt.Status == StatusThrottledAtConsensus {
-		receipt, err = retryTransaction(client, response.Transaction)
+		time.Sleep(250 * time.Second)
+		baseTransaction := response.Transaction.getBaseTransaction()
+		receipt, err = retryTransaction(client, *baseTransaction)
 	}
 
 	if err != nil {

@@ -1177,7 +1177,7 @@ func (tx *Transaction[T]) Execute(client *Client) (TransactionResponse, error) {
 		ValidateStatus: true,
 		// set the tx in the response, in case of throttle error in the receipt
 		// we can use this to re-submit the transaction
-		Transaction: *tx.childTransaction.getBaseTransaction(),
+		Transaction: tx.childTransaction,
 	}, nil
 }
 
