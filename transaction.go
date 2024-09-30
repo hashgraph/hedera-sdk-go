@@ -36,21 +36,27 @@ import (
 )
 
 type TransactionInterface interface {
+	// common methods for all executables
 	Executable
 
+	// methods implemented by the base trasnasction
 	Execute(client *Client) (TransactionResponse, error)
+
+	// methods implemented by every concrete transaction
 	build() *services.TransactionBody
 	buildScheduled() (*services.SchedulableTransactionBody, error)
 	preFreezeWith(*Client)
 	regenerateID(*Client) bool
 	// NOTE: Any changes to the baseTransaction retuned by getBaseTransaction()
 	// should be manually set back to the transaction object using setBaseTransaction()
+	// or no changes will be reflected in the transaction object
 	getBaseTransaction() *Transaction[TransactionInterface]
 	setBaseTransaction(Transaction[TransactionInterface])
 	constructScheduleProtobuf() (*services.SchedulableTransactionBody, error)
 }
 
 // Transaction is base struct for all transactions that may be built and submitted to Hedera.
+// It's generic over the type of transaction it contains. Example: TransferTransaction, ContractCreateTransaction, etc.
 type Transaction[T TransactionInterface] struct {
 	executable
 	childTransaction T
@@ -341,6 +347,7 @@ func TransactionFromBytes(data []byte) (TransactionInterface, error) { // nolint
 	return childTx, nil
 }
 
+// Creates a new transaction from a scheduled transaction body
 func transactionFromScheduledTransaction(scheduledBody *services.SchedulableTransactionBody) (TransactionInterface, error) { // nolint
 	pbBody := &services.TransactionBody{}
 
