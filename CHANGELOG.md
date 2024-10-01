@@ -1,3 +1,11 @@
+## v2.47.0
+
+### Added
+- Functionality to pass a string in `SetMessage` function for `TopicMessageSubmitTransaction`
+
+### Fixed
+- Resubmit transaction in case of throttle status at receipt
+
 ## v2.46.0
 
 ### Added
