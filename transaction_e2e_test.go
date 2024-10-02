@@ -66,7 +66,7 @@ func TestIntegrationTransactionAddSignature(t *testing.T) {
 	tx2, err := TransactionFromBytes(updateBytes)
 	require.NoError(t, err)
 
-	if newTx, ok := tx2.(*AccountDeleteTransaction); ok {
+	if newTx, ok := tx2.(AccountDeleteTransaction); ok {
 		resp, err = newTx.AddSignature(newKey.PublicKey(), sig1).Execute(env.Client)
 		require.NoError(t, err)
 	}

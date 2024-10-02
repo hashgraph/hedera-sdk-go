@@ -50,7 +50,7 @@ func main() {
 
 	txFromBytes, err := hedera.TransactionFromBytes(bytes)
 
-	transaction := txFromBytes.(*hedera.TransferTransaction)
+	transaction := txFromBytes.(hedera.TransferTransaction)
 	_, err = transaction.AddHbarTransfer(newAccountId, hedera.NewHbar(-1)).SignWithOperator(client)
 
 	_, err = transaction.Execute(client)

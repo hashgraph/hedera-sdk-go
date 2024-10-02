@@ -50,7 +50,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	txFromBytes := FromBytes.(*hedera.TransferTransaction)
+	txFromBytes := FromBytes.(hedera.TransferTransaction)
 	// New Account add his sign and execute the tx:
 	fmt.Println("Signing deserialized transaction with `newAccount` private key and executing it...")
 	executed, err := txFromBytes.Sign(newKey).SetMaxTransactionFee(hedera.NewHbar(2)).Execute(client)

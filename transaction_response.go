@@ -2,7 +2,6 @@ package hedera
 
 import (
 	"encoding/hex"
-	"time"
 
 	jsoniter "github.com/json-iterator/go"
 )
@@ -73,7 +72,6 @@ func (response TransactionResponse) GetReceipt(client *Client) (TransactionRecei
 		Execute(client)
 
 	for receipt.Status == StatusThrottledAtConsensus {
-		time.Sleep(250 * time.Second)
 		receipt, err = retryTransaction(client, response.Transaction)
 	}
 

@@ -215,7 +215,7 @@ func TestIntegrationTokenUpdateTransactionUpdateAdminKeyWithoutAlreadySetKeyFail
 	require.NoError(t, err)
 
 	// Create token without keys and fail updating them
-	for _, keyType := range []KeyType{ADMIN_KEY} {
+	for _, keyType := range []KeyType{WIPE_KEY, KYC_KEY, SUPPLY_KEY, FREEZE_KEY, FEE_SCHEDULE_KEY, PAUSE_KEY, METADATA_KEY, ADMIN_KEY} {
 		resp, _, err := createTokenWithKeysAndUpdateTokenKeyHelper(t, NONE, keyType, env.Client, someKey, env.OperatorKey, env.OperatorKey, NO_VALIDATION)
 		require.NoError(t, err)
 		_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
