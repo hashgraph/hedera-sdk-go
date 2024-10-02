@@ -322,7 +322,7 @@ func TestUnitFileUpdateTransactionCoverage(t *testing.T) {
 	require.NoError(t, err)
 	transaction.getName()
 	switch b := txFromBytes.(type) {
-	case *FileUpdateTransaction:
+	case FileUpdateTransaction:
 		b.AddSignature(newKey.PublicKey(), sig)
 	}
 }

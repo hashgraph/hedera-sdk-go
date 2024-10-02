@@ -54,12 +54,16 @@ func NewTopicMessageSubmitTransaction() *TopicMessageSubmitTransaction {
 	return tx
 }
 
-func _TopicMessageSubmitTransactionFromProtobuf(pb *services.TransactionBody) *TopicMessageSubmitTransaction {
-	return &TopicMessageSubmitTransaction{
+func _TopicMessageSubmitTransactionFromProtobuf(tx Transaction[*TopicMessageSubmitTransaction], pb *services.TransactionBody) TopicMessageSubmitTransaction {
+	topicMessageSubmitTransaction := TopicMessageSubmitTransaction{
 		maxChunks: 20,
 		message:   pb.GetConsensusSubmitMessage().GetMessage(),
 		topicID:   _TopicIDFromProtobuf(pb.GetConsensusSubmitMessage().GetTopicID()),
 	}
+
+	tx.childTransaction = &topicMessageSubmitTransaction
+	topicMessageSubmitTransaction.Transaction = &tx
+	return topicMessageSubmitTransaction
 }
 
 // SetTopicID Sets the topic to submit message to.
@@ -204,65 +208,6 @@ func (tx *TopicMessageSubmitTransaction) Schedule() (*ScheduleCreateTransaction,
 	return tx.Transaction.Schedule()
 }
 
-// ----------- Overridden functions ----------------
-
-func (tx *TopicMessageSubmitTransaction) getName() string {
-	return "TopicMessageSubmitTransaction"
-}
-func (tx *TopicMessageSubmitTransaction) validateNetworkOnIDs(client *Client) error {
-	if client == nil || !client.autoValidateChecksums {
-		return nil
-	}
-
-	if tx.topicID != nil {
-		if err := tx.topicID.ValidateChecksum(client); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (tx *TopicMessageSubmitTransaction) build() *services.TransactionBody {
-	return &services.TransactionBody{
-		TransactionFee:           tx.transactionFee,
-		Memo:                     tx.Transaction.memo,
-		TransactionValidDuration: _DurationToProtobuf(tx.GetTransactionValidDuration()),
-		TransactionID:            tx.transactionID._ToProtobuf(),
-		Data: &services.TransactionBody_ConsensusSubmitMessage{
-			ConsensusSubmitMessage: tx.buildProtoBody(),
-		},
-	}
-}
-
-func (tx *TopicMessageSubmitTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
-	return &services.SchedulableTransactionBody{
-		TransactionFee: tx.transactionFee,
-		Memo:           tx.Transaction.memo,
-		Data: &services.SchedulableTransactionBody_ConsensusSubmitMessage{
-			ConsensusSubmitMessage: tx.buildProtoBody(),
-		},
-	}, nil
-}
-
-func (tx *TopicMessageSubmitTransaction) buildProtoBody() *services.ConsensusSubmitMessageTransactionBody {
-	body := &services.ConsensusSubmitMessageTransactionBody{
-		Message: tx.message,
-	}
-
-	if tx.topicID != nil {
-		body.TopicID = tx.topicID._ToProtobuf()
-	}
-
-	return body
-}
-
-func (tx *TopicMessageSubmitTransaction) getMethod(channel *_Channel) _Method {
-	return _Method{
-		transaction: channel._GetTopic().SubmitMessage,
-	}
-}
-
 // Execute executes the Query with the provided client
 func (tx *TopicMessageSubmitTransaction) Execute(
 	client *Client,
@@ -327,14 +272,69 @@ func (tx *TopicMessageSubmitTransaction) ExecuteAll(
 	return list, nil
 }
 
-func (tx *TopicMessageSubmitTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+// ----------- Overridden functions ----------------
+
+func (tx TopicMessageSubmitTransaction) getName() string {
+	return "TopicMessageSubmitTransaction"
+}
+func (tx TopicMessageSubmitTransaction) validateNetworkOnIDs(client *Client) error {
+	if client == nil || !client.autoValidateChecksums {
+		return nil
+	}
+
+	if tx.topicID != nil {
+		if err := tx.topicID.ValidateChecksum(client); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (tx TopicMessageSubmitTransaction) build() *services.TransactionBody {
+	return &services.TransactionBody{
+		TransactionFee:           tx.transactionFee,
+		Memo:                     tx.Transaction.memo,
+		TransactionValidDuration: _DurationToProtobuf(tx.GetTransactionValidDuration()),
+		TransactionID:            tx.transactionID._ToProtobuf(),
+		Data: &services.TransactionBody_ConsensusSubmitMessage{
+			ConsensusSubmitMessage: tx.buildProtoBody(),
+		},
+	}
+}
+
+func (tx TopicMessageSubmitTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+	return &services.SchedulableTransactionBody{
+		TransactionFee: tx.transactionFee,
+		Memo:           tx.Transaction.memo,
+		Data: &services.SchedulableTransactionBody_ConsensusSubmitMessage{
+			ConsensusSubmitMessage: tx.buildProtoBody(),
+		},
+	}, nil
+}
+
+func (tx TopicMessageSubmitTransaction) buildProtoBody() *services.ConsensusSubmitMessageTransactionBody {
+	body := &services.ConsensusSubmitMessageTransactionBody{
+		Message: tx.message,
+	}
+
+	if tx.topicID != nil {
+		body.TopicID = tx.topicID._ToProtobuf()
+	}
+
+	return body
+}
+
+func (tx TopicMessageSubmitTransaction) getMethod(channel *_Channel) _Method {
+	return _Method{
+		transaction: channel._GetTopic().SubmitMessage,
+	}
+}
+
+func (tx TopicMessageSubmitTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 
-func (tx *TopicMessageSubmitTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction(tx.Transaction)
-}
-
-func (tx *TopicMessageSubmitTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
-	tx.Transaction = castFromBaseToConcreteTransaction[*TopicMessageSubmitTransaction](baseTx)
+func (tx TopicMessageSubmitTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }

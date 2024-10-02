@@ -34,11 +34,14 @@ type AccountDeleteTransaction struct {
 	deleteAccountID   *AccountID
 }
 
-func _AccountDeleteTransactionFromProtobuf(pb *services.TransactionBody) *AccountDeleteTransaction {
-	return &AccountDeleteTransaction{
+func _AccountDeleteTransactionFromProtobuf(tx Transaction[*AccountDeleteTransaction], pb *services.TransactionBody) AccountDeleteTransaction {
+	accountDeleteTransaction := AccountDeleteTransaction{
 		transferAccountID: _AccountIDFromProtobuf(pb.GetCryptoDelete().GetTransferAccountID()),
 		deleteAccountID:   _AccountIDFromProtobuf(pb.GetCryptoDelete().GetDeleteAccountID()),
 	}
+	tx.childTransaction = &accountDeleteTransaction
+	accountDeleteTransaction.Transaction = &tx
+	return accountDeleteTransaction
 }
 
 // NewAccountDeleteTransaction creates AccountDeleteTransaction which marks an account as deleted, moving all its current hbars to another account. It will remain in
@@ -86,10 +89,10 @@ func (tx *AccountDeleteTransaction) GetTransferAccountID() AccountID {
 
 // ----------- Overridden functions ----------------
 
-func (tx *AccountDeleteTransaction) getName() string {
+func (tx AccountDeleteTransaction) getName() string {
 	return "AccountDeleteTransaction"
 }
-func (tx *AccountDeleteTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx AccountDeleteTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -109,7 +112,7 @@ func (tx *AccountDeleteTransaction) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (tx *AccountDeleteTransaction) build() *services.TransactionBody {
+func (tx AccountDeleteTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
 		Memo:                     tx.Transaction.memo,
@@ -121,7 +124,7 @@ func (tx *AccountDeleteTransaction) build() *services.TransactionBody {
 	}
 }
 
-func (tx *AccountDeleteTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx AccountDeleteTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Memo:           tx.Transaction.memo,
@@ -131,7 +134,7 @@ func (tx *AccountDeleteTransaction) buildScheduled() (*services.SchedulableTrans
 	}, nil
 }
 
-func (tx *AccountDeleteTransaction) buildProtoBody() *services.CryptoDeleteTransactionBody {
+func (tx AccountDeleteTransaction) buildProtoBody() *services.CryptoDeleteTransactionBody {
 	body := &services.CryptoDeleteTransactionBody{}
 
 	if tx.transferAccountID != nil {
@@ -145,20 +148,16 @@ func (tx *AccountDeleteTransaction) buildProtoBody() *services.CryptoDeleteTrans
 	return body
 }
 
-func (tx *AccountDeleteTransaction) getMethod(channel *_Channel) _Method {
+func (tx AccountDeleteTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetCrypto().ApproveAllowances,
 	}
 }
 
-func (tx *AccountDeleteTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx AccountDeleteTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 
-func (tx *AccountDeleteTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction(tx.Transaction)
-}
-
-func (tx *AccountDeleteTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
-	tx.Transaction = castFromBaseToConcreteTransaction[*AccountDeleteTransaction](baseTx)
+func (tx AccountDeleteTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, tx)
 }

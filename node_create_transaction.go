@@ -67,10 +67,10 @@ func NewNodeCreateTransaction() *NodeCreateTransaction {
 	return tx
 }
 
-func _NodeCreateTransactionFromProtobuf(pb *services.TransactionBody) *NodeCreateTransaction {
+func _NodeCreateTransactionFromProtobuf(tx Transaction[*NodeCreateTransaction], pb *services.TransactionBody) NodeCreateTransaction {
 	adminKey, err := _KeyFromProtobuf(pb.GetNodeCreate().GetAdminKey())
 	if err != nil {
-		return &NodeCreateTransaction{}
+		return NodeCreateTransaction{}
 	}
 
 	accountID := _AccountIDFromProtobuf(pb.GetNodeCreate().GetAccountId())
@@ -83,7 +83,7 @@ func _NodeCreateTransactionFromProtobuf(pb *services.TransactionBody) *NodeCreat
 		serviceEndpoints = append(serviceEndpoints, EndpointFromProtobuf(endpoint))
 	}
 
-	return &NodeCreateTransaction{
+	nodeCreateTransaction := NodeCreateTransaction{
 		accountID:           accountID,
 		description:         pb.GetNodeCreate().GetDescription(),
 		gossipEndpoints:     gossipEndpoints,
@@ -92,6 +92,10 @@ func _NodeCreateTransactionFromProtobuf(pb *services.TransactionBody) *NodeCreat
 		grpcCertificateHash: pb.GetNodeCreate().GetGrpcCertificateHash(),
 		adminKey:            adminKey,
 	}
+
+	tx.childTransaction = &nodeCreateTransaction
+	nodeCreateTransaction.Transaction = &tx
+	return nodeCreateTransaction
 }
 
 // GetAccountID AccountID of the node
@@ -200,11 +204,11 @@ func (tx *NodeCreateTransaction) SetAdminKey(adminKey Key) *NodeCreateTransactio
 
 // ----------- Overridden functions ----------------
 
-func (tx *NodeCreateTransaction) getName() string {
+func (tx NodeCreateTransaction) getName() string {
 	return "NodeCreateTransaction"
 }
 
-func (tx *NodeCreateTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx NodeCreateTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -218,7 +222,7 @@ func (tx *NodeCreateTransaction) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (tx *NodeCreateTransaction) build() *services.TransactionBody {
+func (tx NodeCreateTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
 		Memo:                     tx.Transaction.memo,
@@ -230,7 +234,7 @@ func (tx *NodeCreateTransaction) build() *services.TransactionBody {
 	}
 }
 
-func (tx *NodeCreateTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx NodeCreateTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Memo:           tx.Transaction.memo,
@@ -240,7 +244,7 @@ func (tx *NodeCreateTransaction) buildScheduled() (*services.SchedulableTransact
 	}, nil
 }
 
-func (tx *NodeCreateTransaction) buildProtoBody() *services.NodeCreateTransactionBody {
+func (tx NodeCreateTransaction) buildProtoBody() *services.NodeCreateTransactionBody {
 	body := &services.NodeCreateTransactionBody{
 		Description: tx.description,
 	}
@@ -272,20 +276,16 @@ func (tx *NodeCreateTransaction) buildProtoBody() *services.NodeCreateTransactio
 	return body
 }
 
-func (tx *NodeCreateTransaction) getMethod(channel *_Channel) _Method {
+func (tx NodeCreateTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetAddressBook().CreateNode,
 	}
 }
 
-func (tx *NodeCreateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx NodeCreateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 
-func (tx *NodeCreateTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction(tx.Transaction)
-}
-
-func (tx *NodeCreateTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
-	tx.Transaction = castFromBaseToConcreteTransaction[*NodeCreateTransaction](baseTx)
+func (tx NodeCreateTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }

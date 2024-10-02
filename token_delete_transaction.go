@@ -50,10 +50,14 @@ func NewTokenDeleteTransaction() *TokenDeleteTransaction {
 	return tx
 }
 
-func _TokenDeleteTransactionFromProtobuf(pb *services.TransactionBody) *TokenDeleteTransaction {
-	return &TokenDeleteTransaction{
+func _TokenDeleteTransactionFromProtobuf(tx Transaction[*TokenDeleteTransaction], pb *services.TransactionBody) TokenDeleteTransaction {
+	tokenDeleteTransaction := TokenDeleteTransaction{
 		tokenID: _TokenIDFromProtobuf(pb.GetTokenDeletion().GetToken()),
 	}
+
+	tx.childTransaction = &tokenDeleteTransaction
+	tokenDeleteTransaction.Transaction = &tx
+	return tokenDeleteTransaction
 }
 
 // SetTokenID Sets the Token to be deleted
@@ -74,11 +78,11 @@ func (tx *TokenDeleteTransaction) GetTokenID() TokenID {
 
 // ----------- Overridden functions ----------------
 
-func (tx *TokenDeleteTransaction) getName() string {
+func (tx TokenDeleteTransaction) getName() string {
 	return "TokenDeleteTransaction"
 }
 
-func (tx *TokenDeleteTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx TokenDeleteTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -92,7 +96,7 @@ func (tx *TokenDeleteTransaction) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (tx *TokenDeleteTransaction) build() *services.TransactionBody {
+func (tx TokenDeleteTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
 		Memo:                     tx.Transaction.memo,
@@ -104,7 +108,7 @@ func (tx *TokenDeleteTransaction) build() *services.TransactionBody {
 	}
 }
 
-func (tx *TokenDeleteTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx TokenDeleteTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Memo:           tx.Transaction.memo,
@@ -114,7 +118,7 @@ func (tx *TokenDeleteTransaction) buildScheduled() (*services.SchedulableTransac
 	}, nil
 }
 
-func (tx *TokenDeleteTransaction) buildProtoBody() *services.TokenDeleteTransactionBody {
+func (tx TokenDeleteTransaction) buildProtoBody() *services.TokenDeleteTransactionBody {
 	body := &services.TokenDeleteTransactionBody{}
 	if tx.tokenID != nil {
 		body.Token = tx.tokenID._ToProtobuf()
@@ -123,20 +127,16 @@ func (tx *TokenDeleteTransaction) buildProtoBody() *services.TokenDeleteTransact
 	return body
 }
 
-func (tx *TokenDeleteTransaction) getMethod(channel *_Channel) _Method {
+func (tx TokenDeleteTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetToken().DeleteToken,
 	}
 }
 
-func (tx *TokenDeleteTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx TokenDeleteTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 
-func (tx *TokenDeleteTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction(tx.Transaction)
-}
-
-func (tx *TokenDeleteTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
-	tx.Transaction = castFromBaseToConcreteTransaction[*TokenDeleteTransaction](baseTx)
+func (tx TokenDeleteTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }

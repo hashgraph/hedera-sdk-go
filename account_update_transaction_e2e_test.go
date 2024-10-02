@@ -229,9 +229,9 @@ func TestIntegrationAccountUpdateTransactionAccountIDNotSet(t *testing.T) {
 //	updateBytes, err := tx.ToBytes()
 //	require.NoError(t, err)
 //
-//	sig1, err := newKey.SignTransaction(tx)
+//	sig1, err := newKey.SignTransaction(&tx.Transaction)
 //	require.NoError(t, err)
-//	sig2, err := newKey2.SignTransaction(tx)
+//	sig2, err := newKey2.SignTransaction(&tx.Transaction)
 //	require.NoError(t, err)
 //
 //	tx2, err := TransactionFromBytes(updateBytes)

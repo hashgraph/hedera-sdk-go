@@ -43,10 +43,14 @@ func NewScheduleDeleteTransaction() *ScheduleDeleteTransaction {
 	return tx
 }
 
-func _ScheduleDeleteTransactionFromProtobuf(pb *services.TransactionBody) *ScheduleDeleteTransaction {
-	return &ScheduleDeleteTransaction{
+func _ScheduleDeleteTransactionFromProtobuf(tx Transaction[*ScheduleDeleteTransaction], pb *services.TransactionBody) ScheduleDeleteTransaction {
+	scheduleDeleteTransaction := ScheduleDeleteTransaction{
 		scheduleID: _ScheduleIDFromProtobuf(pb.GetScheduleDelete().GetScheduleID()),
 	}
+
+	tx.childTransaction = &scheduleDeleteTransaction
+	scheduleDeleteTransaction.Transaction = &tx
+	return scheduleDeleteTransaction
 }
 
 // SetScheduleID Sets the ScheduleID of the scheduled transaction to be deleted
@@ -66,11 +70,11 @@ func (tx *ScheduleDeleteTransaction) GetScheduleID() ScheduleID {
 
 // ----------- Overridden functions ----------------
 
-func (tx *ScheduleDeleteTransaction) getName() string {
+func (tx ScheduleDeleteTransaction) getName() string {
 	return "ScheduleDeleteTransaction"
 }
 
-func (tx *ScheduleDeleteTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx ScheduleDeleteTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -84,7 +88,7 @@ func (tx *ScheduleDeleteTransaction) validateNetworkOnIDs(client *Client) error 
 	return nil
 }
 
-func (tx *ScheduleDeleteTransaction) build() *services.TransactionBody {
+func (tx ScheduleDeleteTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
 		Memo:                     tx.Transaction.memo,
@@ -96,7 +100,7 @@ func (tx *ScheduleDeleteTransaction) build() *services.TransactionBody {
 	}
 }
 
-func (tx *ScheduleDeleteTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx ScheduleDeleteTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Memo:           tx.Transaction.memo,
@@ -106,7 +110,7 @@ func (tx *ScheduleDeleteTransaction) buildScheduled() (*services.SchedulableTran
 	}, nil
 }
 
-func (tx *ScheduleDeleteTransaction) buildProtoBody() *services.ScheduleDeleteTransactionBody {
+func (tx ScheduleDeleteTransaction) buildProtoBody() *services.ScheduleDeleteTransactionBody {
 	body := &services.ScheduleDeleteTransactionBody{}
 	if tx.scheduleID != nil {
 		body.ScheduleID = tx.scheduleID._ToProtobuf()
@@ -115,19 +119,15 @@ func (tx *ScheduleDeleteTransaction) buildProtoBody() *services.ScheduleDeleteTr
 	return body
 }
 
-func (tx *ScheduleDeleteTransaction) getMethod(channel *_Channel) _Method {
+func (tx ScheduleDeleteTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetSchedule().DeleteSchedule,
 	}
 }
-func (tx *ScheduleDeleteTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx ScheduleDeleteTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 
-func (tx *ScheduleDeleteTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction(tx.Transaction)
-}
-
-func (tx *ScheduleDeleteTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
-	tx.Transaction = castFromBaseToConcreteTransaction[*ScheduleDeleteTransaction](baseTx)
+func (tx ScheduleDeleteTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }

@@ -68,7 +68,7 @@ func NewTransferTransaction() *TransferTransaction {
 	return tx
 }
 
-func _TransferTransactionFromProtobuf(pb *services.TransactionBody) *TransferTransaction {
+func _TransferTransactionFromProtobuf(tx Transaction[*TransferTransaction], pb *services.TransactionBody) TransferTransaction {
 	tokenTransfers := make(map[TokenID]*_TokenTransfer)
 	nftTransfers := make(map[TokenID][]*_TokenNftTransfer)
 
@@ -89,11 +89,15 @@ func _TransferTransactionFromProtobuf(pb *services.TransactionBody) *TransferTra
 		}
 	}
 
-	return &TransferTransaction{
+	transferTransaction := TransferTransaction{
 		hbarTransfers:  _HbarTransferFromProtobuf(pb.GetCryptoTransfer().GetTransfers().GetAccountAmounts()),
 		tokenTransfers: tokenTransfers,
 		nftTransfers:   nftTransfers,
 	}
+
+	tx.childTransaction = &transferTransaction
+	transferTransaction.Transaction = &tx
+	return transferTransaction
 }
 
 // SetTokenTransferApproval Sets the desired token unit balance adjustments
@@ -443,11 +447,11 @@ func (tx *TransferTransaction) AddApprovedNftTransfer(nftID NftID, sender Accoun
 
 // ----------- Overridden functions ----------------
 
-func (tx *TransferTransaction) getName() string {
+func (tx TransferTransaction) getName() string {
 	return "TransferTransaction"
 }
 
-func (tx *TransferTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx TransferTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -493,7 +497,7 @@ func (tx *TransferTransaction) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (tx *TransferTransaction) build() *services.TransactionBody {
+func (tx TransferTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
 		Memo:                     tx.Transaction.memo,
@@ -505,7 +509,7 @@ func (tx *TransferTransaction) build() *services.TransactionBody {
 	}
 }
 
-func (tx *TransferTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx TransferTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Memo:           tx.Transaction.memo,
@@ -515,7 +519,7 @@ func (tx *TransferTransaction) buildScheduled() (*services.SchedulableTransactio
 	}, nil
 }
 
-func (tx *TransferTransaction) buildProtoBody() *services.CryptoTransferTransactionBody {
+func (tx TransferTransaction) buildProtoBody() *services.CryptoTransferTransactionBody {
 	body := &services.CryptoTransferTransactionBody{
 		Transfers: &services.TransferList{
 			AccountAmounts: []*services.AccountAmount{},
@@ -604,20 +608,16 @@ func (tx *TransferTransaction) buildProtoBody() *services.CryptoTransferTransact
 	return body
 }
 
-func (tx *TransferTransaction) getMethod(channel *_Channel) _Method {
+func (tx TransferTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetCrypto().CryptoTransfer,
 	}
 }
 
-func (this *TransferTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
-	return this.buildScheduled()
+func (tx TransferTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	return tx.buildScheduled()
 }
 
-func (tx *TransferTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction(tx.Transaction)
-}
-
-func (tx *TransferTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
-	tx.Transaction = castFromBaseToConcreteTransaction[*TransferTransaction](baseTx)
+func (tx TransferTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, tx)
 }

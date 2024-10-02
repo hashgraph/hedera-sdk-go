@@ -45,12 +45,16 @@ func NewEthereumTransaction() *EthereumTransaction {
 	return tx
 }
 
-func _EthereumTransactionFromProtobuf(pb *services.TransactionBody) *EthereumTransaction {
-	return &EthereumTransaction{
+func _EthereumTransactionFromProtobuf(tx Transaction[*EthereumTransaction], pb *services.TransactionBody) EthereumTransaction {
+	ethereumTransaction := EthereumTransaction{
 		ethereumData:  pb.GetEthereumTransaction().EthereumData,
 		callData:      _FileIDFromProtobuf(pb.GetEthereumTransaction().CallData),
 		MaxGasAllowed: pb.GetEthereumTransaction().MaxGasAllowance,
 	}
+
+	tx.childTransaction = &ethereumTransaction
+	ethereumTransaction.Transaction = &tx
+	return ethereumTransaction
 }
 
 // SetEthereumData
@@ -120,10 +124,10 @@ func (tx *EthereumTransaction) GetMaxGasAllowed() int64 {
 
 // ----------- Overridden functions ----------------
 
-func (tx *EthereumTransaction) getName() string {
+func (tx EthereumTransaction) getName() string {
 	return "EthereumTransaction"
 }
-func (tx *EthereumTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx EthereumTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -137,7 +141,7 @@ func (tx *EthereumTransaction) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (tx *EthereumTransaction) build() *services.TransactionBody {
+func (tx EthereumTransaction) build() *services.TransactionBody {
 	body := &services.EthereumTransactionBody{
 		EthereumData:    tx.ethereumData,
 		MaxGasAllowance: tx.MaxGasAllowed,
@@ -158,24 +162,20 @@ func (tx *EthereumTransaction) build() *services.TransactionBody {
 	}
 }
 
-func (tx *EthereumTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx EthereumTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return nil, errors.New("cannot schedule `EthereumTransaction`")
 }
 
-func (tx *EthereumTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx EthereumTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 
-func (tx *EthereumTransaction) getMethod(channel *_Channel) _Method {
+func (tx EthereumTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetContract().CallEthereum,
 	}
 }
 
-func (tx *EthereumTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction(tx.Transaction)
-}
-
-func (tx *EthereumTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
-	tx.Transaction = castFromBaseToConcreteTransaction[*EthereumTransaction](baseTx)
+func (tx EthereumTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }

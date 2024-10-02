@@ -47,12 +47,12 @@ func TestIntegrationMultiAppTransfer(t *testing.T) {
 	signedTxBytes, err := signingService(txBytes, env.OperatorKey)
 	require.NoError(t, err)
 
-	var signedTx *TransferTransaction
+	var signedTx TransferTransaction
 	tx, err := TransactionFromBytes(signedTxBytes)
 	require.NoError(t, err)
 
 	switch t := tx.(type) {
-	case *TransferTransaction:
+	case TransferTransaction:
 		signedTx = t
 	default:
 		panic("Did not receive `TransferTransaction` back from signed bytes")
@@ -69,14 +69,14 @@ func TestIntegrationMultiAppTransfer(t *testing.T) {
 }
 
 func signingService(txBytes []byte, key PrivateKey) ([]byte, error) {
-	var unsignedTx *TransferTransaction
+	var unsignedTx TransferTransaction
 	tx, err := TransactionFromBytes(txBytes)
 	if err != nil {
 		return txBytes, err
 	}
 
 	switch t := tx.(type) {
-	case *TransferTransaction:
+	case TransferTransaction:
 		unsignedTx = t
 	default:
 		panic("Did not receive `TransferTransaction` back from signed bytes")

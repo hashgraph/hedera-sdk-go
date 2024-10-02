@@ -44,13 +44,16 @@ func NewContractDeleteTransaction() *ContractDeleteTransaction {
 	return tx
 }
 
-func _ContractDeleteTransactionFromProtobuf(pb *services.TransactionBody) *ContractDeleteTransaction {
-	return &ContractDeleteTransaction{
+func _ContractDeleteTransactionFromProtobuf(tx Transaction[*ContractDeleteTransaction], pb *services.TransactionBody) ContractDeleteTransaction {
+	contractDeleteTransaction := ContractDeleteTransaction{
 		contractID:        _ContractIDFromProtobuf(pb.GetContractDeleteInstance().GetContractID()),
 		transferContactID: _ContractIDFromProtobuf(pb.GetContractDeleteInstance().GetTransferContractID()),
 		transferAccountID: _AccountIDFromProtobuf(pb.GetContractDeleteInstance().GetTransferAccountID()),
 		permanentRemoval:  pb.GetContractDeleteInstance().GetPermanentRemoval(),
 	}
+	tx.childTransaction = &contractDeleteTransaction
+	contractDeleteTransaction.Transaction = &tx
+	return contractDeleteTransaction
 }
 
 // Sets the contract ID which will be deleted.
@@ -123,10 +126,10 @@ func (tx *ContractDeleteTransaction) GetPermanentRemoval() bool {
 
 // ----------- Overridden functions ----------------
 
-func (tx *ContractDeleteTransaction) getName() string {
+func (tx ContractDeleteTransaction) getName() string {
 	return "ContractDeleteTransaction"
 }
-func (tx *ContractDeleteTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx ContractDeleteTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -152,7 +155,7 @@ func (tx *ContractDeleteTransaction) validateNetworkOnIDs(client *Client) error 
 	return nil
 }
 
-func (tx *ContractDeleteTransaction) build() *services.TransactionBody {
+func (tx ContractDeleteTransaction) build() *services.TransactionBody {
 	pb := services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
 		Memo:                     tx.Transaction.memo,
@@ -166,7 +169,7 @@ func (tx *ContractDeleteTransaction) build() *services.TransactionBody {
 	return &pb
 }
 
-func (tx *ContractDeleteTransaction) buildProtoBody() *services.ContractDeleteTransactionBody {
+func (tx ContractDeleteTransaction) buildProtoBody() *services.ContractDeleteTransactionBody {
 	body := &services.ContractDeleteTransactionBody{
 		PermanentRemoval: tx.permanentRemoval,
 	}
@@ -190,7 +193,7 @@ func (tx *ContractDeleteTransaction) buildProtoBody() *services.ContractDeleteTr
 	return body
 }
 
-func (tx *ContractDeleteTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx ContractDeleteTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Memo:           tx.Transaction.memo,
@@ -200,20 +203,16 @@ func (tx *ContractDeleteTransaction) buildScheduled() (*services.SchedulableTran
 	}, nil
 }
 
-func (tx *ContractDeleteTransaction) getMethod(channel *_Channel) _Method {
+func (tx ContractDeleteTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetContract().DeleteContract,
 	}
 }
 
-func (tx *ContractDeleteTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx ContractDeleteTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 
-func (tx *ContractDeleteTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction(tx.Transaction)
-}
-
-func (tx *ContractDeleteTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
-	tx.Transaction = castFromBaseToConcreteTransaction[*ContractDeleteTransaction](baseTx)
+func (tx ContractDeleteTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }

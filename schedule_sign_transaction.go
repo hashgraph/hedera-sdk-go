@@ -55,10 +55,14 @@ func NewScheduleSignTransaction() *ScheduleSignTransaction {
 	return tx
 }
 
-func _ScheduleSignTransactionFromProtobuf(pb *services.TransactionBody) *ScheduleSignTransaction {
-	return &ScheduleSignTransaction{
+func _ScheduleSignTransactionFromProtobuf(tx Transaction[*ScheduleSignTransaction], pb *services.TransactionBody) ScheduleSignTransaction {
+	scheduleSignTransaction := ScheduleSignTransaction{
 		scheduleID: _ScheduleIDFromProtobuf(pb.GetScheduleSign().GetScheduleID()),
 	}
+
+	tx.childTransaction = &scheduleSignTransaction
+	scheduleSignTransaction.Transaction = &tx
+	return scheduleSignTransaction
 }
 
 // SetScheduleID Sets the id of the schedule to add signing keys to
@@ -79,11 +83,11 @@ func (tx *ScheduleSignTransaction) GetScheduleID() ScheduleID {
 
 // ----------- Overridden functions ----------------
 
-func (tx *ScheduleSignTransaction) getName() string {
+func (tx ScheduleSignTransaction) getName() string {
 	return "ScheduleSignTransaction"
 }
 
-func (tx *ScheduleSignTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx ScheduleSignTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -97,7 +101,7 @@ func (tx *ScheduleSignTransaction) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (tx *ScheduleSignTransaction) build() *services.TransactionBody {
+func (tx ScheduleSignTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
 		Memo:                     tx.Transaction.memo,
@@ -109,11 +113,11 @@ func (tx *ScheduleSignTransaction) build() *services.TransactionBody {
 	}
 }
 
-func (tx *ScheduleSignTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx ScheduleSignTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return nil, errors.New("cannot schedule `ScheduleSignTransaction")
 }
 
-func (tx *ScheduleSignTransaction) buildProtoBody() *services.ScheduleSignTransactionBody {
+func (tx ScheduleSignTransaction) buildProtoBody() *services.ScheduleSignTransactionBody {
 	body := &services.ScheduleSignTransactionBody{}
 	if tx.scheduleID != nil {
 		body.ScheduleID = tx.scheduleID._ToProtobuf()
@@ -122,20 +126,16 @@ func (tx *ScheduleSignTransaction) buildProtoBody() *services.ScheduleSignTransa
 	return body
 }
 
-func (tx *ScheduleSignTransaction) getMethod(channel *_Channel) _Method {
+func (tx ScheduleSignTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetSchedule().SignSchedule,
 	}
 }
 
-func (tx *ScheduleSignTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx ScheduleSignTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 
-func (tx *ScheduleSignTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction(tx.Transaction)
-}
-
-func (tx *ScheduleSignTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
-	tx.Transaction = castFromBaseToConcreteTransaction[*ScheduleSignTransaction](baseTx)
+func (tx ScheduleSignTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }

@@ -80,7 +80,7 @@ func NewContractUpdateTransaction() *ContractUpdateTransaction {
 	return tx
 }
 
-func _ContractUpdateTransactionFromProtobuf(pb *services.TransactionBody) *ContractUpdateTransaction {
+func _ContractUpdateTransactionFromProtobuf(tx Transaction[*ContractUpdateTransaction], pb *services.TransactionBody) ContractUpdateTransaction {
 	key, _ := _KeyFromProtobuf(pb.GetContractUpdateInstance().AdminKey)
 	autoRenew := _DurationFromProtobuf(pb.GetContractUpdateInstance().GetAutoRenewPeriod())
 	expiration := _TimeFromProtobuf(pb.GetContractUpdateInstance().GetExpirationTime())
@@ -105,7 +105,7 @@ func _ContractUpdateTransactionFromProtobuf(pb *services.TransactionBody) *Contr
 		autoRenewAccountID = _AccountIDFromProtobuf(pb.GetContractUpdateInstance().GetAutoRenewAccountId())
 	}
 
-	return &ContractUpdateTransaction{
+	contractUpdateTransaction := ContractUpdateTransaction{
 		contractID:                    _ContractIDFromProtobuf(pb.GetContractUpdateInstance().GetContractID()),
 		adminKey:                      key,
 		autoRenewPeriod:               &autoRenew,
@@ -117,6 +117,9 @@ func _ContractUpdateTransactionFromProtobuf(pb *services.TransactionBody) *Contr
 		stakedNodeID:                  &stakedNodeID,
 		declineReward:                 pb.GetContractUpdateInstance().GetDeclineReward().GetValue(),
 	}
+	tx.childTransaction = &contractUpdateTransaction
+	contractUpdateTransaction.Transaction = &tx
+	return contractUpdateTransaction
 }
 
 // SetContractID sets The Contract ID instance to update (this can't be changed on the contract)
@@ -316,11 +319,11 @@ func (tx *ContractUpdateTransaction) ClearStakedNodeID() *ContractUpdateTransact
 
 // ----------- Overridden functions ----------------
 
-func (tx *ContractUpdateTransaction) getName() string {
+func (tx ContractUpdateTransaction) getName() string {
 	return "ContractUpdateTransaction"
 }
 
-func (tx *ContractUpdateTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx ContractUpdateTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -340,7 +343,7 @@ func (tx *ContractUpdateTransaction) validateNetworkOnIDs(client *Client) error 
 	return nil
 }
 
-func (tx *ContractUpdateTransaction) build() *services.TransactionBody {
+func (tx ContractUpdateTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
 		Memo:                     tx.Transaction.memo,
@@ -352,7 +355,7 @@ func (tx *ContractUpdateTransaction) build() *services.TransactionBody {
 	}
 }
 
-func (tx *ContractUpdateTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx ContractUpdateTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Memo:           tx.Transaction.memo,
@@ -362,7 +365,7 @@ func (tx *ContractUpdateTransaction) buildScheduled() (*services.SchedulableTran
 	}, nil
 }
 
-func (tx *ContractUpdateTransaction) buildProtoBody() *services.ContractUpdateTransactionBody {
+func (tx ContractUpdateTransaction) buildProtoBody() *services.ContractUpdateTransactionBody {
 	body := &services.ContractUpdateTransactionBody{
 		DeclineReward: &wrapperspb.BoolValue{Value: tx.declineReward},
 	}
@@ -416,19 +419,15 @@ func (tx *ContractUpdateTransaction) buildProtoBody() *services.ContractUpdateTr
 	return body
 }
 
-func (tx *ContractUpdateTransaction) getMethod(channel *_Channel) _Method {
+func (tx ContractUpdateTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetContract().UpdateContract,
 	}
 }
-func (tx *ContractUpdateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx ContractUpdateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 
-func (tx *ContractUpdateTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction(tx.Transaction)
-}
-
-func (tx *ContractUpdateTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
-	tx.Transaction = castFromBaseToConcreteTransaction[*ContractUpdateTransaction](baseTx)
+func (tx ContractUpdateTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }

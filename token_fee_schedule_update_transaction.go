@@ -59,17 +59,21 @@ func NewTokenFeeScheduleUpdateTransaction() *TokenFeeScheduleUpdateTransaction {
 	return tx
 }
 
-func _TokenFeeScheduleUpdateTransactionFromProtobuf(pb *services.TransactionBody) *TokenFeeScheduleUpdateTransaction {
+func _TokenFeeScheduleUpdateTransactionFromProtobuf(tx Transaction[*TokenFeeScheduleUpdateTransaction], pb *services.TransactionBody) TokenFeeScheduleUpdateTransaction {
 	customFees := make([]Fee, 0)
 
 	for _, fee := range pb.GetTokenFeeScheduleUpdate().GetCustomFees() {
 		customFees = append(customFees, _CustomFeeFromProtobuf(fee))
 	}
 
-	return &TokenFeeScheduleUpdateTransaction{
+	tokenFeeScheduleUpdateTransaction := TokenFeeScheduleUpdateTransaction{
 		tokenID:    _TokenIDFromProtobuf(pb.GetTokenFeeScheduleUpdate().TokenId),
 		customFees: customFees,
 	}
+
+	tx.childTransaction = &tokenFeeScheduleUpdateTransaction
+	tokenFeeScheduleUpdateTransaction.Transaction = &tx
+	return tokenFeeScheduleUpdateTransaction
 }
 
 // SetTokenID Sets the token whose fee schedule is to be updated
@@ -102,11 +106,11 @@ func (tx *TokenFeeScheduleUpdateTransaction) GetCustomFees() []Fee {
 
 // ----------- Overridden functions ----------------
 
-func (tx *TokenFeeScheduleUpdateTransaction) getName() string {
+func (tx TokenFeeScheduleUpdateTransaction) getName() string {
 	return "TokenFeeScheduleUpdateTransaction"
 }
 
-func (tx *TokenFeeScheduleUpdateTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx TokenFeeScheduleUpdateTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -126,7 +130,7 @@ func (tx *TokenFeeScheduleUpdateTransaction) validateNetworkOnIDs(client *Client
 	return nil
 }
 
-func (tx *TokenFeeScheduleUpdateTransaction) build() *services.TransactionBody {
+func (tx TokenFeeScheduleUpdateTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
 		Memo:                     tx.Transaction.memo,
@@ -138,11 +142,11 @@ func (tx *TokenFeeScheduleUpdateTransaction) build() *services.TransactionBody {
 	}
 }
 
-func (tx *TokenFeeScheduleUpdateTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx TokenFeeScheduleUpdateTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return nil, errors.New("cannot schedule `TokenFeeScheduleUpdateTransaction")
 }
 
-func (tx *TokenFeeScheduleUpdateTransaction) buildProtoBody() *services.TokenFeeScheduleUpdateTransactionBody {
+func (tx TokenFeeScheduleUpdateTransaction) buildProtoBody() *services.TokenFeeScheduleUpdateTransactionBody {
 	body := &services.TokenFeeScheduleUpdateTransactionBody{}
 	if tx.tokenID != nil {
 		body.TokenId = tx.tokenID._ToProtobuf()
@@ -160,20 +164,16 @@ func (tx *TokenFeeScheduleUpdateTransaction) buildProtoBody() *services.TokenFee
 	return body
 }
 
-func (tx *TokenFeeScheduleUpdateTransaction) getMethod(channel *_Channel) _Method {
+func (tx TokenFeeScheduleUpdateTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetToken().UpdateTokenFeeSchedule,
 	}
 }
 
-func (tx *TokenFeeScheduleUpdateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx TokenFeeScheduleUpdateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 
-func (tx *TokenFeeScheduleUpdateTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction(tx.Transaction)
-}
-
-func (tx *TokenFeeScheduleUpdateTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
-	tx.Transaction = castFromBaseToConcreteTransaction[*TokenFeeScheduleUpdateTransaction](baseTx)
+func (tx TokenFeeScheduleUpdateTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }

@@ -18,11 +18,15 @@ func NewTokenUpdateNftsTransaction() *TokenUpdateNfts {
 	return tx
 }
 
-func _TokenUpdateNftsTransactionFromProtobuf(pb *services.TransactionBody) *TokenUpdateNfts {
-	return &TokenUpdateNfts{
+func _TokenUpdateNftsTransactionFromProtobuf(tx Transaction[*TokenUpdateNfts], pb *services.TransactionBody) TokenUpdateNfts {
+	tokenUpdateNfts := TokenUpdateNfts{
 		tokenID:       _TokenIDFromProtobuf(pb.GetTokenUpdateNfts().GetToken()),
 		serialNumbers: append([]int64{}, pb.GetTokenUpdateNfts().GetSerialNumbers()...),
 	}
+
+	tx.childTransaction = &tokenUpdateNfts
+	tokenUpdateNfts.Transaction = &tx
+	return tokenUpdateNfts
 }
 
 // Getter for tokenID
@@ -63,11 +67,11 @@ func (t *TokenUpdateNfts) SetMetadata(metadata []byte) *TokenUpdateNfts {
 
 // ----------- Overridden functions ----------------
 
-func (tx *TokenUpdateNfts) getName() string {
+func (tx TokenUpdateNfts) getName() string {
 	return "TokenUpdateNfts"
 }
 
-func (tx *TokenUpdateNfts) validateNetworkOnIDs(client *Client) error {
+func (tx TokenUpdateNfts) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -80,7 +84,7 @@ func (tx *TokenUpdateNfts) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (tx *TokenUpdateNfts) build() *services.TransactionBody {
+func (tx TokenUpdateNfts) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
 		Memo:                     tx.Transaction.memo,
@@ -92,7 +96,7 @@ func (tx *TokenUpdateNfts) build() *services.TransactionBody {
 	}
 }
 
-func (tx *TokenUpdateNfts) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx TokenUpdateNfts) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Memo:           tx.Transaction.memo,
@@ -102,7 +106,7 @@ func (tx *TokenUpdateNfts) buildScheduled() (*services.SchedulableTransactionBod
 	}, nil
 }
 
-func (tx *TokenUpdateNfts) buildProtoBody() *services.TokenUpdateNftsTransactionBody {
+func (tx TokenUpdateNfts) buildProtoBody() *services.TokenUpdateNftsTransactionBody {
 	body := &services.TokenUpdateNftsTransactionBody{}
 
 	if tx.tokenID != nil {
@@ -121,20 +125,16 @@ func (tx *TokenUpdateNfts) buildProtoBody() *services.TokenUpdateNftsTransaction
 	return body
 }
 
-func (tx *TokenUpdateNfts) getMethod(channel *_Channel) _Method {
+func (tx TokenUpdateNfts) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetToken().UpdateNfts,
 	}
 }
 
-func (tx *TokenUpdateNfts) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx TokenUpdateNfts) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 
-func (tx *TokenUpdateNfts) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction(tx.Transaction)
-}
-
-func (tx *TokenUpdateNfts) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
-	tx.Transaction = castFromBaseToConcreteTransaction[*TokenUpdateNfts](baseTx)
+func (tx TokenUpdateNfts) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }

@@ -44,11 +44,15 @@ func NewLiveHashDeleteTransaction() *LiveHashDeleteTransaction {
 	return tx
 }
 
-func _LiveHashDeleteTransactionFromProtobuf(pb *services.TransactionBody) *LiveHashDeleteTransaction {
-	return &LiveHashDeleteTransaction{
+func _LiveHashDeleteTransactionFromProtobuf(tx Transaction[*LiveHashDeleteTransaction], pb *services.TransactionBody) LiveHashDeleteTransaction {
+	liveHashDeleteTransaction := LiveHashDeleteTransaction{
 		accountID: _AccountIDFromProtobuf(pb.GetCryptoDeleteLiveHash().GetAccountOfLiveHash()),
 		hash:      pb.GetCryptoDeleteLiveHash().LiveHashToDelete,
 	}
+
+	tx.childTransaction = &liveHashDeleteTransaction
+	liveHashDeleteTransaction.Transaction = &tx
+	return liveHashDeleteTransaction
 }
 
 // SetHash Set the SHA-384 livehash to delete from the account
@@ -81,11 +85,11 @@ func (tx *LiveHashDeleteTransaction) GetAccountID() AccountID {
 
 // ----------- Overridden functions ----------------
 
-func (tx *LiveHashDeleteTransaction) getName() string {
+func (tx LiveHashDeleteTransaction) getName() string {
 	return "LiveHashDeleteTransaction"
 }
 
-func (tx *LiveHashDeleteTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx LiveHashDeleteTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -99,7 +103,7 @@ func (tx *LiveHashDeleteTransaction) validateNetworkOnIDs(client *Client) error 
 	return nil
 }
 
-func (tx *LiveHashDeleteTransaction) build() *services.TransactionBody {
+func (tx LiveHashDeleteTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
 		Memo:                     tx.Transaction.memo,
@@ -111,11 +115,11 @@ func (tx *LiveHashDeleteTransaction) build() *services.TransactionBody {
 	}
 }
 
-func (tx *LiveHashDeleteTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx LiveHashDeleteTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return nil, errors.New("cannot schedule `LiveHashDeleteTransaction`")
 }
 
-func (tx *LiveHashDeleteTransaction) buildProtoBody() *services.CryptoDeleteLiveHashTransactionBody {
+func (tx LiveHashDeleteTransaction) buildProtoBody() *services.CryptoDeleteLiveHashTransactionBody {
 	body := &services.CryptoDeleteLiveHashTransactionBody{}
 
 	if tx.accountID != nil {
@@ -129,20 +133,16 @@ func (tx *LiveHashDeleteTransaction) buildProtoBody() *services.CryptoDeleteLive
 	return body
 }
 
-func (tx *LiveHashDeleteTransaction) getMethod(channel *_Channel) _Method {
+func (tx LiveHashDeleteTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetCrypto().DeleteLiveHash,
 	}
 }
 
-func (tx *LiveHashDeleteTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx LiveHashDeleteTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 
-func (tx *LiveHashDeleteTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction(tx.Transaction)
-}
-
-func (tx *LiveHashDeleteTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
-	tx.Transaction = castFromBaseToConcreteTransaction[*LiveHashDeleteTransaction](baseTx)
+func (tx LiveHashDeleteTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }

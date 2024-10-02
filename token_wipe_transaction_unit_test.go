@@ -251,7 +251,7 @@ func TestUnitTokenWipeTransactionCoverage(t *testing.T) {
 	require.NoError(t, err)
 	transaction.getName()
 	switch b := txFromBytes.(type) {
-	case *TokenWipeTransaction:
+	case TokenWipeTransaction:
 		b.AddSignature(newKey.PublicKey(), sig)
 	}
 }

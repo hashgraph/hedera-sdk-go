@@ -33,10 +33,12 @@ import (
 func TestUnitSystemUndeleteTransactionFromProtobuf(t *testing.T) {
 	t.Parallel()
 
-	trxBody := _CreateProtoBufUndeleteTrxBody()
-	sysUndeleteTrx := _SystemUndeleteTransactionFromProtobuf(trxBody)
+	trx, trxBody := _CreateProtoBufUndeleteTrxBody()
+	sysUndeleteTrx := _SystemUndeleteTransactionFromProtobuf(trx, trxBody)
 	require.NotNil(t, sysUndeleteTrx)
-	require.Equal(t, uint64(123), sysUndeleteTrx.contractID.Contract)
+	require.Equal(t, "memo", sysUndeleteTrx.memo)
+	require.Equal(t, uint64(5), sysUndeleteTrx.transactionFee)
+	require.Equal(t, uint64(10), sysUndeleteTrx.defaultMaxTransactionFee)
 }
 
 func TestUnitSystemUndeleteTrxGettersAndSetters(t *testing.T) {
@@ -105,16 +107,12 @@ func TestUnitSystemConstructNewScheduleUndeleteTransactionProtobuf(t *testing.T)
 	require.Equal(t, uint64(0), protoBody.TransactionFee)
 }
 
-func _CreateProtoBufUndeleteTrxBody() *services.TransactionBody {
-	contract := &services.SystemUndeleteTransactionBody_ContractID{
-		ContractID: &services.ContractID{
-			Contract: &services.ContractID_ContractNum{ContractNum: 123},
-		},
-	}
+func _CreateProtoBufUndeleteTrxBody() (Transaction[*SystemUndeleteTransaction], *services.TransactionBody) {
+	transaction := Transaction[*SystemUndeleteTransaction]{BaseTransaction: &BaseTransaction{transactionFee: 5, memo: "memo", defaultMaxTransactionFee: 10}}
 	transactionBody := &services.TransactionBody{
-		Data: &services.TransactionBody_SystemUndelete{SystemUndelete: &services.SystemUndeleteTransactionBody{Id: contract}}}
+		Data: &services.TransactionBody_SystemUndelete{SystemUndelete: &services.SystemUndeleteTransactionBody{}}}
 
-	return transactionBody
+	return transaction, transactionBody
 }
 
 func _SetupSystemUndeleteTrx() *SystemUndeleteTransaction {

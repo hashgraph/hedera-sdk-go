@@ -32,7 +32,7 @@ func TestIntegrationSerializeTransactionDeserializeAndAgainSerializeHasTheSameBy
 	txFromBytes, err := TransactionFromBytes(firstBytes)
 	require.NoError(t, err)
 
-	transaction := txFromBytes.(*AccountCreateTransaction)
+	transaction := txFromBytes.(AccountCreateTransaction)
 	secondBytes, err := transaction.ToBytes()
 	require.NoError(t, err)
 
@@ -56,7 +56,7 @@ func TestIntegrationSerializeTransactionDeserializeAndAgainSerializeHasTheSameBy
 
 	txFromBytes, err := TransactionFromBytes(firstBytes)
 	require.NoError(t, err)
-	transaction := txFromBytes.(*AccountCreateTransaction)
+	transaction := txFromBytes.(AccountCreateTransaction)
 
 	secondBytes, err := transaction.ToBytes()
 	require.NoError(t, err)
@@ -87,7 +87,7 @@ func TestIntegrationAddSignatureSerializeDeserializeAddAnotherSignatureExecute(t
 	if err != nil {
 		panic(err)
 	}
-	txFromBytes := FromBytes.(*TransferTransaction)
+	txFromBytes := FromBytes.(TransferTransaction)
 	// Assert the fields are the same:
 	assert.Equal(t, txFromBytes.signedTransactions._Length(), txBefore.signedTransactions._Length())
 	assert.Equal(t, txFromBytes.memo, txBefore.memo)
@@ -120,7 +120,7 @@ func TestIntegrationTransactionShouldReturnFailedReceiptWhenFieldsAreNotSet(t *t
 	if err != nil {
 		panic(err)
 	}
-	txFromBytes := FromBytes.(*TransferTransaction)
+	txFromBytes := FromBytes.(TransferTransaction)
 	// Assert the fields are the same:
 	assert.Equal(t, txFromBytes.signedTransactions._Length(), txBefore.signedTransactions._Length())
 	assert.Equal(t, txFromBytes.memo, txBefore.memo)
@@ -160,7 +160,7 @@ func TestIntegrationAddSignatureSerializeDeserialiseExecute(t *testing.T) {
 	tx2, err := TransactionFromBytes(updateBytes)
 	require.NoError(t, err)
 
-	if newTx, ok := tx2.(*AccountDeleteTransaction); ok {
+	if newTx, ok := tx2.(AccountDeleteTransaction); ok {
 		assert.True(t, newTx.IsFrozen())
 		resp, err = newTx.AddSignature(newKey.PublicKey(), sig1).Execute(env.Client)
 		require.NoError(t, err)
@@ -189,7 +189,7 @@ func TestIntegrationTopicCreateTransactionAfterSerialization(t *testing.T) {
 	fromBytes, err := TransactionFromBytes(bytes)
 	require.NoError(t, err)
 	// Deserialize and add node accounts transaction
-	transaction := fromBytes.(*TopicCreateTransaction)
+	transaction := fromBytes.(TopicCreateTransaction)
 	resp, err := transaction.SetNodeAccountIDs(env.NodeAccountIDs).Execute(env.Client)
 	require.NoError(t, err)
 
@@ -247,7 +247,7 @@ Nunc velit turpis, cursus ornare fringilla eu, lacinia posuere leo. Mauris rutru
 	fromBytes, err := TransactionFromBytes(bytes)
 	require.NoError(t, err)
 	// Deserialize and add node accounts transaction
-	transaction := fromBytes.(*TopicCreateTransaction)
+	transaction := fromBytes.(TopicCreateTransaction)
 	resp, err := transaction.SetNodeAccountIDs(env.NodeAccountIDs).Execute(env.Client)
 	require.NoError(t, err)
 
@@ -266,7 +266,7 @@ Nunc velit turpis, cursus ornare fringilla eu, lacinia posuere leo. Mauris rutru
 	fromBytes, err = TransactionFromBytes(submitBytes)
 	require.NoError(t, err)
 
-	topicSubmitTx := fromBytes.(*TopicMessageSubmitTransaction)
+	topicSubmitTx := fromBytes.(TopicMessageSubmitTransaction)
 	_, err = topicSubmitTx.Execute(env.Client)
 	require.NoError(t, err)
 

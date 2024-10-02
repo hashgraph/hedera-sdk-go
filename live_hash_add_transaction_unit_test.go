@@ -224,7 +224,7 @@ func TestUnitLiveHashAddTransactionCoverage(t *testing.T) {
 	require.NoError(t, err)
 	transaction.getName()
 	switch b := txFromBytes.(type) {
-	case *LiveHashAddTransaction:
+	case LiveHashAddTransaction:
 		b.AddSignature(newKey.PublicKey(), sig)
 	}
 }

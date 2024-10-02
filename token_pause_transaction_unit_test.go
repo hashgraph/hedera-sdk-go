@@ -278,7 +278,7 @@ func TestUnitTokenUnpauseTransactionCoverage(t *testing.T) {
 	require.NoError(t, err)
 	transaction.getName()
 	switch b := txFromBytes.(type) {
-	case *TokenUnpauseTransaction:
+	case TokenUnpauseTransaction:
 		b.AddSignature(newKey.PublicKey(), sig)
 	}
 }
@@ -408,20 +408,22 @@ func TestUnitTokenPauseTransaction_SignWithOperator(t *testing.T) {
 
 	// test errors
 	client.operator = nil
-	_, err = NewTokenPauseTransaction().
+	tx, err := NewTokenPauseTransaction().
 		SetNodeAccountIDs(nodeIdList).
 		SetTokenID(TokenID{Token: 3}).
 		SignWithOperator(client)
 
 	require.Error(t, err)
+	require.Nil(t, tx)
 
 	client = nil
-	_, err = NewTokenPauseTransaction().
+	tx, err = NewTokenPauseTransaction().
 		SetNodeAccountIDs(nodeIdList).
 		SetTokenID(TokenID{Token: 3}).
 		SignWithOperator(client)
 
 	require.Error(t, err)
+	require.Nil(t, tx)
 }
 
 func TestUnitTokenPauseTransaction_SetMaxBackoff(t *testing.T) {

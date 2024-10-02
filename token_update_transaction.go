@@ -101,7 +101,7 @@ func NewTokenUpdateTransaction() *TokenUpdateTransaction {
 	return &tx
 }
 
-func _TokenUpdateTransactionFromProtobuf(pb *services.TransactionBody) *TokenUpdateTransaction {
+func _TokenUpdateTransactionFromProtobuf(tx Transaction[*TokenUpdateTransaction], pb *services.TransactionBody) TokenUpdateTransaction {
 	adminKey, _ := _KeyFromProtobuf(pb.GetTokenUpdate().GetAdminKey())
 	kycKey, _ := _KeyFromProtobuf(pb.GetTokenUpdate().GetKycKey())
 	freezeKey, _ := _KeyFromProtobuf(pb.GetTokenUpdate().GetFreezeKey())
@@ -125,7 +125,7 @@ func _TokenUpdateTransactionFromProtobuf(pb *services.TransactionBody) *TokenUpd
 		metadata = m.Value
 	}
 
-	return &TokenUpdateTransaction{
+	tokenUpdateTransaction := TokenUpdateTransaction{
 		tokenID:                  _TokenIDFromProtobuf(pb.GetTokenUpdate().GetToken()),
 		treasuryAccountID:        _AccountIDFromProtobuf(pb.GetTokenUpdate().GetTreasury()),
 		autoRenewAccountID:       _AccountIDFromProtobuf(pb.GetTokenUpdate().GetAutoRenewAccount()),
@@ -145,6 +145,10 @@ func _TokenUpdateTransactionFromProtobuf(pb *services.TransactionBody) *TokenUpd
 		expirationTime:           &expirationTime,
 		autoRenewPeriod:          &autoRenew,
 	}
+
+	tx.childTransaction = &tokenUpdateTransaction
+	tokenUpdateTransaction.Transaction = &tx
+	return tokenUpdateTransaction
 }
 
 type TokenKeyValidation int32
@@ -405,11 +409,11 @@ func (tx *TokenUpdateTransaction) GetKeyVerificationMode() TokenKeyValidation {
 
 // ----------- Overridden functions ----------------
 
-func (tx *TokenUpdateTransaction) getName() string {
+func (tx TokenUpdateTransaction) getName() string {
 	return "TokenUpdateTransaction"
 }
 
-func (tx *TokenUpdateTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx TokenUpdateTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -435,7 +439,7 @@ func (tx *TokenUpdateTransaction) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (tx *TokenUpdateTransaction) build() *services.TransactionBody {
+func (tx TokenUpdateTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
 		Memo:                     tx.Transaction.memo,
@@ -447,7 +451,7 @@ func (tx *TokenUpdateTransaction) build() *services.TransactionBody {
 	}
 }
 
-func (tx *TokenUpdateTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx TokenUpdateTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Memo:           tx.Transaction.memo,
@@ -457,7 +461,7 @@ func (tx *TokenUpdateTransaction) buildScheduled() (*services.SchedulableTransac
 	}, nil
 }
 
-func (tx *TokenUpdateTransaction) buildProtoBody() *services.TokenUpdateTransactionBody {
+func (tx TokenUpdateTransaction) buildProtoBody() *services.TokenUpdateTransactionBody {
 	body := &services.TokenUpdateTransactionBody{
 		Name:                tx.tokenName,
 		Symbol:              tx.tokenSymbol,
@@ -527,20 +531,16 @@ func (tx *TokenUpdateTransaction) buildProtoBody() *services.TokenUpdateTransact
 	return body
 }
 
-func (tx *TokenUpdateTransaction) getMethod(channel *_Channel) _Method {
+func (tx TokenUpdateTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetToken().UpdateToken,
 	}
 }
 
-func (tx *TokenUpdateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx TokenUpdateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 
-func (tx *TokenUpdateTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction(tx.Transaction)
-}
-
-func (tx *TokenUpdateTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
-	tx.Transaction = castFromBaseToConcreteTransaction[*TokenUpdateTransaction](baseTx)
+func (tx TokenUpdateTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }

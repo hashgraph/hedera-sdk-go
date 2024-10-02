@@ -59,11 +59,15 @@ func NewTokenRevokeKycTransaction() *TokenRevokeKycTransaction {
 	return tx
 }
 
-func _TokenRevokeKycTransactionFromProtobuf(pb *services.TransactionBody) *TokenRevokeKycTransaction {
-	return &TokenRevokeKycTransaction{
+func _TokenRevokeKycTransactionFromProtobuf(tx Transaction[*TokenRevokeKycTransaction], pb *services.TransactionBody) TokenRevokeKycTransaction {
+	tokenRevokeKycTransaction := TokenRevokeKycTransaction{
 		tokenID:   _TokenIDFromProtobuf(pb.GetTokenRevokeKyc().GetToken()),
 		accountID: _AccountIDFromProtobuf(pb.GetTokenRevokeKyc().GetAccount()),
 	}
+
+	tx.childTransaction = &tokenRevokeKycTransaction
+	tokenRevokeKycTransaction.Transaction = &tx
+	return tokenRevokeKycTransaction
 }
 
 // SetTokenID Sets the token for which this account will get his KYC revoked.
@@ -101,11 +105,11 @@ func (tx *TokenRevokeKycTransaction) GetAccountID() AccountID {
 
 // ----------- Overridden functions ----------------
 
-func (tx *TokenRevokeKycTransaction) getName() string {
+func (tx TokenRevokeKycTransaction) getName() string {
 	return "TokenRevokeKycTransaction"
 }
 
-func (tx *TokenRevokeKycTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx TokenRevokeKycTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -125,7 +129,7 @@ func (tx *TokenRevokeKycTransaction) validateNetworkOnIDs(client *Client) error 
 	return nil
 }
 
-func (tx *TokenRevokeKycTransaction) build() *services.TransactionBody {
+func (tx TokenRevokeKycTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
 		Memo:                     tx.Transaction.memo,
@@ -137,7 +141,7 @@ func (tx *TokenRevokeKycTransaction) build() *services.TransactionBody {
 	}
 }
 
-func (tx *TokenRevokeKycTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx TokenRevokeKycTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Memo:           tx.Transaction.memo,
@@ -147,7 +151,7 @@ func (tx *TokenRevokeKycTransaction) buildScheduled() (*services.SchedulableTran
 	}, nil
 }
 
-func (tx *TokenRevokeKycTransaction) buildProtoBody() *services.TokenRevokeKycTransactionBody {
+func (tx TokenRevokeKycTransaction) buildProtoBody() *services.TokenRevokeKycTransactionBody {
 	body := &services.TokenRevokeKycTransactionBody{}
 	if tx.tokenID != nil {
 		body.Token = tx.tokenID._ToProtobuf()
@@ -160,20 +164,16 @@ func (tx *TokenRevokeKycTransaction) buildProtoBody() *services.TokenRevokeKycTr
 	return body
 }
 
-func (tx *TokenRevokeKycTransaction) getMethod(channel *_Channel) _Method {
+func (tx TokenRevokeKycTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetToken().RevokeKycFromTokenAccount,
 	}
 }
 
-func (tx *TokenRevokeKycTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx TokenRevokeKycTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 
-func (tx *TokenRevokeKycTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction(tx.Transaction)
-}
-
-func (tx *TokenRevokeKycTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
-	tx.Transaction = castFromBaseToConcreteTransaction[*TokenRevokeKycTransaction](baseTx)
+func (tx TokenRevokeKycTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }

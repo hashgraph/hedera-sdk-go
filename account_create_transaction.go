@@ -63,7 +63,7 @@ func NewAccountCreateTransaction() *AccountCreateTransaction {
 	return tx
 }
 
-func _AccountCreateTransactionFromProtobuf(pb *services.TransactionBody) *AccountCreateTransaction {
+func _AccountCreateTransactionFromProtobuf(tx Transaction[*AccountCreateTransaction], pb *services.TransactionBody) AccountCreateTransaction {
 	key, _ := _KeyFromProtobuf(pb.GetCryptoCreateAccount().GetKey())
 	renew := _DurationFromProtobuf(pb.GetCryptoCreateAccount().GetAutoRenewPeriod())
 
@@ -77,7 +77,7 @@ func _AccountCreateTransactionFromProtobuf(pb *services.TransactionBody) *Accoun
 		stakeAccountID = _AccountIDFromProtobuf(pb.GetCryptoCreateAccount().GetStakedAccountId())
 	}
 
-	body := AccountCreateTransaction{
+	accountCreateTransaction := AccountCreateTransaction{
 		key:                           key,
 		initialBalance:                pb.GetCryptoCreateAccount().InitialBalance,
 		autoRenewPeriod:               &renew,
@@ -90,10 +90,12 @@ func _AccountCreateTransactionFromProtobuf(pb *services.TransactionBody) *Accoun
 	}
 
 	if pb.GetCryptoCreateAccount().GetAlias() != nil {
-		body.alias = pb.GetCryptoCreateAccount().GetAlias()
+		accountCreateTransaction.alias = pb.GetCryptoCreateAccount().GetAlias()
 	}
 
-	return &body
+	tx.childTransaction = &accountCreateTransaction
+	accountCreateTransaction.Transaction = &tx
+	return accountCreateTransaction
 }
 
 // SetKey sets the key that must sign each transfer out of the account. If RecieverSignatureRequired is true, then it
@@ -263,11 +265,11 @@ func (tx *AccountCreateTransaction) GetReceiverSignatureRequired() bool {
 
 // ----------- Overridden functions ----------------
 
-func (tx *AccountCreateTransaction) getName() string {
+func (tx AccountCreateTransaction) getName() string {
 	return "AccountCreateTransaction"
 }
 
-func (tx *AccountCreateTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx AccountCreateTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -283,7 +285,7 @@ func (tx *AccountCreateTransaction) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (tx *AccountCreateTransaction) build() *services.TransactionBody {
+func (tx AccountCreateTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionID:            tx.transactionID._ToProtobuf(),
 		TransactionFee:           tx.transactionFee,
@@ -294,7 +296,7 @@ func (tx *AccountCreateTransaction) build() *services.TransactionBody {
 		},
 	}
 }
-func (tx *AccountCreateTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx AccountCreateTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Memo:           tx.Transaction.memo,
@@ -304,7 +306,7 @@ func (tx *AccountCreateTransaction) buildScheduled() (*services.SchedulableTrans
 	}, nil
 }
 
-func (tx *AccountCreateTransaction) buildProtoBody() *services.CryptoCreateTransactionBody {
+func (tx AccountCreateTransaction) buildProtoBody() *services.CryptoCreateTransactionBody {
 	body := &services.CryptoCreateTransactionBody{
 		InitialBalance:                tx.initialBalance,
 		ReceiverSigRequired:           tx.receiverSignatureRequired,
@@ -331,20 +333,16 @@ func (tx *AccountCreateTransaction) buildProtoBody() *services.CryptoCreateTrans
 	return body
 }
 
-func (tx *AccountCreateTransaction) getMethod(channel *_Channel) _Method {
+func (tx AccountCreateTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetCrypto().CreateAccount,
 	}
 }
 
-func (tx *AccountCreateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx AccountCreateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 
-func (tx *AccountCreateTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction(tx.Transaction)
-}
-
-func (tx *AccountCreateTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
-	tx.Transaction = castFromBaseToConcreteTransaction[*AccountCreateTransaction](baseTx)
+func (tx AccountCreateTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }

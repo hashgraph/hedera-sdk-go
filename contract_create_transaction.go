@@ -62,7 +62,7 @@ func NewContractCreateTransaction() *ContractCreateTransaction {
 	return tx
 }
 
-func _ContractCreateTransactionFromProtobuf(pb *services.TransactionBody) *ContractCreateTransaction {
+func _ContractCreateTransactionFromProtobuf(tx Transaction[*ContractCreateTransaction], pb *services.TransactionBody) ContractCreateTransaction {
 	key, _ := _KeyFromProtobuf(pb.GetContractCreateInstance().GetAdminKey())
 	autoRenew := _DurationFromProtobuf(pb.GetContractCreateInstance().GetAutoRenewPeriod())
 	stakedNodeID := pb.GetContractCreateInstance().GetStakedNodeId()
@@ -77,7 +77,7 @@ func _ContractCreateTransactionFromProtobuf(pb *services.TransactionBody) *Contr
 		autoRenewAccountID = _AccountIDFromProtobuf(pb.GetContractCreateInstance().GetAutoRenewAccountId())
 	}
 
-	return &ContractCreateTransaction{
+	contractCreateTransaction := ContractCreateTransaction{
 		byteCodeFileID:                _FileIDFromProtobuf(pb.GetContractCreateInstance().GetFileID()),
 		adminKey:                      key,
 		gas:                           pb.GetContractCreateInstance().Gas,
@@ -92,6 +92,9 @@ func _ContractCreateTransactionFromProtobuf(pb *services.TransactionBody) *Contr
 		stakedNodeID:                  &stakedNodeID,
 		declineReward:                 pb.GetContractCreateInstance().GetDeclineReward(),
 	}
+	tx.childTransaction = &contractCreateTransaction
+	contractCreateTransaction.Transaction = &tx
+	return contractCreateTransaction
 }
 
 // SetBytecodeFileID
@@ -319,11 +322,11 @@ func (tx *ContractCreateTransaction) GetDeclineStakingReward() bool {
 
 // ----------- Overridden functions ----------------
 
-func (tx *ContractCreateTransaction) getName() string {
+func (tx ContractCreateTransaction) getName() string {
 	return "ContractCreateTransaction"
 }
 
-func (tx *ContractCreateTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx ContractCreateTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -343,7 +346,7 @@ func (tx *ContractCreateTransaction) validateNetworkOnIDs(client *Client) error 
 	return nil
 }
 
-func (tx *ContractCreateTransaction) build() *services.TransactionBody {
+func (tx ContractCreateTransaction) build() *services.TransactionBody {
 	pb := services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
 		Memo:                     tx.Transaction.memo,
@@ -356,7 +359,7 @@ func (tx *ContractCreateTransaction) build() *services.TransactionBody {
 
 	return &pb
 }
-func (tx *ContractCreateTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx ContractCreateTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Memo:           tx.Transaction.memo,
@@ -366,7 +369,7 @@ func (tx *ContractCreateTransaction) buildScheduled() (*services.SchedulableTran
 	}, nil
 }
 
-func (tx *ContractCreateTransaction) buildProtoBody() *services.ContractCreateTransactionBody {
+func (tx ContractCreateTransaction) buildProtoBody() *services.ContractCreateTransactionBody {
 	body := &services.ContractCreateTransactionBody{
 		Gas:                           tx.gas,
 		InitialBalance:                tx.initialBalance,
@@ -403,20 +406,16 @@ func (tx *ContractCreateTransaction) buildProtoBody() *services.ContractCreateTr
 	return body
 }
 
-func (tx *ContractCreateTransaction) getMethod(channel *_Channel) _Method {
+func (tx ContractCreateTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetContract().CreateContract,
 	}
 }
 
-func (tx *ContractCreateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx ContractCreateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 
-func (tx *ContractCreateTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction(tx.Transaction)
-}
-
-func (tx *ContractCreateTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
-	tx.Transaction = castFromBaseToConcreteTransaction[*ContractCreateTransaction](baseTx)
+func (tx ContractCreateTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }

@@ -240,7 +240,7 @@ func TestUnitTokenFeeScheduleUpdateTransactionCoverage(t *testing.T) {
 	require.NoError(t, err)
 	transaction.getName()
 	switch b := txFromBytes.(type) {
-	case *TokenFeeScheduleUpdateTransaction:
+	case TokenFeeScheduleUpdateTransaction:
 		b.AddSignature(newKey.PublicKey(), sig)
 	}
 }

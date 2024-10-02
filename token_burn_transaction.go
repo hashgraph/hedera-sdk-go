@@ -56,12 +56,16 @@ func NewTokenBurnTransaction() *TokenBurnTransaction {
 	return tx
 }
 
-func _TokenBurnTransactionFromProtobuf(pb *services.TransactionBody) *TokenBurnTransaction {
-	return &TokenBurnTransaction{
+func _TokenBurnTransactionFromProtobuf(tx Transaction[*TokenBurnTransaction], pb *services.TransactionBody) TokenBurnTransaction {
+	tokenBurnTransaction := TokenBurnTransaction{
 		tokenID: _TokenIDFromProtobuf(pb.GetTokenBurn().Token),
 		amount:  pb.GetTokenBurn().GetAmount(),
 		serial:  pb.GetTokenBurn().GetSerialNumbers(),
 	}
+
+	tx.childTransaction = &tokenBurnTransaction
+	tokenBurnTransaction.Transaction = &tx
+	return tokenBurnTransaction
 }
 
 // SetTokenID Sets the token for which to burn tokens. If token does not exist, transaction results in
@@ -125,11 +129,11 @@ func (tx *TokenBurnTransaction) GetSerialNumbers() []int64 {
 
 // ----------- Overridden functions ----------------
 
-func (tx *TokenBurnTransaction) getName() string {
+func (tx TokenBurnTransaction) getName() string {
 	return "TokenBurnTransaction"
 }
 
-func (tx *TokenBurnTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx TokenBurnTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -143,7 +147,7 @@ func (tx *TokenBurnTransaction) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (tx *TokenBurnTransaction) build() *services.TransactionBody {
+func (tx TokenBurnTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
 		Memo:                     tx.Transaction.memo,
@@ -155,7 +159,7 @@ func (tx *TokenBurnTransaction) build() *services.TransactionBody {
 	}
 }
 
-func (tx *TokenBurnTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx TokenBurnTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Memo:           tx.Transaction.memo,
@@ -165,7 +169,7 @@ func (tx *TokenBurnTransaction) buildScheduled() (*services.SchedulableTransacti
 	}, nil
 }
 
-func (tx *TokenBurnTransaction) buildProtoBody() *services.TokenBurnTransactionBody {
+func (tx TokenBurnTransaction) buildProtoBody() *services.TokenBurnTransactionBody {
 	body := &services.TokenBurnTransactionBody{
 		Amount: tx.amount,
 	}
@@ -181,20 +185,16 @@ func (tx *TokenBurnTransaction) buildProtoBody() *services.TokenBurnTransactionB
 	return body
 }
 
-func (tx *TokenBurnTransaction) getMethod(channel *_Channel) _Method {
+func (tx TokenBurnTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetToken().BurnToken,
 	}
 }
 
-func (tx *TokenBurnTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx TokenBurnTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 
-func (tx *TokenBurnTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction(tx.Transaction)
-}
-
-func (tx *TokenBurnTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
-	tx.Transaction = castFromBaseToConcreteTransaction[*TokenBurnTransaction](baseTx)
+func (tx TokenBurnTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }

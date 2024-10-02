@@ -21,39 +21,23 @@ package hedera
  */
 
 // Helper function to cast the concrete Transaction to the generic Transaction
-func castFromConcreteToBaseTransaction[T TransactionInterface](baseTx *Transaction[T]) *Transaction[TransactionInterface] {
+func castFromConcreteToBaseTransaction[T TransactionInterface](baseTx *Transaction[T], tx TransactionInterface) *Transaction[TransactionInterface] {
 	return &Transaction[TransactionInterface]{
-		executable:               baseTx.executable,
-		childTransaction:         baseTx.childTransaction,
-		transactionFee:           baseTx.transactionFee,
-		defaultMaxTransactionFee: baseTx.defaultMaxTransactionFee,
-		memo:                     baseTx.memo,
-		transactionValidDuration: baseTx.transactionValidDuration,
-		transactionID:            baseTx.transactionID,
-		transactions:             baseTx.transactions,
-		signedTransactions:       baseTx.signedTransactions,
-		publicKeys:               baseTx.publicKeys,
-		transactionSigners:       baseTx.transactionSigners,
-		freezeError:              baseTx.freezeError,
-		regenerateTransactionID:  baseTx.regenerateTransactionID,
+		executable:              baseTx.executable,
+		BaseTransaction:         baseTx.BaseTransaction,
+		childTransaction:        tx,
+		freezeError:             baseTx.freezeError,
+		regenerateTransactionID: baseTx.regenerateTransactionID,
 	}
 }
 
 // Helper function to cast the generic Transaction to another type
 func castFromBaseToConcreteTransaction[T TransactionInterface](baseTx Transaction[TransactionInterface]) *Transaction[T] {
 	concreteTx := &Transaction[T]{
-		executable:               baseTx.executable,
-		transactionFee:           baseTx.transactionFee,
-		defaultMaxTransactionFee: baseTx.defaultMaxTransactionFee,
-		memo:                     baseTx.memo,
-		transactionValidDuration: baseTx.transactionValidDuration,
-		transactionID:            baseTx.transactionID,
-		transactions:             baseTx.transactions,
-		signedTransactions:       baseTx.signedTransactions,
-		publicKeys:               baseTx.publicKeys,
-		transactionSigners:       baseTx.transactionSigners,
-		freezeError:              baseTx.freezeError,
-		regenerateTransactionID:  baseTx.regenerateTransactionID,
+		executable:              baseTx.executable,
+		BaseTransaction:         baseTx.BaseTransaction,
+		freezeError:             baseTx.freezeError,
+		regenerateTransactionID: baseTx.regenerateTransactionID,
 	}
 	if baseTx.childTransaction != nil {
 		concreteTx.childTransaction = baseTx.childTransaction.(T)

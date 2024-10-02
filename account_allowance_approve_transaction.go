@@ -58,7 +58,7 @@ func NewAccountAllowanceApproveTransaction() *AccountAllowanceApproveTransaction
 	return tx
 }
 
-func _AccountAllowanceApproveTransactionFromProtobuf(pb *services.TransactionBody) *AccountAllowanceApproveTransaction {
+func _AccountAllowanceApproveTransactionFromProtobuf(tx Transaction[*AccountAllowanceApproveTransaction], pb *services.TransactionBody) AccountAllowanceApproveTransaction {
 	accountApproval := make([]*HbarAllowance, 0)
 	tokenApproval := make([]*TokenAllowance, 0)
 	nftApproval := make([]*TokenNftAllowance, 0)
@@ -78,11 +78,14 @@ func _AccountAllowanceApproveTransactionFromProtobuf(pb *services.TransactionBod
 		nftApproval = append(nftApproval, &temp)
 	}
 
-	return &AccountAllowanceApproveTransaction{
+	accountAllowanceAppoveTransaction := AccountAllowanceApproveTransaction{
 		hbarAllowances:  accountApproval,
 		tokenAllowances: tokenApproval,
 		nftAllowances:   nftApproval,
 	}
+	tx.childTransaction = &accountAllowanceAppoveTransaction
+	accountAllowanceAppoveTransaction.Transaction = &tx
+	return accountAllowanceAppoveTransaction
 }
 
 func (tx *AccountAllowanceApproveTransaction) _ApproveHbarApproval(ownerAccountID *AccountID, id AccountID, amount Hbar) *AccountAllowanceApproveTransaction {
@@ -252,10 +255,10 @@ func (tx *AccountAllowanceApproveTransaction) GetTokenNftAllowances() []*TokenNf
 
 // ----------- Overridden functions ----------------
 
-func (tx *AccountAllowanceApproveTransaction) getName() string {
+func (tx AccountAllowanceApproveTransaction) getName() string {
 	return "AccountAllowanceApproveTransaction"
 }
-func (tx *AccountAllowanceApproveTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx AccountAllowanceApproveTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -317,7 +320,7 @@ func (tx *AccountAllowanceApproveTransaction) validateNetworkOnIDs(client *Clien
 	return nil
 }
 
-func (tx *AccountAllowanceApproveTransaction) build() *services.TransactionBody {
+func (tx AccountAllowanceApproveTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionID:            tx.transactionID._ToProtobuf(),
 		TransactionFee:           tx.transactionFee,
@@ -329,7 +332,7 @@ func (tx *AccountAllowanceApproveTransaction) build() *services.TransactionBody 
 	}
 }
 
-func (tx *AccountAllowanceApproveTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx AccountAllowanceApproveTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Memo:           tx.Transaction.memo,
@@ -339,7 +342,7 @@ func (tx *AccountAllowanceApproveTransaction) buildScheduled() (*services.Schedu
 	}, nil
 }
 
-func (tx *AccountAllowanceApproveTransaction) buildProtoBody() *services.CryptoApproveAllowanceTransactionBody {
+func (tx AccountAllowanceApproveTransaction) buildProtoBody() *services.CryptoApproveAllowanceTransactionBody {
 	body := &services.CryptoApproveAllowanceTransactionBody{
 		CryptoAllowances: make([]*services.CryptoAllowance, 0),
 		TokenAllowances:  make([]*services.TokenAllowance, 0),
@@ -361,20 +364,16 @@ func (tx *AccountAllowanceApproveTransaction) buildProtoBody() *services.CryptoA
 	return body
 }
 
-func (tx *AccountAllowanceApproveTransaction) getMethod(channel *_Channel) _Method {
+func (tx AccountAllowanceApproveTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetCrypto().ApproveAllowances,
 	}
 }
 
-func (tx *AccountAllowanceApproveTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx AccountAllowanceApproveTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 
-func (tx *AccountAllowanceApproveTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction(tx.Transaction)
-}
-
-func (tx *AccountAllowanceApproveTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
-	tx.Transaction = castFromBaseToConcreteTransaction[*AccountAllowanceApproveTransaction](baseTx)
+func (tx AccountAllowanceApproveTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }

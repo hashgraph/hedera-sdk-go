@@ -54,8 +54,8 @@ func NewTokenRejectTransaction() *TokenRejectTransaction {
 	return tx
 }
 
-func _TokenRejectTransactionFromProtobuf(pb *services.TransactionBody) *TokenRejectTransaction {
-	rejectTransaction := &TokenRejectTransaction{
+func _TokenRejectTransactionFromProtobuf(tx Transaction[*TokenRejectTransaction], pb *services.TransactionBody) TokenRejectTransaction {
+	rejectTransaction := TokenRejectTransaction{
 		ownerID: _AccountIDFromProtobuf(pb.GetTokenReject().Owner),
 	}
 
@@ -67,6 +67,8 @@ func _TokenRejectTransactionFromProtobuf(pb *services.TransactionBody) *TokenRej
 		}
 	}
 
+	tx.childTransaction = &rejectTransaction
+	rejectTransaction.Transaction = &tx
 	return rejectTransaction
 }
 
@@ -129,11 +131,11 @@ func (tx *TokenRejectTransaction) GetNftIDs() []NftID {
 
 // ----------- Overridden functions ----------------
 
-func (tx *TokenRejectTransaction) getName() string {
+func (tx TokenRejectTransaction) getName() string {
 	return "TokenRejectTransaction"
 }
 
-func (tx *TokenRejectTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx TokenRejectTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -159,7 +161,7 @@ func (tx *TokenRejectTransaction) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (tx *TokenRejectTransaction) build() *services.TransactionBody {
+func (tx TokenRejectTransaction) build() *services.TransactionBody {
 	body := tx.buildProtoBody()
 
 	return &services.TransactionBody{
@@ -173,7 +175,7 @@ func (tx *TokenRejectTransaction) build() *services.TransactionBody {
 	}
 }
 
-func (tx *TokenRejectTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx TokenRejectTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Memo:           tx.Transaction.memo,
@@ -183,7 +185,7 @@ func (tx *TokenRejectTransaction) buildScheduled() (*services.SchedulableTransac
 	}, nil
 }
 
-func (tx *TokenRejectTransaction) buildProtoBody() *services.TokenRejectTransactionBody {
+func (tx TokenRejectTransaction) buildProtoBody() *services.TokenRejectTransactionBody {
 	body := &services.TokenRejectTransactionBody{}
 
 	if tx.ownerID != nil {
@@ -213,20 +215,16 @@ func (tx *TokenRejectTransaction) buildProtoBody() *services.TokenRejectTransact
 	return body
 }
 
-func (tx *TokenRejectTransaction) getMethod(channel *_Channel) _Method {
+func (tx TokenRejectTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetToken().RejectToken,
 	}
 }
 
-func (tx *TokenRejectTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx TokenRejectTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 
-func (tx *TokenRejectTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction(tx.Transaction)
-}
-
-func (tx *TokenRejectTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
-	tx.Transaction = castFromBaseToConcreteTransaction[*TokenRejectTransaction](baseTx)
+func (tx TokenRejectTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }

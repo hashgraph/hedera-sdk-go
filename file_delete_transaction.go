@@ -50,10 +50,13 @@ func NewFileDeleteTransaction() *FileDeleteTransaction {
 	return tx
 }
 
-func _FileDeleteTransactionFromProtobuf(pb *services.TransactionBody) *FileDeleteTransaction {
-	return &FileDeleteTransaction{
+func _FileDeleteTransactionFromProtobuf(tx Transaction[*FileDeleteTransaction], pb *services.TransactionBody) FileDeleteTransaction {
+	fileDeleteTransaction := FileDeleteTransaction{
 		fileID: _FileIDFromProtobuf(pb.GetFileDelete().GetFileID()),
 	}
+	tx.childTransaction = &fileDeleteTransaction
+	fileDeleteTransaction.Transaction = &tx
+	return fileDeleteTransaction
 }
 
 // SetFileID Sets the FileID of the file to be deleted
@@ -74,10 +77,10 @@ func (tx *FileDeleteTransaction) GetFileID() FileID {
 
 // ----------- Overridden functions ----------------
 
-func (tx *FileDeleteTransaction) getName() string {
+func (tx FileDeleteTransaction) getName() string {
 	return "FileDeleteTransaction"
 }
-func (tx *FileDeleteTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx FileDeleteTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -91,7 +94,7 @@ func (tx *FileDeleteTransaction) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (tx *FileDeleteTransaction) build() *services.TransactionBody {
+func (tx FileDeleteTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
 		Memo:                     tx.Transaction.memo,
@@ -103,7 +106,7 @@ func (tx *FileDeleteTransaction) build() *services.TransactionBody {
 	}
 }
 
-func (tx *FileDeleteTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx FileDeleteTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Memo:           tx.Transaction.memo,
@@ -112,7 +115,7 @@ func (tx *FileDeleteTransaction) buildScheduled() (*services.SchedulableTransact
 		},
 	}, nil
 }
-func (tx *FileDeleteTransaction) buildProtoBody() *services.FileDeleteTransactionBody {
+func (tx FileDeleteTransaction) buildProtoBody() *services.FileDeleteTransactionBody {
 	body := &services.FileDeleteTransactionBody{}
 	if tx.fileID != nil {
 		body.FileID = tx.fileID._ToProtobuf()
@@ -120,19 +123,15 @@ func (tx *FileDeleteTransaction) buildProtoBody() *services.FileDeleteTransactio
 	return body
 }
 
-func (tx *FileDeleteTransaction) getMethod(channel *_Channel) _Method {
+func (tx FileDeleteTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetFile().DeleteFile,
 	}
 }
-func (tx *FileDeleteTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx FileDeleteTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 
-func (tx *FileDeleteTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction(tx.Transaction)
-}
-
-func (tx *FileDeleteTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
-	tx.Transaction = castFromBaseToConcreteTransaction[*FileDeleteTransaction](baseTx)
+func (tx FileDeleteTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }

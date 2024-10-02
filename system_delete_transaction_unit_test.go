@@ -39,10 +39,12 @@ var testTrxValidDuration = 24 * time.Hour
 func TestUnitSystemDeleteTransactionFromProtobuf(t *testing.T) {
 	t.Parallel()
 
-	trxBody := _CreateProtoBufTrxBody()
-	sysDeleteTrx := _SystemDeleteTransactionFromProtobuf(trxBody)
+	trx, trxBody := _CreateProtoBufTrxBody()
+	sysDeleteTrx := _SystemDeleteTransactionFromProtobuf(trx, trxBody)
 	require.NotNil(t, sysDeleteTrx)
-	require.NotNil(t, sysDeleteTrx.expirationTime)
+	require.Equal(t, "memo", sysDeleteTrx.memo)
+	require.Equal(t, uint64(5), sysDeleteTrx.transactionFee)
+	require.Equal(t, uint64(10), sysDeleteTrx.defaultMaxTransactionFee)
 }
 
 func TestUnitSystemDeleteTrxGettersAndSetters(t *testing.T) {
@@ -112,11 +114,12 @@ func TestUnitSystemConstructNewScheduleDeleteTransactionProtobuf(t *testing.T) {
 	require.Equal(t, uint64(0), protoBody.TransactionFee)
 }
 
-func _CreateProtoBufTrxBody() *services.TransactionBody {
+func _CreateProtoBufTrxBody() (Transaction[*SystemDeleteTransaction], *services.TransactionBody) {
+	transaction := Transaction[*SystemDeleteTransaction]{BaseTransaction: &BaseTransaction{transactionFee: 5, memo: "memo", defaultMaxTransactionFee: 10}}
 	transactionBody := &services.TransactionBody{
 		Data: &services.TransactionBody_SystemDelete{SystemDelete: &services.SystemDeleteTransactionBody{ExpirationTime: &services.TimestampSeconds{Seconds: 100}}}}
 
-	return transactionBody
+	return transaction, transactionBody
 }
 
 func _SetupSystemDeleteTrx() *SystemDeleteTransaction {

@@ -41,10 +41,14 @@ func NewPrngTransaction() *PrngTransaction {
 	return tx
 }
 
-func _PrngTransactionFromProtobuf(pb *services.TransactionBody) *PrngTransaction {
-	return &PrngTransaction{
+func _PrngTransactionFromProtobuf(tx Transaction[*PrngTransaction], pb *services.TransactionBody) PrngTransaction {
+	prgnTransaction := PrngTransaction{
 		rang: uint32(pb.GetUtilPrng().GetRange()),
 	}
+
+	tx.childTransaction = &prgnTransaction
+	prgnTransaction.Transaction = &tx
+	return prgnTransaction
 }
 
 // SetPayerAccountID Sets an optional id of the account to be charged the service fee for the scheduled transaction at
@@ -64,11 +68,11 @@ func (tx *PrngTransaction) GetRange() uint32 {
 
 // ----------- Overridden functions ----------------
 
-func (tx *PrngTransaction) getName() string {
+func (tx PrngTransaction) getName() string {
 	return "PrngTransaction"
 }
 
-func (tx *PrngTransaction) build() *services.TransactionBody {
+func (tx PrngTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
 		Memo:                     tx.Transaction.memo,
@@ -80,7 +84,7 @@ func (tx *PrngTransaction) build() *services.TransactionBody {
 	}
 }
 
-func (tx *PrngTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx PrngTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Memo:           tx.Transaction.memo,
@@ -90,7 +94,7 @@ func (tx *PrngTransaction) buildScheduled() (*services.SchedulableTransactionBod
 	}, nil
 }
 
-func (tx *PrngTransaction) buildProtoBody() *services.UtilPrngTransactionBody {
+func (tx PrngTransaction) buildProtoBody() *services.UtilPrngTransactionBody {
 	body := &services.UtilPrngTransactionBody{
 		Range: int32(tx.rang),
 	}
@@ -98,23 +102,19 @@ func (tx *PrngTransaction) buildProtoBody() *services.UtilPrngTransactionBody {
 	return body
 }
 
-func (tx *PrngTransaction) getMethod(channel *_Channel) _Method {
+func (tx PrngTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetUtil().Prng,
 	}
 }
-func (tx *PrngTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx PrngTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 
-func (tx *PrngTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx PrngTransaction) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (tx *PrngTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction(tx.Transaction)
-}
-
-func (tx *PrngTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
-	tx.Transaction = castFromBaseToConcreteTransaction[*PrngTransaction](baseTx)
+func (tx PrngTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }

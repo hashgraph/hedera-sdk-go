@@ -52,10 +52,14 @@ func NewTokenUnpauseTransaction() *TokenUnpauseTransaction {
 	return tx
 }
 
-func _TokenUnpauseTransactionFromProtobuf(pb *services.TransactionBody) *TokenUnpauseTransaction {
-	return &TokenUnpauseTransaction{
+func _TokenUnpauseTransactionFromProtobuf(tx Transaction[*TokenUnpauseTransaction], pb *services.TransactionBody) TokenUnpauseTransaction {
+	tokenUnpauseTransaction := TokenUnpauseTransaction{
 		tokenID: _TokenIDFromProtobuf(pb.GetTokenDeletion().GetToken()),
 	}
+
+	tx.childTransaction = &tokenUnpauseTransaction
+	tokenUnpauseTransaction.Transaction = &tx
+	return tokenUnpauseTransaction
 }
 
 // SetTokenID Sets the token to be unpaused.
@@ -76,11 +80,11 @@ func (tx *TokenUnpauseTransaction) GetTokenID() TokenID {
 
 // ----------- Overridden functions ----------------
 
-func (tx *TokenUnpauseTransaction) getName() string {
+func (tx TokenUnpauseTransaction) getName() string {
 	return "TokenUnpauseTransaction"
 }
 
-func (tx *TokenUnpauseTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx TokenUnpauseTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -94,7 +98,7 @@ func (tx *TokenUnpauseTransaction) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (tx *TokenUnpauseTransaction) build() *services.TransactionBody {
+func (tx TokenUnpauseTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
 		Memo:                     tx.Transaction.memo,
@@ -106,7 +110,7 @@ func (tx *TokenUnpauseTransaction) build() *services.TransactionBody {
 	}
 }
 
-func (tx *TokenUnpauseTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) { //nolint
+func (tx TokenUnpauseTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) { //nolint
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Memo:           tx.Transaction.memo,
@@ -116,7 +120,7 @@ func (tx *TokenUnpauseTransaction) buildScheduled() (*services.SchedulableTransa
 	}, nil
 }
 
-func (tx *TokenUnpauseTransaction) buildProtoBody() *services.TokenUnpauseTransactionBody { //nolint
+func (tx TokenUnpauseTransaction) buildProtoBody() *services.TokenUnpauseTransactionBody { //nolint
 	body := &services.TokenUnpauseTransactionBody{}
 	if tx.tokenID != nil {
 		body.Token = tx.tokenID._ToProtobuf()
@@ -125,20 +129,16 @@ func (tx *TokenUnpauseTransaction) buildProtoBody() *services.TokenUnpauseTransa
 	return body
 }
 
-func (tx *TokenUnpauseTransaction) getMethod(channel *_Channel) _Method {
+func (tx TokenUnpauseTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetToken().DeleteToken,
 	}
 }
 
-func (tx *TokenUnpauseTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx TokenUnpauseTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 
-func (tx *TokenUnpauseTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction(tx.Transaction)
-}
-
-func (tx *TokenUnpauseTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
-	tx.Transaction = castFromBaseToConcreteTransaction[*TokenUnpauseTransaction](baseTx)
+func (tx TokenUnpauseTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }

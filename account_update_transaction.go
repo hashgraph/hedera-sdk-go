@@ -67,7 +67,7 @@ func NewAccountUpdateTransaction() *AccountUpdateTransaction {
 	return tx
 }
 
-func _AccountUpdateTransactionFromProtobuf(pb *services.TransactionBody) *AccountUpdateTransaction {
+func _AccountUpdateTransactionFromProtobuf(tx Transaction[*AccountUpdateTransaction], pb *services.TransactionBody) AccountUpdateTransaction {
 	key, _ := _KeyFromProtobuf(pb.GetCryptoUpdateAccount().GetKey())
 	var receiverSignatureRequired bool
 
@@ -88,7 +88,7 @@ func _AccountUpdateTransactionFromProtobuf(pb *services.TransactionBody) *Accoun
 		stakeNodeAccountID = _AccountIDFromProtobuf(pb.GetCryptoUpdateAccount().GetStakedAccountId())
 	}
 
-	return &AccountUpdateTransaction{
+	accountUpdateTransaction := AccountUpdateTransaction{
 		accountID:                     _AccountIDFromProtobuf(pb.GetCryptoUpdateAccount().GetAccountIDToUpdate()),
 		key:                           key,
 		autoRenewPeriod:               &autoRenew,
@@ -100,6 +100,10 @@ func _AccountUpdateTransactionFromProtobuf(pb *services.TransactionBody) *Accoun
 		stakedNodeID:                  &stakedNodeID,
 		declineReward:                 pb.GetCryptoUpdateAccount().GetDeclineReward().GetValue(),
 	}
+
+	tx.childTransaction = &accountUpdateTransaction
+	accountUpdateTransaction.Transaction = &tx
+	return accountUpdateTransaction
 }
 
 // SetKey Sets the new key for the Account
@@ -280,11 +284,11 @@ func (tx *AccountUpdateTransaction) GetAccountMemo() string {
 
 // ----------- Overridden functions ----------------
 
-func (tx *AccountUpdateTransaction) getName() string {
+func (tx AccountUpdateTransaction) getName() string {
 	return "AccountUpdateTransaction"
 }
 
-func (tx *AccountUpdateTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx AccountUpdateTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -304,7 +308,7 @@ func (tx *AccountUpdateTransaction) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (tx *AccountUpdateTransaction) build() *services.TransactionBody {
+func (tx AccountUpdateTransaction) build() *services.TransactionBody {
 	body := tx.buildProtoBody()
 
 	pb := services.TransactionBody{
@@ -321,7 +325,7 @@ func (tx *AccountUpdateTransaction) build() *services.TransactionBody {
 
 	return &pb
 }
-func (tx *AccountUpdateTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx AccountUpdateTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Memo:           tx.Transaction.memo,
@@ -330,7 +334,7 @@ func (tx *AccountUpdateTransaction) buildScheduled() (*services.SchedulableTrans
 		},
 	}, nil
 }
-func (tx *AccountUpdateTransaction) buildProtoBody() *services.CryptoUpdateTransactionBody {
+func (tx AccountUpdateTransaction) buildProtoBody() *services.CryptoUpdateTransactionBody {
 	body := &services.CryptoUpdateTransactionBody{
 		ReceiverSigRequiredField: &services.CryptoUpdateTransactionBody_ReceiverSigRequiredWrapper{
 			ReceiverSigRequiredWrapper: &wrapperspb.BoolValue{Value: tx.receiverSignatureRequired},
@@ -365,20 +369,16 @@ func (tx *AccountUpdateTransaction) buildProtoBody() *services.CryptoUpdateTrans
 	return body
 }
 
-func (tx *AccountUpdateTransaction) getMethod(channel *_Channel) _Method {
+func (tx AccountUpdateTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetCrypto().UpdateAccount,
 	}
 }
 
-func (tx *AccountUpdateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx AccountUpdateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 
-func (tx *AccountUpdateTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction(tx.Transaction)
-}
-
-func (tx *AccountUpdateTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
-	tx.Transaction = castFromBaseToConcreteTransaction[*AccountUpdateTransaction](baseTx)
+func (tx AccountUpdateTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }

@@ -41,10 +41,14 @@ func NewTopicDeleteTransaction() *TopicDeleteTransaction {
 	return tx
 }
 
-func _TopicDeleteTransactionFromProtobuf(pb *services.TransactionBody) *TopicDeleteTransaction {
-	return &TopicDeleteTransaction{
+func _TopicDeleteTransactionFromProtobuf(tx Transaction[*TopicDeleteTransaction], pb *services.TransactionBody) TopicDeleteTransaction {
+	topicDeleteTransaction := TopicDeleteTransaction{
 		topicID: _TopicIDFromProtobuf(pb.GetConsensusDeleteTopic().GetTopicID()),
 	}
+
+	tx.childTransaction = &topicDeleteTransaction
+	topicDeleteTransaction.Transaction = &tx
+	return topicDeleteTransaction
 }
 
 // SetTopicID sets the topic IDentifier.
@@ -65,11 +69,11 @@ func (tx *TopicDeleteTransaction) GetTopicID() TopicID {
 
 // ----------- Overridden functions ----------------
 
-func (tx *TopicDeleteTransaction) getName() string {
+func (tx TopicDeleteTransaction) getName() string {
 	return "TopicDeleteTransaction"
 }
 
-func (tx *TopicDeleteTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx TopicDeleteTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -83,7 +87,7 @@ func (tx *TopicDeleteTransaction) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (tx *TopicDeleteTransaction) build() *services.TransactionBody {
+func (tx TopicDeleteTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
 		Memo:                     tx.Transaction.memo,
@@ -95,7 +99,7 @@ func (tx *TopicDeleteTransaction) build() *services.TransactionBody {
 	}
 }
 
-func (tx *TopicDeleteTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx TopicDeleteTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Memo:           tx.Transaction.memo,
@@ -105,7 +109,7 @@ func (tx *TopicDeleteTransaction) buildScheduled() (*services.SchedulableTransac
 	}, nil
 }
 
-func (tx *TopicDeleteTransaction) buildProtoBody() *services.ConsensusDeleteTopicTransactionBody {
+func (tx TopicDeleteTransaction) buildProtoBody() *services.ConsensusDeleteTopicTransactionBody {
 	body := &services.ConsensusDeleteTopicTransactionBody{}
 	if tx.topicID != nil {
 		body.TopicID = tx.topicID._ToProtobuf()
@@ -114,20 +118,16 @@ func (tx *TopicDeleteTransaction) buildProtoBody() *services.ConsensusDeleteTopi
 	return body
 }
 
-func (tx *TopicDeleteTransaction) getMethod(channel *_Channel) _Method {
+func (tx TopicDeleteTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetTopic().DeleteTopic,
 	}
 }
 
-func (tx *TopicDeleteTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx TopicDeleteTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 
-func (tx *TopicDeleteTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction(tx.Transaction)
-}
-
-func (tx *TopicDeleteTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
-	tx.Transaction = castFromBaseToConcreteTransaction[*TopicDeleteTransaction](baseTx)
+func (tx TopicDeleteTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }

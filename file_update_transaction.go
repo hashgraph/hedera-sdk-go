@@ -57,17 +57,21 @@ func NewFileUpdateTransaction() *FileUpdateTransaction {
 	return tx
 }
 
-func _FileUpdateTransactionFromProtobuf(pb *services.TransactionBody) *FileUpdateTransaction {
+func _FileUpdateTransactionFromProtobuf(tx Transaction[*FileUpdateTransaction], pb *services.TransactionBody) FileUpdateTransaction {
 	keys, _ := _KeyListFromProtobuf(pb.GetFileUpdate().GetKeys())
 	expiration := _TimeFromProtobuf(pb.GetFileUpdate().GetExpirationTime())
 
-	return &FileUpdateTransaction{
+	fileUpdateTransaction := FileUpdateTransaction{
 		fileID:         _FileIDFromProtobuf(pb.GetFileUpdate().GetFileID()),
 		keys:           &keys,
 		expirationTime: &expiration,
 		contents:       pb.GetFileUpdate().GetContents(),
 		memo:           pb.GetFileUpdate().GetMemo().Value,
 	}
+
+	tx.childTransaction = &fileUpdateTransaction
+	fileUpdateTransaction.Transaction = &tx
+	return fileUpdateTransaction
 }
 
 // SetFileID Sets the FileID to be updated
@@ -156,10 +160,10 @@ func (tx *FileUpdateTransaction) GetFileMemo() string {
 
 // ----------- Overridden functions ----------------
 
-func (tx *FileUpdateTransaction) getName() string {
+func (tx FileUpdateTransaction) getName() string {
 	return "FileUpdateTransaction"
 }
-func (tx *FileUpdateTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx FileUpdateTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -172,7 +176,7 @@ func (tx *FileUpdateTransaction) validateNetworkOnIDs(client *Client) error {
 
 	return nil
 }
-func (tx *FileUpdateTransaction) build() *services.TransactionBody {
+func (tx FileUpdateTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
 		Memo:                     tx.Transaction.memo,
@@ -183,7 +187,7 @@ func (tx *FileUpdateTransaction) build() *services.TransactionBody {
 		},
 	}
 }
-func (tx *FileUpdateTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx FileUpdateTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Memo:           tx.Transaction.memo,
@@ -192,7 +196,7 @@ func (tx *FileUpdateTransaction) buildScheduled() (*services.SchedulableTransact
 		},
 	}, nil
 }
-func (tx *FileUpdateTransaction) buildProtoBody() *services.FileUpdateTransactionBody {
+func (tx FileUpdateTransaction) buildProtoBody() *services.FileUpdateTransactionBody {
 	body := &services.FileUpdateTransactionBody{
 		Memo: &wrapperspb.StringValue{Value: tx.memo},
 	}
@@ -215,20 +219,16 @@ func (tx *FileUpdateTransaction) buildProtoBody() *services.FileUpdateTransactio
 	return body
 }
 
-func (tx *FileUpdateTransaction) getMethod(channel *_Channel) _Method {
+func (tx FileUpdateTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetFile().UpdateFile,
 	}
 }
 
-func (tx *FileUpdateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx FileUpdateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 
-func (tx *FileUpdateTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction[*FileUpdateTransaction](tx.Transaction)
-}
-
-func (tx *FileUpdateTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
-	tx.Transaction = castFromBaseToConcreteTransaction[*FileUpdateTransaction](baseTx)
+func (tx FileUpdateTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }

@@ -144,7 +144,7 @@ func NewTokenCreateTransaction() *TokenCreateTransaction {
 	return tx
 }
 
-func _TokenCreateTransactionFromProtobuf(pb *services.TransactionBody) *TokenCreateTransaction {
+func _TokenCreateTransactionFromProtobuf(tx Transaction[*TokenCreateTransaction], pb *services.TransactionBody) TokenCreateTransaction {
 	customFees := make([]Fee, 0)
 
 	for _, fee := range pb.GetTokenCreation().GetCustomFees() {
@@ -164,7 +164,7 @@ func _TokenCreateTransactionFromProtobuf(pb *services.TransactionBody) *TokenCre
 	expirationTime := _TimeFromProtobuf(pb.GetTokenCreation().GetExpiry())
 	autoRenew := _DurationFromProtobuf(pb.GetTokenCreation().GetAutoRenewPeriod())
 
-	return &TokenCreateTransaction{
+	tokenCreateTransaction := TokenCreateTransaction{
 		treasuryAccountID:  _AccountIDFromProtobuf(pb.GetTokenCreation().GetTreasury()),
 		autoRenewAccountID: _AccountIDFromProtobuf(pb.GetTokenCreation().GetAutoRenewAccount()),
 		customFees:         customFees,
@@ -189,6 +189,10 @@ func _TokenCreateTransactionFromProtobuf(pb *services.TransactionBody) *TokenCre
 		expirationTime:     &expirationTime,
 		autoRenewPeriod:    &autoRenew,
 	}
+
+	tx.childTransaction = &tokenCreateTransaction
+	tokenCreateTransaction.Transaction = &tx
+	return tokenCreateTransaction
 }
 
 // SetTokenName Sets the publicly visible name of the token, specified as a string of only ASCII characters
@@ -487,11 +491,11 @@ func (tx *TokenCreateTransaction) GetAutoRenewPeriod() time.Duration {
 
 // ----------- Overridden functions ----------------
 
-func (tx *TokenCreateTransaction) getName() string {
+func (tx TokenCreateTransaction) getName() string {
 	return "TokenCreateTransaction"
 }
 
-func (tx *TokenCreateTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx TokenCreateTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -517,7 +521,7 @@ func (tx *TokenCreateTransaction) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (tx *TokenCreateTransaction) build() *services.TransactionBody {
+func (tx TokenCreateTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
 		Memo:                     tx.Transaction.memo,
@@ -529,7 +533,7 @@ func (tx *TokenCreateTransaction) build() *services.TransactionBody {
 	}
 }
 
-func (tx *TokenCreateTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx TokenCreateTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Memo:           tx.Transaction.memo,
@@ -539,7 +543,7 @@ func (tx *TokenCreateTransaction) buildScheduled() (*services.SchedulableTransac
 	}, nil
 }
 
-func (tx *TokenCreateTransaction) buildProtoBody() *services.TokenCreateTransactionBody {
+func (tx TokenCreateTransaction) buildProtoBody() *services.TokenCreateTransactionBody {
 	body := &services.TokenCreateTransactionBody{
 		Name:          tx.tokenName,
 		Symbol:        tx.tokenSymbol,
@@ -617,26 +621,24 @@ func (tx *TokenCreateTransaction) buildProtoBody() *services.TokenCreateTransact
 	return body
 }
 
-func (tx *TokenCreateTransaction) getMethod(channel *_Channel) _Method {
+func (tx TokenCreateTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetToken().CreateToken,
 	}
 }
 
-func (tx *TokenCreateTransaction) preFreezeWith(client *Client) {
-	if tx.autoRenewAccountID == nil && tx.autoRenewPeriod != nil && client != nil && !client.GetOperatorAccountID()._IsZero() {
-		tx.SetAutoRenewAccount(client.GetOperatorAccountID())
+func (tx TokenCreateTransaction) preFreezeWith(client *Client, self TransactionInterface) {
+	if selfTokenCreate, ok := self.(*TokenCreateTransaction); ok {
+		if selfTokenCreate.GetAutoRenewAccount()._IsZero() && selfTokenCreate.GetAutoRenewPeriod() != 0 && client != nil {
+			selfTokenCreate.SetAutoRenewAccount(client.GetOperatorAccountID())
+		}
 	}
 }
 
-func (tx *TokenCreateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx TokenCreateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 
-func (tx *TokenCreateTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction(tx.Transaction)
-}
-
-func (tx *TokenCreateTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
-	tx.Transaction = castFromBaseToConcreteTransaction[*TokenCreateTransaction](baseTx)
+func (tx TokenCreateTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }

@@ -25,8 +25,6 @@ package hedera
 
 import (
 	"bytes"
-	"fmt"
-	"reflect"
 	"testing"
 	"time"
 
@@ -361,7 +359,7 @@ func TestUnitFileAppendTransactionCoverage(t *testing.T) {
 	require.NoError(t, err)
 	transaction.getName()
 	switch b := txFromBytes.(type) {
-	case *FileAppendTransaction:
+	case FileAppendTransaction:
 		b.AddSignature(newKey.PublicKey(), sig)
 	}
 }
@@ -387,9 +385,7 @@ func TestUnitFileAppendTransactionSerialization(t *testing.T) {
 	txParsed, err := TransactionFromBytes(txBytes)
 	require.NoError(t, err)
 
-	fmt.Println(reflect.TypeOf(txParsed))
-
-	result, ok := txParsed.(*FileAppendTransaction)
+	result, ok := txParsed.(FileAppendTransaction)
 	require.True(t, ok)
 
 	require.Equal(t, transactionID.AccountID, result.GetTransactionID().AccountID)

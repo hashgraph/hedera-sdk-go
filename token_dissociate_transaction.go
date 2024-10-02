@@ -69,7 +69,7 @@ func NewTokenDissociateTransaction() *TokenDissociateTransaction {
 	return tx
 }
 
-func _TokenDissociateTransactionFromProtobuf(pb *services.TransactionBody) *TokenDissociateTransaction {
+func _TokenDissociateTransactionFromProtobuf(tx Transaction[*TokenDissociateTransaction], pb *services.TransactionBody) TokenDissociateTransaction {
 	tokens := make([]TokenID, 0)
 	for _, token := range pb.GetTokenDissociate().Tokens {
 		if tokenID := _TokenIDFromProtobuf(token); tokenID != nil {
@@ -77,10 +77,14 @@ func _TokenDissociateTransactionFromProtobuf(pb *services.TransactionBody) *Toke
 		}
 	}
 
-	return &TokenDissociateTransaction{
+	tokenDissociateTransaction := TokenDissociateTransaction{
 		accountID: _AccountIDFromProtobuf(pb.GetTokenDissociate().GetAccount()),
 		tokens:    tokens,
 	}
+
+	tx.childTransaction = &tokenDissociateTransaction
+	tokenDissociateTransaction.Transaction = &tx
+	return tokenDissociateTransaction
 }
 
 // SetAccountID Sets the account to be dissociated with the provided tokens
@@ -129,11 +133,11 @@ func (tx *TokenDissociateTransaction) GetTokenIDs() []TokenID {
 
 // ----------- Overridden functions ----------------
 
-func (tx *TokenDissociateTransaction) getName() string {
+func (tx TokenDissociateTransaction) getName() string {
 	return "TokenDissociateTransaction"
 }
 
-func (tx *TokenDissociateTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx TokenDissociateTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -153,7 +157,7 @@ func (tx *TokenDissociateTransaction) validateNetworkOnIDs(client *Client) error
 	return nil
 }
 
-func (tx *TokenDissociateTransaction) build() *services.TransactionBody {
+func (tx TokenDissociateTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
 		Memo:                     tx.Transaction.memo,
@@ -165,7 +169,7 @@ func (tx *TokenDissociateTransaction) build() *services.TransactionBody {
 	}
 }
 
-func (tx *TokenDissociateTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx TokenDissociateTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Memo:           tx.Transaction.memo,
@@ -175,7 +179,7 @@ func (tx *TokenDissociateTransaction) buildScheduled() (*services.SchedulableTra
 	}, nil
 }
 
-func (tx *TokenDissociateTransaction) buildProtoBody() *services.TokenDissociateTransactionBody {
+func (tx TokenDissociateTransaction) buildProtoBody() *services.TokenDissociateTransactionBody {
 	body := &services.TokenDissociateTransactionBody{}
 	if tx.accountID != nil {
 		body.Account = tx.accountID._ToProtobuf()
@@ -193,20 +197,16 @@ func (tx *TokenDissociateTransaction) buildProtoBody() *services.TokenDissociate
 	return body
 }
 
-func (tx *TokenDissociateTransaction) getMethod(channel *_Channel) _Method {
+func (tx TokenDissociateTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetToken().DissociateTokens,
 	}
 }
 
-func (tx *TokenDissociateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx TokenDissociateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 
-func (tx *TokenDissociateTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction(tx.Transaction)
-}
-
-func (tx *TokenDissociateTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
-	tx.Transaction = castFromBaseToConcreteTransaction[*TokenDissociateTransaction](baseTx)
+func (tx TokenDissociateTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }

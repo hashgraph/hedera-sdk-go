@@ -48,18 +48,22 @@ func NewTopicCreateTransaction() *TopicCreateTransaction {
 	return tx
 }
 
-func _TopicCreateTransactionFromProtobuf(pb *services.TransactionBody) *TopicCreateTransaction {
+func _TopicCreateTransactionFromProtobuf(tx Transaction[*TopicCreateTransaction], pb *services.TransactionBody) TopicCreateTransaction {
 	adminKey, _ := _KeyFromProtobuf(pb.GetConsensusCreateTopic().GetAdminKey())
 	submitKey, _ := _KeyFromProtobuf(pb.GetConsensusCreateTopic().GetSubmitKey())
 
 	autoRenew := _DurationFromProtobuf(pb.GetConsensusCreateTopic().GetAutoRenewPeriod())
-	return &TopicCreateTransaction{
+	topicCreateTransaction := TopicCreateTransaction{
 		autoRenewAccountID: _AccountIDFromProtobuf(pb.GetConsensusCreateTopic().GetAutoRenewAccount()),
 		adminKey:           adminKey,
 		submitKey:          submitKey,
 		memo:               pb.GetConsensusCreateTopic().GetMemo(),
 		autoRenewPeriod:    &autoRenew,
 	}
+
+	tx.childTransaction = &topicCreateTransaction
+	topicCreateTransaction.Transaction = &tx
+	return topicCreateTransaction
 }
 
 // SetAdminKey sets the key required to update or delete the topic. If unspecified, anyone can increase the topic's
@@ -140,11 +144,11 @@ func (tx *TopicCreateTransaction) GetAutoRenewAccountID() AccountID {
 
 // ----------- Overridden functions ----------------
 
-func (tx *TopicCreateTransaction) getName() string {
+func (tx TopicCreateTransaction) getName() string {
 	return "TopicCreateTransaction"
 }
 
-func (tx *TopicCreateTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx TopicCreateTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -158,7 +162,7 @@ func (tx *TopicCreateTransaction) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (tx *TopicCreateTransaction) build() *services.TransactionBody {
+func (tx TopicCreateTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
 		Memo:                     tx.Transaction.memo,
@@ -170,7 +174,7 @@ func (tx *TopicCreateTransaction) build() *services.TransactionBody {
 	}
 }
 
-func (tx *TopicCreateTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx TopicCreateTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Memo:           tx.Transaction.memo,
@@ -180,7 +184,7 @@ func (tx *TopicCreateTransaction) buildScheduled() (*services.SchedulableTransac
 	}, nil
 }
 
-func (tx *TopicCreateTransaction) buildProtoBody() *services.ConsensusCreateTopicTransactionBody {
+func (tx TopicCreateTransaction) buildProtoBody() *services.ConsensusCreateTopicTransactionBody {
 	body := &services.ConsensusCreateTopicTransactionBody{
 		Memo: tx.memo,
 	}
@@ -204,20 +208,16 @@ func (tx *TopicCreateTransaction) buildProtoBody() *services.ConsensusCreateTopi
 	return body
 }
 
-func (tx *TopicCreateTransaction) getMethod(channel *_Channel) _Method {
+func (tx TopicCreateTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetTopic().CreateTopic,
 	}
 }
 
-func (tx *TopicCreateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx TopicCreateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 
-func (tx *TopicCreateTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction(tx.Transaction)
-}
-
-func (tx *TopicCreateTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
-	tx.Transaction = castFromBaseToConcreteTransaction[*TopicCreateTransaction](baseTx)
+func (tx TopicCreateTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }

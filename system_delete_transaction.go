@@ -50,17 +50,21 @@ func NewSystemDeleteTransaction() *SystemDeleteTransaction {
 	return tx
 }
 
-func _SystemDeleteTransactionFromProtobuf(pb *services.TransactionBody) *SystemDeleteTransaction {
+func _SystemDeleteTransactionFromProtobuf(tx Transaction[*SystemDeleteTransaction], pb *services.TransactionBody) SystemDeleteTransaction {
 	expiration := time.Date(
 		time.Now().Year(), time.Now().Month(), time.Now().Day(),
 		time.Now().Hour(), time.Now().Minute(),
 		int(pb.GetSystemDelete().ExpirationTime.Seconds), time.Now().Nanosecond(), time.Now().Location(),
 	)
-	return &SystemDeleteTransaction{
+	systemDeleteTransaction := SystemDeleteTransaction{
 		contractID:     _ContractIDFromProtobuf(pb.GetSystemDelete().GetContractID()),
 		fileID:         _FileIDFromProtobuf(pb.GetSystemDelete().GetFileID()),
 		expirationTime: &expiration,
 	}
+
+	tx.childTransaction = &systemDeleteTransaction
+	systemDeleteTransaction.Transaction = &tx
+	return systemDeleteTransaction
 }
 
 // SetExpirationTime sets the time at which this transaction will expire.
@@ -113,11 +117,11 @@ func (tx *SystemDeleteTransaction) GetFileID() FileID {
 
 // ----------- Overridden functions ----------------
 
-func (tx *SystemDeleteTransaction) getName() string {
+func (tx SystemDeleteTransaction) getName() string {
 	return "SystemDeleteTransaction"
 }
 
-func (tx *SystemDeleteTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx SystemDeleteTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -137,7 +141,7 @@ func (tx *SystemDeleteTransaction) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (tx *SystemDeleteTransaction) build() *services.TransactionBody {
+func (tx SystemDeleteTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
 		Memo:                     tx.Transaction.memo,
@@ -149,7 +153,7 @@ func (tx *SystemDeleteTransaction) build() *services.TransactionBody {
 	}
 }
 
-func (tx *SystemDeleteTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx SystemDeleteTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Memo:           tx.Transaction.memo,
@@ -159,7 +163,7 @@ func (tx *SystemDeleteTransaction) buildScheduled() (*services.SchedulableTransa
 	}, nil
 }
 
-func (tx *SystemDeleteTransaction) buildProtoBody() *services.SystemDeleteTransactionBody {
+func (tx SystemDeleteTransaction) buildProtoBody() *services.SystemDeleteTransactionBody {
 	body := &services.SystemDeleteTransactionBody{}
 
 	if tx.expirationTime != nil {
@@ -183,7 +187,7 @@ func (tx *SystemDeleteTransaction) buildProtoBody() *services.SystemDeleteTransa
 	return body
 }
 
-func (tx *SystemDeleteTransaction) getMethod(channel *_Channel) _Method {
+func (tx SystemDeleteTransaction) getMethod(channel *_Channel) _Method {
 	if channel._GetContract() == nil {
 		return _Method{
 			transaction: channel._GetFile().SystemDelete,
@@ -195,14 +199,10 @@ func (tx *SystemDeleteTransaction) getMethod(channel *_Channel) _Method {
 	}
 }
 
-func (tx *SystemDeleteTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx SystemDeleteTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 
-func (tx *SystemDeleteTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction(tx.Transaction)
-}
-
-func (tx *SystemDeleteTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
-	tx.Transaction = castFromBaseToConcreteTransaction[*SystemDeleteTransaction](baseTx)
+func (tx SystemDeleteTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }

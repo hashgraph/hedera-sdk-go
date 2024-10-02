@@ -53,13 +53,13 @@ func NewTopicUpdateTransaction() *TopicUpdateTransaction {
 	return tx
 }
 
-func _TopicUpdateTransactionFromProtobuf(pb *services.TransactionBody) *TopicUpdateTransaction {
+func _TopicUpdateTransactionFromProtobuf(tx Transaction[*TopicUpdateTransaction], pb *services.TransactionBody) TopicUpdateTransaction {
 	adminKey, _ := _KeyFromProtobuf(pb.GetConsensusUpdateTopic().GetAdminKey())
 	submitKey, _ := _KeyFromProtobuf(pb.GetConsensusUpdateTopic().GetSubmitKey())
 
 	expirationTime := _TimeFromProtobuf(pb.GetConsensusUpdateTopic().GetExpirationTime())
 	autoRenew := _DurationFromProtobuf(pb.GetConsensusUpdateTopic().GetAutoRenewPeriod())
-	return &TopicUpdateTransaction{
+	topicCreateTransaction := TopicUpdateTransaction{
 		topicID:            _TopicIDFromProtobuf(pb.GetConsensusUpdateTopic().GetTopicID()),
 		autoRenewAccountID: _AccountIDFromProtobuf(pb.GetConsensusUpdateTopic().GetAutoRenewAccount()),
 		adminKey:           adminKey,
@@ -68,6 +68,10 @@ func _TopicUpdateTransactionFromProtobuf(pb *services.TransactionBody) *TopicUpd
 		autoRenewPeriod:    &autoRenew,
 		expirationTime:     &expirationTime,
 	}
+
+	tx.childTransaction = &topicCreateTransaction
+	topicCreateTransaction.Transaction = &tx
+	return topicCreateTransaction
 }
 
 // SetTopicID sets the topic to be updated.
@@ -205,11 +209,11 @@ func (tx *TopicUpdateTransaction) ClearAutoRenewAccountID() *TopicUpdateTransact
 
 // ----------- Overridden functions ----------------
 
-func (tx *TopicUpdateTransaction) getName() string {
+func (tx TopicUpdateTransaction) getName() string {
 	return "TopicUpdateTransaction"
 }
 
-func (tx *TopicUpdateTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx TopicUpdateTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -229,7 +233,7 @@ func (tx *TopicUpdateTransaction) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (tx *TopicUpdateTransaction) build() *services.TransactionBody {
+func (tx TopicUpdateTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
 		Memo:                     tx.Transaction.memo,
@@ -241,7 +245,7 @@ func (tx *TopicUpdateTransaction) build() *services.TransactionBody {
 	}
 }
 
-func (tx *TopicUpdateTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx TopicUpdateTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Memo:           tx.Transaction.memo,
@@ -251,7 +255,7 @@ func (tx *TopicUpdateTransaction) buildScheduled() (*services.SchedulableTransac
 	}, nil
 }
 
-func (tx *TopicUpdateTransaction) buildProtoBody() *services.ConsensusUpdateTopicTransactionBody {
+func (tx TopicUpdateTransaction) buildProtoBody() *services.ConsensusUpdateTopicTransactionBody {
 	body := &services.ConsensusUpdateTopicTransactionBody{
 		Memo: &wrapperspb.StringValue{Value: tx.memo},
 	}
@@ -283,20 +287,16 @@ func (tx *TopicUpdateTransaction) buildProtoBody() *services.ConsensusUpdateTopi
 	return body
 }
 
-func (tx *TopicUpdateTransaction) getMethod(channel *_Channel) _Method {
+func (tx TopicUpdateTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetTopic().UpdateTopic,
 	}
 }
 
-func (tx *TopicUpdateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx TopicUpdateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 
-func (tx *TopicUpdateTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction(tx.Transaction)
-}
-
-func (tx *TopicUpdateTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
-	tx.Transaction = castFromBaseToConcreteTransaction[*TopicUpdateTransaction](baseTx)
+func (tx TopicUpdateTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }

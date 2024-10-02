@@ -74,7 +74,7 @@ func NewTokenAssociateTransaction() *TokenAssociateTransaction {
 	return tx
 }
 
-func _TokenAssociateTransactionFromProtobuf(pb *services.TransactionBody) *TokenAssociateTransaction {
+func _TokenAssociateTransactionFromProtobuf(tx Transaction[*TokenAssociateTransaction], pb *services.TransactionBody) TokenAssociateTransaction {
 	tokens := make([]TokenID, 0)
 	for _, token := range pb.GetTokenAssociate().Tokens {
 		if tokenID := _TokenIDFromProtobuf(token); tokenID != nil {
@@ -82,10 +82,14 @@ func _TokenAssociateTransactionFromProtobuf(pb *services.TransactionBody) *Token
 		}
 	}
 
-	return &TokenAssociateTransaction{
+	tokenAssociateTransaction := TokenAssociateTransaction{
 		accountID: _AccountIDFromProtobuf(pb.GetTokenAssociate().GetAccount()),
 		tokens:    tokens,
 	}
+
+	tx.childTransaction = &tokenAssociateTransaction
+	tokenAssociateTransaction.Transaction = &tx
+	return tokenAssociateTransaction
 }
 
 // SetAccountID Sets the account to be associated with the provided tokens
@@ -135,11 +139,11 @@ func (tx *TokenAssociateTransaction) GetTokenIDs() []TokenID {
 
 // ----------- Overridden functions ----------------
 
-func (tx *TokenAssociateTransaction) getName() string {
+func (tx TokenAssociateTransaction) getName() string {
 	return "TokenAssociateTransaction"
 }
 
-func (tx *TokenAssociateTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx TokenAssociateTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -159,7 +163,7 @@ func (tx *TokenAssociateTransaction) validateNetworkOnIDs(client *Client) error 
 	return nil
 }
 
-func (tx *TokenAssociateTransaction) build() *services.TransactionBody {
+func (tx TokenAssociateTransaction) build() *services.TransactionBody {
 	body := tx.buildProtoBody()
 
 	return &services.TransactionBody{
@@ -173,7 +177,7 @@ func (tx *TokenAssociateTransaction) build() *services.TransactionBody {
 	}
 }
 
-func (tx *TokenAssociateTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx TokenAssociateTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Memo:           tx.Transaction.memo,
@@ -183,7 +187,7 @@ func (tx *TokenAssociateTransaction) buildScheduled() (*services.SchedulableTran
 	}, nil
 }
 
-func (tx *TokenAssociateTransaction) buildProtoBody() *services.TokenAssociateTransactionBody {
+func (tx TokenAssociateTransaction) buildProtoBody() *services.TokenAssociateTransactionBody {
 	body := &services.TokenAssociateTransactionBody{}
 	if tx.accountID != nil {
 		body.Account = tx.accountID._ToProtobuf()
@@ -200,20 +204,16 @@ func (tx *TokenAssociateTransaction) buildProtoBody() *services.TokenAssociateTr
 	return body
 }
 
-func (tx *TokenAssociateTransaction) getMethod(channel *_Channel) _Method {
+func (tx TokenAssociateTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetToken().AssociateTokens,
 	}
 }
 
-func (tx *TokenAssociateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx TokenAssociateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 
-func (tx *TokenAssociateTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction(tx.Transaction)
-}
-
-func (tx *TokenAssociateTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
-	tx.Transaction = castFromBaseToConcreteTransaction[*TokenAssociateTransaction](baseTx)
+func (tx TokenAssociateTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }

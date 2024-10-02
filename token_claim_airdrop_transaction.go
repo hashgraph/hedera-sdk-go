@@ -39,13 +39,15 @@ func NewTokenClaimAirdropTransaction() *TokenClaimAirdropTransaction {
 	return tx
 }
 
-func _TokenClaimAirdropTransactionFromProtobuf(pb *services.TransactionBody) *TokenClaimAirdropTransaction {
-	tokenClaimTransaction := &TokenClaimAirdropTransaction{}
+func _TokenClaimAirdropTransactionFromProtobuf(tx Transaction[*TokenClaimAirdropTransaction], pb *services.TransactionBody) TokenClaimAirdropTransaction {
+	tokenClaimTransaction := TokenClaimAirdropTransaction{}
 
 	for _, pendingAirdrops := range pb.GetTokenClaimAirdrop().PendingAirdrops {
 		tokenClaimTransaction.pendingAirdropIds = append(tokenClaimTransaction.pendingAirdropIds, _PendingAirdropIdFromProtobuf(pendingAirdrops))
 	}
 
+	tx.childTransaction = &tokenClaimTransaction
+	tokenClaimTransaction.Transaction = &tx
 	return tokenClaimTransaction
 }
 
@@ -70,11 +72,11 @@ func (tx *TokenClaimAirdropTransaction) GetPendingAirdropIds() []*PendingAirdrop
 
 // ----------- Overridden functions ----------------
 
-func (tx *TokenClaimAirdropTransaction) getName() string {
+func (tx TokenClaimAirdropTransaction) getName() string {
 	return "TokenClaimAirdropTransaction"
 }
 
-func (tx *TokenClaimAirdropTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx TokenClaimAirdropTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -107,7 +109,7 @@ func (tx *TokenClaimAirdropTransaction) validateNetworkOnIDs(client *Client) err
 	return nil
 }
 
-func (tx *TokenClaimAirdropTransaction) build() *services.TransactionBody {
+func (tx TokenClaimAirdropTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
 		Memo:                     tx.Transaction.memo,
@@ -119,7 +121,7 @@ func (tx *TokenClaimAirdropTransaction) build() *services.TransactionBody {
 	}
 }
 
-func (tx *TokenClaimAirdropTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx TokenClaimAirdropTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Data: &services.SchedulableTransactionBody_TokenClaimAirdrop{
@@ -128,7 +130,7 @@ func (tx *TokenClaimAirdropTransaction) buildScheduled() (*services.SchedulableT
 	}, nil
 }
 
-func (tx *TokenClaimAirdropTransaction) buildProtoBody() *services.TokenClaimAirdropTransactionBody {
+func (tx TokenClaimAirdropTransaction) buildProtoBody() *services.TokenClaimAirdropTransactionBody {
 	pendingAirdrops := make([]*services.PendingAirdropId, len(tx.pendingAirdropIds))
 	for i, pendingAirdropId := range tx.pendingAirdropIds {
 		pendingAirdrops[i] = pendingAirdropId._ToProtobuf()
@@ -139,20 +141,16 @@ func (tx *TokenClaimAirdropTransaction) buildProtoBody() *services.TokenClaimAir
 	}
 }
 
-func (tx *TokenClaimAirdropTransaction) getMethod(channel *_Channel) _Method {
+func (tx TokenClaimAirdropTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetToken().ClaimAirdrop,
 	}
 }
 
-func (tx *TokenClaimAirdropTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx TokenClaimAirdropTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 
-func (tx *TokenClaimAirdropTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction(tx.Transaction)
-}
-
-func (tx *TokenClaimAirdropTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
-	tx.Transaction = castFromBaseToConcreteTransaction[*TokenClaimAirdropTransaction](baseTx)
+func (tx TokenClaimAirdropTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, tx)
 }

@@ -53,13 +53,17 @@ func NewFileAppendTransaction() *FileAppendTransaction {
 	return tx
 }
 
-func _FileAppendTransactionFromProtobuf(pb *services.TransactionBody) *FileAppendTransaction {
-	return &FileAppendTransaction{
+func _FileAppendTransactionFromProtobuf(tx Transaction[*FileAppendTransaction], pb *services.TransactionBody) FileAppendTransaction {
+	fileAppend := FileAppendTransaction{
 		maxChunks: 20,
 		contents:  pb.GetFileAppend().GetContents(),
 		chunkSize: 2048,
 		fileID:    _FileIDFromProtobuf(pb.GetFileAppend().GetFileID()),
 	}
+
+	tx.childTransaction = &fileAppend
+	fileAppend.Transaction = &tx
+	return fileAppend
 }
 
 // SetFileID sets the FileID of the file to which the bytes are appended to.
@@ -292,10 +296,10 @@ func (tx *FileAppendTransaction) Schedule() (*ScheduleCreateTransaction, error) 
 
 // ----------- Overridden functions ----------------
 
-func (tx *FileAppendTransaction) getName() string {
+func (tx FileAppendTransaction) getName() string {
 	return "FileAppendTransaction"
 }
-func (tx *FileAppendTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx FileAppendTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -309,7 +313,7 @@ func (tx *FileAppendTransaction) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (tx *FileAppendTransaction) build() *services.TransactionBody {
+func (tx FileAppendTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
 		Memo:                     tx.Transaction.memo,
@@ -321,7 +325,7 @@ func (tx *FileAppendTransaction) build() *services.TransactionBody {
 	}
 }
 
-func (tx *FileAppendTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx FileAppendTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Memo:           tx.Transaction.memo,
@@ -330,7 +334,7 @@ func (tx *FileAppendTransaction) buildScheduled() (*services.SchedulableTransact
 		},
 	}, nil
 }
-func (tx *FileAppendTransaction) buildProtoBody() *services.FileAppendTransactionBody {
+func (tx FileAppendTransaction) buildProtoBody() *services.FileAppendTransactionBody {
 	body := &services.FileAppendTransactionBody{
 		Contents: tx.contents,
 	}
@@ -342,20 +346,16 @@ func (tx *FileAppendTransaction) buildProtoBody() *services.FileAppendTransactio
 	return body
 }
 
-func (tx *FileAppendTransaction) getMethod(channel *_Channel) _Method {
+func (tx FileAppendTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetFile().AppendContent,
 	}
 }
 
-func (tx *FileAppendTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx FileAppendTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 
-func (tx *FileAppendTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction(tx.Transaction)
-}
-
-func (tx *FileAppendTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
-	tx.Transaction = castFromBaseToConcreteTransaction[*FileAppendTransaction](baseTx)
+func (tx FileAppendTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }

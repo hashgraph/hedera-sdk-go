@@ -21,7 +21,6 @@ package hedera
  */
 
 type TokenRejectFlow struct {
-	// Transaction
 	ownerID           *AccountID
 	tokenIDs          []TokenID
 	nftIDs            []NftID
@@ -32,9 +31,7 @@ type TokenRejectFlow struct {
 }
 
 func NewTokenRejectFlow() *TokenRejectFlow {
-	tx := TokenRejectFlow{
-		// Transaction: _NewTransaction(),
-	}
+	tx := TokenRejectFlow{}
 	return &tx
 }
 

@@ -44,7 +44,7 @@ func NewFreezeTransaction() *FreezeTransaction {
 	return tx
 }
 
-func _FreezeTransactionFromProtobuf(pb *services.TransactionBody) *FreezeTransaction {
+func _FreezeTransactionFromProtobuf(tx Transaction[*FreezeTransaction], pb *services.TransactionBody) FreezeTransaction {
 	startTime := time.Date(
 		time.Now().Year(), time.Now().Month(), time.Now().Day(),
 		int(pb.GetFreeze().GetStartHour()), int(pb.GetFreeze().GetStartMin()), // nolint
@@ -57,12 +57,15 @@ func _FreezeTransactionFromProtobuf(pb *services.TransactionBody) *FreezeTransac
 		0, time.Now().Nanosecond(), time.Now().Location(),
 	)
 
-	return &FreezeTransaction{
+	freezeTransaction := FreezeTransaction{
 		startTime: startTime,
 		endTime:   endTime,
 		fileID:    _FileIDFromProtobuf(pb.GetFreeze().GetUpdateFile()),
 		fileHash:  pb.GetFreeze().FileHash,
 	}
+	tx.childTransaction = &freezeTransaction
+	freezeTransaction.Transaction = &tx
+	return freezeTransaction
 }
 
 func (tx *FreezeTransaction) SetStartTime(startTime time.Time) *FreezeTransaction {
@@ -119,10 +122,10 @@ func (tx *FreezeTransaction) GetFileHash() []byte {
 
 // ----------- Overridden functions ----------------
 
-func (tx *FreezeTransaction) getName() string {
+func (tx FreezeTransaction) getName() string {
 	return "FreezeTransaction"
 }
-func (tx *FreezeTransaction) build() *services.TransactionBody {
+func (tx FreezeTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
 		Memo:                     tx.Transaction.memo,
@@ -133,7 +136,7 @@ func (tx *FreezeTransaction) build() *services.TransactionBody {
 		},
 	}
 }
-func (tx *FreezeTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx FreezeTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Memo:           tx.Transaction.memo,
@@ -142,7 +145,7 @@ func (tx *FreezeTransaction) buildScheduled() (*services.SchedulableTransactionB
 		},
 	}, nil
 }
-func (tx *FreezeTransaction) buildProtoBody() *services.FreezeTransactionBody {
+func (tx FreezeTransaction) buildProtoBody() *services.FreezeTransactionBody {
 	body := &services.FreezeTransactionBody{
 		FileHash:   tx.fileHash,
 		StartTime:  _TimeToProtobuf(tx.startTime),
@@ -155,23 +158,19 @@ func (tx *FreezeTransaction) buildProtoBody() *services.FreezeTransactionBody {
 
 	return body
 }
-func (tx *FreezeTransaction) getMethod(channel *_Channel) _Method {
+func (tx FreezeTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetFreeze().Freeze,
 	}
 }
-func (tx *FreezeTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx FreezeTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 
-func (tx *FreezeTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx FreezeTransaction) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (tx *FreezeTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction(tx.Transaction)
-}
-
-func (tx *FreezeTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
-	tx.Transaction = castFromBaseToConcreteTransaction[*FreezeTransaction](baseTx)
+func (tx FreezeTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }

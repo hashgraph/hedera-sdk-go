@@ -62,16 +62,19 @@ func NewFileCreateTransaction() *FileCreateTransaction {
 	return tx
 }
 
-func _FileCreateTransactionFromProtobuf(pb *services.TransactionBody) *FileCreateTransaction {
+func _FileCreateTransactionFromProtobuf(tx Transaction[*FileCreateTransaction], pb *services.TransactionBody) FileCreateTransaction {
 	keys, _ := _KeyListFromProtobuf(pb.GetFileCreate().GetKeys())
 	expiration := _TimeFromProtobuf(pb.GetFileCreate().GetExpirationTime())
 
-	return &FileCreateTransaction{
+	fileCreateTransaction := FileCreateTransaction{
 		keys:           &keys,
 		expirationTime: &expiration,
 		contents:       pb.GetFileCreate().GetContents(),
 		memo:           pb.GetMemo(),
 	}
+	tx.childTransaction = &fileCreateTransaction
+	fileCreateTransaction.Transaction = &tx
+	return fileCreateTransaction
 }
 
 // AddKey adds a key to the internal list of keys associated with the file. All of the keys on the list must sign to
@@ -151,10 +154,10 @@ func (tx *FileCreateTransaction) GetMemo() string {
 
 // ----------- Overridden functions ----------------
 
-func (tx *FileCreateTransaction) getName() string {
+func (tx FileCreateTransaction) getName() string {
 	return "FileCreateTransaction"
 }
-func (tx *FileCreateTransaction) build() *services.TransactionBody {
+func (tx FileCreateTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
 		Memo:                     tx.Transaction.memo,
@@ -166,11 +169,11 @@ func (tx *FileCreateTransaction) build() *services.TransactionBody {
 	}
 }
 
-func (tx *FileCreateTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx FileCreateTransaction) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (tx *FileCreateTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx FileCreateTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Memo:           tx.Transaction.memo,
@@ -180,7 +183,7 @@ func (tx *FileCreateTransaction) buildScheduled() (*services.SchedulableTransact
 	}, nil
 }
 
-func (tx *FileCreateTransaction) buildProtoBody() *services.FileCreateTransactionBody {
+func (tx FileCreateTransaction) buildProtoBody() *services.FileCreateTransactionBody {
 	body := &services.FileCreateTransactionBody{
 		Memo: tx.memo,
 	}
@@ -200,19 +203,15 @@ func (tx *FileCreateTransaction) buildProtoBody() *services.FileCreateTransactio
 	return body
 }
 
-func (tx *FileCreateTransaction) getMethod(channel *_Channel) _Method {
+func (tx FileCreateTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetFile().CreateFile,
 	}
 }
-func (tx *FileCreateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx FileCreateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 
-func (tx *FileCreateTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction[*FileCreateTransaction](tx.Transaction)
-}
-
-func (tx *FileCreateTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
-	tx.Transaction = castFromBaseToConcreteTransaction[*FileCreateTransaction](baseTx)
+func (tx FileCreateTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, tx)
 }

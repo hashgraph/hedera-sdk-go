@@ -46,7 +46,7 @@ func NewTokenAirdropTransaction() *TokenAirdropTransaction {
 	return tx
 }
 
-func _TokenAirdropTransactionFromProtobuf(pb *services.TransactionBody) *TokenAirdropTransaction {
+func _TokenAirdropTransactionFromProtobuf(tx Transaction[*TokenAirdropTransaction], pb *services.TransactionBody) TokenAirdropTransaction {
 	tokenTransfers := make(map[TokenID]*_TokenTransfer)
 	nftTransfers := make(map[TokenID][]*_TokenNftTransfer)
 
@@ -67,10 +67,14 @@ func _TokenAirdropTransactionFromProtobuf(pb *services.TransactionBody) *TokenAi
 		}
 	}
 
-	return &TokenAirdropTransaction{
+	tokenAirdropTransaction := TokenAirdropTransaction{
 		tokenTransfers: tokenTransfers,
 		nftTransfers:   nftTransfers,
 	}
+
+	tx.childTransaction = &tokenAirdropTransaction
+	tokenAirdropTransaction.Transaction = &tx
+	return tokenAirdropTransaction
 }
 
 // SetTokenTransferApproval Sets the desired token unit balance adjustments
@@ -360,11 +364,11 @@ func (tx *TokenAirdropTransaction) AddApprovedNftTransfer(nftID NftID, sender Ac
 
 // ----------- Overridden functions ----------------
 
-func (tx *TokenAirdropTransaction) getName() string {
+func (tx TokenAirdropTransaction) getName() string {
 	return "TokenAirdropTransaction"
 }
 
-func (tx *TokenAirdropTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx TokenAirdropTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -404,7 +408,7 @@ func (tx *TokenAirdropTransaction) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (tx *TokenAirdropTransaction) build() *services.TransactionBody {
+func (tx TokenAirdropTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
 		Memo:                     tx.Transaction.memo,
@@ -416,7 +420,7 @@ func (tx *TokenAirdropTransaction) build() *services.TransactionBody {
 	}
 }
 
-func (tx *TokenAirdropTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx TokenAirdropTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Memo:           tx.Transaction.memo,
@@ -426,7 +430,7 @@ func (tx *TokenAirdropTransaction) buildScheduled() (*services.SchedulableTransa
 	}, nil
 }
 
-func (tx *TokenAirdropTransaction) buildProtoBody() *services.TokenAirdropTransactionBody {
+func (tx TokenAirdropTransaction) buildProtoBody() *services.TokenAirdropTransactionBody {
 	body := &services.TokenAirdropTransactionBody{
 		TokenTransfers: []*services.TokenTransferList{},
 	}
@@ -499,20 +503,16 @@ func (tx *TokenAirdropTransaction) buildProtoBody() *services.TokenAirdropTransa
 	return body
 }
 
-func (tx *TokenAirdropTransaction) getMethod(channel *_Channel) _Method {
+func (tx TokenAirdropTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetToken().AirdropTokens,
 	}
 }
 
-func (tx *TokenAirdropTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx TokenAirdropTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 
-func (tx *TokenAirdropTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction(tx.Transaction)
-}
-
-func (tx *TokenAirdropTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
-	tx.Transaction = castFromBaseToConcreteTransaction[*TokenAirdropTransaction](baseTx)
+func (tx TokenAirdropTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }

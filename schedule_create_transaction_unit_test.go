@@ -346,9 +346,9 @@ func TestUnitScheduleCreateTransactionCoverage(t *testing.T) {
 	transaction.GetRegenerateTransactionID()
 	byt, err := transaction.ToBytes()
 	require.NoError(t, err)
-	_, err = TransactionFromBytes(byt)
+	txFromBytes, err := TransactionFromBytes(byt)
 	require.NoError(t, err)
-	_, err = newKey.SignTransaction(transaction)
+	sig, err := newKey.SignTransaction(transaction)
 	require.NoError(t, err)
 
 	_, err = transaction.GetTransactionHash()
@@ -364,10 +364,10 @@ func TestUnitScheduleCreateTransactionCoverage(t *testing.T) {
 	_, err = transaction.GetSignatures()
 	require.NoError(t, err)
 	transaction.getName()
-	//switch b := txFromBytes.(type) {
-	//case ScheduleCreateTransaction:
-	//	b.AddSignature(newKey.PublicKey(), sig)
-	//}
+	switch b := txFromBytes.(type) {
+	case ScheduleCreateTransaction:
+		b.AddSignature(newKey.PublicKey(), sig)
+	}
 }
 
 func TestUnitScheduleCreateTransactionMock(t *testing.T) {
@@ -470,9 +470,9 @@ func TestUnitScheduleDeleteTransactionCoverage(t *testing.T) {
 	transaction.GetRegenerateTransactionID()
 	byt, err := transaction.ToBytes()
 	require.NoError(t, err)
-	_, err = TransactionFromBytes(byt)
+	txFromBytes, err := TransactionFromBytes(byt)
 	require.NoError(t, err)
-	_, err = newKey.SignTransaction(transaction)
+	sig, err := newKey.SignTransaction(transaction)
 	require.NoError(t, err)
 
 	_, err = transaction.GetTransactionHash()
@@ -484,10 +484,10 @@ func TestUnitScheduleDeleteTransactionCoverage(t *testing.T) {
 	_, err = transaction.GetSignatures()
 	require.NoError(t, err)
 	transaction.getName()
-	//switch b := txFromBytes.(type) {
-	//case ScheduleDeleteTransaction:
-	//	b.AddSignature(newKey.PublicKey(), sig)
-	//}
+	switch b := txFromBytes.(type) {
+	case ScheduleDeleteTransaction:
+		b.AddSignature(newKey.PublicKey(), sig)
+	}
 }
 
 func TestUnitScheduleDeleteTransactionMock(t *testing.T) {

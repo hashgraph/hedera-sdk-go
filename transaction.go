@@ -39,28 +39,19 @@ type TransactionInterface interface {
 	// common methods for all executables
 	Executable
 
-	// methods implemented by the base trasnasction
-	Execute(client *Client) (TransactionResponse, error)
-
 	// methods implemented by every concrete transaction
 	build() *services.TransactionBody
 	buildScheduled() (*services.SchedulableTransactionBody, error)
-	preFreezeWith(*Client)
+	preFreezeWith(*Client, TransactionInterface)
 	regenerateID(*Client) bool
-	// NOTE: Any changes to the baseTransaction retuned by getBaseTransaction()
-	// should be manually set back to the transaction object using setBaseTransaction()
-	// or no changes will be reflected in the transaction object
-	getBaseTransaction() *Transaction[TransactionInterface]
-	setBaseTransaction(Transaction[TransactionInterface])
 	constructScheduleProtobuf() (*services.SchedulableTransactionBody, error)
+	// NOTE: Any changes to the baseTransaction retuned by getBaseTransaction()
+	// will be reflected in the transaction object
+	getBaseTransaction() *Transaction[TransactionInterface]
 }
 
-// Transaction is base struct for all transactions that may be built and submitted to Hedera.
-// It's generic over the type of transaction it contains. Example: TransferTransaction, ContractCreateTransaction, etc.
-type Transaction[T TransactionInterface] struct {
-	executable
-	childTransaction T
-
+// BaseTransaction contains all the common fields for all transactions.
+type BaseTransaction struct {
 	transactionFee           uint64
 	defaultMaxTransactionFee uint64
 	memo                     string
@@ -72,6 +63,14 @@ type Transaction[T TransactionInterface] struct {
 
 	publicKeys         []PublicKey
 	transactionSigners []TransactionSigner
+}
+
+// Transaction is base struct for all transactions that may be built and submitted to Hedera.
+// It's generic over the type of transaction it contains. Example: TransferTransaction, ContractCreateTransaction, etc.
+type Transaction[T TransactionInterface] struct {
+	*executable
+	*BaseTransaction
+	childTransaction T
 
 	freezeError error
 
@@ -83,13 +82,15 @@ func _NewTransaction[T TransactionInterface](concreteTransaction T) *Transaction
 	minBackoff := 250 * time.Millisecond
 	maxBackoff := 8 * time.Second
 	return &Transaction[T]{
-		childTransaction:         concreteTransaction,
-		transactionValidDuration: &duration,
-		transactions:             _NewLockableSlice(),
-		signedTransactions:       _NewLockableSlice(),
-		freezeError:              nil,
-		regenerateTransactionID:  true,
-		executable: executable{
+		BaseTransaction: &BaseTransaction{
+			transactionValidDuration: &duration,
+			transactions:             _NewLockableSlice(),
+			signedTransactions:       _NewLockableSlice(),
+		},
+		childTransaction:        concreteTransaction,
+		freezeError:             nil,
+		regenerateTransactionID: true,
+		executable: &executable{
 			transactionIDs: _NewLockableSlice(),
 			nodeAccountIDs: _NewLockableSlice(),
 			minBackoff:     &minBackoff,
@@ -108,6 +109,8 @@ func TransactionFromBytes(data []byte) (TransactionInterface, error) { // nolint
 	list := sdk.TransactionList{}
 	minBackoff := 250 * time.Millisecond
 	maxBackoff := 8 * time.Second
+	publicKeys := make([]PublicKey, 0)
+	transactionSigners := make([]TransactionSigner, 0)
 	err := protobuf.Unmarshal(data, &list)
 	if err != nil {
 		return nil, errors.Wrap(err, "error deserializing from bytes to transaction List")
@@ -120,13 +123,15 @@ func TransactionFromBytes(data []byte) (TransactionInterface, error) { // nolint
 	}
 
 	baseTx := Transaction[TransactionInterface]{
-		transactions:            transactions,
-		signedTransactions:      _NewLockableSlice(),
-		publicKeys:              make([]PublicKey, 0),
-		transactionSigners:      make([]TransactionSigner, 0),
+		BaseTransaction: &BaseTransaction{
+			signedTransactions: _NewLockableSlice(),
+			publicKeys:         publicKeys,
+			transactionSigners: transactionSigners,
+			transactions:       transactions,
+		},
 		freezeError:             nil,
 		regenerateTransactionID: true,
-		executable: executable{
+		executable: &executable{
 			transactionIDs: _NewLockableSlice(),
 			nodeAccountIDs: _NewLockableSlice(),
 			minBackoff:     &minBackoff,
@@ -235,115 +240,116 @@ func TransactionFromBytes(data []byte) (TransactionInterface, error) { // nolint
 
 	var childTx TransactionInterface
 
+	// --- //
 	switch first.Data.(type) {
 	case *services.TransactionBody_ContractCall:
-		childTx = _ContractExecuteTransactionFromProtobuf(first)
+		childTx = _ContractExecuteTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*ContractExecuteTransaction](baseTx), first)
 	case *services.TransactionBody_ContractCreateInstance:
-		childTx = _ContractCreateTransactionFromProtobuf(first)
+		childTx = _ContractCreateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*ContractCreateTransaction](baseTx), first)
 	case *services.TransactionBody_ContractUpdateInstance:
-		childTx = _ContractUpdateTransactionFromProtobuf(first)
+		childTx = _ContractUpdateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*ContractUpdateTransaction](baseTx), first)
 	case *services.TransactionBody_CryptoApproveAllowance:
-		childTx = _AccountAllowanceApproveTransactionFromProtobuf(first)
+		childTx = _AccountAllowanceApproveTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*AccountAllowanceApproveTransaction](baseTx), first)
 	case *services.TransactionBody_CryptoDeleteAllowance:
-		childTx = _AccountAllowanceDeleteTransactionFromProtobuf(first)
+		childTx = _AccountAllowanceDeleteTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*AccountAllowanceDeleteTransaction](baseTx), first)
 	case *services.TransactionBody_ContractDeleteInstance:
-		childTx = _ContractDeleteTransactionFromProtobuf(first)
+		childTx = _ContractDeleteTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*ContractDeleteTransaction](baseTx), first)
 	case *services.TransactionBody_CryptoAddLiveHash:
-		childTx = _LiveHashAddTransactionFromProtobuf(first)
+		childTx = _LiveHashAddTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*LiveHashAddTransaction](baseTx), first)
 	case *services.TransactionBody_CryptoCreateAccount:
-		childTx = _AccountCreateTransactionFromProtobuf(first)
+		childTx = _AccountCreateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*AccountCreateTransaction](baseTx), first)
 	case *services.TransactionBody_CryptoDelete:
-		childTx = _AccountDeleteTransactionFromProtobuf(first)
+		childTx = _AccountDeleteTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*AccountDeleteTransaction](baseTx), first)
 	case *services.TransactionBody_CryptoDeleteLiveHash:
-		childTx = _LiveHashDeleteTransactionFromProtobuf(first)
+		childTx = _LiveHashDeleteTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*LiveHashDeleteTransaction](baseTx), first)
 	case *services.TransactionBody_CryptoTransfer:
-		childTx = _TransferTransactionFromProtobuf(first)
+		childTx = _TransferTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TransferTransaction](baseTx), first)
 	case *services.TransactionBody_CryptoUpdateAccount:
-		childTx = _AccountUpdateTransactionFromProtobuf(first)
+		childTx = _AccountUpdateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*AccountUpdateTransaction](baseTx), first)
 	case *services.TransactionBody_FileAppend:
-		childTx = _FileAppendTransactionFromProtobuf(first)
+		childTx = _FileAppendTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*FileAppendTransaction](baseTx), first)
 	case *services.TransactionBody_FileCreate:
-		childTx = _FileCreateTransactionFromProtobuf(first)
+		childTx = _FileCreateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*FileCreateTransaction](baseTx), first)
 	case *services.TransactionBody_FileDelete:
-		childTx = _FileDeleteTransactionFromProtobuf(first)
+		childTx = _FileDeleteTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*FileDeleteTransaction](baseTx), first)
 	case *services.TransactionBody_FileUpdate:
-		childTx = _FileUpdateTransactionFromProtobuf(first)
+		childTx = _FileUpdateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*FileUpdateTransaction](baseTx), first)
 	case *services.TransactionBody_SystemDelete:
-		childTx = _SystemDeleteTransactionFromProtobuf(first)
+		childTx = _SystemDeleteTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*SystemDeleteTransaction](baseTx), first)
 	case *services.TransactionBody_SystemUndelete:
-		childTx = _SystemUndeleteTransactionFromProtobuf(first)
+		childTx = _SystemUndeleteTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*SystemUndeleteTransaction](baseTx), first)
 	case *services.TransactionBody_Freeze:
-		childTx = _FreezeTransactionFromProtobuf(first)
+		childTx = _FreezeTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*FreezeTransaction](baseTx), first)
 	case *services.TransactionBody_ConsensusCreateTopic:
-		childTx = _TopicCreateTransactionFromProtobuf(first)
+		childTx = _TopicCreateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TopicCreateTransaction](baseTx), first)
 	case *services.TransactionBody_ConsensusUpdateTopic:
-		childTx = _TopicUpdateTransactionFromProtobuf(first)
+		childTx = _TopicUpdateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TopicUpdateTransaction](baseTx), first)
 	case *services.TransactionBody_ConsensusDeleteTopic:
-		childTx = _TopicDeleteTransactionFromProtobuf(first)
+		childTx = _TopicDeleteTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TopicDeleteTransaction](baseTx), first)
 	case *services.TransactionBody_ConsensusSubmitMessage:
-		childTx = _TopicMessageSubmitTransactionFromProtobuf(first)
+		childTx = _TopicMessageSubmitTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TopicMessageSubmitTransaction](baseTx), first)
 	case *services.TransactionBody_TokenCreation:
-		childTx = _TokenCreateTransactionFromProtobuf(first)
+		return _TokenCreateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenCreateTransaction](baseTx), first), nil
 	case *services.TransactionBody_TokenFreeze:
-		childTx = _TokenFreezeTransactionFromProtobuf(first)
+		childTx = _TokenFreezeTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenFreezeTransaction](baseTx), first)
 	case *services.TransactionBody_TokenUnfreeze:
-		childTx = _TokenUnfreezeTransactionFromProtobuf(first)
+		childTx = _TokenUnfreezeTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenUnfreezeTransaction](baseTx), first)
 	case *services.TransactionBody_TokenGrantKyc:
-		childTx = _TokenGrantKycTransactionFromProtobuf(first)
+		childTx = _TokenGrantKycTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenGrantKycTransaction](baseTx), first)
 	case *services.TransactionBody_TokenRevokeKyc:
-		childTx = _TokenRevokeKycTransactionFromProtobuf(first)
+		childTx = _TokenRevokeKycTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenRevokeKycTransaction](baseTx), first)
 	case *services.TransactionBody_TokenDeletion:
-		childTx = _TokenDeleteTransactionFromProtobuf(first)
+		childTx = _TokenDeleteTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenDeleteTransaction](baseTx), first)
 	case *services.TransactionBody_TokenUpdate:
-		childTx = _TokenUpdateTransactionFromProtobuf(first)
+		childTx = _TokenUpdateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenUpdateTransaction](baseTx), first)
 	case *services.TransactionBody_TokenMint:
-		childTx = _TokenMintTransactionFromProtobuf(first)
+		childTx = _TokenMintTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenMintTransaction](baseTx), first)
 	case *services.TransactionBody_TokenBurn:
-		childTx = _TokenBurnTransactionFromProtobuf(first)
+		childTx = _TokenBurnTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenBurnTransaction](baseTx), first)
 	case *services.TransactionBody_TokenWipe:
-		childTx = _TokenWipeTransactionFromProtobuf(first)
+		childTx = _TokenWipeTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenWipeTransaction](baseTx), first)
 	case *services.TransactionBody_TokenAssociate:
-		childTx = _TokenAssociateTransactionFromProtobuf(first)
+		childTx = _TokenAssociateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenAssociateTransaction](baseTx), first)
 	case *services.TransactionBody_TokenDissociate:
-		childTx = _TokenDissociateTransactionFromProtobuf(first)
+		childTx = _TokenDissociateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenDissociateTransaction](baseTx), first)
 	case *services.TransactionBody_ScheduleCreate:
-		childTx = _ScheduleCreateTransactionFromProtobuf(first)
+		childTx = _ScheduleCreateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*ScheduleCreateTransaction](baseTx), first)
 	case *services.TransactionBody_ScheduleDelete:
-		childTx = _ScheduleDeleteTransactionFromProtobuf(first)
+		childTx = _ScheduleDeleteTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*ScheduleDeleteTransaction](baseTx), first)
 	case *services.TransactionBody_ScheduleSign:
-		childTx = _ScheduleSignTransactionFromProtobuf(first)
+		childTx = _ScheduleSignTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*ScheduleSignTransaction](baseTx), first)
 	case *services.TransactionBody_TokenPause:
-		childTx = _TokenPauseTransactionFromProtobuf(first)
+		childTx = _TokenPauseTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenPauseTransaction](baseTx), first)
 	case *services.TransactionBody_TokenUnpause:
-		childTx = _TokenUnpauseTransactionFromProtobuf(first)
+		childTx = _TokenUnpauseTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenUnpauseTransaction](baseTx), first)
 	case *services.TransactionBody_EthereumTransaction:
-		childTx = _EthereumTransactionFromProtobuf(first)
+		childTx = _EthereumTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*EthereumTransaction](baseTx), first)
 	case *services.TransactionBody_UtilPrng:
-		childTx = _PrngTransactionFromProtobuf(first)
+		childTx = _PrngTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*PrngTransaction](baseTx), first)
 	case *services.TransactionBody_TokenReject:
-		childTx = _TokenRejectTransactionFromProtobuf(first)
+		childTx = _TokenRejectTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenRejectTransaction](baseTx), first)
 	case *services.TransactionBody_TokenFeeScheduleUpdate:
-		childTx = _TokenFeeScheduleUpdateTransactionFromProtobuf(first)
+		childTx = _TokenFeeScheduleUpdateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenFeeScheduleUpdateTransaction](baseTx), first)
 	case *services.TransactionBody_TokenUpdateNfts:
-		childTx = _TokenUpdateNftsTransactionFromProtobuf(first)
+		childTx = _TokenUpdateNftsTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenUpdateNfts](baseTx), first)
 	case *services.TransactionBody_NodeCreate:
-		childTx = _NodeCreateTransactionFromProtobuf(first)
+		childTx = _NodeCreateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*NodeCreateTransaction](baseTx), first)
 	case *services.TransactionBody_NodeUpdate:
-		childTx = _NodeUpdateTransactionFromProtobuf(first)
+		childTx = _NodeUpdateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*NodeUpdateTransaction](baseTx), first)
 	case *services.TransactionBody_NodeDelete:
-		childTx = _NodeDeleteTransactionFromProtobuf(first)
+		childTx = _NodeDeleteTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*NodeDeleteTransaction](baseTx), first)
 	case *services.TransactionBody_TokenAirdrop:
-		childTx = _TokenAirdropTransactionFromProtobuf(first)
+		childTx = _TokenAirdropTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenAirdropTransaction](baseTx), first)
 	case *services.TransactionBody_TokenCancelAirdrop:
-		childTx = _TokenCancelAirdropTransactionFromProtobuf(first)
+		childTx = _TokenCancelAirdropTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenCancelAirdropTransaction](baseTx), first)
 	case *services.TransactionBody_TokenClaimAirdrop:
-		childTx = _TokenClaimAirdropTransactionFromProtobuf(first)
+		childTx = _TokenClaimAirdropTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenClaimAirdropTransaction](baseTx), first)
 	default:
 		return nil, errFailedToDeserializeBytes
 	}
 
-	baseTx.childTransaction = childTx
-	childTx.setBaseTransaction(baseTx)
+	// --- //
+
 	return childTx, nil
 }
 
@@ -351,9 +357,12 @@ func TransactionFromBytes(data []byte) (TransactionInterface, error) { // nolint
 func transactionFromScheduledTransaction(scheduledBody *services.SchedulableTransactionBody) (TransactionInterface, error) { // nolint
 	pbBody := &services.TransactionBody{}
 
+	memo := scheduledBody.GetMemo()
 	baseTx := Transaction[TransactionInterface]{
-		transactionFee: scheduledBody.GetTransactionFee(),
-		memo:           scheduledBody.GetMemo(),
+		BaseTransaction: &BaseTransaction{
+			memo:           memo,
+			transactionFee: scheduledBody.GetTransactionFee(),
+		},
 	}
 
 	var tx TransactionInterface
@@ -363,178 +372,176 @@ func transactionFromScheduledTransaction(scheduledBody *services.SchedulableTran
 		pbBody.Data = &services.TransactionBody_ContractCall{
 			ContractCall: scheduledBody.GetContractCall(),
 		}
-		tx = _ContractExecuteTransactionFromProtobuf(pbBody)
+		tx = _ContractExecuteTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*ContractExecuteTransaction](baseTx), pbBody)
 	case *services.SchedulableTransactionBody_ContractCreateInstance:
 		pbBody.Data = &services.TransactionBody_ContractCreateInstance{
 			ContractCreateInstance: scheduledBody.GetContractCreateInstance(),
 		}
-		tx = _ContractCreateTransactionFromProtobuf(pbBody)
+		tx = _ContractCreateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*ContractCreateTransaction](baseTx), pbBody)
 	case *services.SchedulableTransactionBody_ContractUpdateInstance:
 		pbBody.Data = &services.TransactionBody_ContractUpdateInstance{
 			ContractUpdateInstance: scheduledBody.GetContractUpdateInstance(),
 		}
-		tx = _ContractUpdateTransactionFromProtobuf(pbBody)
+		tx = _ContractUpdateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*ContractUpdateTransaction](baseTx), pbBody)
 	case *services.SchedulableTransactionBody_CryptoApproveAllowance:
 		pbBody.Data = &services.TransactionBody_CryptoApproveAllowance{
 			CryptoApproveAllowance: scheduledBody.GetCryptoApproveAllowance(),
 		}
-		tx = _AccountAllowanceApproveTransactionFromProtobuf(pbBody)
+		tx = _AccountAllowanceApproveTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*AccountAllowanceApproveTransaction](baseTx), pbBody)
 	case *services.SchedulableTransactionBody_CryptoDeleteAllowance:
 		pbBody.Data = &services.TransactionBody_CryptoDeleteAllowance{
 			CryptoDeleteAllowance: scheduledBody.GetCryptoDeleteAllowance(),
 		}
-		tx = _AccountAllowanceDeleteTransactionFromProtobuf(pbBody)
+		tx = _AccountAllowanceDeleteTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*AccountAllowanceDeleteTransaction](baseTx), pbBody)
 	case *services.SchedulableTransactionBody_ContractDeleteInstance:
 		pbBody.Data = &services.TransactionBody_ContractDeleteInstance{
 			ContractDeleteInstance: scheduledBody.GetContractDeleteInstance(),
 		}
-		tx = _ContractDeleteTransactionFromProtobuf(pbBody)
+		tx = _ContractDeleteTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*ContractDeleteTransaction](baseTx), pbBody)
 	case *services.SchedulableTransactionBody_CryptoCreateAccount:
 		pbBody.Data = &services.TransactionBody_CryptoCreateAccount{
 			CryptoCreateAccount: scheduledBody.GetCryptoCreateAccount(),
 		}
-		tx = _AccountCreateTransactionFromProtobuf(pbBody)
+		tx = _AccountCreateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*AccountCreateTransaction](baseTx), pbBody)
 	case *services.SchedulableTransactionBody_CryptoDelete:
 		pbBody.Data = &services.TransactionBody_CryptoDelete{
 			CryptoDelete: scheduledBody.GetCryptoDelete(),
 		}
-		tx = _AccountDeleteTransactionFromProtobuf(pbBody)
+		tx = _AccountDeleteTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*AccountDeleteTransaction](baseTx), pbBody)
 	case *services.SchedulableTransactionBody_CryptoTransfer:
 		pbBody.Data = &services.TransactionBody_CryptoTransfer{
 			CryptoTransfer: scheduledBody.GetCryptoTransfer(),
 		}
-		tx = _TransferTransactionFromProtobuf(pbBody)
+		tx = _TransferTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TransferTransaction](baseTx), pbBody)
 	case *services.SchedulableTransactionBody_CryptoUpdateAccount:
 		pbBody.Data = &services.TransactionBody_CryptoUpdateAccount{
 			CryptoUpdateAccount: scheduledBody.GetCryptoUpdateAccount(),
 		}
-		tx = _AccountUpdateTransactionFromProtobuf(pbBody)
+		tx = _AccountUpdateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*AccountUpdateTransaction](baseTx), pbBody)
 	case *services.SchedulableTransactionBody_FileAppend:
 		pbBody.Data = &services.TransactionBody_FileAppend{
 			FileAppend: scheduledBody.GetFileAppend(),
 		}
-		tx = _FileAppendTransactionFromProtobuf(pbBody)
+		tx = _FileAppendTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*FileAppendTransaction](baseTx), pbBody)
 	case *services.SchedulableTransactionBody_FileCreate:
 		pbBody.Data = &services.TransactionBody_FileCreate{
 			FileCreate: scheduledBody.GetFileCreate(),
 		}
-		tx = _FileCreateTransactionFromProtobuf(pbBody)
+		tx = _FileCreateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*FileCreateTransaction](baseTx), pbBody)
 	case *services.SchedulableTransactionBody_FileDelete:
 		pbBody.Data = &services.TransactionBody_FileDelete{
 			FileDelete: scheduledBody.GetFileDelete(),
 		}
-		tx = _FileDeleteTransactionFromProtobuf(pbBody)
+		tx = _FileDeleteTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*FileDeleteTransaction](baseTx), pbBody)
 	case *services.SchedulableTransactionBody_FileUpdate:
 		pbBody.Data = &services.TransactionBody_FileUpdate{
 			FileUpdate: scheduledBody.GetFileUpdate(),
 		}
-		tx = _FileUpdateTransactionFromProtobuf(pbBody)
+		tx = _FileUpdateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*FileUpdateTransaction](baseTx), pbBody)
 	case *services.SchedulableTransactionBody_SystemDelete:
 		pbBody.Data = &services.TransactionBody_SystemDelete{
 			SystemDelete: scheduledBody.GetSystemDelete(),
 		}
-		tx = _SystemDeleteTransactionFromProtobuf(pbBody)
+		tx = _SystemDeleteTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*SystemDeleteTransaction](baseTx), pbBody)
 	case *services.SchedulableTransactionBody_SystemUndelete:
 		pbBody.Data = &services.TransactionBody_SystemUndelete{
 			SystemUndelete: scheduledBody.GetSystemUndelete(),
 		}
-		tx = _SystemUndeleteTransactionFromProtobuf(pbBody)
+		tx = _SystemUndeleteTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*SystemUndeleteTransaction](baseTx), pbBody)
 	case *services.SchedulableTransactionBody_Freeze:
 		pbBody.Data = &services.TransactionBody_Freeze{
 			Freeze: scheduledBody.GetFreeze(),
 		}
-		tx = _FreezeTransactionFromProtobuf(pbBody)
+		tx = _FreezeTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*FreezeTransaction](baseTx), pbBody)
 	case *services.SchedulableTransactionBody_ConsensusCreateTopic:
 		pbBody.Data = &services.TransactionBody_ConsensusCreateTopic{
 			ConsensusCreateTopic: scheduledBody.GetConsensusCreateTopic(),
 		}
-		tx = _TopicCreateTransactionFromProtobuf(pbBody)
+		tx = _TopicCreateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TopicCreateTransaction](baseTx), pbBody)
 	case *services.SchedulableTransactionBody_ConsensusUpdateTopic:
 		pbBody.Data = &services.TransactionBody_ConsensusUpdateTopic{
 			ConsensusUpdateTopic: scheduledBody.GetConsensusUpdateTopic(),
 		}
-		tx = _TopicUpdateTransactionFromProtobuf(pbBody)
+		tx = _TopicUpdateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TopicUpdateTransaction](baseTx), pbBody)
 	case *services.SchedulableTransactionBody_ConsensusDeleteTopic:
 		pbBody.Data = &services.TransactionBody_ConsensusDeleteTopic{
 			ConsensusDeleteTopic: scheduledBody.GetConsensusDeleteTopic(),
 		}
-		tx = _TopicDeleteTransactionFromProtobuf(pbBody)
+		tx = _TopicDeleteTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TopicDeleteTransaction](baseTx), pbBody)
 	case *services.SchedulableTransactionBody_ConsensusSubmitMessage:
 		pbBody.Data = &services.TransactionBody_ConsensusSubmitMessage{
 			ConsensusSubmitMessage: scheduledBody.GetConsensusSubmitMessage(),
 		}
-		tx = _TopicMessageSubmitTransactionFromProtobuf(pbBody)
+		tx = _TopicMessageSubmitTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TopicMessageSubmitTransaction](baseTx), pbBody)
 	case *services.SchedulableTransactionBody_TokenCreation:
 		pbBody.Data = &services.TransactionBody_TokenCreation{
 			TokenCreation: scheduledBody.GetTokenCreation(),
 		}
-		tx = _TokenCreateTransactionFromProtobuf(pbBody)
+		tx = _TokenCreateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenCreateTransaction](baseTx), pbBody)
 	case *services.SchedulableTransactionBody_TokenFreeze:
 		pbBody.Data = &services.TransactionBody_TokenFreeze{
 			TokenFreeze: scheduledBody.GetTokenFreeze(),
 		}
-		tx = _TokenFreezeTransactionFromProtobuf(pbBody)
+		tx = _TokenFreezeTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenFreezeTransaction](baseTx), pbBody)
 	case *services.SchedulableTransactionBody_TokenUnfreeze:
 		pbBody.Data = &services.TransactionBody_TokenUnfreeze{
 			TokenUnfreeze: scheduledBody.GetTokenUnfreeze(),
 		}
-		tx = _TokenUnfreezeTransactionFromProtobuf(pbBody)
+		tx = _TokenUnfreezeTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenUnfreezeTransaction](baseTx), pbBody)
 	case *services.SchedulableTransactionBody_TokenGrantKyc:
 		pbBody.Data = &services.TransactionBody_TokenGrantKyc{
 			TokenGrantKyc: scheduledBody.GetTokenGrantKyc(),
 		}
-		tx = _TokenGrantKycTransactionFromProtobuf(pbBody)
+		tx = _TokenGrantKycTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenGrantKycTransaction](baseTx), pbBody)
 	case *services.SchedulableTransactionBody_TokenRevokeKyc:
 		pbBody.Data = &services.TransactionBody_TokenRevokeKyc{
 			TokenRevokeKyc: scheduledBody.GetTokenRevokeKyc(),
 		}
-		tx = _TokenRevokeKycTransactionFromProtobuf(pbBody)
+		tx = _TokenRevokeKycTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenRevokeKycTransaction](baseTx), pbBody)
 	case *services.SchedulableTransactionBody_TokenDeletion:
 		pbBody.Data = &services.TransactionBody_TokenDeletion{
 			TokenDeletion: scheduledBody.GetTokenDeletion(),
 		}
-		tx = _TokenDeleteTransactionFromProtobuf(pbBody)
+		tx = _TokenDeleteTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenDeleteTransaction](baseTx), pbBody)
 	case *services.SchedulableTransactionBody_TokenUpdate:
 		pbBody.Data = &services.TransactionBody_TokenUpdate{
 			TokenUpdate: scheduledBody.GetTokenUpdate(),
 		}
-		tx = _TokenUpdateTransactionFromProtobuf(pbBody)
+		tx = _TokenUpdateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenUpdateTransaction](baseTx), pbBody)
 	case *services.SchedulableTransactionBody_TokenMint:
 		pbBody.Data = &services.TransactionBody_TokenMint{
 			TokenMint: scheduledBody.GetTokenMint(),
 		}
-		tx = _TokenMintTransactionFromProtobuf(pbBody)
+		tx = _TokenMintTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenMintTransaction](baseTx), pbBody)
 	case *services.SchedulableTransactionBody_TokenBurn:
 		pbBody.Data = &services.TransactionBody_TokenBurn{
 			TokenBurn: scheduledBody.GetTokenBurn(),
 		}
-		tx = _TokenBurnTransactionFromProtobuf(pbBody)
+		tx = _TokenBurnTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenBurnTransaction](baseTx), pbBody)
 	case *services.SchedulableTransactionBody_TokenWipe:
 		pbBody.Data = &services.TransactionBody_TokenWipe{
 			TokenWipe: scheduledBody.GetTokenWipe(),
 		}
-		tx = _TokenWipeTransactionFromProtobuf(pbBody)
+		tx = _TokenWipeTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenWipeTransaction](baseTx), pbBody)
 	case *services.SchedulableTransactionBody_TokenAssociate:
 		pbBody.Data = &services.TransactionBody_TokenAssociate{
 			TokenAssociate: scheduledBody.GetTokenAssociate(),
 		}
-		tx = _TokenAssociateTransactionFromProtobuf(pbBody)
+		tx = _TokenAssociateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenAssociateTransaction](baseTx), pbBody)
 	case *services.SchedulableTransactionBody_TokenDissociate:
 		pbBody.Data = &services.TransactionBody_TokenDissociate{
 			TokenDissociate: scheduledBody.GetTokenDissociate(),
 		}
-		tx = _TokenDissociateTransactionFromProtobuf(pbBody)
+		tx = _TokenDissociateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenDissociateTransaction](baseTx), pbBody)
 	case *services.SchedulableTransactionBody_ScheduleDelete:
 		pbBody.Data = &services.TransactionBody_ScheduleDelete{
 			ScheduleDelete: scheduledBody.GetScheduleDelete(),
 		}
-		tx = _ScheduleDeleteTransactionFromProtobuf(pbBody)
+		tx = _ScheduleDeleteTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*ScheduleDeleteTransaction](baseTx), pbBody)
 	default:
 		return nil, errors.New("unrecognized transaction type")
 	}
 
-	baseTx.childTransaction = tx
-	tx.setBaseTransaction(baseTx)
 	return tx, nil
 }
 
@@ -850,7 +857,7 @@ func (tx *Transaction[T]) _SignTransaction(index int) {
 	}
 
 	for i := 0; i < len(tx.publicKeys); i++ {
-		publicKey := tx.publicKeys[i]
+		publicKey := (tx.publicKeys)[i]
 		signer := tx.transactionSigners[i]
 
 		if signer == nil {
@@ -980,6 +987,7 @@ func (tx *Transaction[T]) GetTransactionMemo() string {
 // SetTransactionMemo sets the memo for this transaction.
 func (tx *Transaction[T]) SetTransactionMemo(memo string) T {
 	tx.memo = memo
+	// tx.executable.transactionIDs = _NewLockableSlice()
 	return tx.childTransaction
 }
 
@@ -1031,15 +1039,15 @@ func (tx *Transaction[T]) SignWithOperator(client *Client) (T, error) { // nolin
 	// If the transaction is not signed by the _Operator, we need
 	// to sign the transaction with the _Operator
 	if client == nil {
-		return tx.childTransaction, errNoClientProvided
+		return *new(T), errNoClientProvided
 	} else if client.operator == nil {
-		return tx.childTransaction, errClientOperatorSigning
+		return *new(T), errClientOperatorSigning
 	}
 
 	if !tx.IsFrozen() {
 		_, err := tx.FreezeWith(client)
 		if err != nil {
-			return tx.childTransaction, err
+			return *new(T), err
 		}
 	}
 	return tx.SignWith(client.operator.publicKey, client.operator.signer), nil
@@ -1086,7 +1094,7 @@ func (tx *Transaction[T]) AddSignature(publicKey PublicKey, signature []byte) T 
 	return tx.childTransaction
 }
 
-func (tx *Transaction[T]) preFreezeWith(*Client) {
+func (tx *Transaction[T]) preFreezeWith(*Client, TransactionInterface) {
 	// No-op for every transaction except TokenCreateTransaction
 }
 
@@ -1237,7 +1245,7 @@ func (tx *Transaction[T]) FreezeWith(client *Client) (T, error) {
 		return tx.childTransaction, nil
 	}
 
-	tx.childTransaction.preFreezeWith(client)
+	tx.childTransaction.preFreezeWith(client, tx.childTransaction)
 
 	tx._InitFee(client)
 	if err := tx._InitTransactionID(client); err != nil {
@@ -1364,5 +1372,138 @@ func (tx *Transaction[T]) SetLogLevel(level LogLevel) T {
 }
 
 func TransactionExecute(tx TransactionInterface, client *Client) (TransactionResponse, error) {
-	return tx.Execute(client)
+	baseTx := tx.getBaseTransaction()
+	baseTx.SignWith(
+		client.GetOperatorPublicKey(),
+		client.operator.signer,
+	)
+
+	// TODO
+	return tx.getBaseTransaction().Execute(client)
+}
+
+func TransactionSign(tx TransactionInterface, key PrivateKey) (TransactionInterface, error) {
+	baseTx := tx.getBaseTransaction()
+	baseTx.Sign(key)
+
+	return tx, nil
+}
+
+func TransactionAddSignature(tx TransactionInterface, publicKey PublicKey, signature []byte) (TransactionInterface, error) {
+	baseTx := tx.getBaseTransaction()
+	baseTx.AddSignature(publicKey, signature)
+
+	return tx, nil
+}
+
+func TransactionToBytes(tx TransactionInterface) ([]byte, error) {
+	return tx.getBaseTransaction().ToBytes()
+}
+
+func TransactionString(tx TransactionInterface) (string, error) {
+	return tx.getBaseTransaction().String(), nil
+}
+
+func TransactionGetMaxBackoff(tx TransactionInterface) (time.Duration, error) {
+	return tx.getBaseTransaction().GetMaxBackoff(), nil
+}
+
+func TransactionSetMaxBackoff(tx TransactionInterface, maxBackoff time.Duration) (TransactionInterface, error) {
+	baseTx := tx.getBaseTransaction()
+	baseTx.SetMaxBackoff(maxBackoff)
+
+	return tx, nil
+}
+
+func TransactionGetMinBackoff(tx TransactionInterface) (time.Duration, error) {
+	return tx.getBaseTransaction().GetMinBackoff(), nil
+}
+
+func TransactionSetMinBackoff(tx TransactionInterface, minBackoff time.Duration) (TransactionInterface, error) {
+	baseTx := tx.getBaseTransaction()
+	baseTx.SetMinBackoff(minBackoff)
+
+	return tx, nil
+}
+
+func TransactionGetTransactionHashPerNode(tx TransactionInterface) (map[AccountID][]byte, error) {
+	return tx.getBaseTransaction().GetTransactionHashPerNode()
+}
+
+func TransactionGetTransactionHash(tx TransactionInterface) ([]byte, error) {
+	return tx.getBaseTransaction().GetTransactionHash()
+}
+
+func TransactionGetNodeAccountIDs(tx TransactionInterface) ([]AccountID, error) {
+	return tx.getBaseTransaction().GetNodeAccountIDs(), nil
+}
+
+func TransactionSetNodeAccountIDs(tx TransactionInterface, nodeAccountIDs []AccountID) (TransactionInterface, error) {
+	baseTx := tx.getBaseTransaction()
+	baseTx.SetNodeAccountIDs(nodeAccountIDs)
+
+	return tx, nil
+}
+
+func TransactionGetTransactionValidDuration(tx TransactionInterface) (time.Duration, error) {
+	return tx.getBaseTransaction().GetTransactionValidDuration(), nil
+}
+
+func TransactionSetTransactionValidDuration(tx TransactionInterface, transactionValidDuration time.Duration) (TransactionInterface, error) {
+	baseTx := tx.getBaseTransaction()
+	baseTx.SetTransactionValidDuration(transactionValidDuration)
+
+	return tx, nil
+}
+
+func TransactionGetMaxTransactionFee(tx TransactionInterface) (Hbar, error) {
+	return tx.getBaseTransaction().GetMaxTransactionFee(), nil
+}
+
+func TransactionSetMaxTransactionFee(tx TransactionInterface, maxTransactionFee Hbar) (TransactionInterface, error) {
+	baseTx := tx.getBaseTransaction()
+	baseTx.SetMaxTransactionFee(maxTransactionFee)
+
+	return tx, nil
+}
+
+func TransactionGetTransactionMemo(tx TransactionInterface) (string, error) {
+	return tx.getBaseTransaction().GetTransactionMemo(), nil
+}
+
+func TransactionSetTransactionMemo(tx TransactionInterface, transactionMemo string) (TransactionInterface, error) {
+	baseTx := tx.getBaseTransaction()
+	baseTx.SetTransactionMemo(transactionMemo)
+	return tx, nil
+}
+
+func TransactionGetTransactionID(tx TransactionInterface) (TransactionID, error) {
+	return tx.getBaseTransaction().GetTransactionID(), nil
+}
+
+func TransactionSetTransactionID(tx TransactionInterface, transactionID TransactionID) (TransactionInterface, error) {
+	baseTx := tx.getBaseTransaction()
+	baseTx.SetTransactionID(transactionID)
+	return tx, nil
+}
+
+func TransactionGetSignatures(tx TransactionInterface) (map[AccountID]map[*PublicKey][]byte, error) {
+	return tx.getBaseTransaction().GetSignatures()
+}
+
+func TransactionSignWithOperator(tx TransactionInterface, client *Client) (TransactionInterface, error) {
+	baseTx := tx.getBaseTransaction()
+	_, err := baseTx.SignWithOperator(client)
+	if err != nil {
+		return tx, err
+	}
+
+	return tx, nil
+}
+
+func TransactionSignWth(tx TransactionInterface, publicKKey PublicKey, signer TransactionSigner) (TransactionInterface, error) {
+	baseTx := tx.getBaseTransaction()
+	baseTx.SignWith(publicKKey, signer)
+
+	return tx, nil
 }

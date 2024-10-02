@@ -232,9 +232,9 @@ func TestUnitNodeDeleteTransactionCoverage(t *testing.T) {
 	trx.GetRegenerateTransactionID()
 	byt, err := trx.ToBytes()
 	require.NoError(t, err)
-	_, err = TransactionFromBytes(byt)
+	txFromBytes, err := TransactionFromBytes(byt)
 	require.NoError(t, err)
-	_, err = key.SignTransaction(trx)
+	sig, err := key.SignTransaction(trx)
 	require.NoError(t, err)
 
 	_, err = trx.GetTransactionHash()
@@ -246,4 +246,8 @@ func TestUnitNodeDeleteTransactionCoverage(t *testing.T) {
 	_, err = trx.GetSignatures()
 	require.NoError(t, err)
 	trx.getName()
+	switch b := txFromBytes.(type) {
+	case NodeDeleteTransaction:
+		b.AddSignature(key.PublicKey(), sig)
+	}
 }

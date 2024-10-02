@@ -49,13 +49,17 @@ func NewContractExecuteTransaction() *ContractExecuteTransaction {
 	return tx
 }
 
-func _ContractExecuteTransactionFromProtobuf(pb *services.TransactionBody) *ContractExecuteTransaction {
-	return &ContractExecuteTransaction{
+func _ContractExecuteTransactionFromProtobuf(tx Transaction[*ContractExecuteTransaction], pb *services.TransactionBody) ContractExecuteTransaction {
+	contractExecuteTransaction := ContractExecuteTransaction{
 		contractID: _ContractIDFromProtobuf(pb.GetContractCall().GetContractID()),
 		gas:        pb.GetContractCall().GetGas(),
 		amount:     pb.GetContractCall().GetAmount(),
 		parameters: pb.GetContractCall().GetFunctionParameters(),
 	}
+
+	tx.childTransaction = &contractExecuteTransaction
+	contractExecuteTransaction.Transaction = &tx
+	return contractExecuteTransaction
 }
 
 // SetContractID sets the contract instance to call.
@@ -123,10 +127,10 @@ func (tx *ContractExecuteTransaction) SetFunction(name string, params *ContractF
 
 // ----------- Overridden functions ----------------
 
-func (tx *ContractExecuteTransaction) getName() string {
+func (tx ContractExecuteTransaction) getName() string {
 	return "ContractExecuteTransaction"
 }
-func (tx *ContractExecuteTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx ContractExecuteTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -140,7 +144,7 @@ func (tx *ContractExecuteTransaction) validateNetworkOnIDs(client *Client) error
 	return nil
 }
 
-func (tx *ContractExecuteTransaction) build() *services.TransactionBody {
+func (tx ContractExecuteTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
 		Memo:                     tx.Transaction.memo,
@@ -152,7 +156,7 @@ func (tx *ContractExecuteTransaction) build() *services.TransactionBody {
 	}
 }
 
-func (tx *ContractExecuteTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx ContractExecuteTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Memo:           tx.Transaction.memo,
@@ -162,7 +166,7 @@ func (tx *ContractExecuteTransaction) buildScheduled() (*services.SchedulableTra
 	}, nil
 }
 
-func (tx *ContractExecuteTransaction) buildProtoBody() *services.ContractCallTransactionBody {
+func (tx ContractExecuteTransaction) buildProtoBody() *services.ContractCallTransactionBody {
 	body := &services.ContractCallTransactionBody{
 		Gas:                tx.gas,
 		Amount:             tx.amount,
@@ -176,19 +180,16 @@ func (tx *ContractExecuteTransaction) buildProtoBody() *services.ContractCallTra
 	return body
 }
 
-func (tx *ContractExecuteTransaction) getMethod(channel *_Channel) _Method {
+func (tx ContractExecuteTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetContract().ContractCallMethod,
 	}
 }
-func (tx *ContractExecuteTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+
+func (tx ContractExecuteTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 
-func (tx *ContractExecuteTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction(tx.Transaction)
-}
-
-func (tx *ContractExecuteTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
-	tx.Transaction = castFromBaseToConcreteTransaction[*ContractExecuteTransaction](baseTx)
+func (tx ContractExecuteTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }

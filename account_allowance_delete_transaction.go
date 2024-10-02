@@ -49,7 +49,7 @@ func NewAccountAllowanceDeleteTransaction() *AccountAllowanceDeleteTransaction {
 	return tx
 }
 
-func _AccountAllowanceDeleteTransactionFromProtobuf(pb *services.TransactionBody) *AccountAllowanceDeleteTransaction {
+func _AccountAllowanceDeleteTransactionFromProtobuf(tx Transaction[*AccountAllowanceDeleteTransaction], pb *services.TransactionBody) AccountAllowanceDeleteTransaction {
 	nftWipe := make([]*TokenNftAllowance, 0)
 
 	for _, ap := range pb.GetCryptoDeleteAllowance().GetNftAllowances() {
@@ -57,9 +57,12 @@ func _AccountAllowanceDeleteTransactionFromProtobuf(pb *services.TransactionBody
 		nftWipe = append(nftWipe, &temp)
 	}
 
-	return &AccountAllowanceDeleteTransaction{
+	accountAllowanceDeleteTransaction := AccountAllowanceDeleteTransaction{
 		nftWipe: nftWipe,
 	}
+	tx.childTransaction = &accountAllowanceDeleteTransaction
+	accountAllowanceDeleteTransaction.Transaction = &tx
+	return accountAllowanceDeleteTransaction
 }
 
 // Deprecated
@@ -133,11 +136,11 @@ func (tx *AccountAllowanceDeleteTransaction) GetAllTokenNftDeleteAllowances() []
 
 // ----------- Overridden functions ----------------
 
-func (tx *AccountAllowanceDeleteTransaction) getName() string {
+func (tx AccountAllowanceDeleteTransaction) getName() string {
 	return "AccountAllowanceDeleteTransaction"
 }
 
-func (tx *AccountAllowanceDeleteTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx AccountAllowanceDeleteTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -159,7 +162,7 @@ func (tx *AccountAllowanceDeleteTransaction) validateNetworkOnIDs(client *Client
 	return nil
 }
 
-func (tx *AccountAllowanceDeleteTransaction) build() *services.TransactionBody {
+func (tx AccountAllowanceDeleteTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionID:            tx.transactionID._ToProtobuf(),
 		TransactionFee:           tx.transactionFee,
@@ -171,7 +174,7 @@ func (tx *AccountAllowanceDeleteTransaction) build() *services.TransactionBody {
 	}
 }
 
-func (tx *AccountAllowanceDeleteTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx AccountAllowanceDeleteTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Memo:           tx.Transaction.memo,
@@ -181,7 +184,7 @@ func (tx *AccountAllowanceDeleteTransaction) buildScheduled() (*services.Schedul
 	}, nil
 }
 
-func (tx *AccountAllowanceDeleteTransaction) buildProtoBody() *services.CryptoDeleteAllowanceTransactionBody {
+func (tx AccountAllowanceDeleteTransaction) buildProtoBody() *services.CryptoDeleteAllowanceTransactionBody {
 	body := &services.CryptoDeleteAllowanceTransactionBody{}
 	nftWipe := make([]*services.NftRemoveAllowance, 0)
 
@@ -193,20 +196,16 @@ func (tx *AccountAllowanceDeleteTransaction) buildProtoBody() *services.CryptoDe
 	return body
 }
 
-func (tx *AccountAllowanceDeleteTransaction) getMethod(channel *_Channel) _Method {
+func (tx AccountAllowanceDeleteTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetCrypto().DeleteAllowances,
 	}
 }
 
-func (this *AccountAllowanceDeleteTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (this AccountAllowanceDeleteTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return this.buildScheduled()
 }
 
-func (tx *AccountAllowanceDeleteTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction(tx.Transaction)
-}
-
-func (tx *AccountAllowanceDeleteTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
-	tx.Transaction = castFromBaseToConcreteTransaction[*AccountAllowanceDeleteTransaction](baseTx)
+func (tx AccountAllowanceDeleteTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }

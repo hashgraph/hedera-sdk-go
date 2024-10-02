@@ -868,7 +868,6 @@ func (sk PrivateKey) SignTransaction(tx TransactionInterface) ([]byte, error) {
 		if err != nil {
 			return []byte{}, err
 		}
-		tx.setBaseTransaction(*baseTx)
 
 		return b, nil
 	}
@@ -878,7 +877,6 @@ func (sk PrivateKey) SignTransaction(tx TransactionInterface) ([]byte, error) {
 		if err != nil {
 			return []byte{}, err
 		}
-		tx.setBaseTransaction(*baseTx)
 
 		return b, nil
 	}

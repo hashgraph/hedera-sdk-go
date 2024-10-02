@@ -234,7 +234,7 @@ func TestUnitTokenBurnTransactionCoverage(t *testing.T) {
 	require.NoError(t, err)
 	transaction.getName()
 	switch b := txFromBytes.(type) {
-	case *TokenBurnTransaction:
+	case TokenBurnTransaction:
 		b.AddSignature(newKey.PublicKey(), sig)
 	}
 }

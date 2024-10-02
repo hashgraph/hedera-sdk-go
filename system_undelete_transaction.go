@@ -42,11 +42,15 @@ func NewSystemUndeleteTransaction() *SystemUndeleteTransaction {
 	return tx
 }
 
-func _SystemUndeleteTransactionFromProtobuf(pb *services.TransactionBody) *SystemUndeleteTransaction {
-	return &SystemUndeleteTransaction{
+func _SystemUndeleteTransactionFromProtobuf(tx Transaction[*SystemUndeleteTransaction], pb *services.TransactionBody) SystemUndeleteTransaction {
+	systemUndeleteTransaction := SystemUndeleteTransaction{
 		contractID: _ContractIDFromProtobuf(pb.GetSystemUndelete().GetContractID()),
 		fileID:     _FileIDFromProtobuf(pb.GetSystemUndelete().GetFileID()),
 	}
+
+	tx.childTransaction = &systemUndeleteTransaction
+	systemUndeleteTransaction.Transaction = &tx
+	return systemUndeleteTransaction
 }
 
 // SetContractID sets the ContractID of the contract whose deletion is being undone.
@@ -83,11 +87,11 @@ func (tx *SystemUndeleteTransaction) GetFileID() FileID {
 
 // ----------- Overridden functions ----------------
 
-func (tx *SystemUndeleteTransaction) getName() string {
+func (tx SystemUndeleteTransaction) getName() string {
 	return "SystemUndeleteTransaction"
 }
 
-func (tx *SystemUndeleteTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx SystemUndeleteTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -107,7 +111,7 @@ func (tx *SystemUndeleteTransaction) validateNetworkOnIDs(client *Client) error 
 	return nil
 }
 
-func (tx *SystemUndeleteTransaction) build() *services.TransactionBody {
+func (tx SystemUndeleteTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
 		Memo:                     tx.Transaction.memo,
@@ -119,7 +123,7 @@ func (tx *SystemUndeleteTransaction) build() *services.TransactionBody {
 	}
 }
 
-func (tx *SystemUndeleteTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx SystemUndeleteTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Memo:           tx.Transaction.memo,
@@ -129,7 +133,7 @@ func (tx *SystemUndeleteTransaction) buildScheduled() (*services.SchedulableTran
 	}, nil
 }
 
-func (tx *SystemUndeleteTransaction) buildProtoBody() *services.SystemUndeleteTransactionBody {
+func (tx SystemUndeleteTransaction) buildProtoBody() *services.SystemUndeleteTransactionBody {
 	body := &services.SystemUndeleteTransactionBody{}
 	if tx.contractID != nil {
 		body.Id = &services.SystemUndeleteTransactionBody_ContractID{
@@ -146,7 +150,7 @@ func (tx *SystemUndeleteTransaction) buildProtoBody() *services.SystemUndeleteTr
 	return body
 }
 
-func (tx *SystemUndeleteTransaction) getMethod(channel *_Channel) _Method {
+func (tx SystemUndeleteTransaction) getMethod(channel *_Channel) _Method {
 	if channel._GetContract() == nil {
 		return _Method{
 			transaction: channel._GetFile().SystemUndelete,
@@ -158,14 +162,10 @@ func (tx *SystemUndeleteTransaction) getMethod(channel *_Channel) _Method {
 	}
 }
 
-func (tx *SystemUndeleteTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx SystemUndeleteTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 
-func (tx *SystemUndeleteTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction(tx.Transaction)
-}
-
-func (tx *SystemUndeleteTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
-	tx.Transaction = castFromBaseToConcreteTransaction[*SystemUndeleteTransaction](baseTx)
+func (tx SystemUndeleteTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }

@@ -54,12 +54,16 @@ func NewTokenMintTransaction() *TokenMintTransaction {
 	return tx
 }
 
-func _TokenMintTransactionFromProtobuf(pb *services.TransactionBody) *TokenMintTransaction {
-	return &TokenMintTransaction{
+func _TokenMintTransactionFromProtobuf(tx Transaction[*TokenMintTransaction], pb *services.TransactionBody) TokenMintTransaction {
+	tokenMintTransaction := TokenMintTransaction{
 		tokenID: _TokenIDFromProtobuf(pb.GetTokenMint().GetToken()),
 		amount:  pb.GetTokenMint().GetAmount(),
 		meta:    pb.GetTokenMint().GetMetadata(),
 	}
+
+	tx.childTransaction = &tokenMintTransaction
+	tokenMintTransaction.Transaction = &tx
+	return tokenMintTransaction
 }
 
 // SetTokenID Sets the token for which to mint tokens. If token does not exist, transaction results in
@@ -121,11 +125,11 @@ func (tx *TokenMintTransaction) GetMetadatas() [][]byte {
 
 // ----------- Overridden functions ----------------
 
-func (tx *TokenMintTransaction) getName() string {
+func (tx TokenMintTransaction) getName() string {
 	return "TokenMintTransaction"
 }
 
-func (tx *TokenMintTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx TokenMintTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -139,7 +143,7 @@ func (tx *TokenMintTransaction) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (tx *TokenMintTransaction) build() *services.TransactionBody {
+func (tx TokenMintTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
 		Memo:                     tx.Transaction.memo,
@@ -151,7 +155,7 @@ func (tx *TokenMintTransaction) build() *services.TransactionBody {
 	}
 }
 
-func (tx *TokenMintTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx TokenMintTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Memo:           tx.Transaction.memo,
@@ -161,7 +165,7 @@ func (tx *TokenMintTransaction) buildScheduled() (*services.SchedulableTransacti
 	}, nil
 }
 
-func (tx *TokenMintTransaction) buildProtoBody() *services.TokenMintTransactionBody {
+func (tx TokenMintTransaction) buildProtoBody() *services.TokenMintTransactionBody {
 	body := &services.TokenMintTransactionBody{
 		Amount: tx.amount,
 	}
@@ -177,20 +181,16 @@ func (tx *TokenMintTransaction) buildProtoBody() *services.TokenMintTransactionB
 	return body
 }
 
-func (tx *TokenMintTransaction) getMethod(channel *_Channel) _Method {
+func (tx TokenMintTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetToken().MintToken,
 	}
 }
 
-func (tx *TokenMintTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx TokenMintTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 
-func (tx *TokenMintTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction(tx.Transaction)
-}
-
-func (tx *TokenMintTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
-	tx.Transaction = castFromBaseToConcreteTransaction[*TokenMintTransaction](baseTx)
+func (tx TokenMintTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }

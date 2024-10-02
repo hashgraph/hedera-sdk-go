@@ -261,7 +261,7 @@ func TestUnitFileDeleteTransactionCoverage(t *testing.T) {
 	require.NoError(t, err)
 	transaction.getName()
 	switch b := txFromBytes.(type) {
-	case *FileDeleteTransaction:
+	case FileDeleteTransaction:
 		b.AddSignature(newKey.PublicKey(), sig)
 	}
 }

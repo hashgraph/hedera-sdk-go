@@ -312,7 +312,7 @@ func TestUnitTokenRejectTransactionCoverage(t *testing.T) {
 	require.NoError(t, err)
 	transaction.getName()
 	switch b := txFromBytes.(type) {
-	case *TokenRejectTransaction:
+	case TokenRejectTransaction:
 		b.AddSignature(newKey.PublicKey(), sig)
 	}
 }

@@ -55,10 +55,14 @@ func NewNodeDeleteTransaction() *NodeDeleteTransaction {
 	return tx
 }
 
-func _NodeDeleteTransactionFromProtobuf(pb *services.TransactionBody) *NodeDeleteTransaction {
-	return &NodeDeleteTransaction{
+func _NodeDeleteTransactionFromProtobuf(tx Transaction[*NodeDeleteTransaction], pb *services.TransactionBody) NodeDeleteTransaction {
+	nodeDeleteTransaction := NodeDeleteTransaction{
 		nodeID: pb.GetNodeDelete().NodeId,
 	}
+
+	tx.childTransaction = &nodeDeleteTransaction
+	nodeDeleteTransaction.Transaction = &tx
+	return nodeDeleteTransaction
 }
 
 // GetNodeID he consensus node identifier in the network state.
@@ -75,15 +79,15 @@ func (tx *NodeDeleteTransaction) SetNodeID(nodeID uint64) *NodeDeleteTransaction
 
 // ----------- Overridden functions ----------------
 
-func (tx *NodeDeleteTransaction) getName() string {
+func (tx NodeDeleteTransaction) getName() string {
 	return "NodeDeleteTransaction"
 }
 
-func (tx *NodeDeleteTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx NodeDeleteTransaction) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (tx *NodeDeleteTransaction) build() *services.TransactionBody {
+func (tx NodeDeleteTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
 		Memo:                     tx.Transaction.memo,
@@ -95,7 +99,7 @@ func (tx *NodeDeleteTransaction) build() *services.TransactionBody {
 	}
 }
 
-func (tx *NodeDeleteTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx NodeDeleteTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Memo:           tx.Transaction.memo,
@@ -105,26 +109,22 @@ func (tx *NodeDeleteTransaction) buildScheduled() (*services.SchedulableTransact
 	}, nil
 }
 
-func (tx *NodeDeleteTransaction) buildProtoBody() *services.NodeDeleteTransactionBody {
+func (tx NodeDeleteTransaction) buildProtoBody() *services.NodeDeleteTransactionBody {
 	return &services.NodeDeleteTransactionBody{
 		NodeId: tx.nodeID,
 	}
 }
 
-func (tx *NodeDeleteTransaction) getMethod(channel *_Channel) _Method {
+func (tx NodeDeleteTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetAddressBook().DeleteNode,
 	}
 }
 
-func (tx *NodeDeleteTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx NodeDeleteTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 
-func (tx *NodeDeleteTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction(tx.Transaction)
-}
-
-func (tx *NodeDeleteTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
-	tx.Transaction = castFromBaseToConcreteTransaction[*NodeDeleteTransaction](baseTx)
+func (tx NodeDeleteTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }

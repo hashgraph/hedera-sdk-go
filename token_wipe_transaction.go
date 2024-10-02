@@ -75,13 +75,17 @@ func NewTokenWipeTransaction() *TokenWipeTransaction {
 	return tx
 }
 
-func _TokenWipeTransactionFromProtobuf(pb *services.TransactionBody) *TokenWipeTransaction {
-	return &TokenWipeTransaction{
+func _TokenWipeTransactionFromProtobuf(tx Transaction[*TokenWipeTransaction], pb *services.TransactionBody) TokenWipeTransaction {
+	tokenWipeTransaction := TokenWipeTransaction{
 		tokenID:   _TokenIDFromProtobuf(pb.GetTokenWipe().GetToken()),
 		accountID: _AccountIDFromProtobuf(pb.GetTokenWipe().GetAccount()),
 		amount:    pb.GetTokenWipe().Amount,
 		serial:    pb.GetTokenWipe().GetSerialNumbers(),
 	}
+
+	tx.childTransaction = &tokenWipeTransaction
+	tokenWipeTransaction.Transaction = &tx
+	return tokenWipeTransaction
 }
 
 // SetTokenID Sets the token for which the account will be wiped. If token does not exist, transaction results in
@@ -146,11 +150,11 @@ func (tx *TokenWipeTransaction) SetSerialNumbers(serial []int64) *TokenWipeTrans
 
 // ----------- Overridden functions ----------------
 
-func (tx *TokenWipeTransaction) getName() string {
+func (tx TokenWipeTransaction) getName() string {
 	return "TokenWipeTransaction"
 }
 
-func (tx *TokenWipeTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx TokenWipeTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -170,7 +174,7 @@ func (tx *TokenWipeTransaction) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (tx *TokenWipeTransaction) build() *services.TransactionBody {
+func (tx TokenWipeTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
 		Memo:                     tx.Transaction.memo,
@@ -182,7 +186,7 @@ func (tx *TokenWipeTransaction) build() *services.TransactionBody {
 	}
 }
 
-func (tx *TokenWipeTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx TokenWipeTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Memo:           tx.Transaction.memo,
@@ -192,7 +196,7 @@ func (tx *TokenWipeTransaction) buildScheduled() (*services.SchedulableTransacti
 	}, nil
 }
 
-func (tx *TokenWipeTransaction) buildProtoBody() *services.TokenWipeAccountTransactionBody {
+func (tx TokenWipeTransaction) buildProtoBody() *services.TokenWipeAccountTransactionBody {
 	body := &services.TokenWipeAccountTransactionBody{
 		Amount: tx.amount,
 	}
@@ -212,20 +216,16 @@ func (tx *TokenWipeTransaction) buildProtoBody() *services.TokenWipeAccountTrans
 	return body
 }
 
-func (tx *TokenWipeTransaction) getMethod(channel *_Channel) _Method {
+func (tx TokenWipeTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetToken().WipeTokenAccount,
 	}
 }
 
-func (tx *TokenWipeTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx TokenWipeTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 
-func (tx *TokenWipeTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction(tx.Transaction)
-}
-
-func (tx *TokenWipeTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
-	tx.Transaction = castFromBaseToConcreteTransaction[*TokenWipeTransaction](baseTx)
+func (tx TokenWipeTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }

@@ -171,7 +171,7 @@ func TestIntegrationAccountCreateTransactionAddSignature(t *testing.T) {
 	tx2, err := TransactionFromBytes(updateBytes)
 	require.NoError(t, err)
 
-	if newTx, ok := tx2.(*AccountDeleteTransaction); ok {
+	if newTx, ok := tx2.(AccountDeleteTransaction); ok {
 		resp, err = newTx.AddSignature(newKey.PublicKey(), sig1).Execute(env.Client)
 		require.NoError(t, err)
 	}
@@ -600,7 +600,7 @@ func TestIntegrationSerializeTransactionWithoutNodeAccountIdDeserialiseAndExecut
 	txFromBytes, err := TransactionFromBytes(resp)
 	require.NoError(t, err)
 
-	transaction := txFromBytes.(*AccountCreateTransaction)
+	transaction := txFromBytes.(AccountCreateTransaction)
 	_, err = transaction.
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		Execute(env.Client)

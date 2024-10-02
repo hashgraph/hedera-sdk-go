@@ -60,16 +60,19 @@ func NewLiveHashAddTransaction() *LiveHashAddTransaction {
 	return tx
 }
 
-func _LiveHashAddTransactionFromProtobuf(pb *services.TransactionBody) *LiveHashAddTransaction {
+func _LiveHashAddTransactionFromProtobuf(tx Transaction[*LiveHashAddTransaction], pb *services.TransactionBody) LiveHashAddTransaction {
 	keys, _ := _KeyListFromProtobuf(pb.GetCryptoAddLiveHash().LiveHash.GetKeys())
 	duration := _DurationFromProtobuf(pb.GetCryptoAddLiveHash().LiveHash.Duration)
 
-	return &LiveHashAddTransaction{
+	liveHashAddTransaction := LiveHashAddTransaction{
 		accountID: _AccountIDFromProtobuf(pb.GetCryptoAddLiveHash().GetLiveHash().GetAccountId()),
 		hash:      pb.GetCryptoAddLiveHash().LiveHash.Hash,
 		keys:      &keys,
 		duration:  &duration,
 	}
+	tx.childTransaction = &liveHashAddTransaction
+	liveHashAddTransaction.Transaction = &tx
+	return liveHashAddTransaction
 }
 
 // When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
@@ -146,10 +149,10 @@ func (tx *LiveHashAddTransaction) GetAccountID() AccountID {
 
 // ----------- Overridden functions ----------------
 
-func (tx *LiveHashAddTransaction) getName() string {
+func (tx LiveHashAddTransaction) getName() string {
 	return "LiveHashAddTransaction"
 }
-func (tx *LiveHashAddTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx LiveHashAddTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -163,7 +166,7 @@ func (tx *LiveHashAddTransaction) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (tx *LiveHashAddTransaction) build() *services.TransactionBody {
+func (tx LiveHashAddTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
 		Memo:                     tx.Transaction.memo,
@@ -175,11 +178,11 @@ func (tx *LiveHashAddTransaction) build() *services.TransactionBody {
 	}
 }
 
-func (tx *LiveHashAddTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx LiveHashAddTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return nil, errors.New("cannot schedule `LiveHashAddTransaction`")
 }
 
-func (tx *LiveHashAddTransaction) buildProtoBody() *services.CryptoAddLiveHashTransactionBody {
+func (tx LiveHashAddTransaction) buildProtoBody() *services.CryptoAddLiveHashTransactionBody {
 	body := &services.CryptoAddLiveHashTransactionBody{
 		LiveHash: &services.LiveHash{},
 	}
@@ -203,20 +206,16 @@ func (tx *LiveHashAddTransaction) buildProtoBody() *services.CryptoAddLiveHashTr
 	return body
 }
 
-func (tx *LiveHashAddTransaction) getMethod(channel *_Channel) _Method {
+func (tx LiveHashAddTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetCrypto().AddLiveHash,
 	}
 }
 
-func (tx *LiveHashAddTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx LiveHashAddTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 
-func (tx *LiveHashAddTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction(tx.Transaction)
-}
-
-func (tx *LiveHashAddTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
-	tx.Transaction = castFromBaseToConcreteTransaction[*LiveHashAddTransaction](baseTx)
+func (tx LiveHashAddTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }

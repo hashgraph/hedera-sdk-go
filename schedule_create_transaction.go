@@ -56,14 +56,14 @@ func NewScheduleCreateTransaction() *ScheduleCreateTransaction {
 	return tx
 }
 
-func _ScheduleCreateTransactionFromProtobuf(pb *services.TransactionBody) *ScheduleCreateTransaction {
+func _ScheduleCreateTransactionFromProtobuf(tx Transaction[*ScheduleCreateTransaction], pb *services.TransactionBody) ScheduleCreateTransaction {
 	key, _ := _KeyFromProtobuf(pb.GetScheduleCreate().GetAdminKey())
 	var expirationTime time.Time
 	if pb.GetScheduleCreate().GetExpirationTime() != nil {
 		expirationTime = _TimeFromProtobuf(pb.GetScheduleCreate().GetExpirationTime())
 	}
 
-	return &ScheduleCreateTransaction{
+	scheduleCreateTransaction := ScheduleCreateTransaction{
 		payerAccountID:  _AccountIDFromProtobuf(pb.GetScheduleCreate().GetPayerAccountID()),
 		adminKey:        key,
 		schedulableBody: pb.GetScheduleCreate().GetScheduledTransactionBody(),
@@ -71,6 +71,10 @@ func _ScheduleCreateTransactionFromProtobuf(pb *services.TransactionBody) *Sched
 		expirationTime:  &expirationTime,
 		waitForExpiry:   pb.GetScheduleCreate().WaitForExpiry,
 	}
+
+	tx.childTransaction = &scheduleCreateTransaction
+	scheduleCreateTransaction.Transaction = &tx
+	return scheduleCreateTransaction
 }
 
 // SetPayerAccountID Sets an optional id of the account to be charged the service fee for the scheduled transaction at
@@ -180,11 +184,11 @@ func (tx *ScheduleCreateTransaction) SetScheduledTransaction(scheduledTx Transac
 
 // ----------- Overridden functions ----------------
 
-func (tx *ScheduleCreateTransaction) getName() string {
+func (tx ScheduleCreateTransaction) getName() string {
 	return "ScheduleCreateTransaction"
 }
 
-func (tx *ScheduleCreateTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx ScheduleCreateTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -198,7 +202,7 @@ func (tx *ScheduleCreateTransaction) validateNetworkOnIDs(client *Client) error 
 	return nil
 }
 
-func (tx *ScheduleCreateTransaction) build() *services.TransactionBody {
+func (tx ScheduleCreateTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
 		Memo:                     tx.Transaction.memo,
@@ -210,11 +214,11 @@ func (tx *ScheduleCreateTransaction) build() *services.TransactionBody {
 	}
 }
 
-func (tx *ScheduleCreateTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx ScheduleCreateTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return nil, errors.New("cannot schedule `ScheduleCreateTransaction`")
 }
 
-func (tx *ScheduleCreateTransaction) buildProtoBody() *services.ScheduleCreateTransactionBody {
+func (tx ScheduleCreateTransaction) buildProtoBody() *services.ScheduleCreateTransactionBody {
 	body := &services.ScheduleCreateTransactionBody{
 		Memo:          tx.memo,
 		WaitForExpiry: tx.waitForExpiry,
@@ -239,20 +243,16 @@ func (tx *ScheduleCreateTransaction) buildProtoBody() *services.ScheduleCreateTr
 	return body
 }
 
-func (tx *ScheduleCreateTransaction) getMethod(channel *_Channel) _Method {
+func (tx ScheduleCreateTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetSchedule().CreateSchedule,
 	}
 }
 
-func (tx *ScheduleCreateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx ScheduleCreateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 
-func (tx *ScheduleCreateTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction(tx.Transaction)
-}
-
-func (tx *ScheduleCreateTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
-	tx.Transaction = castFromBaseToConcreteTransaction[*ScheduleCreateTransaction](baseTx)
+func (tx ScheduleCreateTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }

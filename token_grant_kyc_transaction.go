@@ -59,11 +59,15 @@ func NewTokenGrantKycTransaction() *TokenGrantKycTransaction {
 	return tx
 }
 
-func _TokenGrantKycTransactionFromProtobuf(pb *services.TransactionBody) *TokenGrantKycTransaction {
-	return &TokenGrantKycTransaction{
+func _TokenGrantKycTransactionFromProtobuf(tx Transaction[*TokenGrantKycTransaction], pb *services.TransactionBody) TokenGrantKycTransaction {
+	tokenGrandKycTransaction := TokenGrantKycTransaction{
 		tokenID:   _TokenIDFromProtobuf(pb.GetTokenGrantKyc().GetToken()),
 		accountID: _AccountIDFromProtobuf(pb.GetTokenGrantKyc().GetAccount()),
 	}
+
+	tx.childTransaction = &tokenGrandKycTransaction
+	tokenGrandKycTransaction.Transaction = &tx
+	return tokenGrandKycTransaction
 }
 
 // SetTokenID Sets the token for which this account will be granted KYC.
@@ -101,11 +105,11 @@ func (tx *TokenGrantKycTransaction) GetAccountID() AccountID {
 
 // ----------- Overridden functions ----------------
 
-func (tx *TokenGrantKycTransaction) getName() string {
+func (tx TokenGrantKycTransaction) getName() string {
 	return "TokenGrantKycTransaction"
 }
 
-func (tx *TokenGrantKycTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx TokenGrantKycTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -125,7 +129,7 @@ func (tx *TokenGrantKycTransaction) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (tx *TokenGrantKycTransaction) build() *services.TransactionBody {
+func (tx TokenGrantKycTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
 		Memo:                     tx.Transaction.memo,
@@ -137,7 +141,7 @@ func (tx *TokenGrantKycTransaction) build() *services.TransactionBody {
 	}
 }
 
-func (tx *TokenGrantKycTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx TokenGrantKycTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Memo:           tx.Transaction.memo,
@@ -147,7 +151,7 @@ func (tx *TokenGrantKycTransaction) buildScheduled() (*services.SchedulableTrans
 	}, nil
 }
 
-func (tx *TokenGrantKycTransaction) buildProtoBody() *services.TokenGrantKycTransactionBody {
+func (tx TokenGrantKycTransaction) buildProtoBody() *services.TokenGrantKycTransactionBody {
 	body := &services.TokenGrantKycTransactionBody{}
 	if tx.tokenID != nil {
 		body.Token = tx.tokenID._ToProtobuf()
@@ -160,20 +164,16 @@ func (tx *TokenGrantKycTransaction) buildProtoBody() *services.TokenGrantKycTran
 	return body
 }
 
-func (tx *TokenGrantKycTransaction) getMethod(channel *_Channel) _Method {
+func (tx TokenGrantKycTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetToken().GrantKycToTokenAccount,
 	}
 }
 
-func (tx *TokenGrantKycTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx TokenGrantKycTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 
-func (tx *TokenGrantKycTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction(tx.Transaction)
-}
-
-func (tx *TokenGrantKycTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
-	tx.Transaction = castFromBaseToConcreteTransaction[*TokenGrantKycTransaction](baseTx)
+func (tx TokenGrantKycTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }

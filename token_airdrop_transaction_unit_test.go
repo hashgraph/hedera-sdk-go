@@ -148,7 +148,7 @@ func TestUnitTokenAirdropTransactionOrdered(t *testing.T) {
 	require.NoError(t, err)
 
 	switch tx := airdropTransactionFromBytes.(type) {
-	case *TokenAirdropTransaction:
+	case TokenAirdropTransaction:
 		require.Equal(t, tx.nftTransfers[tokenID1], airdropTransaction.nftTransfers[tokenID1])
 	}
 
@@ -372,7 +372,7 @@ func TestUnitTokenAirdropTransactionFromBytes(t *testing.T) {
 	require.NoError(t, err)
 
 	switch tx := deserializedTransaction.(type) {
-	case *TokenAirdropTransaction:
+	case TokenAirdropTransaction:
 		assert.Equal(t, transaction.GetTokenTransfers(), tx.GetTokenTransfers())
 	default:
 		t.Fatalf("expected TokenAirdropTransaction, got %T", deserializedTransaction)

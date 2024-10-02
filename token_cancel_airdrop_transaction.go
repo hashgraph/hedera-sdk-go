@@ -40,13 +40,15 @@ func NewTokenCancelAirdropTransaction() *TokenCancelAirdropTransaction {
 	return tx
 }
 
-func _TokenCancelAirdropTransactionFromProtobuf(pb *services.TransactionBody) *TokenCancelAirdropTransaction {
-	tokenCancelTransaction := &TokenCancelAirdropTransaction{}
+func _TokenCancelAirdropTransactionFromProtobuf(tx Transaction[*TokenCancelAirdropTransaction], pb *services.TransactionBody) TokenCancelAirdropTransaction {
+	tokenCancelTransaction := TokenCancelAirdropTransaction{}
 
 	for _, pendingAirdrops := range pb.GetTokenCancelAirdrop().PendingAirdrops {
 		tokenCancelTransaction.pendingAirdropIds = append(tokenCancelTransaction.pendingAirdropIds, _PendingAirdropIdFromProtobuf(pendingAirdrops))
 	}
 
+	tx.childTransaction = &tokenCancelTransaction
+	tokenCancelTransaction.Transaction = &tx
 	return tokenCancelTransaction
 }
 
@@ -71,11 +73,11 @@ func (tx *TokenCancelAirdropTransaction) GetPendingAirdropIds() []*PendingAirdro
 
 // ----------- Overridden functions ----------------
 
-func (tx *TokenCancelAirdropTransaction) getName() string {
+func (tx TokenCancelAirdropTransaction) getName() string {
 	return "TokenCancelAirdropTransaction"
 }
 
-func (tx *TokenCancelAirdropTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx TokenCancelAirdropTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -108,7 +110,7 @@ func (tx *TokenCancelAirdropTransaction) validateNetworkOnIDs(client *Client) er
 	return nil
 }
 
-func (tx *TokenCancelAirdropTransaction) build() *services.TransactionBody {
+func (tx TokenCancelAirdropTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
 		Memo:                     tx.Transaction.memo,
@@ -120,7 +122,7 @@ func (tx *TokenCancelAirdropTransaction) build() *services.TransactionBody {
 	}
 }
 
-func (tx *TokenCancelAirdropTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx TokenCancelAirdropTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Data: &services.SchedulableTransactionBody_TokenCancelAirdrop{
@@ -129,7 +131,7 @@ func (tx *TokenCancelAirdropTransaction) buildScheduled() (*services.Schedulable
 	}, nil
 }
 
-func (tx *TokenCancelAirdropTransaction) buildProtoBody() *services.TokenCancelAirdropTransactionBody {
+func (tx TokenCancelAirdropTransaction) buildProtoBody() *services.TokenCancelAirdropTransactionBody {
 	pendingAirdrops := make([]*services.PendingAirdropId, len(tx.pendingAirdropIds))
 	for i, pendingAirdropId := range tx.pendingAirdropIds {
 		pendingAirdrops[i] = pendingAirdropId._ToProtobuf()
@@ -140,20 +142,16 @@ func (tx *TokenCancelAirdropTransaction) buildProtoBody() *services.TokenCancelA
 	}
 }
 
-func (tx *TokenCancelAirdropTransaction) getMethod(channel *_Channel) _Method {
+func (tx TokenCancelAirdropTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetToken().CancelAirdrop,
 	}
 }
 
-func (tx *TokenCancelAirdropTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx TokenCancelAirdropTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 
-func (tx *TokenCancelAirdropTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction(tx.Transaction)
-}
-
-func (tx *TokenCancelAirdropTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
-	tx.Transaction = castFromBaseToConcreteTransaction[*TokenCancelAirdropTransaction](baseTx)
+func (tx TokenCancelAirdropTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }

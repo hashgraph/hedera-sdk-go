@@ -184,7 +184,7 @@ func TestUnitTokenCreateTransactionGet(t *testing.T) {
 	require.NoError(t, err)
 	transaction.getName()
 	switch b := txFromBytes.(type) {
-	case *TokenCreateTransaction:
+	case TokenCreateTransaction:
 		b.AddSignature(newKey.PublicKey(), sig)
 	}
 }

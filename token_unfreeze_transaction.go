@@ -61,11 +61,16 @@ func NewTokenUnfreezeTransaction() *TokenUnfreezeTransaction {
 	return tx
 }
 
-func _TokenUnfreezeTransactionFromProtobuf(pb *services.TransactionBody) *TokenUnfreezeTransaction {
-	return &TokenUnfreezeTransaction{
-		tokenID:   _TokenIDFromProtobuf(pb.GetTokenUnfreeze().GetToken()),
-		accountID: _AccountIDFromProtobuf(pb.GetTokenUnfreeze().GetAccount()),
+func _TokenUnfreezeTransactionFromProtobuf(tx Transaction[*TokenUnfreezeTransaction], pb *services.TransactionBody) TokenUnfreezeTransaction {
+	tokenUnfreezeTransaction := TokenUnfreezeTransaction{
+		Transaction: &tx,
+		tokenID:     _TokenIDFromProtobuf(pb.GetTokenUnfreeze().GetToken()),
+		accountID:   _AccountIDFromProtobuf(pb.GetTokenUnfreeze().GetAccount()),
 	}
+
+	tx.childTransaction = &tokenUnfreezeTransaction
+	tokenUnfreezeTransaction.Transaction = &tx
+	return tokenUnfreezeTransaction
 }
 
 // SetTokenID Sets the token for which this account will be unfrozen.
@@ -103,11 +108,11 @@ func (tx *TokenUnfreezeTransaction) GetAccountID() AccountID {
 
 // ----------- Overridden functions ----------------
 
-func (tx *TokenUnfreezeTransaction) getName() string {
+func (tx TokenUnfreezeTransaction) getName() string {
 	return "TokenUnfreezeTransaction"
 }
 
-func (tx *TokenUnfreezeTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx TokenUnfreezeTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -127,7 +132,7 @@ func (tx *TokenUnfreezeTransaction) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (tx *TokenUnfreezeTransaction) build() *services.TransactionBody {
+func (tx TokenUnfreezeTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
 		Memo:                     tx.Transaction.memo,
@@ -139,7 +144,7 @@ func (tx *TokenUnfreezeTransaction) build() *services.TransactionBody {
 	}
 }
 
-func (tx *TokenUnfreezeTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx TokenUnfreezeTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Memo:           tx.Transaction.memo,
@@ -149,7 +154,7 @@ func (tx *TokenUnfreezeTransaction) buildScheduled() (*services.SchedulableTrans
 	}, nil
 }
 
-func (tx *TokenUnfreezeTransaction) buildProtoBody() *services.TokenUnfreezeAccountTransactionBody {
+func (tx TokenUnfreezeTransaction) buildProtoBody() *services.TokenUnfreezeAccountTransactionBody {
 	body := &services.TokenUnfreezeAccountTransactionBody{}
 	if tx.tokenID != nil {
 		body.Token = tx.tokenID._ToProtobuf()
@@ -162,20 +167,16 @@ func (tx *TokenUnfreezeTransaction) buildProtoBody() *services.TokenUnfreezeAcco
 	return body
 }
 
-func (tx *TokenUnfreezeTransaction) getMethod(channel *_Channel) _Method {
+func (tx TokenUnfreezeTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetToken().UnfreezeTokenAccount,
 	}
 }
 
-func (tx *TokenUnfreezeTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx TokenUnfreezeTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
 
-func (tx *TokenUnfreezeTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
-	return castFromConcreteToBaseTransaction(tx.Transaction)
-}
-
-func (tx *TokenUnfreezeTransaction) setBaseTransaction(baseTx Transaction[TransactionInterface]) {
-	tx.Transaction = castFromBaseToConcreteTransaction[*TokenUnfreezeTransaction](baseTx)
+func (tx TokenUnfreezeTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }

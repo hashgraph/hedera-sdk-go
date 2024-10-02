@@ -138,7 +138,7 @@ func TestUnitTokenUpdateNftsTransactionGet(t *testing.T) {
 	require.NotNil(t, transaction.GetMaxBackoff())
 	require.NotNil(t, transaction.GetMinBackoff())
 	switch b := txFromBytes.(type) {
-	case *TokenUpdateNfts:
+	case TokenUpdateNfts:
 		b.AddSignature(newKey.PublicKey(), sig)
 	}
 }
