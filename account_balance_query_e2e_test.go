@@ -204,7 +204,7 @@ func TestIntegrationAccountBalanceQueryWorksWithHollowAccountAlias(t *testing.T)
 	require.NoError(t, err)
 
 	// Get the child receipt or child record to return the Hedera Account ID for the new account that was created
-	_, err = tx.GetReceiptQuery().SetIncludeChildren(true).Execute(env.Client)
+	_, err = tx.SetIncludeChildren(true).SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	_, err = NewAccountBalanceQuery().SetAccountID(aliasAccountId).Execute(env.Client)
