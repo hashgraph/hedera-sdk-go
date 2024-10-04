@@ -1,6 +1,6 @@
-![](https://img.shields.io/github/v/tag/hashgraph/hedera-sdk-go)
-![](https://img.shields.io/github/go-mod/go-version/hashgraph/hedera-sdk-go)
-[![](https://godoc.org/github.com/hashgraph/hedera-sdk-go/v2?status.svg)](http://godoc.org/github.com/hashgraph/hedera-sdk-go/v2)
+![](https://img.shields.io/github/v/tag/hiero-project/hiero-sdk-go)
+![](https://img.shields.io/github/go-mod/go-version/hiero-project/hiero-sdk-go)
+[![](https://godoc.org/github.com/hiero-project/hiero-sdk-go/v2?status.svg)](http://godoc.org/github.com/hiero-project/hiero-sdk-go/v2)
 
 # Hiero Go SDK
 
