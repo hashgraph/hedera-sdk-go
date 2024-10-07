@@ -55,7 +55,7 @@ func TestIntegrationTokenRejectFlowCanExecuteForFungibleToken(t *testing.T) {
 	require.NoError(t, err)
 
 	// create receiver account with 0 auto associations
-	receiver, key := createAccountHelper(t, &env, 0)
+	receiver, key := createAccount(t, &env, 0)
 
 	// associate the tokens with the receiver
 	frozenAssociateTxn, err := NewTokenAssociateTransaction().SetAccountID(receiver).AddTokenID(tokenID1).AddTokenID(tokenID2).FreezeWith(env.Client)
@@ -142,7 +142,7 @@ func TestIntegrationTokenRejectFlowCanExecuteForNFT(t *testing.T) {
 	serials := receipt.SerialNumbers
 
 	// create receiver account
-	receiver, key := createAccountHelper(t, &env, 0)
+	receiver, key := createAccount(t, &env, 0)
 
 	// associate the tokens with the receiver
 	frozenAssociateTxn, err := NewTokenAssociateTransaction().SetAccountID(receiver).AddTokenID(nftID1).AddTokenID(nftID2).FreezeWith(env.Client)
@@ -224,7 +224,7 @@ func TestIntegrationTokenRejectFlowFailsWhenNotRejectingAllNFTs(t *testing.T) {
 	serials := receipt.SerialNumbers
 
 	// create receiver account
-	receiver, key := createAccountHelper(t, &env, 0)
+	receiver, key := createAccount(t, &env, 0)
 
 	// associate the tokens with the receiver
 	frozenAssociateTxn, err := NewTokenAssociateTransaction().SetAccountID(receiver).AddTokenID(nftID1).AddTokenID(nftID2).FreezeWith(env.Client)

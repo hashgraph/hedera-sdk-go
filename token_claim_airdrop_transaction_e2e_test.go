@@ -56,7 +56,7 @@ func TestIntegrationTokenClaimAirdropCanExecute(t *testing.T) {
 	nftSerials := receipt.SerialNumbers
 
 	// Create receiver with 0 auto associations
-	receiver, receiverKey := createAccountHelper(t, &env, 0)
+	receiver, receiverKey := createAccount(t, &env, 0)
 
 	// Airdrop the tokens
 	airdropTx, err := NewTokenAirdropTransaction().
@@ -127,10 +127,10 @@ func TestIntegrationTokenClaimAirdropMultipleReceivers(t *testing.T) {
 	nftSerials := receipt.SerialNumbers
 
 	// Create receiver1 with 0 auto associations
-	receiver1, receiver1Key := createAccountHelper(t, &env, 0)
+	receiver1, receiver1Key := createAccount(t, &env, 0)
 
 	// Create receiver2 with 0 auto associations
-	receiver2, receiver2Key := createAccountHelper(t, &env, 0)
+	receiver2, receiver2Key := createAccount(t, &env, 0)
 
 	// Airdrop the tokens to both
 	airdropTx, err := NewTokenAirdropTransaction().
@@ -221,7 +221,7 @@ func TestIntegrationTokenClaimAirdropMultipleAirdropTxns(t *testing.T) {
 	nftSerials := receipt.SerialNumbers
 
 	// Create receiver with 0 auto associations
-	receiver, receiverKey := createAccountHelper(t, &env, 0)
+	receiver, receiverKey := createAccount(t, &env, 0)
 
 	// Airdrop some of the tokens
 	airdropTx, err := NewTokenAirdropTransaction().
@@ -300,7 +300,7 @@ func TestIntegrationTokenClaimAirdropCannotClaimNonExistingAirdrop(t *testing.T)
 	require.NoError(t, err)
 
 	// Create receiver with 0 auto associations
-	receiver, _ := createAccountHelper(t, &env, 0)
+	receiver, _ := createAccount(t, &env, 0)
 
 	// Airdrop the tokens
 	airdropTx, err := NewTokenAirdropTransaction().
@@ -331,7 +331,7 @@ func TestIntegrationTokenClaimAirdropCannotClaimAlreadyClaimedAirdrop(t *testing
 	require.NoError(t, err)
 
 	// Create receiver with 0 auto associations
-	receiver, receiverKey := createAccountHelper(t, &env, 0)
+	receiver, receiverKey := createAccount(t, &env, 0)
 
 	// Airdrop the tokens
 	airdropTx, err := NewTokenAirdropTransaction().
@@ -387,7 +387,7 @@ func TestIntegrationTokenClaimAirdropCannotClaimWithDupblicateEntries(t *testing
 	require.NoError(t, err)
 
 	// Create receiver with 0 auto associations
-	receiver, receiverKey := createAccountHelper(t, &env, 0)
+	receiver, receiverKey := createAccount(t, &env, 0)
 
 	// Airdrop the tokens
 	airdropTx, err := NewTokenAirdropTransaction().
@@ -419,7 +419,7 @@ func TestIntegrationTokenClaimAirdropCannotClaimWithPausedToken(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create receiver with 0 auto associations
-	receiver, receiverKey := createAccountHelper(t, &env, 0)
+	receiver, receiverKey := createAccount(t, &env, 0)
 
 	// Airdrop the tokens
 	airdropTx, err := NewTokenAirdropTransaction().
@@ -459,7 +459,7 @@ func TestIntegrationTokenClaimAirdropCannotClaimWithDeletedToken(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create receiver with 0 auto associations
-	receiver, receiverKey := createAccountHelper(t, &env, 0)
+	receiver, receiverKey := createAccount(t, &env, 0)
 
 	// Airdrop the tokens
 	airdropTx, err := NewTokenAirdropTransaction().
@@ -499,7 +499,7 @@ func TestIntegrationTokenClaimAirdropCannotClaimWithFrozenToken(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create receiver with 0 auto associations
-	receiver, receiverKey := createAccountHelper(t, &env, 0)
+	receiver, receiverKey := createAccount(t, &env, 0)
 
 	// Airdrop the tokens
 	airdropTx, err := NewTokenAirdropTransaction().

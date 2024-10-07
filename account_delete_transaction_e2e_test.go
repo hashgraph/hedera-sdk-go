@@ -222,7 +222,7 @@ func TestIntegrationAccountDeleteTransactionCannotDeleteWithPendingAirdrops(t *t
 	nftSerials := receipt.SerialNumbers
 
 	// Create receiver
-	receiver, _ := createAccountHelper(t, &env, 0)
+	receiver, _ := createAccount(t, &env, 0)
 
 	// Airdrop the tokens
 	airdropTx, err := NewTokenAirdropTransaction().
