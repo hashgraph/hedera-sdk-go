@@ -127,3 +127,28 @@ func DisabledTestIntegrationTransactionReceiptQueryInvalidTransactionID(t *testi
 	err = CloseIntegrationTestEnv(env, nil)
 	require.NoError(t, err)
 }
+
+func TestIntegrationFileUpdateTransaction(t *testing.T) {
+	t.Parallel()
+	env := NewIntegrationTestEnv(t)
+
+	spenderKey, err := PrivateKeyFromString("302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137")
+	require.NoError(t, err)
+
+	env.Client.SetOperator(AccountID{Realm: 0, Shard: 0, Account: 2}, spenderKey)
+
+	resp, err := NewFileUpdateTransaction().
+		SetFileID(FileID{Shard: 0, Realm: 0, File: 111}).
+		SetContents([]byte("[e2e::FileUpdateTransaction]")).
+		Execute(env.Client)
+
+	require.NoError(t, err)
+
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	assert.Equal(t, StatusFeeScheduleFilePartUploaded, receipt.Status)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	require.NoError(t, err)
+}
