@@ -128,9 +128,10 @@ func DisabledTestIntegrationTransactionReceiptQueryInvalidTransactionID(t *testi
 	require.NoError(t, err)
 }
 
-func TestIntegrationFileUpdateTransaction(t *testing.T) {
+func TestIntegrationFileUpdateTransactionHandleFeeScheduleUpload(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	spenderKey, err := PrivateKeyFromString("302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137")
 	require.NoError(t, err)
@@ -148,7 +149,4 @@ func TestIntegrationFileUpdateTransaction(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Equal(t, StatusFeeScheduleFilePartUploaded, receipt.Status)
-
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
