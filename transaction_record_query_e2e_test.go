@@ -55,10 +55,7 @@ func TestIntegrationTransactionRecordQueryCanExecute(t *testing.T) {
 	resp, err := tx.Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = NewTransactionReceiptQuery().
-		SetTransactionID(resp.TransactionID).
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		Execute(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	record, err := NewTransactionRecordQuery().
@@ -118,11 +115,7 @@ func TestIntegrationTransactionRecordQueryReceiptPaymentZero(t *testing.T) {
 	resp, err := tx.Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = NewTransactionReceiptQuery().
-		SetTransactionID(resp.TransactionID).
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetMaxQueryPayment(HbarFromTinybar(0)).
-		Execute(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	record, err := NewTransactionRecordQuery().
@@ -177,10 +170,7 @@ func TestIntegrationTransactionRecordQueryInsufficientFee(t *testing.T) {
 	resp, err := tx.Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := NewTransactionReceiptQuery().
-		SetTransactionID(resp.TransactionID).
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		Execute(env.Client)
+	receipt, err := resp.SetIncludeChildren(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	_, err = NewTransactionRecordQuery().

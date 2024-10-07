@@ -392,10 +392,7 @@ func (tx *FileAppendTransaction) ExecuteAll(
 
 		list[i] = resp.(TransactionResponse)
 
-		_, err = NewTransactionReceiptQuery().
-			SetNodeAccountIDs([]AccountID{resp.(TransactionResponse).NodeID}).
-			SetTransactionID(resp.(TransactionResponse).TransactionID).
-			Execute(client)
+		_, err = list[i].SetValidateStatus(false).GetReceipt(client)
 		if err != nil {
 			return list, err
 		}

@@ -44,7 +44,7 @@ func TestIntegrationAccountIDCanPopulateAccountNumber(t *testing.T) {
 	tx, err := NewTransferTransaction().AddHbarTransfer(evmAddressAccount, NewHbar(1)).
 		AddHbarTransfer(env.OperatorID, NewHbar(-1)).Execute(env.Client)
 	require.NoError(t, err)
-	receipt, err := tx.GetReceiptQuery().SetIncludeChildren(true).Execute(env.Client)
+	receipt, err := tx.SetIncludeChildren(true).SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 	newAccountId := *receipt.Children[0].AccountID
 	idMirror, err := AccountIDFromEvmPublicAddress(evmAddress)
@@ -68,7 +68,7 @@ func TestIntegrationAccountIDCanPopulateAccountAliasEvmAddress(t *testing.T) {
 	tx, err := NewTransferTransaction().AddHbarTransfer(evmAddressAccount, NewHbar(1)).
 		AddHbarTransfer(env.OperatorID, NewHbar(-1)).Execute(env.Client)
 	require.NoError(t, err)
-	receipt, err := tx.GetReceiptQuery().SetIncludeChildren(true).Execute(env.Client)
+	receipt, err := tx.SetIncludeChildren(true).SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 	newAccountId := *receipt.Children[0].AccountID
 	time.Sleep(5 * time.Second)
@@ -90,7 +90,7 @@ func TestIntegrationAccountIDCanPopulateAccountAliasEvmAddressWithMirror(t *test
 	tx, err := NewTransferTransaction().AddHbarTransfer(evmAddressAccount, NewHbar(1)).
 		AddHbarTransfer(env.OperatorID, NewHbar(-1)).Execute(env.Client)
 	require.NoError(t, err)
-	receipt, err := tx.GetReceiptQuery().SetIncludeChildren(true).Execute(env.Client)
+	receipt, err := tx.SetIncludeChildren(true).SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 	newAccountId := *receipt.Children[0].AccountID
 	time.Sleep(5 * time.Second)
@@ -112,7 +112,7 @@ func TestIntegrationAccountIDCanPopulateAccountAliasEvmAddressWithNoMirror(t *te
 	tx, err := NewTransferTransaction().AddHbarTransfer(evmAddressAccount, NewHbar(1)).
 		AddHbarTransfer(env.OperatorID, NewHbar(-1)).Execute(env.Client)
 	require.NoError(t, err)
-	receipt, err := tx.GetReceiptQuery().SetIncludeChildren(true).Execute(env.Client)
+	receipt, err := tx.SetIncludeChildren(true).SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 	newAccountId := *receipt.Children[0].AccountID
 	env.Client.mirrorNetwork = nil
@@ -134,7 +134,7 @@ func TestIntegrationAccountIDCanPopulateAccountAliasEvmAddressWithMirrorAndNoEvm
 	tx, err := NewTransferTransaction().AddHbarTransfer(evmAddressAccount, NewHbar(1)).
 		AddHbarTransfer(env.OperatorID, NewHbar(-1)).Execute(env.Client)
 	require.NoError(t, err)
-	receipt, err := tx.GetReceiptQuery().SetIncludeChildren(true).Execute(env.Client)
+	receipt, err := tx.SetIncludeChildren(true).SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 	newAccountId := *receipt.Children[0].AccountID
 	env.Client.mirrorNetwork = nil
