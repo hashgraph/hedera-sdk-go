@@ -324,7 +324,9 @@ func createFungibleToken(env *IntegrationTestEnv, opts ...TokenCreateTransaction
 	return *receipt.TokenID, err
 }
 
-func createAccount(env *IntegrationTestEnv, opts ...AccountCreateTransactionCustomizer) (AccountID, error) {
+type AccountCreateTransactionCustomizer func(transaction *AccountCreateTransaction)
+
+func createAccount(env *IntegrationTestEnv, opts ...AccountCreateTransactionCustomizer) (AccountID, PrivateKey, error) {
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
@@ -347,5 +349,5 @@ func createAccount(env *IntegrationTestEnv, opts ...AccountCreateTransactionCust
 	if err != nil {
 		return AccountID{}, err
 	}
-	return *receipt.AccountID, err
+	return *receipt.AccountID, newKey, err
 }

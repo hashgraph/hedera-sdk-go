@@ -56,7 +56,10 @@ func TestIntegrationTokenCancelAirdropCanExecute(t *testing.T) {
 	nftSerials := receipt.SerialNumbers
 
 	// Create receiver with 0 auto associations
-	receiver, _ := createAccount(t, &env, 0)
+	receiver, _, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+		tx.SetMaxAutomaticTokenAssociations(0)
+	})
+	require.NoError(t, err)
 
 	// Airdrop the tokens
 	airdropTx, err := NewTokenAirdropTransaction().
@@ -118,10 +121,16 @@ func TestIntegrationTokenCancelAirdropMultipleReceivers(t *testing.T) {
 	nftSerials := receipt.SerialNumbers
 
 	// Create receiver1 with 0 auto associations
-	receiver1, receiver1Key := createAccount(t, &env, 0)
+	receiver1, receiver1Key, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+		tx.SetMaxAutomaticTokenAssociations(0)
+	})
+	require.NoError(t, err)
 
 	// Create receiver2 with 0 auto associations
-	receiver2, receiver2Key := createAccount(t, &env, 0)
+	receiver2, receiver2Key, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+		tx.SetMaxAutomaticTokenAssociations(0)
+	})
+	require.NoError(t, err)
 
 	// Airdrop the tokens to both
 	airdropTx, err := NewTokenAirdropTransaction().
@@ -194,7 +203,10 @@ func TestIntegrationTokenCancelAirdropMultipleAirdropTxns(t *testing.T) {
 	nftSerials := receipt.SerialNumbers
 
 	// Create receiver with 0 auto associations
-	receiver, _ := createAccount(t, &env, 0)
+	receiver, _, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+		tx.SetMaxAutomaticTokenAssociations(0)
+	})
+	require.NoError(t, err)
 
 	// Airdrop some of the tokens
 	airdropTx, err := NewTokenAirdropTransaction().
@@ -273,9 +285,15 @@ func TestIntegrationTokenCancelAirdropCannotCancelNonExistingAirdrop(t *testing.
 	require.NoError(t, err)
 
 	// Create receiver with 0 auto associations
-	receiver, _ := createAccount(t, &env, 0)
+	receiver, _, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+		tx.SetMaxAutomaticTokenAssociations(0)
+	})
+	require.NoError(t, err)
 	// Create random account
-	randomAccount, _ := createAccount(t, &env, 0)
+	randomAccount, receiverKey, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+		tx.SetMaxAutomaticTokenAssociations(0)
+	})
+	require.NoError(t, err)
 
 	// Airdrop the tokens
 	airdropTx, err := NewTokenAirdropTransaction().
@@ -304,7 +322,10 @@ func TestIntegrationTokenCancelAirdropCannotCancelAlreadyCanceledAirdrop(t *test
 	require.NoError(t, err)
 
 	// Create receiver with 0 auto associations
-	receiver, _ := createAccount(t, &env, 0)
+	receiver, _, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+		tx.SetMaxAutomaticTokenAssociations(0)
+	})
+	require.NoError(t, err)
 
 	// Airdrop the tokens
 	airdropTx, err := NewTokenAirdropTransaction().
@@ -360,7 +381,10 @@ func TestIntegrationTokenCancelAirdropCannotCancelWithDupblicateEntries(t *testi
 	require.NoError(t, err)
 
 	// Create receiver with 0 auto associations
-	receiver, _ := createAccount(t, &env, 0)
+	receiver, _, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+		tx.SetMaxAutomaticTokenAssociations(0)
+	})
+	require.NoError(t, err)
 
 	// Airdrop the tokens
 	airdropTx, err := NewTokenAirdropTransaction().
@@ -392,7 +416,10 @@ func TestIntegrationTokenCancelAirdropCanCancelWithPausedToken(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create receiver with 0 auto associations
-	receiver, _ := createAccount(t, &env, 0)
+	receiver, _, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+		tx.SetMaxAutomaticTokenAssociations(0)
+	})
+	require.NoError(t, err)
 
 	// Airdrop the tokens
 	airdropTx, err := NewTokenAirdropTransaction().
@@ -432,7 +459,10 @@ func TestIntegrationTokenCancelAirdropCanCancelWithDeletedToken(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create receiver with 0 auto associations
-	receiver, _ := createAccount(t, &env, 0)
+	receiver, _, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+		tx.SetMaxAutomaticTokenAssociations(0)
+	})
+	require.NoError(t, err)
 
 	// Airdrop the tokens
 	airdropTx, err := NewTokenAirdropTransaction().
@@ -472,7 +502,10 @@ func TestIntegrationTokenCancelAirdropCanCancelWithFrozenToken(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create receiver with 0 auto associations
-	receiver, receiverKey := createAccount(t, &env, 0)
+	receiver, _, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+		tx.SetMaxAutomaticTokenAssociations(0)
+	})
+	require.NoError(t, err)
 
 	// Airdrop the tokens
 	airdropTx, err := NewTokenAirdropTransaction().

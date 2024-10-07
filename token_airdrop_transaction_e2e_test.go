@@ -53,7 +53,10 @@ func TestIntegrationTokenAirdropTransactionTransfersTokensWhenAssociated(t *test
 	nftSerials := receipt.SerialNumbers
 
 	// Create receiver with unlimited auto associations and receiverSig = false
-	receiver, _ := createAccount(t, &env, -1)
+	receiver, _, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+		tx.SetMaxAutomaticTokenAssociations(-1)
+	})
+	require.NoError(t, err)
 
 	// Airdrop the tokens
 	airdropTx, err := NewTokenAirdropTransaction().
@@ -106,7 +109,10 @@ func TestIntegrationTokenAirdropTransactionPendingTokensWhenNotAssociated(t *tes
 	nftSerials := receipt.SerialNumbers
 
 	// Create receiver with 0 auto associations and receiverSig = false
-	receiver, _ := createAccount(t, &env, 0)
+	receiver, _, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+		tx.SetMaxAutomaticTokenAssociations(0)
+	})
+	require.NoError(t, err)
 
 	// Airdrop the tokens
 	airdropTx, err := NewTokenAirdropTransaction().
@@ -217,7 +223,10 @@ func TestIntegrationTokenAirdropTransactionWithCustomFees(t *testing.T) {
 	defer CloseIntegrationTestEnv(env, nil)
 
 	// Create receiver with unlimited auto associations and receiverSig = false
-	receiver, _ := createAccount(t, &env, -1)
+	receiver, _, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+		tx.SetMaxAutomaticTokenAssociations(-1)
+	})
+	require.NoError(t, err)
 
 	// create fungible token with custom fee another token
 	customFeeTokenID, err := createFungibleToken(&env)
@@ -253,7 +262,10 @@ func TestIntegrationTokenAirdropTransactionWithCustomFees(t *testing.T) {
 	tokenID := receipt.TokenID
 
 	// create sender account with unlimited associations and send some tokens to it
-	sender, senderKey := createAccount(t, &env, -1)
+	sender, senderKey, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+		tx.SetMaxAutomaticTokenAssociations(-1)
+	})
+	require.NoError(t, err)
 
 	// associate the token to the sender
 	frozenTxn, err := NewTokenAssociateTransaction().
@@ -372,10 +384,16 @@ func TestIntegrationTokenAirdropTransactionWithNoBalanceFT(t *testing.T) {
 	tokenID, _ := createFungibleToken(&env)
 
 	// create spender and approve to it some tokens
-	spender, spenderKey := createAccount(t, &env, -1)
+	sender, senderKey, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+		tx.SetMaxAutomaticTokenAssociations(-1)
+	})
+	require.NoError(t, err)
 
 	// create sender
-	sender, senderKey := createAccount(t, &env, -1)
+	sender, senderKey, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+		tx.SetMaxAutomaticTokenAssociations(-1)
+	})
+	require.NoError(t, err)
 
 	// transfer ft to sender
 	txResponse, err := NewTransferTransaction().
@@ -430,10 +448,16 @@ func TestIntegrationTokenAirdropTransactionWithNoBalanceNFT(t *testing.T) {
 	nftSerials := receipt.SerialNumbers
 
 	// create spender and approve to it some tokens
-	spender, spenderKey := createAccount(t, &env, -1)
+	sender, senderKey, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+		tx.SetMaxAutomaticTokenAssociations(-1)
+	})
+	require.NoError(t, err)
 
 	// create sender
-	sender, senderKey := createAccount(t, &env, -1)
+	sender, senderKey, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+		tx.SetMaxAutomaticTokenAssociations(-1)
+	})
+	require.NoError(t, err)
 
 	// transfer ft to sender
 	txResponse, err = NewTransferTransaction().
@@ -476,7 +500,10 @@ func TestIntegrationTokenAirdropTransactionWithInvalidBody(t *testing.T) {
 	tokenID, _ := createFungibleToken(&env)
 
 	// create receiver
-	receiver, _ := createAccount(t, &env, -1)
+	receiver, _, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+		tx.SetMaxAutomaticTokenAssociations(-1)
+	})
+	require.NoError(t, err)
 
 	_, err := NewTokenAirdropTransaction().
 		Execute(env.Client)
