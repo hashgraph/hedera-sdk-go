@@ -4,11 +4,12 @@
 package hedera
 
 import (
+	"testing"
+	"time"
+
 	"github.com/hashgraph/hedera-protobufs-go/services"
 	"github.com/stretchr/testify/require"
 	protobuf "google.golang.org/protobuf/proto"
-	"testing"
-	"time"
 )
 
 func TestUnitAccountAllowanceDeleteTransactionCoverage(t *testing.T) {
@@ -60,7 +61,7 @@ func TestUnitAccountAllowanceDeleteTransactionCoverage(t *testing.T) {
 	txFromBytesI, err := TransactionFromBytes(byt)
 	txFromBytes, ok := txFromBytesI.(AccountAllowanceDeleteTransaction)
 	require.True(t, ok)
-	sig, err := newKey.SignTransaction(&transaction.Transaction)
+	sig, err := newKey.SignTransaction(transaction)
 	require.NoError(t, err)
 
 	_, err = transaction.GetTransactionHash()

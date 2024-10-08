@@ -28,7 +28,6 @@ import (
 )
 
 type ContractCreateFlow struct {
-	Transaction
 	bytecode                      []byte
 	proxyAccountID                *AccountID
 	adminKey                      *Key
@@ -42,30 +41,26 @@ type ContractCreateFlow struct {
 	autoRenewAccountID            *AccountID
 	maxAutomaticTokenAssociations int32
 	maxChunks                     *uint64
+	memo                          string
 }
 
 // NewContractCreateFlow creates a new ContractCreateFlow transaction builder object.
 func NewContractCreateFlow() *ContractCreateFlow {
-	this := ContractCreateFlow{
-		Transaction: _NewTransaction(),
-	}
+	this := ContractCreateFlow{}
 
 	this.SetAutoRenewPeriod(131500 * time.Minute)
-	this.SetMaxTransactionFee(NewHbar(20))
 
 	return &this
 }
 
 // SetBytecodeWithString sets the bytecode of the contract in hex-encoded string format.
 func (tx *ContractCreateFlow) SetBytecodeWithString(bytecode string) *ContractCreateFlow {
-	tx._RequireNotFrozen()
 	tx.bytecode, _ = hex.DecodeString(bytecode)
 	return tx
 }
 
 // SetBytecode sets the bytecode of the contract in raw bytes.
 func (tx *ContractCreateFlow) SetBytecode(bytecode []byte) *ContractCreateFlow {
-	tx._RequireNotFrozen()
 	tx.bytecode = bytecode
 	return tx
 }
@@ -81,7 +76,6 @@ func (tx *ContractCreateFlow) GetBytecode() string {
 // admin keys, then there is no administrator to authorize changing the admin keys, so
 // there can never be any admin keys for that instance.
 func (tx *ContractCreateFlow) SetAdminKey(adminKey Key) *ContractCreateFlow {
-	tx._RequireNotFrozen()
 	tx.adminKey = &adminKey
 	return tx
 }
@@ -97,7 +91,6 @@ func (tx *ContractCreateFlow) GetAdminKey() Key {
 
 // SetGas sets the gas to run the constructor.
 func (tx *ContractCreateFlow) SetGas(gas int64) *ContractCreateFlow {
-	tx._RequireNotFrozen()
 	tx.gas = gas
 	return tx
 }
@@ -110,7 +103,6 @@ func (tx *ContractCreateFlow) GetGas() int64 {
 // SetInitialBalance sets the initial number of hbars to put into the cryptocurrency account
 // associated with and owned by the smart contract.
 func (tx *ContractCreateFlow) SetInitialBalance(initialBalance Hbar) *ContractCreateFlow {
-	tx._RequireNotFrozen()
 	tx.initialBalance = initialBalance.AsTinybar()
 	return tx
 }
@@ -123,7 +115,6 @@ func (tx *ContractCreateFlow) GetInitialBalance() Hbar {
 
 // SetAutoRenewPeriod sets the period that the instance will charge its account every this many seconds to renew.
 func (tx *ContractCreateFlow) SetAutoRenewPeriod(autoRenewPeriod time.Duration) *ContractCreateFlow {
-	tx._RequireNotFrozen()
 	tx.autoRenewPeriod = &autoRenewPeriod
 	return tx
 }
@@ -139,7 +130,6 @@ func (tx *ContractCreateFlow) GetAutoRenewPeriod() time.Duration {
 
 // Deprecated
 func (tx *ContractCreateFlow) SetProxyAccountID(proxyAccountID AccountID) *ContractCreateFlow {
-	tx._RequireNotFrozen()
 	tx.proxyAccountID = &proxyAccountID
 	return tx
 }
@@ -155,14 +145,12 @@ func (tx *ContractCreateFlow) GetProxyAccountID() AccountID {
 
 // Sets the constructor parameters
 func (tx *ContractCreateFlow) SetConstructorParameters(params *ContractFunctionParameters) *ContractCreateFlow {
-	tx._RequireNotFrozen()
 	tx.parameters = params._Build(nil)
 	return tx
 }
 
 // Sets the constructor parameters as their raw bytes.
 func (tx *ContractCreateFlow) SetConstructorParametersRaw(params []byte) *ContractCreateFlow {
-	tx._RequireNotFrozen()
 	tx.parameters = params
 	return tx
 }
@@ -173,7 +161,6 @@ func (tx *ContractCreateFlow) GetConstructorParameters() []byte {
 
 // Sets the memo to be associated with this contract.
 func (tx *ContractCreateFlow) SetContractMemo(memo string) *ContractCreateFlow {
-	tx._RequireNotFrozen()
 	tx.memo = memo
 	return tx
 }
@@ -185,7 +172,6 @@ func (tx *ContractCreateFlow) GetContractMemo() string {
 
 // SetMaxChunks sets the maximum number of chunks that the contract bytecode can be split into.
 func (tx *ContractCreateFlow) SetMaxChunks(max uint64) *ContractCreateFlow {
-	tx._RequireNotFrozen()
 	tx.maxChunks = &max
 	return tx
 }
@@ -204,7 +190,6 @@ func (tx *ContractCreateFlow) GetMaxChunks() uint64 {
 // account with zero hbar balance, the contract's own hbar balance will be used to
 // cover auto-renewal fees.
 func (tx *ContractCreateFlow) SetAutoRenewAccountID(id AccountID) *ContractCreateFlow {
-	tx._RequireNotFrozen()
 	tx.autoRenewAccountID = &id
 	return tx
 }
@@ -222,7 +207,6 @@ func (tx *ContractCreateFlow) GetAutoRenewAccountID() AccountID {
 // The maximum number of tokens that this contract can be automatically associated
 // with (i.e., receive air-drops from).
 func (tx *ContractCreateFlow) SetMaxAutomaticTokenAssociations(max int32) *ContractCreateFlow {
-	tx._RequireNotFrozen()
 	tx.maxAutomaticTokenAssociations = max
 	return tx
 }
@@ -350,7 +334,6 @@ func (tx *ContractCreateFlow) Execute(client *Client) (TransactionResponse, erro
 
 // SetNodeAccountIDs sets the node AccountID for this ContractCreateFlow.
 func (tx *ContractCreateFlow) SetNodeAccountIDs(nodeID []AccountID) *ContractCreateFlow {
-	tx._RequireNotFrozen()
 	tx.nodeAccountIDs = nodeID
 	return tx
 }

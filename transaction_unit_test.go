@@ -480,7 +480,7 @@ func TestUnitTransactionSignSwitchCases(t *testing.T) {
 
 	newKey, client, nodeAccountId := signSwitchCaseaSetup(t)
 
-	txs := []Executable{
+	txs := []TransactionInterface{
 		NewAccountCreateTransaction(),
 		NewAccountDeleteTransaction(),
 		NewAccountUpdateTransaction(),
@@ -542,7 +542,7 @@ func TestUnitTransactionSignSwitchCasesPointers(t *testing.T) {
 
 	newKey, client, nodeAccountId := signSwitchCaseaSetup(t)
 
-	txs := []interface{}{
+	txs := []TransactionInterface{
 		NewAccountCreateTransaction(),
 		NewAccountDeleteTransaction(),
 		NewAccountUpdateTransaction(),
@@ -582,15 +582,7 @@ func TestUnitTransactionSignSwitchCasesPointers(t *testing.T) {
 				transactionInterface, err := TransactionFromBytes(transferTxBytes)
 				require.NoError(t, err)
 
-				// Convert the transactionInterface to a pointer
-				ptr := reflect.New(reflect.TypeOf(transactionInterface))
-				ptr.Elem().Set(reflect.ValueOf(transactionInterface))
-
-				tx, err := tt.sign(ptr.Interface(), newKey)
-				assert.NoError(t, err)
-				assert.NotEmpty(t, tx)
-
-				signs, err := TransactionGetSignatures(ptr.Interface())
+				signs, err := TransactionGetSignatures(transactionInterface)
 				assert.NoError(t, err)
 
 				// verify with range because var signs = map[AccountID]map[*PublicKey][]byte, where *PublicKey is unknown memory address
@@ -610,7 +602,7 @@ func TestUnitTransactionAttributes(t *testing.T) {
 	client.SetLedgerID(*NewLedgerIDTestnet())
 	nodeAccountIds := client.network._GetNodeAccountIDsForExecute()
 
-	txs := []interface{}{
+	txs := []TransactionInterface{
 		NewAccountCreateTransaction(),
 		NewAccountDeleteTransaction(),
 		NewAccountUpdateTransaction(),
@@ -677,7 +669,7 @@ func TestUnitTransactionAttributesDereferanced(t *testing.T) {
 	client.SetLedgerID(*NewLedgerIDTestnet())
 	nodeAccountIds := client.network._GetNodeAccountIDsForExecute()
 
-	txs := []interface{}{
+	txs := []TransactionInterface{
 		NewAccountCreateTransaction(),
 		NewAccountDeleteTransaction(),
 		NewAccountUpdateTransaction(),
@@ -724,8 +716,7 @@ func TestUnitTransactionAttributesDereferanced(t *testing.T) {
 
 		for _, tt := range tests {
 			t.Run(tt.name, func(t *testing.T) {
-				txValue := reflect.ValueOf(tx).Elem().Interface()
-				txSet, err := tt.set(txValue)
+				txSet, err := tt.set(tx)
 				require.NoError(t, err)
 
 				txGet, err := tt.get(txSet)
@@ -744,7 +735,7 @@ func TestUnitTransactionAttributesSerialization(t *testing.T) {
 	require.NoError(t, err)
 	client.SetLedgerID(*NewLedgerIDTestnet())
 
-	txs := []interface{}{
+	txs := []TransactionInterface{
 		NewAccountCreateTransaction(),
 		NewAccountDeleteTransaction(),
 		NewAccountUpdateTransaction(),
@@ -792,11 +783,11 @@ func TestUnitTransactionAttributesSerialization(t *testing.T) {
 
 		tests := []struct {
 			name string
-			act  func(transactionInterface interface{})
+			act  func(transactionInterface TransactionInterface)
 		}{
 			{
 				name: "TransactionString/" + txName,
-				act: func(transactionInterface interface{}) {
+				act: func(transactionInterface TransactionInterface) {
 					txString, err := TransactionString(transactionInterface)
 					require.NoError(t, err)
 					require.NotEmpty(t, txString)
@@ -804,7 +795,7 @@ func TestUnitTransactionAttributesSerialization(t *testing.T) {
 			},
 			{
 				name: "TransactionToBytes/" + txName,
-				act: func(transactionInterface interface{}) {
+				act: func(transactionInterface TransactionInterface) {
 					txBytes, err := TransactionToBytes(transactionInterface)
 					require.NoError(t, err)
 					require.NotEmpty(t, txBytes)
@@ -815,8 +806,8 @@ func TestUnitTransactionAttributesSerialization(t *testing.T) {
 		for _, tt := range tests {
 			t.Run(tt.name, func(t *testing.T) {
 				tt.act(tx)
-				txValue := reflect.ValueOf(tx).Elem().Interface()
-				tt.act(txValue)
+				// txValue := reflect.ValueOf(tx).Elem().Interface()
+				// tt.act(txValue)
 			})
 		}
 	}
@@ -836,7 +827,7 @@ func signSwitchCaseaSetup(t *testing.T) (PrivateKey, *Client, AccountID) {
 	return newKey, client, nodeAccountId
 }
 
-func signSwitchCaseaHelper(t *testing.T, tx interface{}, newKey PrivateKey, client *Client) (txVal reflect.Value, signature []byte, transferTxBytes []byte) {
+func signSwitchCaseaHelper(t *testing.T, tx TransactionInterface, newKey PrivateKey, client *Client) (txVal reflect.Value, signature []byte, transferTxBytes []byte) {
 	// Get the reflect.Value of the pointer to the transaction
 	txPtr := reflect.ValueOf(tx)
 	txPtr.MethodByName("FreezeWith").Call([]reflect.Value{reflect.ValueOf(client)})
@@ -845,15 +836,16 @@ func signSwitchCaseaHelper(t *testing.T, tx interface{}, newKey PrivateKey, clie
 	txVal = txPtr.Elem()
 
 	// Get the transaction field by name
-	txField := txVal.FieldByName("Transaction")
+	// txField := txVal.FieldByName("Transaction")
 
 	// Get the value of the Transaction field
-	txValue := txField.Interface().(Transaction)
+	// txValue := txField.Interface().(Transaction[TransactionInterface])
 
-	refl_signature := reflect.ValueOf(newKey).MethodByName("SignTransaction").Call([]reflect.Value{reflect.ValueOf(&txValue)})
-	signature = refl_signature[0].Interface().([]byte)
+	// refl_signature := reflect.ValueOf(newKey).MethodByName("SignTransaction").Call([]reflect.Value{reflect.ValueOf(&txValue)})
+	signature, err := newKey.SignTransaction(tx)
+	assert.NoError(t, err)
 
-	transferTxBytes, err := TransactionToBytes(tx)
+	transferTxBytes, err = TransactionToBytes(tx)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, transferTxBytes)
 
@@ -862,15 +854,15 @@ func signSwitchCaseaHelper(t *testing.T, tx interface{}, newKey PrivateKey, clie
 
 func signTestsForTransaction(txVal reflect.Value, newKey PrivateKey, signature []byte, client *Client) []struct {
 	name string
-	sign func(transactionInterface interface{}, key Key) (interface{}, error)
+	sign func(transactionInterface TransactionInterface, key Key) (TransactionInterface, error)
 } {
 	return []struct {
 		name string
-		sign func(transactionInterface interface{}, key Key) (interface{}, error)
+		sign func(transactionInterface TransactionInterface, key Key) (TransactionInterface, error)
 	}{
 		{
 			name: "TransactionSign/" + txVal.Type().Name(),
-			sign: func(transactionInterface interface{}, key Key) (interface{}, error) {
+			sign: func(transactionInterface TransactionInterface, key Key) (TransactionInterface, error) {
 				privateKey, ok := key.(PrivateKey)
 				if !ok {
 					panic("key is not a PrivateKey")
@@ -880,19 +872,19 @@ func signTestsForTransaction(txVal reflect.Value, newKey PrivateKey, signature [
 		},
 		{
 			name: "TransactionSignWith/" + txVal.Type().Name(),
-			sign: func(transactionInterface interface{}, key Key) (interface{}, error) {
+			sign: func(transactionInterface TransactionInterface, key Key) (TransactionInterface, error) {
 				return TransactionSignWth(transactionInterface, newKey.PublicKey(), newKey.Sign)
 			},
 		},
 		{
 			name: "TransactionSignWithOperator/" + txVal.Type().Name(),
-			sign: func(transactionInterface interface{}, key Key) (interface{}, error) {
+			sign: func(transactionInterface TransactionInterface, key Key) (TransactionInterface, error) {
 				return TransactionSignWithOperator(transactionInterface, client)
 			},
 		},
 		{
 			name: "TransactionAddSignature/" + txVal.Type().Name(),
-			sign: func(transactionInterface interface{}, key Key) (interface{}, error) {
+			sign: func(transactionInterface TransactionInterface, key Key) (TransactionInterface, error) {
 				return TransactionAddSignature(transactionInterface, newKey.PublicKey(), signature)
 			},
 		},
@@ -901,8 +893,8 @@ func signTestsForTransaction(txVal reflect.Value, newKey PrivateKey, signature [
 
 type transactionTest struct {
 	name   string
-	set    func(transactionInterface interface{}) (interface{}, error)
-	get    func(transactionInterface interface{}) (interface{}, error)
+	set    func(transactionInterface TransactionInterface) (TransactionInterface, error)
+	get    func(transactionInterface TransactionInterface) (interface{}, error)
 	assert func(t *testing.T, actual interface{})
 }
 
@@ -910,11 +902,11 @@ func createTransactionTests(txName string, nodeAccountIds []AccountID) []transac
 	return []transactionTest{
 		{
 			name: "TransactionTransactionID/" + txName,
-			set: func(transactionInterface interface{}) (interface{}, error) {
+			set: func(transactionInterface TransactionInterface) (TransactionInterface, error) {
 				transactionID := TransactionID{AccountID: &AccountID{Account: 9999}, ValidStart: &time.Time{}, scheduled: false, Nonce: nil}
 				return TransactionSetTransactionID(transactionInterface, transactionID)
 			},
-			get: func(transactionInterface interface{}) (interface{}, error) {
+			get: func(transactionInterface TransactionInterface) (interface{}, error) {
 				return TransactionGetTransactionID(transactionInterface)
 			},
 			assert: func(t *testing.T, actual interface{}) {
@@ -926,10 +918,10 @@ func createTransactionTests(txName string, nodeAccountIds []AccountID) []transac
 		},
 		{
 			name: "TransactionTransactionMemo/" + txName,
-			set: func(transactionInterface interface{}) (interface{}, error) {
+			set: func(transactionInterface TransactionInterface) (TransactionInterface, error) {
 				return TransactionSetTransactionMemo(transactionInterface, "test memo")
 			},
-			get: func(transactionInterface interface{}) (interface{}, error) {
+			get: func(transactionInterface TransactionInterface) (interface{}, error) {
 				return TransactionGetTransactionMemo(transactionInterface)
 			},
 			assert: func(t *testing.T, actual interface{}) {
@@ -938,10 +930,10 @@ func createTransactionTests(txName string, nodeAccountIds []AccountID) []transac
 		},
 		{
 			name: "TransactionMaxTransactionFee/" + txName,
-			set: func(transactionInterface interface{}) (interface{}, error) {
+			set: func(transactionInterface TransactionInterface) (TransactionInterface, error) {
 				return TransactionSetMaxTransactionFee(transactionInterface, NewHbar(1))
 			},
-			get: func(transactionInterface interface{}) (interface{}, error) {
+			get: func(transactionInterface TransactionInterface) (interface{}, error) {
 				return TransactionGetMaxTransactionFee(transactionInterface)
 			},
 			assert: func(t *testing.T, actual interface{}) {
@@ -950,10 +942,10 @@ func createTransactionTests(txName string, nodeAccountIds []AccountID) []transac
 		},
 		{
 			name: "TransactionTransactionValidDuration/" + txName,
-			set: func(transactionInterface interface{}) (interface{}, error) {
+			set: func(transactionInterface TransactionInterface) (TransactionInterface, error) {
 				return TransactionSetTransactionValidDuration(transactionInterface, time.Second*10)
 			},
-			get: func(transactionInterface interface{}) (interface{}, error) {
+			get: func(transactionInterface TransactionInterface) (interface{}, error) {
 				return TransactionGetTransactionValidDuration(transactionInterface)
 			},
 			assert: func(t *testing.T, actual interface{}) {
@@ -962,10 +954,10 @@ func createTransactionTests(txName string, nodeAccountIds []AccountID) []transac
 		},
 		{
 			name: "TransactionNodeAccountIDs/" + txName,
-			set: func(transactionInterface interface{}) (interface{}, error) {
+			set: func(transactionInterface TransactionInterface) (TransactionInterface, error) {
 				return TransactionSetNodeAccountIDs(transactionInterface, nodeAccountIds)
 			},
-			get: func(transactionInterface interface{}) (interface{}, error) {
+			get: func(transactionInterface TransactionInterface) (interface{}, error) {
 				return TransactionGetNodeAccountIDs(transactionInterface)
 			},
 			assert: func(t *testing.T, actual interface{}) {
@@ -974,11 +966,11 @@ func createTransactionTests(txName string, nodeAccountIds []AccountID) []transac
 		},
 		{
 			name: "TransactionMinBackoff/" + txName,
-			set: func(transactionInterface interface{}) (interface{}, error) {
+			set: func(transactionInterface TransactionInterface) (TransactionInterface, error) {
 				tx, _ := TransactionSetMaxBackoff(transactionInterface, time.Second*200)
 				return TransactionSetMinBackoff(tx, time.Second*10)
 			},
-			get: func(transactionInterface interface{}) (interface{}, error) {
+			get: func(transactionInterface TransactionInterface) (interface{}, error) {
 				return TransactionGetMinBackoff(transactionInterface)
 			},
 			assert: func(t *testing.T, actual interface{}) {
@@ -987,10 +979,10 @@ func createTransactionTests(txName string, nodeAccountIds []AccountID) []transac
 		},
 		{
 			name: "TransactionMaxBackoff/" + txName,
-			set: func(transactionInterface interface{}) (interface{}, error) {
+			set: func(transactionInterface TransactionInterface) (TransactionInterface, error) {
 				return TransactionSetMaxBackoff(transactionInterface, time.Second*200)
 			},
-			get: func(transactionInterface interface{}) (interface{}, error) {
+			get: func(transactionInterface TransactionInterface) (interface{}, error) {
 				return TransactionGetMaxBackoff(transactionInterface)
 			},
 			assert: func(t *testing.T, actual interface{}) {

@@ -24,7 +24,6 @@ import "github.com/pkg/errors"
 
 // Execute an Ethereum transaction on Hedera
 type EthereumFlow struct {
-	Transaction
 	ethereumData    *EthereumTransactionData
 	callDataFileID  *FileID
 	maxGasAllowance *Hbar
@@ -33,25 +32,19 @@ type EthereumFlow struct {
 
 // Execute an Ethereum transaction on Hedera
 func NewEthereumFlow() *EthereumFlow {
-	tx := EthereumFlow{
-		Transaction: _NewTransaction(),
-	}
-
-	tx._SetDefaultMaxTransactionFee(NewHbar(20))
+	tx := EthereumFlow{}
 
 	return &tx
 }
 
 // SetEthereumData sets the raw Ethereum transaction.
 func (transaction *EthereumFlow) SetEthereumData(data *EthereumTransactionData) *EthereumFlow {
-	transaction._RequireNotFrozen()
 	transaction.ethereumData = data
 	return transaction
 }
 
 // SetEthereumDataBytes sets the raw Ethereum transaction.
 func (transaction *EthereumFlow) SetEthereumDataBytes(data []byte) *EthereumFlow {
-	transaction._RequireNotFrozen()
 	temp, err := EthereumTransactionDataFromBytes(data)
 	if err != nil {
 		panic(err)
@@ -67,7 +60,6 @@ func (transaction *EthereumFlow) GetEthereumData() *EthereumTransactionData {
 
 // SetCallDataFileID sets the file ID containing the call data.
 func (transaction *EthereumFlow) SetCallDataFileID(callData FileID) *EthereumFlow {
-	transaction._RequireNotFrozen()
 	transaction.callDataFileID = &callData
 	return transaction
 }
@@ -83,7 +75,6 @@ func (transaction *EthereumFlow) GetCallDataFileID() FileID {
 
 // SetMaxGasAllowance sets the maximum gas allowance for the transaction.
 func (transaction *EthereumFlow) SetMaxGasAllowance(max Hbar) *EthereumFlow {
-	transaction._RequireNotFrozen()
 	transaction.maxGasAllowance = &max
 	return transaction
 }
@@ -99,7 +90,6 @@ func (transaction *EthereumFlow) GetMaxGasAllowance() Hbar {
 
 // SetNodeAccountIDs sets the node account IDs for this Ethereum transaction.
 func (transaction *EthereumFlow) SetNodeAccountIDs(nodes []AccountID) *EthereumFlow {
-	transaction._RequireNotFrozen()
 	transaction.nodeAccountIDs = nodes
 	return transaction
 }

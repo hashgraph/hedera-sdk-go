@@ -149,11 +149,11 @@ func updateSupplyKeyFullValidation(client *hedera.Client, tokenID hedera.TokenID
 	}
 
 	// Sign with old and new supply keys
-	_, err = newSupplyKey.SignTransaction(&tx.Transaction)
+	_, err = newSupplyKey.SignTransaction(tx)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error signing tx", err))
 	}
-	_, err = oldSupplyKey.SignTransaction(&tx.Transaction)
+	_, err = oldSupplyKey.SignTransaction(tx)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error signing tx", err))
 	}
