@@ -222,9 +222,7 @@ func TestIntegrationAccountDeleteTransactionCannotDeleteWithPendingAirdrops(t *t
 	nftSerials := receipt.SerialNumbers
 
 	// Create receiver
-	receiver, _, err := createAccount(&env, func(tx *AccountCreateTransaction) {
-		tx.SetMaxAutomaticTokenAssociations(0)
-	})
+	receiver, _, err := createAccount(&env)
 	require.NoError(t, err)
 
 	// Airdrop the tokens

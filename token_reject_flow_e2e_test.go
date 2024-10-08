@@ -55,9 +55,7 @@ func TestIntegrationTokenRejectFlowCanExecuteForFungibleToken(t *testing.T) {
 	require.NoError(t, err)
 
 	// create receiver account with 0 auto associations
-	receiver, key, err := createAccount(&env, func(tx *AccountCreateTransaction) {
-		tx.SetMaxAutomaticTokenAssociations(0)
-	})
+	receiver, key, err := createAccount(&env)
 	require.NoError(t, err)
 
 	// associate the tokens with the receiver
@@ -145,9 +143,7 @@ func TestIntegrationTokenRejectFlowCanExecuteForNFT(t *testing.T) {
 	serials := receipt.SerialNumbers
 
 	// create receiver account
-	receiver, key, err := createAccount(&env, func(tx *AccountCreateTransaction) {
-		tx.SetMaxAutomaticTokenAssociations(0)
-	})
+	receiver, key, err := createAccount(&env)
 	require.NoError(t, err)
 
 	// associate the tokens with the receiver
@@ -230,9 +226,7 @@ func TestIntegrationTokenRejectFlowFailsWhenNotRejectingAllNFTs(t *testing.T) {
 	serials := receipt.SerialNumbers
 
 	// create receiver account
-	receiver, key, err := createAccount(&env, func(tx *AccountCreateTransaction) {
-		tx.SetMaxAutomaticTokenAssociations(0)
-	})
+	receiver, key, err := createAccount(&env)
 	require.NoError(t, err)
 
 	// associate the tokens with the receiver

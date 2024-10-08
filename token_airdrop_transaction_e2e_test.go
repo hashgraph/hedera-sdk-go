@@ -108,10 +108,8 @@ func TestIntegrationTokenAirdropTransactionPendingTokensWhenNotAssociated(t *tes
 
 	nftSerials := receipt.SerialNumbers
 
-	// Create receiver with 0 auto associations and receiverSig = false
-	receiver, _, err := createAccount(&env, func(tx *AccountCreateTransaction) {
-		tx.SetMaxAutomaticTokenAssociations(0)
-	})
+	// Create receiver
+	receiver, _, err := createAccount(&env)
 	require.NoError(t, err)
 
 	// Airdrop the tokens

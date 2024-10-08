@@ -126,10 +126,8 @@ func TestLimitedMaxAutoAssociationsFungibleTokensWithManualAssociate(t *testing.
 	// create token1
 	tokenID1, err := createFungibleToken(&env)
 
-	// account create with 0 max auto associations
-	receiver, key, err := createAccount(&env, func(tx *AccountCreateTransaction) {
-		tx.SetMaxAutomaticTokenAssociations(0)
-	})
+	// account create
+	receiver, key, err := createAccount(&env)
 	require.NoError(t, err)
 
 	frozenAssociateTxn, err := NewTokenAssociateTransaction().SetAccountID(receiver).AddTokenID(tokenID1).FreezeWith(env.Client)
@@ -170,10 +168,8 @@ func TestLimitedMaxAutoAssociationsNFTsManualAssociate(t *testing.T) {
 
 	serials := receipt.SerialNumbers
 
-	// account create with 0 max auto associations
-	receiver, key, err := createAccount(&env, func(tx *AccountCreateTransaction) {
-		tx.SetMaxAutomaticTokenAssociations(0)
-	})
+	// account create
+	receiver, key, err := createAccount(&env)
 	require.NoError(t, err)
 
 	frozenAssociateTxn, err := NewTokenAssociateTransaction().SetAccountID(receiver).AddTokenID(nftID1).FreezeWith(env.Client)

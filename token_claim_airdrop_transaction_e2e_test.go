@@ -56,9 +56,7 @@ func TestIntegrationTokenClaimAirdropCanExecute(t *testing.T) {
 	nftSerials := receipt.SerialNumbers
 
 	// Create receiver with 0 auto associations
-	receiver, receiverKey, err := createAccount(&env, func(tx *AccountCreateTransaction) {
-		tx.SetMaxAutomaticTokenAssociations(0)
-	})
+	receiver, receiverKey, err := createAccount(&env)
 	require.NoError(t, err)
 
 	// Airdrop the tokens
@@ -129,16 +127,12 @@ func TestIntegrationTokenClaimAirdropMultipleReceivers(t *testing.T) {
 	require.NoError(t, err)
 	nftSerials := receipt.SerialNumbers
 
-	// Create receiver1 with 0 auto associations
-	receiver1, receiver1Key, err := createAccount(&env, func(tx *AccountCreateTransaction) {
-		tx.SetMaxAutomaticTokenAssociations(0)
-	})
+	// Create receiver1
+	receiver1, receiver1Key, err := createAccount(&env)
 	require.NoError(t, err)
 
-	// Create receiver2 with 0 auto associations
-	receiver2, receiver2Key, err := createAccount(&env, func(tx *AccountCreateTransaction) {
-		tx.SetMaxAutomaticTokenAssociations(0)
-	})
+	// Create receiver2
+	receiver2, receiver2Key, err := createAccount(&env)
 	require.NoError(t, err)
 
 	// Airdrop the tokens to both
@@ -229,10 +223,8 @@ func TestIntegrationTokenClaimAirdropMultipleAirdropTxns(t *testing.T) {
 	require.NoError(t, err)
 	nftSerials := receipt.SerialNumbers
 
-	// Create receiver with 0 auto associations
-	receiver, receiverKey, err := createAccount(&env, func(tx *AccountCreateTransaction) {
-		tx.SetMaxAutomaticTokenAssociations(0)
-	})
+	// Create receiver
+	receiver, receiverKey, err := createAccount(&env)
 	require.NoError(t, err)
 
 	// Airdrop some of the tokens
@@ -311,10 +303,8 @@ func TestIntegrationTokenClaimAirdropCannotClaimNonExistingAirdrop(t *testing.T)
 	tokenID, err := createFungibleToken(&env)
 	require.NoError(t, err)
 
-	// Create receiver with 0 auto associations
-	receiver, _, err := createAccount(&env, func(tx *AccountCreateTransaction) {
-		tx.SetMaxAutomaticTokenAssociations(0)
-	})
+	// Create receiver
+	receiver, _, err := createAccount(&env)
 	require.NoError(t, err)
 
 	// Airdrop the tokens
@@ -345,10 +335,8 @@ func TestIntegrationTokenClaimAirdropCannotClaimAlreadyClaimedAirdrop(t *testing
 	tokenID, err := createFungibleToken(&env)
 	require.NoError(t, err)
 
-	// Create receiver with 0 auto associations
-	receiver, receiverKey, err := createAccount(&env, func(tx *AccountCreateTransaction) {
-		tx.SetMaxAutomaticTokenAssociations(0)
-	})
+	// Create receiver
+	receiver, receiverKey, err := createAccount(&env)
 	require.NoError(t, err)
 
 	// Airdrop the tokens
@@ -404,10 +392,8 @@ func TestIntegrationTokenClaimAirdropCannotClaimWithDupblicateEntries(t *testing
 	tokenID, err := createFungibleToken(&env)
 	require.NoError(t, err)
 
-	// Create receiver with 0 auto associations
-	receiver, receiverKey, err := createAccount(&env, func(tx *AccountCreateTransaction) {
-		tx.SetMaxAutomaticTokenAssociations(0)
-	})
+	// Create receiver
+	receiver, receiverKey, err := createAccount(&env)
 	require.NoError(t, err)
 
 	// Airdrop the tokens
@@ -439,10 +425,8 @@ func TestIntegrationTokenClaimAirdropCannotClaimWithPausedToken(t *testing.T) {
 	tokenID, err := createFungibleToken(&env)
 	require.NoError(t, err)
 
-	// Create receiver with 0 auto associations
-	receiver, receiverKey, err := createAccount(&env, func(tx *AccountCreateTransaction) {
-		tx.SetMaxAutomaticTokenAssociations(0)
-	})
+	// Create receiver
+	receiver, receiverKey, err := createAccount(&env)
 	require.NoError(t, err)
 
 	// Airdrop the tokens
@@ -482,10 +466,8 @@ func TestIntegrationTokenClaimAirdropCannotClaimWithDeletedToken(t *testing.T) {
 	tokenID, err := createFungibleToken(&env)
 	require.NoError(t, err)
 
-	// Create receiver with 0 auto associations
-	receiver, receiverKey, err := createAccount(&env, func(tx *AccountCreateTransaction) {
-		tx.SetMaxAutomaticTokenAssociations(0)
-	})
+	// Create receiver
+	receiver, receiverKey, err := createAccount(&env)
 	require.NoError(t, err)
 
 	// Airdrop the tokens
@@ -525,10 +507,8 @@ func TestIntegrationTokenClaimAirdropCannotClaimWithFrozenToken(t *testing.T) {
 	tokenID, err := createFungibleToken(&env)
 	require.NoError(t, err)
 
-	// Create receiver with 0 auto associations
-	receiver, receiverKey, err := createAccount(&env, func(tx *AccountCreateTransaction) {
-		tx.SetMaxAutomaticTokenAssociations(0)
-	})
+	// Create receiver
+	receiver, receiverKey, err := createAccount(&env)
 	require.NoError(t, err)
 
 	// Airdrop the tokens
