@@ -33,6 +33,7 @@ import (
 func TestIntegrationNetworkVersionInfoQueryCanExecute(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	q, err := NewNetworkVersionQuery().
 		SetMaxQueryPayment(NewHbar(1)).
@@ -40,13 +41,13 @@ func TestIntegrationNetworkVersionInfoQueryCanExecute(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 	fmt.Println(q)
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
+
 }
 
 func TestIntegrationNetworkVersionInfoQueryGetCost(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	query := NewNetworkVersionQuery().SetNodeAccountIDs(env.NodeAccountIDs)
 
@@ -56,6 +57,4 @@ func TestIntegrationNetworkVersionInfoQueryGetCost(t *testing.T) {
 	_, err = query.SetQueryPayment(cost).Execute(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
