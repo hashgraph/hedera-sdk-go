@@ -239,7 +239,6 @@ func (record TransactionRecord) MarshalJSON() ([]byte, error) {
 		}
 	}
 	m["pendingAirdropRecords"] = pendingAirdropRecords
-	fmt.Println(m["pendingAirdropRecords"])
 
 	receiptBytes, err := record.Receipt.MarshalJSON()
 	if err != nil {
