@@ -330,7 +330,7 @@ func createAccount(env *IntegrationTestEnv, opts ...AccountCreateTransactionCust
 	newKey, err := PrivateKeyGenerateEd25519()
 
 	if err != nil {
-		return AccountID{}, "", err
+		return AccountID{}, PrivateKey{}, err
 	}
 
 	accountCreate := NewAccountCreateTransaction().
@@ -344,13 +344,13 @@ func createAccount(env *IntegrationTestEnv, opts ...AccountCreateTransactionCust
 
 	accountCreateExec, err := accountCreate.Execute(env.Client)
 	if err != nil {
-		return AccountID{}, "", err
+		return AccountID{}, PrivateKey{}, err
 	}
 
 	receipt, err := accountCreateExec.SetValidateStatus(true).GetReceipt(env.Client)
 
 	if err != nil {
-		return AccountID{}, "", err
+		return AccountID{}, PrivateKey{}, err
 	}
 
 	return *receipt.AccountID, newKey, err
