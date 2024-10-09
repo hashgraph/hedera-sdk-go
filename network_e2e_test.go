@@ -25,7 +25,6 @@ package hedera
 
 import (
 	"bytes"
-	"fmt"
 	"os"
 	"regexp"
 	"testing"
@@ -71,8 +70,6 @@ func TestIntegrationNodeForTransaction(t *testing.T) {
 		if len(matches) > 1 {
 			nodeAccountID := matches[1]
 			nodeAccountIDs[nodeAccountID] = struct{}{}
-		} else {
-			fmt.Println("Node Account ID not found")
 		}
 		buf.Reset()
 	}
@@ -116,8 +113,6 @@ func TestIntegrationNodeForQuery(t *testing.T) {
 		if len(matches) > 1 {
 			nodeAccountID := matches[1]
 			nodeAccountIDs[nodeAccountID] = struct{}{}
-		} else {
-			fmt.Println("Node Account ID not found")
 		}
 		buf.Reset()
 	}

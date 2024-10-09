@@ -21,7 +21,6 @@ package hedera
  */
 
 import (
-	"sort"
 	"time"
 
 	"google.golang.org/protobuf/types/known/wrapperspb"
@@ -138,7 +137,6 @@ func (tx *TokenAirdropTransaction) GetTokenTransfers() map[TokenID][]TokenTransf
 		}
 
 		tempTokenTransferList := _TokenTransfers{tokenTransfersList}
-		sort.Sort(tempTokenTransferList)
 
 		transfers[tokenID] = tempTokenTransferList.transfers
 	}
@@ -558,22 +556,12 @@ func (tx *TokenAirdropTransaction) buildProtoBody() *services.TokenAirdropTransa
 		TokenTransfers: []*services.TokenTransferList{},
 	}
 
-	tempTokenIDarray := make([]TokenID, 0)
-	for transfer := range tx.tokenTransfers {
-		tempTokenIDarray = append(tempTokenIDarray, transfer)
-	}
-	sort.Sort(_TokenIDs{tokenIDs: tempTokenIDarray})
-
-	for _, k := range tempTokenIDarray {
-		sort.Sort(&_HbarTransfers{transfers: tx.tokenTransfers[k].Transfers})
-	}
-
-	if len(tempTokenIDarray) > 0 {
+	if len(tx.tokenTransfers) > 0 {
 		if body.TokenTransfers == nil {
 			body.TokenTransfers = make([]*services.TokenTransferList, 0)
 		}
 
-		for _, tokenID := range tempTokenIDarray {
+		for tokenID := range tx.tokenTransfers {
 			transfers := tx.tokenTransfers[tokenID]._ToProtobuf()
 
 			bod := &services.TokenTransferList{
@@ -589,30 +577,15 @@ func (tx *TokenAirdropTransaction) buildProtoBody() *services.TokenAirdropTransa
 		}
 	}
 
-	tempTokenIDarray = make([]TokenID, 0)
-	for k := range tx.nftTransfers {
-		tempTokenIDarray = append(tempTokenIDarray, k)
-	}
-	sort.Sort(_TokenIDs{tokenIDs: tempTokenIDarray})
-
-	tempNftTransfers := make(map[TokenID][]*_TokenNftTransfer)
-	for _, k := range tempTokenIDarray {
-		tempTokenNftTransfer := tx.nftTransfers[k]
-
-		sort.Sort(&_TokenNftTransfers{tempTokenNftTransfer})
-
-		tempNftTransfers[k] = tempTokenNftTransfer
-	}
-
-	if len(tempTokenIDarray) > 0 {
+	if len(tx.nftTransfers) > 0 {
 		if body.TokenTransfers == nil {
 			body.TokenTransfers = make([]*services.TokenTransferList, 0)
 		}
 
-		for _, tokenID := range tempTokenIDarray {
+		for tokenID, nftTransferList := range tx.nftTransfers {
 			nftTransfers := make([]*services.NftTransfer, 0)
 
-			for _, nftT := range tempNftTransfers[tokenID] {
+			for _, nftT := range nftTransferList {
 				nftTransfers = append(nftTransfers, nftT._ToProtobuf())
 			}
 
