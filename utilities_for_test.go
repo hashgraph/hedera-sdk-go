@@ -323,3 +323,35 @@ func createFungibleToken(env *IntegrationTestEnv, opts ...TokenCreateTransaction
 	}
 	return *receipt.TokenID, err
 }
+
+type AccountCreateTransactionCustomizer func(transaction *AccountCreateTransaction)
+
+func createAccount(env *IntegrationTestEnv, opts ...AccountCreateTransactionCustomizer) (AccountID, PrivateKey, error) {
+	newKey, err := PrivateKeyGenerateEd25519()
+
+	if err != nil {
+		return AccountID{}, PrivateKey{}, err
+	}
+
+	accountCreate := NewAccountCreateTransaction().
+		SetKey(newKey).
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetInitialBalance(NewHbar(1))
+
+	for _, opt := range opts {
+		opt(accountCreate)
+	}
+
+	accountCreateExec, err := accountCreate.Execute(env.Client)
+	if err != nil {
+		return AccountID{}, PrivateKey{}, err
+	}
+
+	receipt, err := accountCreateExec.SetValidateStatus(true).GetReceipt(env.Client)
+
+	if err != nil {
+		return AccountID{}, PrivateKey{}, err
+	}
+
+	return *receipt.AccountID, newKey, err
+}

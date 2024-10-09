@@ -30,23 +30,6 @@ import (
  *
  */
 
-func createAccountHelper(t *testing.T, env *IntegrationTestEnv, maxAutoAssociations int32) (AccountID, PrivateKey) {
-	newKey, err := PrivateKeyGenerateEd25519()
-	require.NoError(t, err)
-
-	accountCreate, err := NewAccountCreateTransaction().
-		SetKey(newKey).
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetInitialBalance(NewHbar(3)).
-		SetMaxAutomaticTokenAssociations(maxAutoAssociations).
-		Execute(env.Client)
-	require.NoError(t, err)
-
-	receipt, err := accountCreate.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
-	return *receipt.AccountID, newKey
-}
-
 // Limited max auto association tests
 func TestLimitedMaxAutoAssociationsFungibleTokensFlow(t *testing.T) {
 	t.Parallel()
@@ -61,7 +44,10 @@ func TestLimitedMaxAutoAssociationsFungibleTokensFlow(t *testing.T) {
 	require.NoError(t, err)
 
 	// account create with 1 max auto associations
-	receiver, _ := createAccountHelper(t, &env, 1)
+	receiver, _, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+		tx.SetMaxAutomaticTokenAssociations(1)
+	})
+	require.NoError(t, err)
 
 	// transfer token1 to receiver account
 	tokenTransferTransaction, err := NewTransferTransaction().
@@ -106,7 +92,10 @@ func TestLimitedMaxAutoAssociationsNFTsFlow(t *testing.T) {
 	serials := receipt.SerialNumbers
 
 	// account create with 1 max auto associations
-	receiver, _ := createAccountHelper(t, &env, 1)
+	receiver, _, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+		tx.SetMaxAutomaticTokenAssociations(1)
+	})
+	require.NoError(t, err)
 
 	// transfer nftID1 nfts to receiver account
 	tokenTransferTransaction, err := NewTransferTransaction().
@@ -137,8 +126,9 @@ func TestLimitedMaxAutoAssociationsFungibleTokensWithManualAssociate(t *testing.
 	// create token1
 	tokenID1, err := createFungibleToken(&env)
 
-	// account create with 0 max auto associations
-	receiver, key := createAccountHelper(t, &env, 0)
+	// account create
+	receiver, key, err := createAccount(&env)
+	require.NoError(t, err)
 
 	frozenAssociateTxn, err := NewTokenAssociateTransaction().SetAccountID(receiver).AddTokenID(tokenID1).FreezeWith(env.Client)
 	require.NoError(t, err)
@@ -178,8 +168,9 @@ func TestLimitedMaxAutoAssociationsNFTsManualAssociate(t *testing.T) {
 
 	serials := receipt.SerialNumbers
 
-	// account create with 0 max auto associations
-	receiver, key := createAccountHelper(t, &env, 0)
+	// account create
+	receiver, key, err := createAccount(&env)
+	require.NoError(t, err)
 
 	frozenAssociateTxn, err := NewTokenAssociateTransaction().SetAccountID(receiver).AddTokenID(nftID1).FreezeWith(env.Client)
 	require.NoError(t, err)
@@ -208,9 +199,15 @@ func TestUnlimitedMaxAutoAssociationsExecutes(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	// account create with unlimited max auto associations - verify it executes
-	createAccountHelper(t, &env, -1)
+	_, _, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+		tx.SetMaxAutomaticTokenAssociations(-1)
+	})
+	require.NoError(t, err)
 
-	accountID, newKey := createAccountHelper(t, &env, 100)
+	accountID, newKey, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+		tx.SetMaxAutomaticTokenAssociations(100)
+	})
+	require.NoError(t, err)
 
 	// update the account with unlimited max auto associations
 	accountUpdateFrozen, err := NewAccountUpdateTransaction().
@@ -239,9 +236,15 @@ func TestUnlimitedMaxAutoAssociationsAllowsToTransferFungibleTokens(t *testing.T
 	require.NoError(t, err)
 
 	// account create with unlimited max auto associations
-	accountID1, _ := createAccountHelper(t, &env, -1)
+	accountID1, _, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+		tx.SetMaxAutomaticTokenAssociations(-1)
+	})
+	require.NoError(t, err)
 	// create account with 100 max auto associations
-	accountID2, newKey := createAccountHelper(t, &env, 100)
+	accountID2, newKey, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+		tx.SetMaxAutomaticTokenAssociations(100)
+	})
+	require.NoError(t, err)
 
 	// update the account with unlimited max auto associations
 	accountUpdateFrozen, err := NewAccountUpdateTransaction().
@@ -309,7 +312,10 @@ func TestUnlimitedMaxAutoAssociationsAllowsToTransferFungibleTokensWithDecimals(
 	require.NoError(t, err)
 
 	// account create with unlimited max auto associations
-	accountID, _ := createAccountHelper(t, &env, -1)
+	accountID, _, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+		tx.SetMaxAutomaticTokenAssociations(-1)
+	})
+	require.NoError(t, err)
 
 	// transfer some token1 and token2 tokens
 	tokenTransferTransaction, err := NewTransferTransaction().
@@ -335,7 +341,10 @@ func TestUnlimitedMaxAutoAssociationsAllowsToTransferFromFungibleTokens(t *testi
 	env := NewIntegrationTestEnv(t)
 
 	// create spender account which will be approved to spend
-	spender, spenderKey := createAccountHelper(t, &env, 10)
+	spender, spenderKey, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+		tx.SetMaxAutomaticTokenAssociations(10)
+	})
+	require.NoError(t, err)
 
 	// create token1
 	tokenID1, err := createFungibleToken(&env)
@@ -346,7 +355,10 @@ func TestUnlimitedMaxAutoAssociationsAllowsToTransferFromFungibleTokens(t *testi
 	require.NoError(t, err)
 
 	// account create with unlimited max auto associations
-	accountID, _ := createAccountHelper(t, &env, -1)
+	accountID, _, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+		tx.SetMaxAutomaticTokenAssociations(-1)
+	})
+	require.NoError(t, err)
 
 	// approve the spender
 	approve, err := NewAccountAllowanceApproveTransaction().
@@ -405,8 +417,15 @@ func TestUnlimitedMaxAutoAssociationsAllowsToTransferNFTs(t *testing.T) {
 	serials := receipt.SerialNumbers
 
 	// account create with unlimited max auto associations
-	accountID1, _ := createAccountHelper(t, &env, -1)
-	accountID2, newKey := createAccountHelper(t, &env, 100)
+	accountID1, _, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+		tx.SetMaxAutomaticTokenAssociations(-1)
+	})
+	require.NoError(t, err)
+
+	accountID2, newKey, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+		tx.SetMaxAutomaticTokenAssociations(100)
+	})
+	require.NoError(t, err)
 
 	// account update with unlimited max auto associations
 	accountUpdateFrozen, err := NewAccountUpdateTransaction().
@@ -467,7 +486,10 @@ func TestUnlimitedMaxAutoAssociationsAllowsToTransferFromNFTs(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	// create spender account which will be approved to spend
-	spender, spenderKey := createAccountHelper(t, &env, 10)
+	spender, spenderKey, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+		tx.SetMaxAutomaticTokenAssociations(10)
+	})
+	require.NoError(t, err)
 
 	// create 2 NFT collections and mint 10 NFTs for each collection
 	nftID1, err := createNft(&env)
@@ -487,7 +509,10 @@ func TestUnlimitedMaxAutoAssociationsAllowsToTransferFromNFTs(t *testing.T) {
 	serials := receipt.SerialNumbers
 
 	// account create with unlimited max auto associations
-	accountID, _ := createAccountHelper(t, &env, -1)
+	accountID, _, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+		tx.SetMaxAutomaticTokenAssociations(-1)
+	})
+	require.NoError(t, err)
 
 	// approve the spender
 	approve, err := NewAccountAllowanceApproveTransaction().
@@ -548,7 +573,10 @@ func TestUnlimitedMaxAutoAssociationsFailsWithInvalid(t *testing.T) {
 	require.ErrorContains(t, err, "INVALID_MAX_AUTO_ASSOCIATIONS")
 
 	// create account with 100 max auto associations
-	accountID, newKey := createAccountHelper(t, &env, 100)
+	accountID, newKey, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+		tx.SetMaxAutomaticTokenAssociations(100)
+	})
+	require.NoError(t, err)
 
 	// account update with -2 max auto associations - should fail
 	accountUpdateFrozen, err := NewAccountUpdateTransaction().
