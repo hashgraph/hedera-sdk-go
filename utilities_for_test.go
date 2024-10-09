@@ -328,13 +328,15 @@ type AccountCreateTransactionCustomizer func(transaction *AccountCreateTransacti
 
 func createAccount(env *IntegrationTestEnv, opts ...AccountCreateTransactionCustomizer) (AccountID, PrivateKey, error) {
 	newKey, err := PrivateKeyGenerateEd25519()
-	require.NoError(t, err)
 
-	accountCreate, err := NewAccountCreateTransaction().
+	if err != nil {
+		return AccountID{}, "", err
+	}
+
+	accountCreate := NewAccountCreateTransaction().
 		SetKey(newKey).
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetInitialBalance(NewHbar(1))
-	require.NoError(t, err)
 
 	for _, opt := range opts {
 		opt(accountCreate)
@@ -342,12 +344,14 @@ func createAccount(env *IntegrationTestEnv, opts ...AccountCreateTransactionCust
 
 	accountCreateExec, err := accountCreate.Execute(env.Client)
 	if err != nil {
-		return AccountID{}, err
+		return AccountID{}, "", err
 	}
 
 	receipt, err := accountCreateExec.SetValidateStatus(true).GetReceipt(env.Client)
+
 	if err != nil {
-		return AccountID{}, err
+		return AccountID{}, "", err
 	}
+
 	return *receipt.AccountID, newKey, err
 }
