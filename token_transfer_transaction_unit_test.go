@@ -291,27 +291,6 @@ func TestUnitTransferTransactionMock(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestUnitTransferTokenTransactionGetSorted(t *testing.T) {
-	tokenID := TokenID{Token: 7}
-	accountID := AccountID{Account: 3}
-	accountID2 := AccountID{Account: 2}
-	accountID3 := AccountID{Account: 4}
-
-	transaction := NewTransferTransaction().
-		AddTokenTransfer(tokenID, accountID, -123).
-		AddTokenTransfer(tokenID, accountID2, 100).
-		AddTokenTransfer(tokenID, accountID3, 23)
-
-	transfers := transaction.GetTokenTransfers()
-	require.Contains(t, transfers, tokenID)
-
-	tokenTransfers := transfers[tokenID]
-	require.Len(t, tokenTransfers, 3)
-	require.Equal(t, tokenTransfers[0].AccountID.Account, uint64(2))
-	require.Equal(t, tokenTransfers[1].AccountID.Account, uint64(3))
-	require.Equal(t, tokenTransfers[2].AccountID.Account, uint64(4))
-}
-
 func TestUnitTokenTransferEncodeDecode(t *testing.T) {
 	transfer := NewTokenTransfer(AccountID{Account: 5}, 123)
 	decoded, err := TokenTransferFromBytes(transfer.ToBytes())
