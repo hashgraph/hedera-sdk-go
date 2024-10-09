@@ -382,7 +382,7 @@ func TestIntegrationTokenAirdropTransactionWithNoBalanceFT(t *testing.T) {
 	tokenID, _ := createFungibleToken(&env)
 
 	// create spender and approve to it some tokens
-	sender, senderKey, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+	spender, spenderKey, err := createAccount(&env, func(tx *AccountCreateTransaction) {
 		tx.SetMaxAutomaticTokenAssociations(-1)
 	})
 	require.NoError(t, err)
@@ -446,7 +446,7 @@ func TestIntegrationTokenAirdropTransactionWithNoBalanceNFT(t *testing.T) {
 	nftSerials := receipt.SerialNumbers
 
 	// create spender and approve to it some tokens
-	sender, senderKey, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+	spender, spenderKey, err := createAccount(&env, func(tx *AccountCreateTransaction) {
 		tx.SetMaxAutomaticTokenAssociations(-1)
 	})
 	require.NoError(t, err)
@@ -503,7 +503,7 @@ func TestIntegrationTokenAirdropTransactionWithInvalidBody(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	_, err := NewTokenAirdropTransaction().
+	_, err = NewTokenAirdropTransaction().
 		Execute(env.Client)
 	require.ErrorContains(t, err, "EMPTY_TOKEN_TRANSFER_BODY")
 

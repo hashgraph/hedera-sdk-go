@@ -454,7 +454,7 @@ func TestIntegrationTokenRejectTransactionTokenPaused(t *testing.T) {
 	serials := receipt.SerialNumbers
 
 	// create receiver account with auto associations
-	receiver, receiverKey, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+	receiver, key, err := createAccount(&env, func(tx *AccountCreateTransaction) {
 		tx.SetMaxAutomaticTokenAssociations(100)
 	})
 	require.NoError(t, err)
@@ -528,7 +528,7 @@ func TestIntegrationTokenRejectTransactionDoesNotRemoveAllowanceFT(t *testing.T)
 	tokenID, err := createFungibleToken(&env)
 	require.NoError(t, err)
 	// create receiver account with auto associations
-	receiver, receiverKey, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+	receiver, key, err := createAccount(&env, func(tx *AccountCreateTransaction) {
 		tx.SetMaxAutomaticTokenAssociations(100)
 	})
 	require.NoError(t, err)

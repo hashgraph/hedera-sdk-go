@@ -280,7 +280,7 @@ func TestIntegrationTokenCancelAirdropCannotCancelNonExistingAirdrop(t *testing.
 	receiver, _, err := createAccount(&env)
 	require.NoError(t, err)
 	// Create random account
-	randomAccount, receiverKey, err := createAccount(&env)
+	randomAccount, _, err := createAccount(&env)
 	require.NoError(t, err)
 
 	// Airdrop the tokens
@@ -482,7 +482,7 @@ func TestIntegrationTokenCancelAirdropCanCancelWithFrozenToken(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create receiver
-	receiver, _, err := createAccount(&env)
+	receiver, receiverKey, err := createAccount(&env)
 	require.NoError(t, err)
 
 	// Airdrop the tokens

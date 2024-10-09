@@ -44,7 +44,7 @@ func TestLimitedMaxAutoAssociationsFungibleTokensFlow(t *testing.T) {
 	require.NoError(t, err)
 
 	// account create with 1 max auto associations
-	receiver, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+	receiver, _, err := createAccount(&env, func(tx *AccountCreateTransaction) {
 		tx.SetMaxAutomaticTokenAssociations(1)
 	})
 	require.NoError(t, err)
@@ -92,7 +92,7 @@ func TestLimitedMaxAutoAssociationsNFTsFlow(t *testing.T) {
 	serials := receipt.SerialNumbers
 
 	// account create with 1 max auto associations
-	receiver, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+	receiver, _, err := createAccount(&env, func(tx *AccountCreateTransaction) {
 		tx.SetMaxAutomaticTokenAssociations(1)
 	})
 	require.NoError(t, err)
