@@ -643,8 +643,6 @@ func TestIntegrationTokenRejectTransactionDoesNotRemoveAllowanceNFT(t *testing.T
 	require.NoError(t, err)
 	env.Client.SetOperator(env.OperatorID, env.OperatorKey)
 
-	tokenInfo, _ := NewTokenNftInfoQuery().SetNftID(nftID.Nft(serials[1])).Execute(env.Client)
-
 	// reject the token
 	frozenTxn, err := NewTokenRejectTransaction().
 		SetOwnerID(receiver).
@@ -655,8 +653,6 @@ func TestIntegrationTokenRejectTransactionDoesNotRemoveAllowanceNFT(t *testing.T
 	require.NoError(t, err)
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
-
-	tokenInfo, _ = NewTokenNftInfoQuery().SetNftID(nftID.Nft(serials[1])).Execute(env.Client)
 
 	// verify the allowance - should be 0 , because the receiver is no longer the owner
 	env.Client.SetOperator(spender, spenderKey)
