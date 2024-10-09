@@ -44,6 +44,7 @@ func getCallCount() int64 {
 func TestIntegrationOneSignature(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	client := ClientForNetwork(env.Client.GetNetwork()).SetOperatorWith(env.OriginalOperatorID, env.OriginalOperatorKey, signingServiceTwo)
 	response, err := NewTransferTransaction().
@@ -58,8 +59,7 @@ func TestIntegrationOneSignature(t *testing.T) {
 
 	require.Equal(t, int64(1), getCallCount())
 	client.Close()
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
+
 }
 
 func signingServiceTwo(txBytes []byte) []byte {

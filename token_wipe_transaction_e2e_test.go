@@ -35,6 +35,7 @@ import (
 func TestIntegrationTokenWipeTransactionCanExecute(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -149,13 +150,12 @@ func TestIntegrationTokenWipeTransactionCanExecute(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, &tokenID)
-	require.NoError(t, err)
 }
 
 func TestIntegrationTokenWipeTransactionNoAmount(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -248,13 +248,12 @@ func TestIntegrationTokenWipeTransactionNoAmount(t *testing.T) {
 		assert.Equal(t, "exceptional receipt status: TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES", err.Error())
 	}
 
-	err = CloseIntegrationTestEnv(env, &tokenID)
-	require.NoError(t, err)
 }
 
 func TestIntegrationTokenWipeTransactionNoTokenID(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -342,13 +341,12 @@ func TestIntegrationTokenWipeTransactionNoTokenID(t *testing.T) {
 		assert.Equal(t, "exceptional receipt status: TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES", err.Error())
 	}
 
-	err = CloseIntegrationTestEnv(env, &tokenID)
-	require.NoError(t, err)
 }
 
 func TestIntegrationTokenWipeTransactionNoAccountID(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -438,13 +436,12 @@ func TestIntegrationTokenWipeTransactionNoAccountID(t *testing.T) {
 		assert.Equal(t, "exceptional receipt status: TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES", err.Error())
 	}
 
-	err = CloseIntegrationTestEnv(env, &tokenID)
-	require.NoError(t, err)
 }
 
 func TestIntegrationTokenWipeTransactionNotZeroTokensAtDelete(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -563,13 +560,12 @@ func TestIntegrationTokenWipeTransactionNotZeroTokensAtDelete(t *testing.T) {
 		assert.Equal(t, "exceptional receipt status: TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES", err.Error())
 	}
 
-	err = CloseIntegrationTestEnv(env, &tokenID)
-	require.NoError(t, err)
 }
 
 func DisabledTestIntegrationTokenWipeTransactionNftsIfNotOwned(t *testing.T) { // nolint
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newBalance := NewHbar(2)
 

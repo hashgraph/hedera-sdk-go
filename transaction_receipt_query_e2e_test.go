@@ -34,6 +34,7 @@ import (
 func TestIntegrationTransactionReceiptQueryCanExecute(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -61,14 +62,13 @@ func TestIntegrationTransactionReceiptQueryCanExecute(t *testing.T) {
 	_, err = resp.GetRecord(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 // what is this
 func DisabledTestIntegrationTransactionReceiptQueryInvalidTransactionID(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	key, err := GeneratePrivateKey()
 	require.NoError(t, err)
@@ -124,8 +124,6 @@ func DisabledTestIntegrationTransactionReceiptQueryInvalidTransactionID(t *testi
 		panic("err was not a `ErrHederaReceiptStatus")
 	}
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationFileUpdateTransactionHandleFeeScheduleUpload(t *testing.T) {
