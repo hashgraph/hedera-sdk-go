@@ -4,7 +4,6 @@
 package hedera
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -645,7 +644,6 @@ func TestIntegrationTokenRejectTransactionDoesNotRemoveAllowanceNFT(t *testing.T
 	env.Client.SetOperator(env.OperatorID, env.OperatorKey)
 
 	tokenInfo, _ := NewTokenNftInfoQuery().SetNftID(nftID.Nft(serials[1])).Execute(env.Client)
-	fmt.Println(tokenInfo[0].SpenderID)
 
 	// reject the token
 	frozenTxn, err := NewTokenRejectTransaction().
@@ -659,7 +657,6 @@ func TestIntegrationTokenRejectTransactionDoesNotRemoveAllowanceNFT(t *testing.T
 	require.NoError(t, err)
 
 	tokenInfo, _ = NewTokenNftInfoQuery().SetNftID(nftID.Nft(serials[1])).Execute(env.Client)
-	fmt.Println(tokenInfo[0].SpenderID)
 
 	// verify the allowance - should be 0 , because the receiver is no longer the owner
 	env.Client.SetOperator(spender, spenderKey)
