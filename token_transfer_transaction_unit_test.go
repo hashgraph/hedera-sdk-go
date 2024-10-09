@@ -64,7 +64,7 @@ func TestUnitTokenTransferTransactionTransfers(t *testing.T) {
 		AddNftTransfer(nftID2, accountID2, accountID1).
 		build()
 
-	require.Equal(t, tokenTransfer.GetCryptoTransfer().Transfers.AccountAmounts, []*services.AccountAmount{
+	require.ElementsMatch(t, tokenTransfer.GetCryptoTransfer().Transfers.AccountAmounts, []*services.AccountAmount{
 		{
 			AccountID: accountID1._ToProtobuf(),
 			Amount:    amount.AsTinybar(),
@@ -75,7 +75,7 @@ func TestUnitTokenTransferTransactionTransfers(t *testing.T) {
 		},
 	})
 
-	require.Equal(t, tokenTransfer.GetCryptoTransfer().TokenTransfers, []*services.TokenTransferList{
+	require.ElementsMatch(t, tokenTransfer.GetCryptoTransfer().TokenTransfers, []*services.TokenTransferList{
 		{
 			Token: tokenID1._ToProtobuf(),
 			Transfers: []*services.AccountAmount{

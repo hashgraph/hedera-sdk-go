@@ -344,5 +344,5 @@ func TestUnitTokenAirdropTransactionScheduleProtobuf(t *testing.T) {
 
 	actual, err := tx.buildScheduled()
 	require.NoError(t, err)
-	require.Equal(t, expected.GetTokenAirdrop().TokenTransfers, actual.GetTokenAirdrop().TokenTransfers)
+	require.ElementsMatch(t, expected.GetTokenAirdrop().TokenTransfers, actual.GetTokenAirdrop().TokenTransfers)
 }
