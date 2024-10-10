@@ -31,9 +31,10 @@ import (
 )
 
 // The test has to be disabled so it doesn't fail calls to local-node
-func DisableTestIntegrationCanExecuteNodeCreateTransaction(t *testing.T) {
+func DisabledTestIntegrationCanExecuteNodeCreateTransaction(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	// The account of the new node
 	accountId, err := AccountIDFromString("0.0.4")
@@ -67,9 +68,6 @@ func DisableTestIntegrationCanExecuteNodeCreateTransaction(t *testing.T) {
 		SetAdminKey(adminKey).
 		Execute(env.Client)
 
-	_, err := resp.GetReceipt(env.Client)
-	require.NoError(t, err)
-
-	err = CloseIntegrationTestEnv(env, nil)
+	_, err = resp.GetReceipt(env.Client)
 	require.NoError(t, err)
 }
