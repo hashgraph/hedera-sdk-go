@@ -25,13 +25,14 @@ package hedera
 
 import (
 	"encoding/hex"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
 
 // The test has to be disabled so it doesn't fail calls to local-node
-func DisabledCanExecuteNodeCreateTransaction(t *testing.T) {
+func TestIntegrationCanExecuteNodeCreateTransaction(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
@@ -58,7 +59,7 @@ func DisabledCanExecuteNodeCreateTransaction(t *testing.T) {
 	adminKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
-	_, err = NewNodeCreateTransaction().
+	resp, err := NewNodeCreateTransaction().
 		SetAccountID(accountId).
 		SetDescription(description).
 		SetGossipEndpoints([]Endpoint{endpoint}).
@@ -66,5 +67,11 @@ func DisabledCanExecuteNodeCreateTransaction(t *testing.T) {
 		SetGossipCaCertificate(validGossipCert).
 		SetAdminKey(adminKey).
 		Execute(env.Client)
+
+	receipt, err := resp.GetReceipt(env.Client)
+	require.NoError(t, err)
+	fmt.Println(receipt)
+
+	err = CloseIntegrationTestEnv(env, nil)
 	require.NoError(t, err)
 }
