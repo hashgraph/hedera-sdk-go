@@ -25,14 +25,13 @@ package hedera
 
 import (
 	"encoding/hex"
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
 
 // The test has to be disabled so it doesn't fail calls to local-node
-func TestIntegrationCanExecuteNodeCreateTransaction(t *testing.T) {
+func DisableTestIntegrationCanExecuteNodeCreateTransaction(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
 
@@ -68,9 +67,8 @@ func TestIntegrationCanExecuteNodeCreateTransaction(t *testing.T) {
 		SetAdminKey(adminKey).
 		Execute(env.Client)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	_, err := resp.GetReceipt(env.Client)
 	require.NoError(t, err)
-	fmt.Println(receipt)
 
 	err = CloseIntegrationTestEnv(env, nil)
 	require.NoError(t, err)
