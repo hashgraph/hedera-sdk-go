@@ -34,6 +34,7 @@ import (
 func TestIntegrationAccountIDCanPopulateAccountNumber(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	privateKey, err := PrivateKeyGenerateEcdsa()
 	require.NoError(t, err)
@@ -58,6 +59,7 @@ func TestIntegrationAccountIDCanPopulateAccountNumber(t *testing.T) {
 func TestIntegrationAccountIDCanPopulateAccountAliasEvmAddress(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	privateKey, err := PrivateKeyGenerateEcdsa()
 	require.NoError(t, err)
@@ -80,6 +82,7 @@ func TestIntegrationAccountIDCanPopulateAccountAliasEvmAddress(t *testing.T) {
 func TestIntegrationAccountIDCanPopulateAccountAliasEvmAddressWithMirror(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	privateKey, err := PrivateKeyGenerateEcdsa()
 	require.NoError(t, err)
@@ -102,6 +105,7 @@ func TestIntegrationAccountIDCanPopulateAccountAliasEvmAddressWithMirror(t *test
 func TestIntegrationAccountIDCanPopulateAccountAliasEvmAddressWithNoMirror(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 	env.Client.mirrorNetwork = nil
 	privateKey, err := PrivateKeyGenerateEcdsa()
 	require.NoError(t, err)
@@ -124,6 +128,7 @@ func TestIntegrationAccountIDCanPopulateAccountAliasEvmAddressWithNoMirror(t *te
 func TestIntegrationAccountIDCanPopulateAccountAliasEvmAddressWithMirrorAndNoEvmAddress(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 	env.Client.mirrorNetwork = nil
 	privateKey, err := PrivateKeyGenerateEcdsa()
 	require.NoError(t, err)
