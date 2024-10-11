@@ -34,7 +34,7 @@ import (
 	"strings"
 
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/hashgraph/hedera-protobufs-go/services"
+	"github.com/hashgraph/hedera-sdk-go/v2/generated/services"
 	"github.com/pkg/errors"
 )
 

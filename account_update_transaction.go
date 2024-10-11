@@ -25,7 +25,7 @@ import (
 
 	"google.golang.org/protobuf/types/known/wrapperspb"
 
-	"github.com/hashgraph/hedera-protobufs-go/services"
+	"github.com/hashgraph/hedera-sdk-go/v2/generated/services"
 )
 
 // AccountUpdateTransaction

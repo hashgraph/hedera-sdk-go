@@ -23,7 +23,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-protobufs-go/services"
+	"github.com/hashgraph/hedera-sdk-go/v2/generated/services"
 )
 
 // ContractCallQuery calls a function of the given smart contract instance, giving it ContractFunctionParameters as its

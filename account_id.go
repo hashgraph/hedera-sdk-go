@@ -30,7 +30,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/hashgraph/hedera-protobufs-go/services"
+	"github.com/hashgraph/hedera-sdk-go/v2/generated/services"
 	protobuf "google.golang.org/protobuf/proto"
 )
 

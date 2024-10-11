@@ -23,7 +23,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-protobufs-go/mirror"
+	"github.com/hashgraph/hedera-sdk-go/v2/generated/mirror"
 )
 
 // TopicMessageChunk is a chunk of a topic message

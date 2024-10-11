@@ -23,7 +23,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-protobufs-go/services"
+	"github.com/hashgraph/hedera-sdk-go/v2/generated/services"
 )
 
 // FileCreateTransaction creates a new file, containing the given contents.  It is referenced by its FileID, and does

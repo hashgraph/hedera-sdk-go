@@ -23,7 +23,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-protobufs-go/services"
+	"github.com/hashgraph/hedera-sdk-go/v2/generated/services"
 )
 
 // AccountRecordsQuery gets all of the records for an account for any transfers into it and out of

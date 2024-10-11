@@ -25,7 +25,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashgraph/hedera-protobufs-go/services"
+	"github.com/hashgraph/hedera-sdk-go/v2/generated/services"
 )
 
 // AccountCreateTransaction creates a new account. After the account is created, the AccountID for it is in the receipt,

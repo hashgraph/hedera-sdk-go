@@ -21,7 +21,7 @@ package hedera
  */
 
 import (
-	"github.com/hashgraph/hedera-protobufs-go/services"
+	"github.com/hashgraph/hedera-sdk-go/v2/generated/services"
 )
 
 // ContractLogInfo is the log info for events returned by a function

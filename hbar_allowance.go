@@ -23,7 +23,7 @@ package hedera
 import (
 	"fmt"
 
-	"github.com/hashgraph/hedera-protobufs-go/services"
+	"github.com/hashgraph/hedera-sdk-go/v2/generated/services"
 )
 
 // An approved allowance of hbar transfers for a spender.

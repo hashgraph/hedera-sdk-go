@@ -28,7 +28,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hashgraph/hedera-protobufs-go/services"
+	"github.com/hashgraph/hedera-sdk-go/v2/generated/services"
 	"github.com/stretchr/testify/require"
 )
 

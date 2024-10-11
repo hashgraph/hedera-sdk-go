@@ -23,7 +23,7 @@ package hedera
 import (
 	"fmt"
 
-	"github.com/hashgraph/hedera-protobufs-go/services"
+	"github.com/hashgraph/hedera-sdk-go/v2/generated/services"
 	"github.com/pkg/errors"
 	protobuf "google.golang.org/protobuf/proto"
 )

@@ -31,7 +31,7 @@ import (
 
 	protobuf "google.golang.org/protobuf/proto"
 
-	"github.com/hashgraph/hedera-protobufs-go/services"
+	"github.com/hashgraph/hedera-sdk-go/v2/generated/services"
 )
 
 // The complete record for a transaction on Hedera that has reached consensus.
