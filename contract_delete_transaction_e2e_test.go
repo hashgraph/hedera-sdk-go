@@ -39,6 +39,7 @@ func TestIntegrationContractDeleteTransactionCanExecute(t *testing.T) {
 
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	resp, err := NewFileCreateTransaction().
 		SetKeys(env.Client.GetOperatorPublicKey()).
@@ -89,8 +90,6 @@ func TestIntegrationContractDeleteTransactionCanExecute(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationContractDeleteTransactionNoContractID(t *testing.T) {
@@ -99,6 +98,7 @@ func TestIntegrationContractDeleteTransactionNoContractID(t *testing.T) {
 
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	resp, err := NewFileCreateTransaction().
 		SetKeys(env.Client.GetOperatorPublicKey()).
@@ -144,6 +144,4 @@ func TestIntegrationContractDeleteTransactionNoContractID(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }

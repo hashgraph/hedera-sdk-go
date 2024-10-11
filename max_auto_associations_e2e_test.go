@@ -51,6 +51,7 @@ func createAccountHelper(t *testing.T, env *IntegrationTestEnv, maxAutoAssociati
 func TestLimitedMaxAutoAssociationsFungibleTokensFlow(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	// create token1
 	tokenID1, err := createFungibleToken(&env)
@@ -87,6 +88,7 @@ func TestLimitedMaxAutoAssociationsFungibleTokensFlow(t *testing.T) {
 func TestLimitedMaxAutoAssociationsNFTsFlow(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	// create 2 NFT collections and mint 10 NFTs for each collection
 	nftID1, err := createNft(&env)
@@ -133,6 +135,7 @@ func TestLimitedMaxAutoAssociationsNFTsFlow(t *testing.T) {
 func TestLimitedMaxAutoAssociationsFungibleTokensWithManualAssociate(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	// create token1
 	tokenID1, err := createFungibleToken(&env)
@@ -167,6 +170,7 @@ func TestLimitedMaxAutoAssociationsFungibleTokensWithManualAssociate(t *testing.
 func TestLimitedMaxAutoAssociationsNFTsManualAssociate(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	// create NFT collection and mint 10
 	nftID1, err := createNft(&env)
@@ -206,6 +210,7 @@ func TestLimitedMaxAutoAssociationsNFTsManualAssociate(t *testing.T) {
 func TestUnlimitedMaxAutoAssociationsExecutes(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	// account create with unlimited max auto associations - verify it executes
 	createAccountHelper(t, &env, -1)
@@ -229,6 +234,7 @@ func TestUnlimitedMaxAutoAssociationsExecutes(t *testing.T) {
 func TestUnlimitedMaxAutoAssociationsAllowsToTransferFungibleTokens(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	// create token1
 	tokenID1, err := createFungibleToken(&env)
@@ -295,6 +301,7 @@ func TestUnlimitedMaxAutoAssociationsAllowsToTransferFungibleTokens(t *testing.T
 func TestUnlimitedMaxAutoAssociationsAllowsToTransferFungibleTokensWithDecimals(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	// create token1
 	tokenID1, err := createFungibleToken(&env, func(transaction *TokenCreateTransaction) {
@@ -333,6 +340,7 @@ func TestUnlimitedMaxAutoAssociationsAllowsToTransferFungibleTokensWithDecimals(
 func TestUnlimitedMaxAutoAssociationsAllowsToTransferFromFungibleTokens(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	// create spender account which will be approved to spend
 	spender, spenderKey := createAccountHelper(t, &env, 10)
@@ -386,6 +394,7 @@ func TestUnlimitedMaxAutoAssociationsAllowsToTransferFromFungibleTokens(t *testi
 func TestUnlimitedMaxAutoAssociationsAllowsToTransferNFTs(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	// create 2 NFT collections and mint 10 NFTs for each collection
 	nftID1, err := createNft(&env)
@@ -465,6 +474,7 @@ func TestUnlimitedMaxAutoAssociationsAllowsToTransferNFTs(t *testing.T) {
 func TestUnlimitedMaxAutoAssociationsAllowsToTransferFromNFTs(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	// create spender account which will be approved to spend
 	spender, spenderKey := createAccountHelper(t, &env, 10)
@@ -526,6 +536,7 @@ func TestUnlimitedMaxAutoAssociationsAllowsToTransferFromNFTs(t *testing.T) {
 func TestUnlimitedMaxAutoAssociationsFailsWithInvalid(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	// account create with -2 and with -1000 max auto associations
 	newKey, err := PrivateKeyGenerateEd25519()
