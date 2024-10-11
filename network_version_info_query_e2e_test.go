@@ -24,7 +24,6 @@ package hedera
  */
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -35,7 +34,7 @@ func TestIntegrationNetworkVersionInfoQueryCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 	defer CloseIntegrationTestEnv(env, nil)
 
-	q, err := NewNetworkVersionQuery().
+	_, err := NewNetworkVersionQuery().
 		SetMaxQueryPayment(NewHbar(1)).
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		Execute(env.Client)

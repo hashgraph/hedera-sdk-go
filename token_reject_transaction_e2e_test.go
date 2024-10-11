@@ -4,7 +4,6 @@
 package hedera
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -43,7 +42,10 @@ func TestIntegrationTokenRejectTransactionCanExecuteForFungibleToken(t *testing.
 	require.NoError(t, err)
 
 	// create receiver account with auto associations
-	receiver, key := createAccountHelper(t, &env, 100)
+	receiver, key, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+		tx.SetMaxAutomaticTokenAssociations(100)
+	})
+	require.NoError(t, err)
 
 	// transfer fts to the receiver
 	tx, err := NewTransferTransaction().
@@ -105,7 +107,10 @@ func TestIntegrationTokenRejectTransactionCanExecuteForNFT(t *testing.T) {
 	serials := receipt.SerialNumbers
 
 	// create receiver account with auto associations
-	receiver, key := createAccountHelper(t, &env, 100)
+	receiver, key, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+		tx.SetMaxAutomaticTokenAssociations(100)
+	})
+	require.NoError(t, err)
 
 	// transfer nfts to the receiver
 	tx, err := NewTransferTransaction().
@@ -173,7 +178,10 @@ func TestIntegrationTokenRejectTransactionCanExecuteForFTAndNFTAtTheSameTime(t *
 	serials := receipt.SerialNumbers
 
 	// create receiver account with auto associations
-	receiver, key := createAccountHelper(t, &env, 100)
+	receiver, key, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+		tx.SetMaxAutomaticTokenAssociations(100)
+	})
+	require.NoError(t, err)
 
 	// transfer fts to the receiver
 	tx1, err := NewTransferTransaction().
@@ -269,7 +277,10 @@ func TestIntegrationTokenRejectTransactionReceiverSigRequired(t *testing.T) {
 	serials := receipt.SerialNumbers
 
 	// create receiver account with auto associations
-	receiver, key := createAccountHelper(t, &env, 100)
+	receiver, key, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+		tx.SetMaxAutomaticTokenAssociations(100)
+	})
+	require.NoError(t, err)
 
 	// transfer nft to the receiver
 	frozenTransfer, err := NewTransferTransaction().
@@ -364,7 +375,10 @@ func TestIntegrationTokenRejectTransactionTokenFrozen(t *testing.T) {
 	serials := receipt.SerialNumbers
 
 	// create receiver account with auto associations
-	receiver, key := createAccountHelper(t, &env, 100)
+	receiver, key, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+		tx.SetMaxAutomaticTokenAssociations(100)
+	})
+	require.NoError(t, err)
 
 	// transfer nft to the receiver
 	tx, err := NewTransferTransaction().
@@ -445,7 +459,10 @@ func TestIntegrationTokenRejectTransactionTokenPaused(t *testing.T) {
 	serials := receipt.SerialNumbers
 
 	// create receiver account with auto associations
-	receiver, key := createAccountHelper(t, &env, 100)
+	receiver, key, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+		tx.SetMaxAutomaticTokenAssociations(100)
+	})
+	require.NoError(t, err)
 
 	// transfer nft to the receiver
 	tx, err := NewTransferTransaction().
@@ -517,9 +534,15 @@ func TestIntegrationTokenRejectTransactionDoesNotRemoveAllowanceFT(t *testing.T)
 	tokenID, err := createFungibleToken(&env)
 	require.NoError(t, err)
 	// create receiver account with auto associations
-	receiver, key := createAccountHelper(t, &env, 100)
+	receiver, key, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+		tx.SetMaxAutomaticTokenAssociations(100)
+	})
+	require.NoError(t, err)
 	// create spender account to be approved
-	spender, spenderKey := createAccountHelper(t, &env, 100)
+	spender, spenderKey, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+		tx.SetMaxAutomaticTokenAssociations(100)
+	})
+	require.NoError(t, err)
 
 	// transfer ft to the receiver
 	tx, err := NewTransferTransaction().
@@ -604,9 +627,15 @@ func TestIntegrationTokenRejectTransactionDoesNotRemoveAllowanceNFT(t *testing.T
 	defer CloseIntegrationTestEnv(env, nil)
 
 	// create receiver account with auto associations
-	receiver, key := createAccountHelper(t, &env, 100)
+	receiver, key, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+		tx.SetMaxAutomaticTokenAssociations(100)
+	})
+	require.NoError(t, err)
 	// create spender account to be approved
-	spender, spenderKey := createAccountHelper(t, &env, 100)
+	spender, spenderKey, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+		tx.SetMaxAutomaticTokenAssociations(100)
+	})
+	require.NoError(t, err)
 	// create nft with treasury
 	nftID, err := createNft(&env)
 	require.NoError(t, err)
@@ -652,9 +681,6 @@ func TestIntegrationTokenRejectTransactionDoesNotRemoveAllowanceNFT(t *testing.T
 	require.NoError(t, err)
 	env.Client.SetOperator(env.OperatorID, env.OperatorKey)
 
-	tokenInfo, _ := NewTokenNftInfoQuery().SetNftID(nftID.Nft(serials[1])).Execute(env.Client)
-	fmt.Println(tokenInfo[0].SpenderID)
-
 	// reject the token
 	frozenTxn, err := NewTokenRejectTransaction().
 		SetOwnerID(receiver).
@@ -665,9 +691,6 @@ func TestIntegrationTokenRejectTransactionDoesNotRemoveAllowanceNFT(t *testing.T
 	require.NoError(t, err)
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
-
-	tokenInfo, _ = NewTokenNftInfoQuery().SetNftID(nftID.Nft(serials[1])).Execute(env.Client)
-	fmt.Println(tokenInfo[0].SpenderID)
 
 	// verify the allowance - should be 0 , because the receiver is no longer the owner
 	env.Client.SetOperator(spender, spenderKey)
@@ -718,7 +741,10 @@ func TestIntegrationTokenRejectTransactionFailsWhenRejectingNFTWithTokenID(t *te
 	serials := receipt.SerialNumbers
 
 	// create receiver account with auto associations
-	receiver, key := createAccountHelper(t, &env, 100)
+	receiver, key, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+		tx.SetMaxAutomaticTokenAssociations(100)
+	})
+	require.NoError(t, err)
 
 	// transfer nfts to the receiver
 	tx, err := NewTransferTransaction().
@@ -750,7 +776,10 @@ func TestIntegrationTokenRejectTransactionFailsWithTokenReferenceRepeated(t *tes
 	require.NoError(t, err)
 
 	// create receiver account with auto associations
-	receiver, key := createAccountHelper(t, &env, 100)
+	receiver, key, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+		tx.SetMaxAutomaticTokenAssociations(100)
+	})
+	require.NoError(t, err)
 
 	// transfer ft to the receiver
 	tx, err := NewTransferTransaction().
@@ -808,7 +837,10 @@ func TestIntegrationTokenRejectTransactionFailsWhenOwnerHasNoBalance(t *testing.
 	tokenID, err := createFungibleToken(&env)
 	require.NoError(t, err)
 	// create receiver account with auto associations
-	receiver, key := createAccountHelper(t, &env, 100)
+	receiver, key, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+		tx.SetMaxAutomaticTokenAssociations(100)
+	})
+	require.NoError(t, err)
 
 	// skip the transfer
 	// associate the receiver
@@ -934,7 +966,10 @@ func TestIntegrationTokenRejectTransactionFailsWithReferenceSizeExceeded(t *test
 	defer CloseIntegrationTestEnv(env, nil)
 
 	// create receiver account with auto associations
-	receiver, key := createAccountHelper(t, &env, 100)
+	receiver, key, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+		tx.SetMaxAutomaticTokenAssociations(100)
+	})
+	require.NoError(t, err)
 
 	// create fungible token with treasury
 	tokenID, err := createFungibleToken(&env)
@@ -999,7 +1034,10 @@ func TestIntegrationTokenRejectTransactionFailsWithInvalidSignature(t *testing.T
 	require.NoError(t, err)
 
 	// create receiver account with auto associations
-	receiver, _ := createAccountHelper(t, &env, 100)
+	receiver, _, err := createAccount(&env, func(tx *AccountCreateTransaction) {
+		tx.SetMaxAutomaticTokenAssociations(100)
+	})
+	require.NoError(t, err)
 
 	// craete helper key
 	otherKey, err := PrivateKeyGenerateEd25519()
