@@ -20,7 +20,7 @@ func main() {
 
 	// nolint:dogsled
 	_, buildFilename, _, _ := runtime.Caller(0)
-	projectDir := path.Join(buildFilename, "../../../..")
+	projectDir := path.Join(buildFilename, "../../..")
 
 	// remove all existing files
 
@@ -34,9 +34,6 @@ func main() {
 
 	case "mirror":
 		buildMirror(projectDir)
-
-	case "streams":
-		buildStreams(projectDir)
 
 	case "sdk":
 		buildSdk(projectDir)
@@ -94,14 +91,14 @@ func buildServices(dir string) {
 
 func buildMirror(dir string) {
 	cmd := exec.Command("protoc",
-		"--go_out=./",
+		"--go_out=generated/",
 		"--go_opt=Mbasic_types.proto=github.com/hashgraph/hedera-sdk-go/v2/generated/services",
 		"--go_opt=Mtimestamp.proto=github.com/hashgraph/hedera-sdk-go/v2/generated/services",
 		"--go_opt=Mconsensus_submit_message.proto=github.com/hashgraph/hedera-sdk-go/v2/generated/services",
 		"--go_opt=Mmirror/consensus_service.proto=github.com/hashgraph/hedera-sdk-go/v2/generated/mirror",
 		"--go_opt=Mmirror/mirror_network_service.proto=github.com/hashgraph/hedera-sdk-go/v2/generated/mirror",
 		"--go_opt=paths=source_relative",
-		"--go-grpc_out=./",
+		"--go-grpc_out=generated/",
 		"--go-grpc_opt=Mbasic_types.proto=github.com/hashgraph/hedera-sdk-go/v2/generated/services",
 		"--go-grpc_opt=Mtimestamp.proto=github.com/hashgraph/hedera-sdk-go/v2/generated/services",
 		"--go-grpc_opt=Mconsensus_submit_message.proto=github.com/hashgraph/hedera-sdk-go/v2/generated/services",
@@ -119,28 +116,6 @@ func buildMirror(dir string) {
 
 	mustRunCommand(cmd)
 	renamePackageDeclGrpcFiles(dir, "com_hedera_mirror_api_proto", "mirror")
-}
-
-func buildStreams(dir string) {
-	cmd := exec.Command("protoc",
-		"--go_out=streams/",
-		"--go_opt=Mbasic_types.proto=github.com/hashgraph/hedera-sdk-go/v2/generated/services",
-		"--go_opt=Mtimestamp.proto=github.com/hashgraph/hedera-sdk-go/v2/generated/services",
-		"--go_opt=Maccount_balance_file.proto=github.com/hashgraph/hedera-go-sdk/streams",
-		"--go_opt=paths=source_relative",
-		"--go-grpc_out=streams/",
-		"--go-grpc_opt=Mbasic_types.proto=github.com/hashgraph/hedera-sdk-go/v2/generated/services",
-		"--go-grpc_opt=Mtimestamp.proto=github.com/hashgraph/hedera-sdk-go/v2/generated/services",
-		"--go-grpc_opt=Maccount_balance_file.proto=github.com/hashgraph/hedera-go-sdk/streams",
-		"--go-grpc_opt=paths=source_relative",
-		"-Iproto/streams",
-		"-Iproto/services",
-		"proto/streams/account_balance_file.proto",
-	)
-
-	cmd.Dir = dir
-
-	mustRunCommand(cmd)
 }
 
 func buildSdk(dir string) {

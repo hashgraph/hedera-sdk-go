@@ -14,8 +14,8 @@ require (
 	github.com/youmark/pkcs8 v0.0.0-20201027041543-1326539a0a0a
 	golang.org/x/crypto v0.28.0
 	golang.org/x/text v0.19.0
-	google.golang.org/grpc v1.53.0
-	google.golang.org/protobuf v1.34.1
+	google.golang.org/grpc v1.65.0
+	google.golang.org/protobuf v1.34.2
 )
 
 require (
@@ -30,7 +30,6 @@ require (
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.3.0 // indirect
 	github.com/ethereum/c-kzg-4844 v1.0.1 // indirect
 	github.com/getsentry/sentry-go v0.25.0 // indirect
-	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/holiman/uint256 v1.2.4 // indirect
 	github.com/klauspost/compress v1.16.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
