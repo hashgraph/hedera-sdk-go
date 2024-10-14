@@ -607,3 +607,30 @@ func TestIntegrationSerializeTransactionWithoutNodeAccountIdDeserialiseAndExecut
 
 	require.NoError(t, err)
 }
+
+func TestIntegrationAccountCreateTransactionSetStakingNodeID(t *testing.T) {
+	t.Parallel()
+	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
+
+	newKey, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+
+	newBalance := NewHbar(2)
+
+	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
+
+	resp, err := NewAccountCreateTransaction().
+		SetKey(newKey).
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetInitialBalance(newBalance).
+		SetStakedAccountID(env.OperatorID).
+		SetStakedNodeID(0).
+		SetMaxAutomaticTokenAssociations(100).
+		Execute(env.Client)
+
+	require.NoError(t, err)
+
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+}

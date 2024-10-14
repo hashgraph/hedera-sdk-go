@@ -353,3 +353,28 @@ func TestUnitAccountCreateTransactionCoverage(t *testing.T) {
 		b.AddSignature(key.PublicKey(), sig)
 	}
 }
+
+func TestUnitAccountCreateSetStakedNodeID(t *testing.T) {
+	t.Parallel()
+
+	checksum := "dmqui"
+	account := AccountID{Account: 3, checksum: &checksum}
+	tx := NewAccountCreateTransaction().
+		SetStakedAccountID(account).
+		SetStakedNodeID(4)
+
+	require.Equal(t, AccountID{}, tx.GetStakedAccountID())
+	require.Equal(t, int64(4), tx.GetStakedNodeID())
+}
+func TestUnitAccountCreateSetStakedAccountID(t *testing.T) {
+	t.Parallel()
+
+	checksum := "dmqui"
+	account := AccountID{Account: 3, checksum: &checksum}
+	tx := NewAccountCreateTransaction().
+		SetStakedNodeID(4).
+		SetStakedAccountID(account)
+
+	require.Equal(t, int64(0), tx.GetStakedNodeID())
+	require.Equal(t, account, tx.GetStakedAccountID())
+}
