@@ -30,11 +30,21 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// The test has to be disabled so it doesn't fail calls to local-node
-func DisabledTestIntegrationCanExecuteNodeCreateTransaction(t *testing.T) {
+func TestIntegrationCanExecuteNodeCreateTransaction(t *testing.T) {
+	t.Skip("The test has to be disabled so it doesn't fail calls to local-node")
 	t.Parallel()
-	env := NewIntegrationTestEnv(t)
-	defer CloseIntegrationTestEnv(env, nil)
+
+	// Set the network
+	network := make(map[string]AccountID)
+	network["localhost:50211"] = AccountID{Account: 3}
+	client := ClientForNetwork(network)
+	mirror := []string{"localhost:5600"}
+	client.SetMirrorNetwork(mirror)
+
+	// Set the operator to be account 0.0.2
+	originalOperatorKey, err := PrivateKeyFromStringEd25519("302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137")
+	require.NoError(t, err)
+	client.SetOperator(AccountID{Account: 2}, originalOperatorKey)
 
 	// The account of the new node
 	accountId, err := AccountIDFromString("0.0.4")
@@ -45,7 +55,13 @@ func DisabledTestIntegrationCanExecuteNodeCreateTransaction(t *testing.T) {
 
 	// Endpoint address can be any IPV4 address
 	endpoint := Endpoint{
-		address: []byte{byte(1), byte(2), byte(3), byte(4)},
+		domainName: "tset.com",
+		port:       123,
+	}
+
+	endpoint1 := Endpoint{
+		domainName: "test.com",
+		port:       1234,
 	}
 
 	// DER encoded x509 certificate
@@ -59,15 +75,19 @@ func DisabledTestIntegrationCanExecuteNodeCreateTransaction(t *testing.T) {
 	adminKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
-	resp, err := NewNodeCreateTransaction().
+	tx, err := NewNodeCreateTransaction().
 		SetAccountID(accountId).
 		SetDescription(description).
-		SetGossipEndpoints([]Endpoint{endpoint}).
-		SetServiceEndpoints([]Endpoint{endpoint}).
+		SetGossipEndpoints([]Endpoint{endpoint, endpoint1}).
+		SetServiceEndpoints([]Endpoint{endpoint, endpoint1}).
 		SetGossipCaCertificate(validGossipCert).
 		SetAdminKey(adminKey).
-		Execute(env.Client)
+		FreezeWith(client)
 
-	_, err = resp.GetReceipt(env.Client)
+	require.NoError(t, err)
+	resp, err := tx.Sign(adminKey).Execute(client)
+	require.NoError(t, err)
+
+	_, err = resp.GetReceipt(client)
 	require.NoError(t, err)
 }
