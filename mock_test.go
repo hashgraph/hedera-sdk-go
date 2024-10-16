@@ -29,14 +29,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hashgraph/hedera-protobufs-go/mirror"
+	"github.com/hashgraph/hedera-sdk-go/v2/proto/mirror"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
 	"github.com/stretchr/testify/require"
 	protobuf "google.golang.org/protobuf/proto"
 
-	"github.com/hashgraph/hedera-protobufs-go/services"
+	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
 	"google.golang.org/grpc"
 )
 

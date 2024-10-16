@@ -26,9 +26,9 @@ import (
 	"math"
 	"time"
 
-	"github.com/hashgraph/hedera-protobufs-go/services"
+	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
 
-	"github.com/hashgraph/hedera-protobufs-go/mirror"
+	"github.com/hashgraph/hedera-sdk-go/v2/proto/mirror"
 	"google.golang.org/grpc/status"
 )
 
