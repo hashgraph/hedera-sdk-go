@@ -1,3 +1,9 @@
+## v2.48.0
+
+### Fixed
+- Reset `stakedAccountID` when setting `stakedNodeID` and vice versa
+- Fix `FEE_SCHEDULE_FILE_PART_UPLOADED` marked as error
+
 ## v2.47.0
 
 ### Added
