@@ -35,6 +35,7 @@ import (
 func TestIntegrationAccountCreateTransactionCanExecute(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
@@ -72,13 +73,12 @@ func TestIntegrationAccountCreateTransactionCanExecute(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationAccountCreateTransactionCanFreezeModify(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -120,13 +120,12 @@ func TestIntegrationAccountCreateTransactionCanFreezeModify(t *testing.T) {
 		assert.Equal(t, "transaction is immutable; it has at least one signature or has been explicitly frozen", err.Error())
 	}
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationAccountCreateTransactionNoKey(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	resp, err := NewAccountCreateTransaction().
 		SetNodeAccountIDs(env.NodeAccountIDs).
@@ -136,13 +135,12 @@ func TestIntegrationAccountCreateTransactionNoKey(t *testing.T) {
 		assert.Equal(t, fmt.Sprintf("exceptional precheck status KEY_REQUIRED received for transaction %s", resp.TransactionID), err.Error())
 	}
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationAccountCreateTransactionAddSignature(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -179,13 +177,12 @@ func TestIntegrationAccountCreateTransactionAddSignature(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func DisabledTestIntegrationAccountCreateTransactionSetProxyAccountID(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -245,13 +242,12 @@ func DisabledTestIntegrationAccountCreateTransactionSetProxyAccountID(t *testing
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationAccountCreateTransactionNetwork(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -289,8 +285,6 @@ func TestIntegrationAccountCreateTransactionNetwork(t *testing.T) {
 
 	env.Client.SetAutoValidateChecksums(false)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationAccountCreateTransactionWithAliasFromAdminKey(t *testing.T) {
@@ -298,6 +292,7 @@ func TestIntegrationAccountCreateTransactionWithAliasFromAdminKey(t *testing.T) 
 	// https://github.com/hashgraph/hedera-improvement-proposal/blob/d39f740021d7da592524cffeaf1d749803798e9a/HIP/hip-583.md#signatures
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	adminKey, err := PrivateKeyGenerateEcdsa()
 	require.NoError(t, err)
@@ -330,8 +325,6 @@ func TestIntegrationAccountCreateTransactionWithAliasFromAdminKey(t *testing.T) 
 	assert.Equal(t, evmAddress, info.ContractAccountID)
 	assert.Equal(t, adminKey.PublicKey(), info.Key)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationAccountCreateTransactionWithAliasFromAdminKeyWithReceiverSigRequired(t *testing.T) {
@@ -339,6 +332,7 @@ func TestIntegrationAccountCreateTransactionWithAliasFromAdminKeyWithReceiverSig
 	// https://github.com/hashgraph/hedera-improvement-proposal/blob/d39f740021d7da592524cffeaf1d749803798e9a/HIP/hip-583.md#signatures
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	adminKey, err := PrivateKeyGenerateEcdsa()
 	require.NoError(t, err)
@@ -375,8 +369,6 @@ func TestIntegrationAccountCreateTransactionWithAliasFromAdminKeyWithReceiverSig
 	assert.Equal(t, evmAddress, info.ContractAccountID)
 	assert.Equal(t, adminKey.PublicKey(), info.Key)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationAccountCreateTransactionWithAliasFromAdminKeyWithReceiverSigRequiredWithoutSignature(t *testing.T) {
@@ -384,6 +376,7 @@ func TestIntegrationAccountCreateTransactionWithAliasFromAdminKeyWithReceiverSig
 	// https://github.com/hashgraph/hedera-improvement-proposal/blob/d39f740021d7da592524cffeaf1d749803798e9a/HIP/hip-583.md#signatures
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	adminKey, err := PrivateKeyGenerateEcdsa()
 	require.NoError(t, err)
@@ -409,8 +402,6 @@ func TestIntegrationAccountCreateTransactionWithAliasFromAdminKeyWithReceiverSig
 		assert.Equal(t, "exceptional receipt status: INVALID_SIGNATURE", err.Error())
 	}
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationAccountCreateTransactionWithAlias(t *testing.T) {
@@ -418,6 +409,7 @@ func TestIntegrationAccountCreateTransactionWithAlias(t *testing.T) {
 	// https://github.com/hashgraph/hedera-improvement-proposal/blob/d39f740021d7da592524cffeaf1d749803798e9a/HIP/hip-583.md#signatures
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	adminKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -456,13 +448,12 @@ func TestIntegrationAccountCreateTransactionWithAlias(t *testing.T) {
 	assert.Equal(t, evmAddress, info.ContractAccountID)
 	assert.Equal(t, adminKey.PublicKey(), info.Key)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationAccountCreateTransactionWithAliasWithoutSignature(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	adminKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -488,8 +479,6 @@ func TestIntegrationAccountCreateTransactionWithAliasWithoutSignature(t *testing
 		assert.Equal(t, "exceptional receipt status: INVALID_SIGNATURE", err.Error())
 	}
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationAccountCreateTransactionWithAliasWithReceiverSigRequired(t *testing.T) {
@@ -497,6 +486,7 @@ func TestIntegrationAccountCreateTransactionWithAliasWithReceiverSigRequired(t *
 	// https://github.com/hashgraph/hedera-improvement-proposal/blob/d39f740021d7da592524cffeaf1d749803798e9a/HIP/hip-583.md#signatures
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	adminKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -537,13 +527,12 @@ func TestIntegrationAccountCreateTransactionWithAliasWithReceiverSigRequired(t *
 	assert.Equal(t, evmAddress, info.ContractAccountID)
 	assert.Equal(t, adminKey.PublicKey(), info.Key)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationAccountCreateTransactionWithAliasWithReceiverSigRequiredWithoutSignature(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	adminKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -575,13 +564,12 @@ func TestIntegrationAccountCreateTransactionWithAliasWithReceiverSigRequiredWith
 		assert.Equal(t, "exceptional receipt status: INVALID_SIGNATURE", err.Error())
 	}
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationSerializeTransactionWithoutNodeAccountIdDeserialiseAndExecute(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)

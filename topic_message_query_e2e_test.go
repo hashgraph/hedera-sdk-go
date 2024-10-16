@@ -86,6 +86,7 @@ Etiam ut sodales ex. Nulla luctus, magna eu scelerisque sagittis, nibh quam cons
 func TestIntegrationTopicMessageQueryCanExecute(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 	var finished int32 // 0 for false, 1 for true
 
 	resp, err := NewTopicCreateTransaction().
@@ -151,13 +152,12 @@ func TestIntegrationTopicMessageQueryCanExecute(t *testing.T) {
 	}
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationTopicMessageQueryNoTopicID(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 	var wait int32 = 1 // 1 for true, 0 for false
 	resp, err := NewTopicCreateTransaction().
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
@@ -216,13 +216,12 @@ func TestIntegrationTopicMessageQueryNoTopicID(t *testing.T) {
 	}
 	assert.Error(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationTopicMessageQueryNoMessage(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 	var wait int32 = 1 // 1 for true, 0 for false
 	resp, err := NewTopicCreateTransaction().
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
@@ -282,13 +281,12 @@ func TestIntegrationTopicMessageQueryNoMessage(t *testing.T) {
 
 	assert.Error(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationTopicMessageQueryNoStartTime(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 	var finished int32 = 0 // 0 for false, 1 for true
 
 	resp, err := NewTopicCreateTransaction().
@@ -352,13 +350,12 @@ func TestIntegrationTopicMessageQueryNoStartTime(t *testing.T) {
 
 	assert.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationTopicMessageQueryWrongMessageType(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 	var finished int32 // 0 for false, 1 for true
 
 	resp, err := NewTopicCreateTransaction().

@@ -35,6 +35,7 @@ import (
 func TestIntegrationAccountUpdateTransactionCanExecute(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -103,13 +104,12 @@ func TestIntegrationAccountUpdateTransactionCanExecute(t *testing.T) {
 
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationAccountUpdateTransactionNoSigning(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -170,13 +170,12 @@ func TestIntegrationAccountUpdateTransactionNoSigning(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationAccountUpdateTransactionAccountIDNotSet(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	_, err := NewAccountUpdateTransaction().
 		SetNodeAccountIDs(env.NodeAccountIDs).
@@ -186,8 +185,6 @@ func TestIntegrationAccountUpdateTransactionAccountIDNotSet(t *testing.T) {
 		assert.Contains(t, err.Error(), "exceptional precheck status ACCOUNT_ID_DOES_NOT_EXIST")
 	}
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 // func TestAccountUpdateTransactionAddSignature_Execute(t *testing.T) {

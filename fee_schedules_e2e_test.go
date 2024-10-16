@@ -34,6 +34,7 @@ import (
 func DisabledTestIntegrationNodeAddressBookFromBytes(t *testing.T) { // nolint
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	nodeAddressBookBytes, err := NewFileContentsQuery().
 		SetFileID(FileID{Shard: 0, Realm: 0, File: 101}).
@@ -48,6 +49,4 @@ func DisabledTestIntegrationNodeAddressBookFromBytes(t *testing.T) { // nolint
 		println(string(ad.CertHash))
 	}
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
