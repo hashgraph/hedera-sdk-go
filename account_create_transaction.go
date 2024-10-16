@@ -194,6 +194,7 @@ func (tx *AccountCreateTransaction) GetAccountMemo() string {
 func (tx *AccountCreateTransaction) SetStakedAccountID(id AccountID) *AccountCreateTransaction {
 	tx._RequireNotFrozen()
 	tx.stakedAccountID = &id
+	tx.stakedNodeID = nil
 	return tx
 }
 
@@ -210,6 +211,7 @@ func (tx *AccountCreateTransaction) GetStakedAccountID() AccountID {
 func (tx *AccountCreateTransaction) SetStakedNodeID(id int64) *AccountCreateTransaction {
 	tx._RequireNotFrozen()
 	tx.stakedNodeID = &id
+	tx.stakedAccountID = nil
 	return tx
 }
 
