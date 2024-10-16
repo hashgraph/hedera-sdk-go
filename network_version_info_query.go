@@ -23,7 +23,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/generated/services"
+	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
 )
 
 // NetworkVersionInfoQuery is the query to be executed that would return the current version of the network's protobuf and services.

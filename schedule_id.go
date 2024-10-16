@@ -26,7 +26,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/generated/services"
+	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
 )
 
 // ScheduleID is the ID for a Hedera account

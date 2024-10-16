@@ -23,7 +23,7 @@ package hedera
 import (
 	"errors"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/generated/services"
+	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
 
 	"time"
 )

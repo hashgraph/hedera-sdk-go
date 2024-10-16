@@ -30,8 +30,8 @@ import (
 
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/generated/sdk"
-	"github.com/hashgraph/hedera-sdk-go/v2/generated/services"
+	"github.com/hashgraph/hedera-sdk-go/v2/proto/sdk"
+	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
 	protobuf "google.golang.org/protobuf/proto"
 )
 

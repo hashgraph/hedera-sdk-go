@@ -26,7 +26,7 @@ import (
 
 	"google.golang.org/grpc/credentials/insecure"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/generated/mirror"
+	"github.com/hashgraph/hedera-sdk-go/v2/proto/mirror"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/keepalive"

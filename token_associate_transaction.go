@@ -23,7 +23,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/generated/services"
+	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
 )
 
 // TokenAssociateTransaction Associates the provided account with the provided tokens. Must be signed by the provided Account's key.

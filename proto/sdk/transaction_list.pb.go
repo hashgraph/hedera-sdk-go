@@ -7,7 +7,7 @@
 package sdk
 
 import (
-	services "github.com/hashgraph/hedera-sdk-go/v2/generated/services"
+	services "github.com/hashgraph/hedera-sdk-go/v2/proto/services"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"

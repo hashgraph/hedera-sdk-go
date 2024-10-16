@@ -25,7 +25,7 @@ import (
 
 	"google.golang.org/protobuf/types/known/wrapperspb"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/generated/services"
+	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
 )
 
 // ContractUpdateTransaction is used to modify a smart contract instance to have the given parameter values. Any nil

@@ -27,7 +27,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/generated/services"
+	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 

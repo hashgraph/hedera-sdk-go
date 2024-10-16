@@ -13,31 +13,17 @@ import (
 )
 
 func main() {
-	// which module are we building
-	moduleName := os.Args[1]
-
-	// get project directory
-
 	// nolint:dogsled
 	_, buildFilename, _, _ := runtime.Caller(0)
-	projectDir := path.Join(buildFilename, "../../..")
+	projectDir := path.Join(buildFilename, "../..")
 
 	// remove all existing files
 
-	removeAllWithExt(projectDir, moduleName, ".pb.go")
+	removeAllWithExt(projectDir, "services", ".pb.go")
 
 	// invoke the build command for this module
 
-	switch moduleName {
-	case "services":
-		buildServices(projectDir)
-
-	case "mirror":
-		buildMirror(projectDir)
-
-	case "sdk":
-		buildSdk(projectDir)
-	}
+	buildServices(projectDir)
 }
 
 func buildServices(dir string) {
@@ -46,7 +32,7 @@ func buildServices(dir string) {
 
 	var servicesModuleDecls []string
 
-	err := filepath.Walk(path.Join(dir, "proto/services"), func(filename string, info fs.FileInfo, err error) error {
+	err := filepath.Walk(path.Join(dir, "services/hapi/hedera-protobufs/services"), func(filename string, info fs.FileInfo, err error) error {
 		if !strings.HasSuffix(filename, ".proto") {
 			return nil
 		}
@@ -72,11 +58,11 @@ func buildServices(dir string) {
 	// generate proto files for services code
 
 	cmdArguments := []string{
-		"--go_out=generated/services/",
+		"--go_out=proto/services/",
 		"--go_opt=paths=source_relative",
-		"--go-grpc_out=generated/services/",
+		"--go-grpc_out=proto/services/",
 		"--go-grpc_opt=paths=source_relative",
-		"-Iproto/services",
+		"-Iservices/hapi/hedera-protobufs/services",
 	}
 
 	cmdArguments = append(cmdArguments, servicesModuleDecls...)
@@ -89,21 +75,23 @@ func buildServices(dir string) {
 	renamePackageDeclGrpcFiles(dir, "proto", "services")
 }
 
+// deprecated
+// nolint
 func buildMirror(dir string) {
 	cmd := exec.Command("protoc",
-		"--go_out=generated/",
-		"--go_opt=Mbasic_types.proto=github.com/hashgraph/hedera-sdk-go/v2/generated/services",
-		"--go_opt=Mtimestamp.proto=github.com/hashgraph/hedera-sdk-go/v2/generated/services",
-		"--go_opt=Mconsensus_submit_message.proto=github.com/hashgraph/hedera-sdk-go/v2/generated/services",
-		"--go_opt=Mmirror/consensus_service.proto=github.com/hashgraph/hedera-sdk-go/v2/generated/mirror",
-		"--go_opt=Mmirror/mirror_network_service.proto=github.com/hashgraph/hedera-sdk-go/v2/generated/mirror",
+		"--go_out=proto/",
+		"--go_opt=Mbasic_types.proto=github.com/hashgraph/hedera-sdk-go/v2/proto/services",
+		"--go_opt=Mtimestamp.proto=github.com/hashgraph/hedera-sdk-go/v2/proto/services",
+		"--go_opt=Mconsensus_submit_message.proto=github.com/hashgraph/hedera-sdk-go/v2/proto/services",
+		"--go_opt=Mmirror/consensus_service.proto=github.com/hashgraph/hedera-sdk-go/v2/proto/mirror",
+		"--go_opt=Mmirror/mirror_network_service.proto=github.com/hashgraph/hedera-sdk-go/v2/proto/mirror",
 		"--go_opt=paths=source_relative",
-		"--go-grpc_out=generated/",
-		"--go-grpc_opt=Mbasic_types.proto=github.com/hashgraph/hedera-sdk-go/v2/generated/services",
-		"--go-grpc_opt=Mtimestamp.proto=github.com/hashgraph/hedera-sdk-go/v2/generated/services",
-		"--go-grpc_opt=Mconsensus_submit_message.proto=github.com/hashgraph/hedera-sdk-go/v2/generated/services",
-		"--go-grpc_opt=Mmirror/consensus_service.proto=github.com/hashgraph/hedera-sdk-go/v2/generated/mirror",
-		"--go-grpc_opt=Mmirror/mirror_network_service.proto=github.com/hashgraph/hedera-sdk-go/v2/generated/mirror",
+		"--go-grpc_out=proto/",
+		"--go-grpc_opt=Mbasic_types.proto=github.com/hashgraph/hedera-sdk-go/v2/proto/services",
+		"--go-grpc_opt=Mtimestamp.proto=github.com/hashgraph/hedera-sdk-go/v2/proto/services",
+		"--go-grpc_opt=Mconsensus_submit_message.proto=github.com/hashgraph/hedera-sdk-go/v2/proto/services",
+		"--go-grpc_opt=Mmirror/consensus_service.proto=github.com/hashgraph/hedera-sdk-go/v2/proto/mirror",
+		"--go-grpc_opt=Mmirror/mirror_network_service.proto=github.com/hashgraph/hedera-sdk-go/v2/proto/mirror",
 		"--go-grpc_opt=paths=source_relative",
 		"--proto_path=proto/",
 		"-Iproto/mirror",
@@ -118,12 +106,14 @@ func buildMirror(dir string) {
 	renamePackageDeclGrpcFiles(dir, "com_hedera_mirror_api_proto", "mirror")
 }
 
+// deprecated
+// nolint
 func buildSdk(dir string) {
 	var servicesProtoFiles []string
 
 	var servicesModuleDecls []string
 
-	err := filepath.Walk(path.Join(dir, "proto/services"), func(filename string, info fs.FileInfo, err error) error {
+	err := filepath.Walk(path.Join(dir, "services/hapi/hedera-protobufs/sdk"), func(filename string, info fs.FileInfo, err error) error {
 		if !strings.HasSuffix(filename, ".proto") {
 			return nil
 		}
@@ -133,8 +123,8 @@ func buildSdk(dir string) {
 		servicesProtoFiles = append(servicesProtoFiles, pathFromRoot)
 
 		servicesModuleDecls = append(servicesModuleDecls,
-			fmt.Sprintf("--go_opt=M%v=github.com/hashgraph/hedera-sdk-go/v2/generated/services", pathBase),
-			fmt.Sprintf("--go-grpc_opt=M%v=github.com/hashgraph/hedera-sdk-go/v2/generated/services", pathBase),
+			fmt.Sprintf("--go_opt=M%v=github.com/hashgraph/hedera-sdk-go/v2/proto/services", pathBase),
+			fmt.Sprintf("--go-grpc_opt=M%v=github.com/hashgraph/hedera-sdk-go/v2/proto/services", pathBase),
 		)
 
 		return nil
@@ -144,11 +134,11 @@ func buildSdk(dir string) {
 	}
 
 	cmdArguments := []string{
-		"--go_out=generated/sdk/",
-		"--go_opt=Mtransaction_list.proto=github.com/hashgraph/hedera-sdk-go/v2/generated/sdk",
+		"--go_out=proto/sdk/",
+		"--go_opt=Mtransaction_list.proto=github.com/hashgraph/hedera-sdk-go/v2/proto/sdk",
 		"--go_opt=paths=source_relative",
-		"--go-grpc_out=generated/sdk/",
-		"--go-grpc_opt=Mtransaction_list.proto=github.com/hashgraph/hedera-sdk-go/v2/generated/sdk",
+		"--go-grpc_out=proto/sdk/",
+		"--go-grpc_opt=Mtransaction_list.proto=github.com/hashgraph/hedera-sdk-go/v2/proto/sdk",
 		"--go-grpc_opt=paths=source_relative",
 		"-Iproto/sdk",
 		"-Iproto/services",
