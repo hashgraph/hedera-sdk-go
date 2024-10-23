@@ -26,7 +26,7 @@ package hedera
 import (
 	"testing"
 
-	"github.com/hashgraph/hedera-protobufs-go/services"
+	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
 
 	"github.com/stretchr/testify/assert"
 
