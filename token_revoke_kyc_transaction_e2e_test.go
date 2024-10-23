@@ -35,6 +35,7 @@ import (
 func TestIntegrationTokenRevokeKycTransactionCanExecute(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -109,13 +110,12 @@ func TestIntegrationTokenRevokeKycTransactionCanExecute(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, &tokenID)
-	require.NoError(t, err)
 }
 
 func TestIntegrationTokenRevokeKycTransactionNoTokenID(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -189,13 +189,12 @@ func TestIntegrationTokenRevokeKycTransactionNoTokenID(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, &tokenID)
-	require.NoError(t, err)
 }
 
 func TestIntegrationTokenRevokeKycTransactionNoAccountID(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -269,6 +268,4 @@ func TestIntegrationTokenRevokeKycTransactionNoAccountID(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, &tokenID)
-	require.NoError(t, err)
 }

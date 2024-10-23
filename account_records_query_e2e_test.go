@@ -34,6 +34,7 @@ import (
 func TestIntegrationAccountRecordQueryCanExecute(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -67,13 +68,12 @@ func TestIntegrationAccountRecordQueryCanExecute(t *testing.T) {
 
 	assert.Equal(t, 1, len(recordsQuery))
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationAccountRecordQueryGetCost(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -109,13 +109,12 @@ func TestIntegrationAccountRecordQueryGetCost(t *testing.T) {
 
 	assert.Equal(t, 1, len(recordsQuery))
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationAccountRecordQuerySetBigMaxPayment(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -153,13 +152,12 @@ func TestIntegrationAccountRecordQuerySetBigMaxPayment(t *testing.T) {
 
 	assert.Equal(t, 1, len(recordsQuery))
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationAccountRecordQuerySetSmallMaxPayment(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -197,13 +195,12 @@ func TestIntegrationAccountRecordQuerySetSmallMaxPayment(t *testing.T) {
 		assert.Equal(t, "cost of AccountRecordsQuery ("+cost.String()+") without explicit payment is greater than the max query payment of 1 tℏ", err.Error())
 	}
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationAccountRecordQueryInsufficientFee(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -240,13 +237,12 @@ func TestIntegrationAccountRecordQueryInsufficientFee(t *testing.T) {
 		assert.Equal(t, "exceptional precheck status INSUFFICIENT_TX_FEE", err.Error())
 	}
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationAccountRecordQueryNoAccountID(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	_, err := NewAccountRecordsQuery().
 		SetNodeAccountIDs(env.NodeAccountIDs).
@@ -256,6 +252,4 @@ func TestIntegrationAccountRecordQueryNoAccountID(t *testing.T) {
 		assert.Equal(t, "exceptional precheck status INVALID_ACCOUNT_ID", err.Error())
 	}
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }

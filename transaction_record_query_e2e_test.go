@@ -34,6 +34,7 @@ import (
 func TestIntegrationTransactionRecordQueryCanExecute(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -87,13 +88,12 @@ func TestIntegrationTransactionRecordQueryCanExecute(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationTransactionRecordQueryReceiptPaymentZero(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -142,13 +142,12 @@ func TestIntegrationTransactionRecordQueryReceiptPaymentZero(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationTransactionRecordQueryInsufficientFee(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -202,13 +201,12 @@ func TestIntegrationTransactionRecordQueryInsufficientFee(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func DisabledTestIntegrationTokenTransferRecordsQuery(t *testing.T) { // nolint
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -312,6 +310,7 @@ func DisabledTestIntegrationTokenTransferRecordsQuery(t *testing.T) { // nolint
 func DisabledTestIntegrationTokenNftTransferRecordQuery(t *testing.T) { // nolint
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)

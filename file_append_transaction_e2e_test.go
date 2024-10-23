@@ -34,6 +34,7 @@ import (
 func TestIntegrationFileAppendTransactionCanExecute(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	resp, err := NewFileCreateTransaction().
 		SetKeys(env.Client.GetOperatorPublicKey()).
@@ -77,13 +78,12 @@ func TestIntegrationFileAppendTransactionCanExecute(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationFileAppendTransactionNoFileID(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	resp, err := NewFileCreateTransaction().
 		SetKeys(env.Client.GetOperatorPublicKey()).
@@ -118,13 +118,12 @@ func TestIntegrationFileAppendTransactionNoFileID(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationFileAppendTransactionNothingSet(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	_, err := NewFileAppendTransaction().
 		SetContents([]byte(" world!")).
@@ -135,12 +134,11 @@ func TestIntegrationFileAppendTransactionNothingSet(t *testing.T) {
 		assert.Contains(t, err.Error(), "exceptional precheck status INVALID_FILE_ID", err.Error())
 	}
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 func TestIntegrationFileAppendTransactionCanExecuteAfterSerializationDeserialization(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	resp, err := NewFileCreateTransaction().
 		SetKeys(env.Client.GetOperatorPublicKey()).
@@ -192,6 +190,4 @@ func TestIntegrationFileAppendTransactionCanExecuteAfterSerializationDeserializa
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }

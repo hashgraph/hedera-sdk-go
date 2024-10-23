@@ -34,6 +34,7 @@ import (
 func TestIntegrationTokenFeeScheduleUpdateTransactionCanExecute(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	tokenID, err := createFungibleToken(&env)
 
@@ -70,13 +71,12 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionCanExecute(t *testing.T) {
 	require.NoError(t, err)
 	assert.True(t, len(info.CustomFees) > 0)
 
-	err = CloseIntegrationTestEnv(env, &tokenID)
-	require.NoError(t, err)
 }
 
 func TestIntegrationTokenFeeScheduleUpdateTransactionWithFractional(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	tokenID, err := createFungibleToken(&env)
 
@@ -116,13 +116,12 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionWithFractional(t *testing.T
 	require.NoError(t, err)
 	assert.True(t, len(info.CustomFees) > 0)
 
-	err = CloseIntegrationTestEnv(env, &tokenID)
-	require.NoError(t, err)
 }
 
 func TestIntegrationTokenFeeScheduleUpdateTransactionNoFeeScheduleKey(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	tokenID, err := createFungibleToken(&env, func(transaction *TokenCreateTransaction) {
 		transaction.SetFeeScheduleKey(nil)
@@ -157,13 +156,12 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionNoFeeScheduleKey(t *testing
 		assert.Equal(t, "exceptional receipt status: TOKEN_HAS_NO_FEE_SCHEDULE_KEY", err.Error())
 	}
 
-	err = CloseIntegrationTestEnv(env, &tokenID)
-	require.NoError(t, err)
 }
 
 func DisabledTestIntegrationTokenFeeScheduleUpdateTransactionWrongScheduleKey(t *testing.T) { // nolint
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -209,13 +207,12 @@ func DisabledTestIntegrationTokenFeeScheduleUpdateTransactionWrongScheduleKey(t 
 	require.NoError(t, err)
 	assert.True(t, len(info.CustomFees) > 0)
 
-	err = CloseIntegrationTestEnv(env, &tokenID)
-	require.NoError(t, err)
 }
 
 func TestIntegrationTokenFeeScheduleUpdateTransactionScheduleAlreadyHasNoFees(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	tokenID, err := createFungibleToken(&env)
 
@@ -236,13 +233,12 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionScheduleAlreadyHasNoFees(t 
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.ErrorContains(t, err, "exceptional receipt status: CUSTOM_SCHEDULE_ALREADY_HAS_NO_FEES")
 
-	err = CloseIntegrationTestEnv(env, &tokenID)
-	require.NoError(t, err)
 }
 
 func TestIntegrationTokenFeeScheduleUpdateTransactionFractionalFeeOnlyForFungibleCommon(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	tokenID, err := createNft(&env)
 
@@ -278,13 +274,12 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionFractionalFeeOnlyForFungibl
 		assert.Equal(t, "exceptional receipt status: CUSTOM_FRACTIONAL_FEE_ONLY_ALLOWED_FOR_FUNGIBLE_COMMON", err.Error())
 	}
 
-	err = CloseIntegrationTestEnv(env, &tokenID)
-	require.NoError(t, err)
 }
 
 func TestIntegrationTokenFeeScheduleUpdateTransactionDenominationMustBeFungibleCommon(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	tokenID, err := createFungibleToken(&env)
 	require.NoError(t, err)
@@ -325,6 +320,7 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionDenominationMustBeFungibleC
 func TestIntegrationTokenFeeScheduleUpdateTransactionCustomFeeListTooLong(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	tokenID, err := createFungibleToken(&env)
 	require.NoError(t, err)
@@ -364,6 +360,4 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionCustomFeeListTooLong(t *tes
 		assert.Equal(t, "exceptional receipt status: CUSTOM_FEES_LIST_TOO_LONG", err.Error())
 	}
 
-	err = CloseIntegrationTestEnv(env, &tokenID)
-	require.NoError(t, err)
 }

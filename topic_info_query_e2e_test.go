@@ -36,6 +36,7 @@ const topicMemo = "go-sdk::topic memo"
 func TestIntegrationTopicInfoQueryCanExecute(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	txID, err := NewTopicCreateTransaction().
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
@@ -68,13 +69,12 @@ func TestIntegrationTopicInfoQueryCanExecute(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationTopicInfoQueryGetCost(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	resp, err := NewTopicCreateTransaction().
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
@@ -106,13 +106,12 @@ func TestIntegrationTopicInfoQueryGetCost(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationTopicInfoQuerySetBigMaxPayment(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	resp, err := NewTopicCreateTransaction().
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
@@ -143,13 +142,12 @@ func TestIntegrationTopicInfoQuerySetBigMaxPayment(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationTopicInfoQuerySetSmallMaxPayment(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	resp, err := NewTopicCreateTransaction().
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
@@ -184,13 +182,12 @@ func TestIntegrationTopicInfoQuerySetSmallMaxPayment(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationTopicInfoQueryInsufficientFee(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	resp, err := NewTopicCreateTransaction().
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
@@ -224,13 +221,12 @@ func TestIntegrationTopicInfoQueryInsufficientFee(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationTopicInfoQueryThreshold(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	keys := make([]PrivateKey, 3)
 	pubKeys := make([]PublicKey, 3)
@@ -281,13 +277,12 @@ func TestIntegrationTopicInfoQueryThreshold(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationTopicInfoQueryNoTopicID(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	_, err := NewTopicInfoQuery().
 		SetMaxQueryPayment(NewHbar(1)).
@@ -298,6 +293,4 @@ func TestIntegrationTopicInfoQueryNoTopicID(t *testing.T) {
 		assert.Equal(t, "exceptional precheck status INVALID_TOPIC_ID", err.Error())
 	}
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }

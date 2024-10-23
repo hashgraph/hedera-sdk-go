@@ -35,6 +35,7 @@ import (
 func TestIntegrationTokenDissociateTransactionCanExecute(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -102,13 +103,12 @@ func TestIntegrationTokenDissociateTransactionCanExecute(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, &tokenID)
-	require.NoError(t, err)
 }
 
 func TestIntegrationTokenDissociateTransactionNoSigningOne(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -161,13 +161,12 @@ func TestIntegrationTokenDissociateTransactionNoSigningOne(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, &tokenID)
-	require.NoError(t, err)
 }
 
 func TestIntegrationTokenDissociateTransactionNoTokenID(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -229,13 +228,12 @@ func TestIntegrationTokenDissociateTransactionNoTokenID(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, &tokenID)
-	require.NoError(t, err)
 }
 
 func TestIntegrationTokenDissociateTransactionNoAccountID(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -296,6 +294,4 @@ func TestIntegrationTokenDissociateTransactionNoAccountID(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, &tokenID)
-	require.NoError(t, err)
 }

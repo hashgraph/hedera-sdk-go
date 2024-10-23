@@ -33,6 +33,7 @@ import (
 func TestIntegrationTokenRejectTransactionCanExecuteForFungibleToken(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	// create fungible tokens with treasury
 	tokenID1, err := createFungibleToken(&env)
@@ -85,6 +86,7 @@ func TestIntegrationTokenRejectTransactionCanExecuteForFungibleToken(t *testing.
 func TestIntegrationTokenRejectTransactionCanExecuteForNFT(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	// create nft collections with treasury
 	nftID1, err := createNft(&env)
@@ -149,6 +151,7 @@ func TestIntegrationTokenRejectTransactionCanExecuteForNFT(t *testing.T) {
 func TestIntegrationTokenRejectTransactionCanExecuteForFTAndNFTAtTheSameTime(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	// create fungible tokens with treasury
 	tokenID1, err := createFungibleToken(&env)
@@ -241,6 +244,7 @@ func TestIntegrationTokenRejectTransactionCanExecuteForFTAndNFTAtTheSameTime(t *
 func TestIntegrationTokenRejectTransactionReceiverSigRequired(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	// create nft with treasury with receiver sig required
 	treasuryKey, err := PrivateKeyGenerateEd25519()
@@ -356,6 +360,7 @@ func TestIntegrationTokenRejectTransactionReceiverSigRequired(t *testing.T) {
 func TestIntegrationTokenRejectTransactionTokenFrozen(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	// create nft with treasury
 	nftID, err := createNft(&env)
@@ -439,6 +444,7 @@ func TestIntegrationTokenRejectTransactionTokenFrozen(t *testing.T) {
 func TestIntegrationTokenRejectTransactionTokenPaused(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	// create nft with treasury
 	nftID, err := createNft(&env)
@@ -522,6 +528,7 @@ func TestIntegrationTokenRejectTransactionDoesNotRemoveAllowanceFT(t *testing.T)
 	t.Skip("Skipping test as this flow is currently not working as expected in services")
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	// create fungible token with treasury
 	tokenID, err := createFungibleToken(&env)
@@ -617,6 +624,7 @@ func TestIntegrationTokenRejectTransactionDoesNotRemoveAllowanceNFT(t *testing.T
 	t.Skip("Skipping test as this flow is currently not working as expected in services")
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	// create receiver account with auto associations
 	receiver, key, err := createAccount(&env, func(tx *AccountCreateTransaction) {
@@ -720,6 +728,7 @@ func TestIntegrationTokenRejectTransactionDoesNotRemoveAllowanceNFT(t *testing.T
 func TestIntegrationTokenRejectTransactionFailsWhenRejectingNFTWithTokenID(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	// create nft with treasury
 	nftID, err := createNft(&env)
@@ -760,6 +769,7 @@ func TestIntegrationTokenRejectTransactionFailsWhenRejectingNFTWithTokenID(t *te
 func TestIntegrationTokenRejectTransactionFailsWithTokenReferenceRepeated(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	// create fungible token with treasury
 	tokenID, err := createFungibleToken(&env)
@@ -821,6 +831,7 @@ func TestIntegrationTokenRejectTransactionFailsWithTokenReferenceRepeated(t *tes
 func TestIntegrationTokenRejectTransactionFailsWhenOwnerHasNoBalance(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	// create fungible token with treasury
 	tokenID, err := createFungibleToken(&env)
@@ -890,6 +901,7 @@ func TestIntegrationTokenRejectTransactionFailsWhenOwnerHasNoBalance(t *testing.
 func TestIntegrationTokenRejectTransactionFailsTreasuryRejects(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	// create fungible token with treasury
 	tokenID, err := createFungibleToken(&env)
@@ -937,6 +949,7 @@ func TestIntegrationTokenRejectTransactionFailsTreasuryRejects(t *testing.T) {
 func TestIntegrationTokenRejectTransactionFailsWithInvalidToken(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	// reject the token with invalid token - should fail with EMPTY_TOKEN_REFERENCE_LIST
 	frozenTxn, err := NewTokenRejectTransaction().
@@ -950,6 +963,7 @@ func TestIntegrationTokenRejectTransactionFailsWithInvalidToken(t *testing.T) {
 func TestIntegrationTokenRejectTransactionFailsWithReferenceSizeExceeded(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	// create receiver account with auto associations
 	receiver, key, err := createAccount(&env, func(tx *AccountCreateTransaction) {
@@ -1013,6 +1027,7 @@ func TestIntegrationTokenRejectTransactionFailsWithReferenceSizeExceeded(t *test
 func TestIntegrationTokenRejectTransactionFailsWithInvalidSignature(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	// create fungible token with treasury
 	tokenID, err := createFungibleToken(&env)

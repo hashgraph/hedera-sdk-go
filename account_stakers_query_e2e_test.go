@@ -50,6 +50,7 @@ func TestIntegrationAccountStakersQueryCanExecute(t *testing.T) {
 func TestIntegrationAccountStakersQueryGetCost(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	accountStakers := NewAccountStakersQuery().
 		SetMaxQueryPayment(NewHbar(1)).
@@ -62,13 +63,12 @@ func TestIntegrationAccountStakersQueryGetCost(t *testing.T) {
 	_, err = accountStakers.SetQueryPayment(cost).Execute(env.Client)
 	assert.Error(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationAccountStakersQuerySetBigMaxPayment(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	accountStakers := NewAccountStakersQuery().
 		SetMaxQueryPayment(NewHbar(100000)).
@@ -81,13 +81,12 @@ func TestIntegrationAccountStakersQuerySetBigMaxPayment(t *testing.T) {
 	_, err = accountStakers.SetQueryPayment(cost).Execute(env.Client)
 	assert.Error(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationAccountStakersQuerySetSmallMaxPayment(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	accountStakers := NewAccountStakersQuery().
 		SetMaxQueryPayment(HbarFromTinybar(25)).
@@ -100,13 +99,12 @@ func TestIntegrationAccountStakersQuerySetSmallMaxPayment(t *testing.T) {
 	_, err = accountStakers.SetQueryPayment(cost).Execute(env.Client)
 	assert.Error(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationAccountStakersQueryInsufficientFee(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	accountStakers := NewAccountStakersQuery().
 		SetMaxQueryPayment(NewHbar(1)).
@@ -122,13 +120,12 @@ func TestIntegrationAccountStakersQueryInsufficientFee(t *testing.T) {
 		assert.Equal(t, "exceptional precheck status NOT_SUPPORTED", err.Error())
 	}
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationAccountStakersQueryNoAccountID(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	_, err := NewAccountStakersQuery().
 		SetNodeAccountIDs(env.NodeAccountIDs).
@@ -138,6 +135,4 @@ func TestIntegrationAccountStakersQueryNoAccountID(t *testing.T) {
 		assert.Equal(t, "exceptional precheck status NOT_SUPPORTED", err.Error())
 	}
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }

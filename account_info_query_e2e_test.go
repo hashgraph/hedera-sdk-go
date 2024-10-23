@@ -34,6 +34,7 @@ import (
 func TestIntegrationAccountInfoQueryCanExecute(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -89,6 +90,7 @@ func TestIntegrationAccountInfoQueryCanExecute(t *testing.T) {
 func TestIntegrationAccountInfoQueryGetCost(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -141,13 +143,12 @@ func TestIntegrationAccountInfoQueryGetCost(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationAccountInfoQueryInsufficientFee(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -195,13 +196,12 @@ func TestIntegrationAccountInfoQueryInsufficientFee(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationAccountInfoQuerySetBigMaxPayment(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -254,13 +254,12 @@ func TestIntegrationAccountInfoQuerySetBigMaxPayment(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationAccountInfoQuerySetSmallMaxPayment(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -311,13 +310,12 @@ func TestIntegrationAccountInfoQuerySetSmallMaxPayment(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationAccountInfoQueryNoAccountID(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	_, err := NewAccountInfoQuery().
 		SetNodeAccountIDs(env.NodeAccountIDs).
@@ -327,12 +325,11 @@ func TestIntegrationAccountInfoQueryNoAccountID(t *testing.T) {
 		assert.Equal(t, "exceptional precheck status INVALID_ACCOUNT_ID", err.Error())
 	}
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 func TestIntegrationAccountInfoQueryTokenRelationshipInfo(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -442,6 +439,7 @@ func TestIntegrationAccountInfoQueryTokenRelationshipInfo(t *testing.T) {
 func TestIntegrationAccountInfoQueryTokenRelationshipsLength(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)

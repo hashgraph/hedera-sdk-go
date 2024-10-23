@@ -35,6 +35,7 @@ import (
 func TestIntegrationAccountBalanceQueryCanExecute(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	_, err := NewAccountBalanceQuery().
 		SetAccountID(env.OriginalOperatorID).
@@ -48,8 +49,6 @@ func TestIntegrationAccountBalanceQueryCanExecute(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationAccountBalanceQueryCanGetTokenBalance(t *testing.T) {
@@ -75,6 +74,7 @@ func TestIntegrationAccountBalanceQueryCanGetTokenBalance(t *testing.T) {
 func TestIntegrationAccountBalanceQueryGetCost(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	balance := NewAccountBalanceQuery().
 		SetNodeAccountIDs(env.NodeAccountIDs).
@@ -87,13 +87,12 @@ func TestIntegrationAccountBalanceQueryGetCost(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationAccountBalanceQuerySetBigMaxPayment(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	balance := NewAccountBalanceQuery().
 		SetMaxQueryPayment(NewHbar(10000)).
@@ -106,13 +105,12 @@ func TestIntegrationAccountBalanceQuerySetBigMaxPayment(t *testing.T) {
 	_, err = balance.SetQueryPayment(cost).Execute(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationAccountBalanceQuerySetSmallMaxPayment(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	balance := NewAccountBalanceQuery().
 		SetMaxQueryPayment(HbarFromTinybar(1)).
@@ -125,13 +123,12 @@ func TestIntegrationAccountBalanceQuerySetSmallMaxPayment(t *testing.T) {
 	_, err = balance.Execute(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationAccountBalanceQueryCanSetQueryPayment(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	balance := NewAccountBalanceQuery().
 		SetMaxQueryPayment(NewHbar(10000)).
@@ -145,13 +142,12 @@ func TestIntegrationAccountBalanceQueryCanSetQueryPayment(t *testing.T) {
 	_, err = balance.SetQueryPayment(cost).Execute(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationAccountBalanceQueryCostCanSetPaymentOneTinybar(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	balance := NewAccountBalanceQuery().
 		SetMaxQueryPayment(NewHbar(10000)).
@@ -165,13 +161,12 @@ func TestIntegrationAccountBalanceQueryCostCanSetPaymentOneTinybar(t *testing.T)
 	_, err = balance.SetQueryPayment(HbarFromTinybar(1)).Execute(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationAccountBalanceQueryNoAccountIDError(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	_, err := NewAccountBalanceQuery().
 		SetNodeAccountIDs(env.NodeAccountIDs).
@@ -179,12 +174,11 @@ func TestIntegrationAccountBalanceQueryNoAccountIDError(t *testing.T) {
 	assert.Error(t, err)
 	assert.True(t, err.Error() == "exceptional precheck status INVALID_ACCOUNT_ID")
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 func TestIntegrationAccountBalanceQueryWorksWithHollowAccountAlias(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	privateKey, err := PrivateKeyGenerateEcdsa()
 	require.NoError(t, err)
@@ -210,8 +204,6 @@ func TestIntegrationAccountBalanceQueryWorksWithHollowAccountAlias(t *testing.T)
 	_, err = NewAccountBalanceQuery().SetAccountID(aliasAccountId).Execute(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationAccountBalanceQueryCanConnectToMainnetTls(t *testing.T) {

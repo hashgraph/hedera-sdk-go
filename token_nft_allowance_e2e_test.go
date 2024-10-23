@@ -32,6 +32,7 @@ import (
 func TestIntegrationCantTransferOnBehalfOfSpenderWithoutAllowanceApproval(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 	spenderKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 	spenderCreate, err := NewAccountCreateTransaction().SetKey(spenderKey).SetInitialBalance(NewHbar(2)).Execute(env.Client)
@@ -75,6 +76,7 @@ func TestIntegrationCantTransferOnBehalfOfSpenderWithoutAllowanceApproval(t *tes
 func TestIntegrationCantTransferOnBehalfOfSpenderAfterRemovingTheAllowanceApproval(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 	spenderKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
@@ -152,6 +154,7 @@ func TestIntegrationCantTransferOnBehalfOfSpenderAfterRemovingTheAllowanceApprov
 func TestIntegrationCantRemoveSingleSerialNumberAllowanceWhenAllowanceIsForAllSerials(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 	spenderKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
@@ -227,6 +230,7 @@ func TestIntegrationCantRemoveSingleSerialNumberAllowanceWhenAllowanceIsForAllSe
 func TestIntegrationAfterGivenAllowanceForAllSerialsCanGiveSingleSerialToOtherAccounts(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 	spenderKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 

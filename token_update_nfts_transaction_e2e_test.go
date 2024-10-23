@@ -33,6 +33,7 @@ import (
 
 func TestTokenUpdateNftsUpdatesMetadata(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	// create supply key
 	supplyKey, err := PrivateKeyGenerateEd25519()
@@ -86,6 +87,7 @@ func TestTokenUpdateNftsUpdatesMetadata(t *testing.T) {
 
 func TestCanUpdateEmptyNFTMetadata(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	// create supply key
 	supplyKey, err := PrivateKeyGenerateEd25519()
@@ -130,6 +132,7 @@ func TestCanUpdateEmptyNFTMetadata(t *testing.T) {
 
 func TestCannotUpdateNFTMetadataWhenKeyIsNotSet(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	// create supply key
 	supplyKey, err := PrivateKeyGenerateEd25519()
@@ -168,6 +171,7 @@ func TestCannotUpdateNFTMetadataWhenKeyIsNotSet(t *testing.T) {
 
 func TestCannotUpdateNFTMetadataWhenTransactionIsNotSignedWithMetadataKey(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	// create supply key
 	supplyKey, err := PrivateKeyGenerateEd25519()
