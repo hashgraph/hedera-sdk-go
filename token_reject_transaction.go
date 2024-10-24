@@ -1,8 +1,6 @@
 package hedera
 
 import (
-	"time"
-
 	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
 )
 
@@ -44,33 +42,33 @@ import (
  * SHALL NOT be charged for this transaction.
  */
 type TokenRejectTransaction struct {
-	Transaction
+	*Transaction[*TokenRejectTransaction]
 	ownerID  *AccountID
 	tokenIDs []TokenID
 	nftIDs   []NftID
 }
 
 func NewTokenRejectTransaction() *TokenRejectTransaction {
-	tx := TokenRejectTransaction{
-		Transaction: _NewTransaction(),
-	}
-	return &tx
+	tx := &TokenRejectTransaction{}
+	tx.Transaction = _NewTransaction(tx)
+	return tx
 }
 
-func _TokenRejectTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *TokenRejectTransaction {
-	rejectTransaction := &TokenRejectTransaction{
-		Transaction: tx,
-		ownerID:     _AccountIDFromProtobuf(pb.GetTokenReject().Owner),
+func _TokenRejectTransactionFromProtobuf(tx Transaction[*TokenRejectTransaction], pb *services.TransactionBody) TokenRejectTransaction {
+	rejectTransaction := TokenRejectTransaction{
+		ownerID: _AccountIDFromProtobuf(pb.GetTokenReject().Owner),
 	}
 
 	for _, rejection := range pb.GetTokenReject().Rejections {
 		if rejection.GetFungibleToken() != nil {
-			rejectTransaction.AddTokenID(*_TokenIDFromProtobuf(rejection.GetFungibleToken()))
+			rejectTransaction.tokenIDs = append(rejectTransaction.tokenIDs, *_TokenIDFromProtobuf(rejection.GetFungibleToken()))
 		} else if rejection.GetNft() != nil {
-			rejectTransaction.AddNftID(_NftIDFromProtobuf(rejection.GetNft()))
+			rejectTransaction.nftIDs = append(rejectTransaction.nftIDs, _NftIDFromProtobuf(rejection.GetNft()))
 		}
 	}
 
+	tx.childTransaction = &rejectTransaction
+	rejectTransaction.Transaction = &tx
 	return rejectTransaction
 }
 
@@ -131,138 +129,13 @@ func (tx *TokenRejectTransaction) GetNftIDs() []NftID {
 	return tx.nftIDs
 }
 
-// ---- Required Interfaces ---- //
-
-// Sign uses the provided privateKey to sign the transaction.
-func (tx *TokenRejectTransaction) Sign(privateKey PrivateKey) *TokenRejectTransaction {
-	tx.Transaction.Sign(privateKey)
-	return tx
-}
-
-// SignWithOperator signs the transaction with client's operator privateKey.
-func (tx *TokenRejectTransaction) SignWithOperator(client *Client) (*TokenRejectTransaction, error) {
-	_, err := tx.Transaction.signWithOperator(client, tx)
-	if err != nil {
-		return nil, err
-	}
-	return tx, nil
-}
-
-// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
-// with the publicKey as the map key.
-func (tx *TokenRejectTransaction) SignWith(
-	publicKey PublicKey,
-	signer TransactionSigner,
-) *TokenRejectTransaction {
-	tx.Transaction.SignWith(publicKey, signer)
-	return tx
-}
-
-// AddSignature adds a signature to the transaction.
-func (tx *TokenRejectTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenRejectTransaction {
-	tx.Transaction.AddSignature(publicKey, signature)
-	return tx
-}
-
-// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (tx *TokenRejectTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenRejectTransaction {
-	tx.Transaction.SetGrpcDeadline(deadline)
-	return tx
-}
-
-func (tx *TokenRejectTransaction) Freeze() (*TokenRejectTransaction, error) {
-	return tx.FreezeWith(nil)
-}
-
-func (tx *TokenRejectTransaction) FreezeWith(client *Client) (*TokenRejectTransaction, error) {
-	_, err := tx.Transaction.freezeWith(client, tx)
-	return tx, err
-}
-
-// SetMaxTransactionFee sets the max transaction fee for this TokenRejectTransaction.
-func (tx *TokenRejectTransaction) SetMaxTransactionFee(fee Hbar) *TokenRejectTransaction {
-	tx.Transaction.SetMaxTransactionFee(fee)
-	return tx
-}
-
-// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
-func (tx *TokenRejectTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *TokenRejectTransaction {
-	tx.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
-	return tx
-}
-
-// SetTransactionMemo sets the memo for this TokenRejectTransaction.
-func (tx *TokenRejectTransaction) SetTransactionMemo(memo string) *TokenRejectTransaction {
-	tx.Transaction.SetTransactionMemo(memo)
-	return tx
-}
-
-// SetTransactionValidDuration sets the valid duration for this TokenRejectTransaction.
-func (tx *TokenRejectTransaction) SetTransactionValidDuration(duration time.Duration) *TokenRejectTransaction {
-	tx.Transaction.SetTransactionValidDuration(duration)
-	return tx
-}
-
-// ToBytes serialise the tx to bytes, no matter if it is signed (locked), or not
-func (tx *TokenRejectTransaction) ToBytes() ([]byte, error) {
-	bytes, err := tx.Transaction.toBytes(tx)
-	if err != nil {
-		return nil, err
-	}
-	return bytes, nil
-}
-
-// SetTransactionID sets the TransactionID for this TokenRejectTransaction.
-func (tx *TokenRejectTransaction) SetTransactionID(transactionID TransactionID) *TokenRejectTransaction {
-	tx.Transaction.SetTransactionID(transactionID)
-	return tx
-}
-
-// SetNodeAccountIDs sets the _Node AccountID for this TokenRejectTransaction.
-func (tx *TokenRejectTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenRejectTransaction {
-	tx.Transaction.SetNodeAccountIDs(nodeID)
-	return tx
-}
-
-// SetMaxRetry sets the max number of errors before execution will fail.
-func (tx *TokenRejectTransaction) SetMaxRetry(count int) *TokenRejectTransaction {
-	tx.Transaction.SetMaxRetry(count)
-	return tx
-}
-
-// SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (tx *TokenRejectTransaction) SetMaxBackoff(max time.Duration) *TokenRejectTransaction {
-	tx.Transaction.SetMaxBackoff(max)
-	return tx
-}
-
-// SetMinBackoff sets the minimum amount of time to wait between retries.
-func (tx *TokenRejectTransaction) SetMinBackoff(min time.Duration) *TokenRejectTransaction {
-	tx.Transaction.SetMinBackoff(min)
-	return tx
-}
-
-func (tx *TokenRejectTransaction) SetLogLevel(level LogLevel) *TokenRejectTransaction {
-	tx.Transaction.SetLogLevel(level)
-	return tx
-}
-
-func (tx *TokenRejectTransaction) Execute(client *Client) (TransactionResponse, error) {
-	return tx.Transaction.execute(client, tx)
-}
-
-func (tx *TokenRejectTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	return tx.Transaction.schedule(tx)
-}
-
 // ----------- Overridden functions ----------------
 
-func (tx *TokenRejectTransaction) getName() string {
+func (tx TokenRejectTransaction) getName() string {
 	return "TokenRejectTransaction"
 }
 
-func (tx *TokenRejectTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx TokenRejectTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -288,7 +161,7 @@ func (tx *TokenRejectTransaction) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (tx *TokenRejectTransaction) build() *services.TransactionBody {
+func (tx TokenRejectTransaction) build() *services.TransactionBody {
 	body := tx.buildProtoBody()
 
 	return &services.TransactionBody{
@@ -302,7 +175,7 @@ func (tx *TokenRejectTransaction) build() *services.TransactionBody {
 	}
 }
 
-func (tx *TokenRejectTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx TokenRejectTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Memo:           tx.Transaction.memo,
@@ -312,7 +185,7 @@ func (tx *TokenRejectTransaction) buildScheduled() (*services.SchedulableTransac
 	}, nil
 }
 
-func (tx *TokenRejectTransaction) buildProtoBody() *services.TokenRejectTransactionBody {
+func (tx TokenRejectTransaction) buildProtoBody() *services.TokenRejectTransactionBody {
 	body := &services.TokenRejectTransactionBody{}
 
 	if tx.ownerID != nil {
@@ -342,12 +215,16 @@ func (tx *TokenRejectTransaction) buildProtoBody() *services.TokenRejectTransact
 	return body
 }
 
-func (tx *TokenRejectTransaction) getMethod(channel *_Channel) _Method {
+func (tx TokenRejectTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetToken().RejectToken,
 	}
 }
 
-func (tx *TokenRejectTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx TokenRejectTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
+}
+
+func (tx TokenRejectTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }

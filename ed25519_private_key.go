@@ -383,7 +383,7 @@ func (sk _Ed25519PrivateKey) _ToProtoKey() *services.Key {
 	return sk._PublicKey()._ToProtoKey()
 }
 
-func (sk _Ed25519PrivateKey) _SignTransaction(tx *Transaction) ([]byte, error) {
+func (sk _Ed25519PrivateKey) _SignTransaction(tx *Transaction[TransactionInterface]) ([]byte, error) {
 	tx._RequireOneNodeAccountID()
 
 	if tx.signedTransactions._Length() == 0 {

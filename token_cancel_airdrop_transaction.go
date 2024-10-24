@@ -21,37 +21,35 @@ package hedera
  */
 
 import (
-	"time"
-
 	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
 )
 
 type TokenCancelAirdropTransaction struct {
-	Transaction
+	*Transaction[*TokenCancelAirdropTransaction]
 	pendingAirdropIds []*PendingAirdropId
 }
 
 func NewTokenCancelAirdropTransaction() *TokenCancelAirdropTransaction {
-	tx := TokenCancelAirdropTransaction{
-		Transaction:       _NewTransaction(),
+	tx := &TokenCancelAirdropTransaction{
 		pendingAirdropIds: make([]*PendingAirdropId, 0),
 	}
 
+	tx.Transaction = _NewTransaction(tx)
 	tx._SetDefaultMaxTransactionFee(NewHbar(1))
 
-	return &tx
+	return tx
 }
 
-func _TokenCancelAirdropTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *TokenCancelAirdropTransaction {
-	TokenCancel := &TokenCancelAirdropTransaction{
-		Transaction: tx,
-	}
+func _TokenCancelAirdropTransactionFromProtobuf(tx Transaction[*TokenCancelAirdropTransaction], pb *services.TransactionBody) TokenCancelAirdropTransaction {
+	tokenCancelTransaction := TokenCancelAirdropTransaction{}
 
 	for _, pendingAirdrops := range pb.GetTokenCancelAirdrop().PendingAirdrops {
-		TokenCancel.pendingAirdropIds = append(TokenCancel.pendingAirdropIds, _PendingAirdropIdFromProtobuf(pendingAirdrops))
+		tokenCancelTransaction.pendingAirdropIds = append(tokenCancelTransaction.pendingAirdropIds, _PendingAirdropIdFromProtobuf(pendingAirdrops))
 	}
 
-	return TokenCancel
+	tx.childTransaction = &tokenCancelTransaction
+	tokenCancelTransaction.Transaction = &tx
+	return tokenCancelTransaction
 }
 
 // SetPendingAirdropIds sets the pending airdrop IDs for this TokenCancelAirdropTransaction.
@@ -73,138 +71,13 @@ func (tx *TokenCancelAirdropTransaction) GetPendingAirdropIds() []*PendingAirdro
 	return tx.pendingAirdropIds
 }
 
-// ---- Required Interfaces ---- //
-
-// Sign uses the provided privateKey to sign the transaction.
-func (tx *TokenCancelAirdropTransaction) Sign(privateKey PrivateKey) *TokenCancelAirdropTransaction {
-	tx.Transaction.Sign(privateKey)
-	return tx
-}
-
-// SignWithOperator signs the transaction with client's operator privateKey.
-func (tx *TokenCancelAirdropTransaction) SignWithOperator(client *Client) (*TokenCancelAirdropTransaction, error) {
-	_, err := tx.Transaction.signWithOperator(client, tx)
-	if err != nil {
-		return nil, err
-	}
-	return tx, nil
-}
-
-// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
-// with the publicKey as the map key.
-func (tx *TokenCancelAirdropTransaction) SignWith(
-	publicKey PublicKey,
-	signer TransactionSigner,
-) *TokenCancelAirdropTransaction {
-	tx.Transaction.SignWith(publicKey, signer)
-	return tx
-}
-
-// AddSignature adds a signature to the transaction.
-func (tx *TokenCancelAirdropTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenCancelAirdropTransaction {
-	tx.Transaction.AddSignature(publicKey, signature)
-	return tx
-}
-
-// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (tx *TokenCancelAirdropTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenCancelAirdropTransaction {
-	tx.Transaction.SetGrpcDeadline(deadline)
-	return tx
-}
-
-func (tx *TokenCancelAirdropTransaction) Freeze() (*TokenCancelAirdropTransaction, error) {
-	return tx.FreezeWith(nil)
-}
-
-func (tx *TokenCancelAirdropTransaction) FreezeWith(client *Client) (*TokenCancelAirdropTransaction, error) {
-	_, err := tx.Transaction.freezeWith(client, tx)
-	return tx, err
-}
-
-// SetMaxTransactionFee sets the max transaction fee for this TokenCancelAirdropTransaction.
-func (tx *TokenCancelAirdropTransaction) SetMaxTransactionFee(fee Hbar) *TokenCancelAirdropTransaction {
-	tx.Transaction.SetMaxTransactionFee(fee)
-	return tx
-}
-
-// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
-func (tx *TokenCancelAirdropTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *TokenCancelAirdropTransaction {
-	tx.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
-	return tx
-}
-
-// SetTransactionMemo sets the memo for this TokenCancelAirdropTransaction.
-func (tx *TokenCancelAirdropTransaction) SetTransactionMemo(memo string) *TokenCancelAirdropTransaction {
-	tx.Transaction.SetTransactionMemo(memo)
-	return tx
-}
-
-// SetTransactionValidDuration sets the valid duration for this TokenCancelAirdropTransaction.
-func (tx *TokenCancelAirdropTransaction) SetTransactionValidDuration(duration time.Duration) *TokenCancelAirdropTransaction {
-	tx.Transaction.SetTransactionValidDuration(duration)
-	return tx
-}
-
-// ToBytes serialise the tx to bytes, no matter if it is signed (locked), or not
-func (tx *TokenCancelAirdropTransaction) ToBytes() ([]byte, error) {
-	bytes, err := tx.Transaction.toBytes(tx)
-	if err != nil {
-		return nil, err
-	}
-	return bytes, nil
-}
-
-// SetTransactionID sets the TransactionID for this TokenCancelAirdropTransaction.
-func (tx *TokenCancelAirdropTransaction) SetTransactionID(transactionID TransactionID) *TokenCancelAirdropTransaction {
-	tx.Transaction.SetTransactionID(transactionID)
-	return tx
-}
-
-// SetNodeAccountIDs sets the _Node AccountID for this TokenCancelAirdropTransaction.
-func (tx *TokenCancelAirdropTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenCancelAirdropTransaction {
-	tx.Transaction.SetNodeAccountIDs(nodeID)
-	return tx
-}
-
-// SetMaxRetry sets the max number of errors before execution will fail.
-func (tx *TokenCancelAirdropTransaction) SetMaxRetry(count int) *TokenCancelAirdropTransaction {
-	tx.Transaction.SetMaxRetry(count)
-	return tx
-}
-
-// SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (tx *TokenCancelAirdropTransaction) SetMaxBackoff(max time.Duration) *TokenCancelAirdropTransaction {
-	tx.Transaction.SetMaxBackoff(max)
-	return tx
-}
-
-// SetMinBackoff sets the minimum amount of time to wait between retries.
-func (tx *TokenCancelAirdropTransaction) SetMinBackoff(min time.Duration) *TokenCancelAirdropTransaction {
-	tx.Transaction.SetMinBackoff(min)
-	return tx
-}
-
-func (tx *TokenCancelAirdropTransaction) SetLogLevel(level LogLevel) *TokenCancelAirdropTransaction {
-	tx.Transaction.SetLogLevel(level)
-	return tx
-}
-
-func (tx *TokenCancelAirdropTransaction) Execute(client *Client) (TransactionResponse, error) {
-	return tx.Transaction.execute(client, tx)
-}
-
-func (tx *TokenCancelAirdropTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	return tx.Transaction.schedule(tx)
-}
-
 // ----------- Overridden functions ----------------
 
-func (tx *TokenCancelAirdropTransaction) getName() string {
+func (tx TokenCancelAirdropTransaction) getName() string {
 	return "TokenCancelAirdropTransaction"
 }
 
-func (tx *TokenCancelAirdropTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx TokenCancelAirdropTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -237,7 +110,7 @@ func (tx *TokenCancelAirdropTransaction) validateNetworkOnIDs(client *Client) er
 	return nil
 }
 
-func (tx *TokenCancelAirdropTransaction) build() *services.TransactionBody {
+func (tx TokenCancelAirdropTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
 		Memo:                     tx.Transaction.memo,
@@ -249,7 +122,7 @@ func (tx *TokenCancelAirdropTransaction) build() *services.TransactionBody {
 	}
 }
 
-func (tx *TokenCancelAirdropTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx TokenCancelAirdropTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Data: &services.SchedulableTransactionBody_TokenCancelAirdrop{
@@ -258,7 +131,7 @@ func (tx *TokenCancelAirdropTransaction) buildScheduled() (*services.Schedulable
 	}, nil
 }
 
-func (tx *TokenCancelAirdropTransaction) buildProtoBody() *services.TokenCancelAirdropTransactionBody {
+func (tx TokenCancelAirdropTransaction) buildProtoBody() *services.TokenCancelAirdropTransactionBody {
 	pendingAirdrops := make([]*services.PendingAirdropId, len(tx.pendingAirdropIds))
 	for i, pendingAirdropId := range tx.pendingAirdropIds {
 		pendingAirdrops[i] = pendingAirdropId._ToProtobuf()
@@ -269,12 +142,16 @@ func (tx *TokenCancelAirdropTransaction) buildProtoBody() *services.TokenCancelA
 	}
 }
 
-func (tx *TokenCancelAirdropTransaction) getMethod(channel *_Channel) _Method {
+func (tx TokenCancelAirdropTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetToken().CancelAirdrop,
 	}
 }
 
-func (tx *TokenCancelAirdropTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx TokenCancelAirdropTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
+}
+
+func (tx TokenCancelAirdropTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }

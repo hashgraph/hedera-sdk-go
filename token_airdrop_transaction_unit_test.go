@@ -283,6 +283,7 @@ func TestUnitTokenAirdropTransactionScheduleProtobuf(t *testing.T) {
 	amount2 := int64(200)
 	serialNumber1 := int64(1)
 	serialNumber2 := int64(2)
+	nodeAccountID := []AccountID{{Account: 10}}
 
 	tx, err := NewTokenAirdropTransaction().
 		SetTransactionID(transactionID).

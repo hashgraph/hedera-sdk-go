@@ -21,8 +21,6 @@ package hedera
  */
 
 import (
-	"time"
-
 	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
 )
 
@@ -44,7 +42,7 @@ import (
 // Token A has 2 decimals. In order to wipe 100 tokens from account, one must provide amount of
 // 10000. In order to wipe 100.55 tokens, one must provide amount of 10055.
 type TokenWipeTransaction struct {
-	Transaction
+	*Transaction[*TokenWipeTransaction]
 	tokenID   *TokenID
 	accountID *AccountID
 	amount    uint64
@@ -69,23 +67,25 @@ type TokenWipeTransaction struct {
 // Token A has 2 decimals. In order to wipe 100 tokens from account, one must provide amount of
 // 10000. In order to wipe 100.55 tokens, one must provide amount of 10055.
 func NewTokenWipeTransaction() *TokenWipeTransaction {
-	tx := TokenWipeTransaction{
-		Transaction: _NewTransaction(),
-	}
+	tx := &TokenWipeTransaction{}
+	tx.Transaction = _NewTransaction(tx)
 
 	tx._SetDefaultMaxTransactionFee(NewHbar(30))
 
-	return &tx
+	return tx
 }
 
-func _TokenWipeTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *TokenWipeTransaction {
-	return &TokenWipeTransaction{
-		Transaction: tx,
-		tokenID:     _TokenIDFromProtobuf(pb.GetTokenWipe().GetToken()),
-		accountID:   _AccountIDFromProtobuf(pb.GetTokenWipe().GetAccount()),
-		amount:      pb.GetTokenWipe().Amount,
-		serial:      pb.GetTokenWipe().GetSerialNumbers(),
+func _TokenWipeTransactionFromProtobuf(tx Transaction[*TokenWipeTransaction], pb *services.TransactionBody) TokenWipeTransaction {
+	tokenWipeTransaction := TokenWipeTransaction{
+		tokenID:   _TokenIDFromProtobuf(pb.GetTokenWipe().GetToken()),
+		accountID: _AccountIDFromProtobuf(pb.GetTokenWipe().GetAccount()),
+		amount:    pb.GetTokenWipe().Amount,
+		serial:    pb.GetTokenWipe().GetSerialNumbers(),
 	}
+
+	tx.childTransaction = &tokenWipeTransaction
+	tokenWipeTransaction.Transaction = &tx
+	return tokenWipeTransaction
 }
 
 // SetTokenID Sets the token for which the account will be wiped. If token does not exist, transaction results in
@@ -148,138 +148,13 @@ func (tx *TokenWipeTransaction) SetSerialNumbers(serial []int64) *TokenWipeTrans
 	return tx
 }
 
-// ---- Required Interfaces ---- //
-
-// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (tx *TokenWipeTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenWipeTransaction {
-	tx.Transaction.SetGrpcDeadline(deadline)
-	return tx
-}
-
-// Sign uses the provided privateKey to sign the transaction.
-func (tx *TokenWipeTransaction) Sign(privateKey PrivateKey) *TokenWipeTransaction {
-	tx.Transaction.Sign(privateKey)
-	return tx
-}
-
-// SignWithOperator signs the transaction with client's operator privateKey.
-func (tx *TokenWipeTransaction) SignWithOperator(client *Client) (*TokenWipeTransaction, error) {
-	_, err := tx.Transaction.signWithOperator(client, tx)
-	if err != nil {
-		return nil, err
-	}
-	return tx, nil
-}
-
-// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
-// with the publicKey as the map key.
-func (tx *TokenWipeTransaction) SignWith(
-	publicKey PublicKey,
-	signer TransactionSigner,
-) *TokenWipeTransaction {
-	tx.Transaction.SignWith(publicKey, signer)
-	return tx
-}
-
-// AddSignature adds a signature to the transaction.
-func (tx *TokenWipeTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenWipeTransaction {
-	tx.Transaction.AddSignature(publicKey, signature)
-	return tx
-}
-
-func (tx *TokenWipeTransaction) Freeze() (*TokenWipeTransaction, error) {
-	return tx.FreezeWith(nil)
-}
-
-func (tx *TokenWipeTransaction) FreezeWith(client *Client) (*TokenWipeTransaction, error) {
-	_, err := tx.Transaction.freezeWith(client, tx)
-	return tx, err
-}
-
-// SetMaxTransactionFee sets the max transaction fee for this TokenWipeTransaction.
-func (tx *TokenWipeTransaction) SetMaxTransactionFee(fee Hbar) *TokenWipeTransaction {
-	tx.Transaction.SetMaxTransactionFee(fee)
-	return tx
-}
-
-// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
-func (tx *TokenWipeTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *TokenWipeTransaction {
-	tx.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
-	return tx
-}
-
-// SetTransactionMemo sets the memo for this TokenWipeTransaction.
-func (tx *TokenWipeTransaction) SetTransactionMemo(memo string) *TokenWipeTransaction {
-	tx.Transaction.SetTransactionMemo(memo)
-	return tx
-}
-
-// SetTransactionValidDuration sets the valid duration for this TokenWipeTransaction.
-func (tx *TokenWipeTransaction) SetTransactionValidDuration(duration time.Duration) *TokenWipeTransaction {
-	tx.Transaction.SetTransactionValidDuration(duration)
-	return tx
-}
-
-// ToBytes serialise the tx to bytes, no matter if it is signed (locked), or not
-func (tx *TokenWipeTransaction) ToBytes() ([]byte, error) {
-	bytes, err := tx.Transaction.toBytes(tx)
-	if err != nil {
-		return nil, err
-	}
-	return bytes, nil
-}
-
-// SetTransactionID sets the TransactionID for this TokenWipeTransaction.
-func (tx *TokenWipeTransaction) SetTransactionID(transactionID TransactionID) *TokenWipeTransaction {
-	tx.Transaction.SetTransactionID(transactionID)
-	return tx
-}
-
-// SetNodeAccountIDs sets the _Node AccountID for this TokenWipeTransaction.
-func (tx *TokenWipeTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenWipeTransaction {
-	tx.Transaction.SetNodeAccountIDs(nodeID)
-	return tx
-}
-
-// SetMaxRetry sets the max number of errors before execution will fail.
-func (tx *TokenWipeTransaction) SetMaxRetry(count int) *TokenWipeTransaction {
-	tx.Transaction.SetMaxRetry(count)
-	return tx
-}
-
-// SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (tx *TokenWipeTransaction) SetMaxBackoff(max time.Duration) *TokenWipeTransaction {
-	tx.Transaction.SetMaxBackoff(max)
-	return tx
-}
-
-// SetMinBackoff sets the minimum amount of time to wait between retries.
-func (tx *TokenWipeTransaction) SetMinBackoff(min time.Duration) *TokenWipeTransaction {
-	tx.Transaction.SetMinBackoff(min)
-	return tx
-}
-
-func (tx *TokenWipeTransaction) SetLogLevel(level LogLevel) *TokenWipeTransaction {
-	tx.Transaction.SetLogLevel(level)
-	return tx
-}
-
-func (tx *TokenWipeTransaction) Execute(client *Client) (TransactionResponse, error) {
-	return tx.Transaction.execute(client, tx)
-}
-
-func (tx *TokenWipeTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	return tx.Transaction.schedule(tx)
-}
-
 // ----------- Overridden functions ----------------
 
-func (tx *TokenWipeTransaction) getName() string {
+func (tx TokenWipeTransaction) getName() string {
 	return "TokenWipeTransaction"
 }
 
-func (tx *TokenWipeTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx TokenWipeTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -299,7 +174,7 @@ func (tx *TokenWipeTransaction) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (tx *TokenWipeTransaction) build() *services.TransactionBody {
+func (tx TokenWipeTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
 		Memo:                     tx.Transaction.memo,
@@ -311,7 +186,7 @@ func (tx *TokenWipeTransaction) build() *services.TransactionBody {
 	}
 }
 
-func (tx *TokenWipeTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx TokenWipeTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Memo:           tx.Transaction.memo,
@@ -321,7 +196,7 @@ func (tx *TokenWipeTransaction) buildScheduled() (*services.SchedulableTransacti
 	}, nil
 }
 
-func (tx *TokenWipeTransaction) buildProtoBody() *services.TokenWipeAccountTransactionBody {
+func (tx TokenWipeTransaction) buildProtoBody() *services.TokenWipeAccountTransactionBody {
 	body := &services.TokenWipeAccountTransactionBody{
 		Amount: tx.amount,
 	}
@@ -341,11 +216,16 @@ func (tx *TokenWipeTransaction) buildProtoBody() *services.TokenWipeAccountTrans
 	return body
 }
 
-func (tx *TokenWipeTransaction) getMethod(channel *_Channel) _Method {
+func (tx TokenWipeTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetToken().WipeTokenAccount,
 	}
 }
-func (tx *TokenWipeTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+
+func (tx TokenWipeTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
+}
+
+func (tx TokenWipeTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }

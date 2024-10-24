@@ -35,7 +35,6 @@ func TestCustomizer(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 	newKey, _ := GeneratePrivateKey()
 
-	// TODO - remove this once the customizer is implemented
 	_, err := createFungibleToken(&env, func(transaction *TokenCreateTransaction) {
 		_, err := transaction.SetAdminKey(newKey).FreezeWith(env.Client)
 		require.NoError(t, err)

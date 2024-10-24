@@ -59,6 +59,8 @@ func TestUnitTokenCancelAirdropTransactionAddPendingAirdropId(t *testing.T) {
 func TestUnitTokenCancelAirdropTransactionFreeze(t *testing.T) {
 	t.Parallel()
 
+	nodeAccountID := []AccountID{{Account: 10}}
+
 	pendingAirdropId := PendingAirdropId{tokenID: &TokenID{Token: 1}, sender: &AccountID{Account: 3}}
 	transactionID := TransactionIDGenerate(AccountID{Account: 324})
 	transaction := NewTokenCancelAirdropTransaction().

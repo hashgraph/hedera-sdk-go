@@ -49,7 +49,7 @@ import (
 //  1. If a non fungible token has a positive treasury balance, the operation will abort with
 //     CURRENT_TREASURY_STILL_OWNS_NFTS.
 type TokenUpdateTransaction struct {
-	Transaction
+	*Transaction[*TokenUpdateTransaction]
 	tokenID                  *TokenID
 	treasuryAccountID        *AccountID
 	autoRenewAccountID       *AccountID
@@ -92,16 +92,16 @@ type TokenUpdateTransaction struct {
 //     CURRENT_TREASURY_STILL_OWNS_NFTS.
 func NewTokenUpdateTransaction() *TokenUpdateTransaction {
 	tx := TokenUpdateTransaction{
-		Transaction: _NewTransaction(),
-		memo:        nil,
+		memo: nil,
 	}
 
+	tx.Transaction = _NewTransaction(&tx)
 	tx._SetDefaultMaxTransactionFee(NewHbar(30))
 
 	return &tx
 }
 
-func _TokenUpdateTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *TokenUpdateTransaction {
+func _TokenUpdateTransactionFromProtobuf(tx Transaction[*TokenUpdateTransaction], pb *services.TransactionBody) TokenUpdateTransaction {
 	adminKey, _ := _KeyFromProtobuf(pb.GetTokenUpdate().GetAdminKey())
 	kycKey, _ := _KeyFromProtobuf(pb.GetTokenUpdate().GetKycKey())
 	freezeKey, _ := _KeyFromProtobuf(pb.GetTokenUpdate().GetFreezeKey())
@@ -125,8 +125,7 @@ func _TokenUpdateTransactionFromProtobuf(tx Transaction, pb *services.Transactio
 		metadata = m.Value
 	}
 
-	return &TokenUpdateTransaction{
-		Transaction:              tx,
+	tokenUpdateTransaction := TokenUpdateTransaction{
 		tokenID:                  _TokenIDFromProtobuf(pb.GetTokenUpdate().GetToken()),
 		treasuryAccountID:        _AccountIDFromProtobuf(pb.GetTokenUpdate().GetTreasury()),
 		autoRenewAccountID:       _AccountIDFromProtobuf(pb.GetTokenUpdate().GetAutoRenewAccount()),
@@ -146,6 +145,10 @@ func _TokenUpdateTransactionFromProtobuf(tx Transaction, pb *services.Transactio
 		expirationTime:           &expirationTime,
 		autoRenewPeriod:          &autoRenew,
 	}
+
+	tx.childTransaction = &tokenUpdateTransaction
+	tokenUpdateTransaction.Transaction = &tx
+	return tokenUpdateTransaction
 }
 
 type TokenKeyValidation int32
@@ -404,138 +407,13 @@ func (tx *TokenUpdateTransaction) GetKeyVerificationMode() TokenKeyValidation {
 	return tx.tokenKeyVerificationMode
 }
 
-// ---- Required Interfaces ---- //
-
-// Sign uses the provided privateKey to sign the transaction.
-func (tx *TokenUpdateTransaction) Sign(privateKey PrivateKey) *TokenUpdateTransaction {
-	tx.Transaction.Sign(privateKey)
-	return tx
-}
-
-// SignWithOperator signs the transaction with client's operator privateKey.
-func (tx *TokenUpdateTransaction) SignWithOperator(client *Client) (*TokenUpdateTransaction, error) {
-	_, err := tx.Transaction.signWithOperator(client, tx)
-	if err != nil {
-		return nil, err
-	}
-	return tx, nil
-}
-
-// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
-// with the publicKey as the map key.
-func (tx *TokenUpdateTransaction) SignWith(
-	publicKey PublicKey,
-	signer TransactionSigner,
-) *TokenUpdateTransaction {
-	tx.Transaction.SignWith(publicKey, signer)
-	return tx
-}
-
-// AddSignature adds a signature to the transaction.
-func (tx *TokenUpdateTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenUpdateTransaction {
-	tx.Transaction.AddSignature(publicKey, signature)
-	return tx
-}
-
-// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (tx *TokenUpdateTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenUpdateTransaction {
-	tx.Transaction.SetGrpcDeadline(deadline)
-	return tx
-}
-
-func (tx *TokenUpdateTransaction) Freeze() (*TokenUpdateTransaction, error) {
-	return tx.FreezeWith(nil)
-}
-
-func (tx *TokenUpdateTransaction) FreezeWith(client *Client) (*TokenUpdateTransaction, error) {
-	_, err := tx.Transaction.freezeWith(client, tx)
-	return tx, err
-}
-
-// SetMaxTransactionFee sets the max transaction fee for this TokenUpdateTransaction.
-func (tx *TokenUpdateTransaction) SetMaxTransactionFee(fee Hbar) *TokenUpdateTransaction {
-	tx.Transaction.SetMaxTransactionFee(fee)
-	return tx
-}
-
-// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
-func (tx *TokenUpdateTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *TokenUpdateTransaction {
-	tx.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
-	return tx
-}
-
-// SetTransactionMemo sets the memo for this TokenUpdateTransaction.
-func (tx *TokenUpdateTransaction) SetTransactionMemo(memo string) *TokenUpdateTransaction {
-	tx.Transaction.SetTransactionMemo(memo)
-	return tx
-}
-
-// SetTransactionValidDuration sets the valid duration for this TokenUpdateTransaction.
-func (tx *TokenUpdateTransaction) SetTransactionValidDuration(duration time.Duration) *TokenUpdateTransaction {
-	tx.Transaction.SetTransactionValidDuration(duration)
-	return tx
-}
-
-// ToBytes serialise the tx to bytes, no matter if it is signed (locked), or not
-func (tx *TokenUpdateTransaction) ToBytes() ([]byte, error) {
-	bytes, err := tx.Transaction.toBytes(tx)
-	if err != nil {
-		return nil, err
-	}
-	return bytes, nil
-}
-
-// SetTransactionID sets the TransactionID for this TokenUpdateTransaction.
-func (tx *TokenUpdateTransaction) SetTransactionID(transactionID TransactionID) *TokenUpdateTransaction {
-	tx.Transaction.SetTransactionID(transactionID)
-	return tx
-}
-
-// SetNodeAccountIDs sets the _Node AccountID for this TokenUpdateTransaction.
-func (tx *TokenUpdateTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenUpdateTransaction {
-	tx.Transaction.SetNodeAccountIDs(nodeID)
-	return tx
-}
-
-// SetMaxRetry sets the max number of errors before execution will fail.
-func (tx *TokenUpdateTransaction) SetMaxRetry(count int) *TokenUpdateTransaction {
-	tx.Transaction.SetMaxRetry(count)
-	return tx
-}
-
-// SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (tx *TokenUpdateTransaction) SetMaxBackoff(max time.Duration) *TokenUpdateTransaction {
-	tx.Transaction.SetMaxBackoff(max)
-	return tx
-}
-
-// SetMinBackoff sets the minimum amount of time to wait between retries.
-func (tx *TokenUpdateTransaction) SetMinBackoff(min time.Duration) *TokenUpdateTransaction {
-	tx.Transaction.SetMinBackoff(min)
-	return tx
-}
-
-func (tx *TokenUpdateTransaction) SetLogLevel(level LogLevel) *TokenUpdateTransaction {
-	tx.Transaction.SetLogLevel(level)
-	return tx
-}
-
-func (tx *TokenUpdateTransaction) Execute(client *Client) (TransactionResponse, error) {
-	return tx.Transaction.execute(client, tx)
-}
-
-func (tx *TokenUpdateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	return tx.Transaction.schedule(tx)
-}
-
 // ----------- Overridden functions ----------------
 
-func (tx *TokenUpdateTransaction) getName() string {
+func (tx TokenUpdateTransaction) getName() string {
 	return "TokenUpdateTransaction"
 }
 
-func (tx *TokenUpdateTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx TokenUpdateTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -561,7 +439,7 @@ func (tx *TokenUpdateTransaction) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (tx *TokenUpdateTransaction) build() *services.TransactionBody {
+func (tx TokenUpdateTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
 		Memo:                     tx.Transaction.memo,
@@ -573,7 +451,7 @@ func (tx *TokenUpdateTransaction) build() *services.TransactionBody {
 	}
 }
 
-func (tx *TokenUpdateTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx TokenUpdateTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Memo:           tx.Transaction.memo,
@@ -583,7 +461,7 @@ func (tx *TokenUpdateTransaction) buildScheduled() (*services.SchedulableTransac
 	}, nil
 }
 
-func (tx *TokenUpdateTransaction) buildProtoBody() *services.TokenUpdateTransactionBody {
+func (tx TokenUpdateTransaction) buildProtoBody() *services.TokenUpdateTransactionBody {
 	body := &services.TokenUpdateTransactionBody{
 		Name:                tx.tokenName,
 		Symbol:              tx.tokenSymbol,
@@ -653,11 +531,16 @@ func (tx *TokenUpdateTransaction) buildProtoBody() *services.TokenUpdateTransact
 	return body
 }
 
-func (tx *TokenUpdateTransaction) getMethod(channel *_Channel) _Method {
+func (tx TokenUpdateTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetToken().UpdateToken,
 	}
 }
-func (tx *TokenUpdateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+
+func (tx TokenUpdateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
+}
+
+func (tx TokenUpdateTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }
