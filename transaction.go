@@ -824,7 +824,6 @@ func (tx *Transaction[T]) _BuildTransaction(index int) (*services.Transaction, e
 //
 
 // GetSignedTransactionBodyBytes
-// TODO remove this method, it's not used in the sdk and it does not seem useful for the user
 func (tx *Transaction[T]) GetSignedTransactionBodyBytes(transactionIndex int) []byte {
 	return tx.signedTransactions._Get(transactionIndex).(*services.SignedTransaction).GetBodyBytes()
 }
@@ -994,7 +993,6 @@ func (tx *Transaction[T]) GetTransactionMemo() string {
 // SetTransactionMemo sets the memo for this transaction.
 func (tx *Transaction[T]) SetTransactionMemo(memo string) T {
 	tx.memo = memo
-	// tx.executable.transactionIDs = _NewLockableSlice()
 	return tx.childTransaction
 }
 

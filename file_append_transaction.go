@@ -349,6 +349,7 @@ func (tx FileAppendTransaction) getMethod(channel *_Channel) _Method {
 	}
 }
 
+// TODO can be removed at some point
 func (tx FileAppendTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
 }
