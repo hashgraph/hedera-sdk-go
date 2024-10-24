@@ -294,12 +294,6 @@ func (tx *ContractCreateFlow) _CreateContractCreateTransaction(fileID FileID) *C
 	return contractCreateTx
 }
 
-func (tx *ContractCreateFlow) _CreateTransactionReceiptQuery(response TransactionResponse) *TransactionReceiptQuery {
-	return NewTransactionReceiptQuery().
-		SetNodeAccountIDs([]AccountID{response.NodeID}).
-		SetTransactionID(response.TransactionID)
-}
-
 func (tx *ContractCreateFlow) Execute(client *Client) (TransactionResponse, error) {
 	tx.splitBytecode()
 
@@ -307,7 +301,7 @@ func (tx *ContractCreateFlow) Execute(client *Client) (TransactionResponse, erro
 	if err != nil {
 		return TransactionResponse{}, err
 	}
-	fileCreateReceipt, err := tx._CreateTransactionReceiptQuery(fileCreateResponse).Execute(client)
+	fileCreateReceipt, err := fileCreateResponse.SetValidateStatus(true).GetReceipt(client)
 	if err != nil {
 		return TransactionResponse{}, err
 	}
@@ -321,7 +315,7 @@ func (tx *ContractCreateFlow) Execute(client *Client) (TransactionResponse, erro
 			return TransactionResponse{}, err
 		}
 
-		_, err = tx._CreateTransactionReceiptQuery(fileAppendResponse).Execute(client)
+		_, err = fileAppendResponse.SetValidateStatus(true).GetReceipt(client)
 		if err != nil {
 			return TransactionResponse{}, err
 		}
@@ -330,7 +324,7 @@ func (tx *ContractCreateFlow) Execute(client *Client) (TransactionResponse, erro
 	if err != nil {
 		return TransactionResponse{}, err
 	}
-	_, err = tx._CreateTransactionReceiptQuery(contractCreateResponse).Execute(client)
+	_, err = contractCreateResponse.SetValidateStatus(true).GetReceipt(client)
 	if err != nil {
 		return TransactionResponse{}, err
 	}

@@ -25,7 +25,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/hashgraph/hedera-protobufs-go/services"
+	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
 	protobuf "google.golang.org/protobuf/proto"
 )
 
@@ -35,10 +35,6 @@ type TokenID struct {
 	Realm    uint64
 	Token    uint64
 	checksum *string
-}
-
-type _TokenIDs struct {
-	tokenIDs []TokenID
 }
 
 func _TokenIDFromProtobuf(tokenID *services.TokenID) *TokenID {
@@ -218,19 +214,4 @@ func (id TokenID) Compare(given TokenID) int {
 	} else { //nolint
 		return 0
 	}
-}
-
-func (tokenIDs _TokenIDs) Len() int {
-	return len(tokenIDs.tokenIDs)
-}
-func (tokenIDs _TokenIDs) Swap(i, j int) {
-	tokenIDs.tokenIDs[i], tokenIDs.tokenIDs[j] = tokenIDs.tokenIDs[j], tokenIDs.tokenIDs[i]
-}
-
-func (tokenIDs _TokenIDs) Less(i, j int) bool {
-	if tokenIDs.tokenIDs[i].Compare(tokenIDs.tokenIDs[j]) < 0 { //nolint
-		return true
-	}
-
-	return false
 }

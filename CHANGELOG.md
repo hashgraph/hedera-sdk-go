@@ -1,3 +1,17 @@
+## v2.48.0
+
+### Fixed
+- Reset `stakedAccountID` when setting `stakedNodeID` and vice versa
+- Fix `FEE_SCHEDULE_FILE_PART_UPLOADED` marked as error
+
+## v2.47.0
+
+### Added
+- Functionality to pass a string in `SetMessage` function for `TopicMessageSubmitTransaction`
+
+### Fixed
+- Resubmit transaction in case of throttle status at receipt
+
 ## v2.46.0
 
 ### Added

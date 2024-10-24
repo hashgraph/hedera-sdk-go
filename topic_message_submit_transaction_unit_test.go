@@ -27,7 +27,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hashgraph/hedera-protobufs-go/services"
+	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
 	"github.com/stretchr/testify/require"
 	protobuf "google.golang.org/protobuf/proto"
 )
@@ -325,6 +325,8 @@ func TestUnitTopicMessageSubmitTransactionSerialization(t *testing.T) {
 
 func TestUnitTopicMessageSubmitTransactionSetMessage(t *testing.T) {
 	t.Parallel()
+
+	nodeAccountID := []AccountID{{Account: 10}}
 
 	transaction := NewTopicMessageSubmitTransaction().
 		SetNodeAccountIDs(nodeAccountID).

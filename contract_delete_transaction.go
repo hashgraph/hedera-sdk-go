@@ -21,7 +21,7 @@ package hedera
  */
 
 import (
-	"github.com/hashgraph/hedera-protobufs-go/services"
+	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
 )
 
 // ContractDeleteTransaction marks a contract as deleted and transfers its remaining hBars, if any, to a

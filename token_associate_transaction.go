@@ -21,7 +21,7 @@ package hedera
  */
 
 import (
-	"github.com/hashgraph/hedera-protobufs-go/services"
+	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
 )
 
 // TokenAssociateTransaction Associates the provided account with the provided tokens. Must be signed by the provided Account's key.

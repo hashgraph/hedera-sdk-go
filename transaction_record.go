@@ -31,7 +31,7 @@ import (
 
 	protobuf "google.golang.org/protobuf/proto"
 
-	"github.com/hashgraph/hedera-protobufs-go/services"
+	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
 )
 
 // The complete record for a transaction on Hedera that has reached consensus.
@@ -239,7 +239,6 @@ func (record TransactionRecord) MarshalJSON() ([]byte, error) {
 		}
 	}
 	m["pendingAirdropRecords"] = pendingAirdropRecords
-	fmt.Println(m["pendingAirdropRecords"])
 
 	receiptBytes, err := record.Receipt.MarshalJSON()
 	if err != nil {

@@ -29,7 +29,7 @@ import (
 
 	protobuf "google.golang.org/protobuf/proto"
 
-	"github.com/hashgraph/hedera-protobufs-go/services"
+	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
 
 	"github.com/stretchr/testify/assert"
 
@@ -64,7 +64,7 @@ func TestUnitTokenTransferTransactionTransfers(t *testing.T) {
 		AddNftTransfer(nftID2, accountID2, accountID1).
 		build()
 
-	require.Equal(t, tokenTransfer.GetCryptoTransfer().Transfers.AccountAmounts, []*services.AccountAmount{
+	require.ElementsMatch(t, tokenTransfer.GetCryptoTransfer().Transfers.AccountAmounts, []*services.AccountAmount{
 		{
 			AccountID: accountID1._ToProtobuf(),
 			Amount:    amount.AsTinybar(),
@@ -75,7 +75,7 @@ func TestUnitTokenTransferTransactionTransfers(t *testing.T) {
 		},
 	})
 
-	require.Equal(t, tokenTransfer.GetCryptoTransfer().TokenTransfers, []*services.TokenTransferList{
+	require.ElementsMatch(t, tokenTransfer.GetCryptoTransfer().TokenTransfers, []*services.TokenTransferList{
 		{
 			Token: tokenID1._ToProtobuf(),
 			Transfers: []*services.AccountAmount{
@@ -289,27 +289,6 @@ func TestUnitTransferTransactionMock(t *testing.T) {
 
 	_, err = freez.Sign(newKey).Execute(client)
 	require.NoError(t, err)
-}
-
-func TestUnitTransferTokenTransactionGetSorted(t *testing.T) {
-	tokenID := TokenID{Token: 7}
-	accountID := AccountID{Account: 3}
-	accountID2 := AccountID{Account: 2}
-	accountID3 := AccountID{Account: 4}
-
-	transaction := NewTransferTransaction().
-		AddTokenTransfer(tokenID, accountID, -123).
-		AddTokenTransfer(tokenID, accountID2, 100).
-		AddTokenTransfer(tokenID, accountID3, 23)
-
-	transfers := transaction.GetTokenTransfers()
-	require.Contains(t, transfers, tokenID)
-
-	tokenTransfers := transfers[tokenID]
-	require.Len(t, tokenTransfers, 3)
-	require.Equal(t, tokenTransfers[0].AccountID.Account, uint64(2))
-	require.Equal(t, tokenTransfers[1].AccountID.Account, uint64(3))
-	require.Equal(t, tokenTransfers[2].AccountID.Account, uint64(4))
 }
 
 func TestUnitTokenTransferEncodeDecode(t *testing.T) {

@@ -37,6 +37,7 @@ type TransactionResponse struct {
 	NodeID                 AccountID
 	Hash                   []byte
 	ValidateStatus         bool
+	IncludeChildReceipts   bool
 	Transaction            TransactionInterface
 }
 
@@ -69,6 +70,7 @@ func (response TransactionResponse) GetReceipt(client *Client) (TransactionRecei
 	receipt, err := NewTransactionReceiptQuery().
 		SetTransactionID(response.TransactionID).
 		SetNodeAccountIDs([]AccountID{response.NodeID}).
+		SetIncludeChildren(response.IncludeChildReceipts).
 		Execute(client)
 
 	for receipt.Status == StatusThrottledAtConsensus {
@@ -123,4 +125,17 @@ func (response TransactionResponse) SetValidateStatus(validate bool) *Transactio
 // GetValidateStatus returns the validate status for the transaction
 func (response TransactionResponse) GetValidateStatus() bool {
 	return response.ValidateStatus
+}
+
+// SetIncludeChildren Sets whether the response should include the receipts of any child transactions spawned by the
+// top-level transaction with the given transactionID.
+func (response TransactionResponse) SetIncludeChildren(include bool) *TransactionResponse {
+	response.IncludeChildReceipts = include
+	return &response
+}
+
+// GetIncludeChildren returns whether the response should include the receipts of any child transactions spawned by the
+// top-level transaction with the given transactionID.
+func (response TransactionResponse) GetIncludeChildren() bool {
+	return response.IncludeChildReceipts
 }

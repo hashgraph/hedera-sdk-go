@@ -26,7 +26,7 @@ package hedera
 import (
 	"testing"
 
-	"github.com/hashgraph/hedera-protobufs-go/services"
+	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -58,6 +58,8 @@ func TestUnitTokenClaimAirdropTransactionAddPendingAirdropId(t *testing.T) {
 
 func TestUnitTokenClaimAirdropTransactionFreeze(t *testing.T) {
 	t.Parallel()
+
+	nodeAccountID := []AccountID{{Account: 10}}
 
 	pendingAirdropId := PendingAirdropId{tokenID: &TokenID{Token: 1}}
 	transactionID := TransactionIDGenerate(AccountID{Account: 324})

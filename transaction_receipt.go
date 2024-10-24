@@ -27,7 +27,7 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/hashgraph/hedera-protobufs-go/services"
+	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
 	protobuf "google.golang.org/protobuf/proto"
 )
 
@@ -272,7 +272,7 @@ func (receipt TransactionReceipt) _ToProtobuf() *services.TransactionGetReceiptR
 
 // ValidateStatus validates the status of the receipt
 func (receipt TransactionReceipt) ValidateStatus(shouldValidate bool) error {
-	if shouldValidate && receipt.Status != StatusSuccess {
+	if shouldValidate && receipt.Status != StatusSuccess && receipt.Status != StatusFeeScheduleFilePartUploaded {
 		if receipt.TransactionID != nil {
 			return _NewErrHederaReceiptStatus(*receipt.TransactionID, receipt.Status)
 		}

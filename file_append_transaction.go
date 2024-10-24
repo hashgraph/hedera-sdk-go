@@ -23,7 +23,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-protobufs-go/services"
+	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
 	"github.com/pkg/errors"
 	protobuf "google.golang.org/protobuf/proto"
 )
@@ -270,10 +270,7 @@ func (tx *FileAppendTransaction) ExecuteAll(
 
 		list[i] = resp.(TransactionResponse)
 
-		_, err = NewTransactionReceiptQuery().
-			SetNodeAccountIDs([]AccountID{resp.(TransactionResponse).NodeID}).
-			SetTransactionID(resp.(TransactionResponse).TransactionID).
-			Execute(client)
+		_, err = list[i].SetValidateStatus(false).GetReceipt(client)
 		if err != nil {
 			return list, err
 		}

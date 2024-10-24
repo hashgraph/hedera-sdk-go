@@ -115,10 +115,10 @@ func NewIntegrationTestEnv(t *testing.T) IntegrationTestEnv {
 	env.Client.SetMaxBackoff(8 * time.Second)
 	env.Client.SetNodeMinReadmitPeriod(5 * time.Second)
 	env.Client.SetNodeMaxReadmitPeriod(1 * time.Hour)
-	env.Client.SetMaxAttempts(11)
+	env.Client.SetMaxAttempts(10)
 	env.Client.SetDefaultMaxTransactionFee(NewHbar(50))
 	env.Client.SetDefaultMaxQueryPayment(NewHbar(50))
-	logger := NewLogger("Hedera sdk", LoggerLevelError)
+	logger := NewLogger("Hedera sdk", LoggerLevelTrace)
 	env.Client.SetLogger(logger)
 
 	env.OriginalOperatorID = env.Client.GetOperatorAccountID()
@@ -322,4 +322,36 @@ func createFungibleToken(env *IntegrationTestEnv, opts ...TokenCreateTransaction
 		return TokenID{}, err
 	}
 	return *receipt.TokenID, err
+}
+
+type AccountCreateTransactionCustomizer func(transaction *AccountCreateTransaction)
+
+func createAccount(env *IntegrationTestEnv, opts ...AccountCreateTransactionCustomizer) (AccountID, PrivateKey, error) {
+	newKey, err := PrivateKeyGenerateEd25519()
+
+	if err != nil {
+		return AccountID{}, PrivateKey{}, err
+	}
+
+	accountCreate := NewAccountCreateTransaction().
+		SetKey(newKey).
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetInitialBalance(NewHbar(1))
+
+	for _, opt := range opts {
+		opt(accountCreate)
+	}
+
+	accountCreateExec, err := accountCreate.Execute(env.Client)
+	if err != nil {
+		return AccountID{}, PrivateKey{}, err
+	}
+
+	receipt, err := accountCreateExec.SetValidateStatus(true).GetReceipt(env.Client)
+
+	if err != nil {
+		return AccountID{}, PrivateKey{}, err
+	}
+
+	return *receipt.AccountID, newKey, err
 }

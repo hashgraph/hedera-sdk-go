@@ -29,8 +29,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hashgraph/hedera-protobufs-go/sdk"
-	"github.com/hashgraph/hedera-protobufs-go/services"
+	"github.com/hashgraph/hedera-sdk-go/v2/proto/sdk"
+	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
 	protobuf "google.golang.org/protobuf/proto"
 
 	"github.com/stretchr/testify/assert"
@@ -260,22 +260,17 @@ func TestUnitTransactionToFromBytes(t *testing.T) {
 	require.Equal(t, tx.NodeAccountID.String(), node[0]._ToProtobuf().String())
 	require.Equal(t, tx.Memo, "go sdk example multi_app_transfer/main.go")
 	require.Equal(t, duration, _DurationFromProtobuf(tx.TransactionValidDuration))
-	require.Equal(t, tx.Data, &services.TransactionBody_CryptoTransfer{
-		CryptoTransfer: &services.CryptoTransferTransactionBody{
-			Transfers: &services.TransferList{
-				AccountAmounts: []*services.AccountAmount{
-					{
-						AccountID: &services.AccountID{Account: &services.AccountID_AccountNum{4}},
-						Amount:    100000000,
-					},
-					{
-						AccountID: &services.AccountID{Account: &services.AccountID_AccountNum{5}},
-						Amount:    -100000000,
-					},
-				},
+	require.Equal(t, tx.GetCryptoTransfer().Transfers.AccountAmounts,
+		[]*services.AccountAmount{
+			{
+				AccountID: &services.AccountID{Account: &services.AccountID_AccountNum{5}},
+				Amount:    -100000000,
 			},
-		},
-	})
+			{
+				AccountID: &services.AccountID{Account: &services.AccountID_AccountNum{4}},
+				Amount:    100000000,
+			},
+		})
 
 	txBytes, err := transaction.ToBytes()
 	require.NoError(t, err)
@@ -287,22 +282,17 @@ func TestUnitTransactionToFromBytes(t *testing.T) {
 	require.Equal(t, tx.NodeAccountID.String(), node[0]._ToProtobuf().String())
 	require.Equal(t, tx.Memo, "go sdk example multi_app_transfer/main.go")
 	require.Equal(t, duration, _DurationFromProtobuf(tx.TransactionValidDuration))
-	require.Equal(t, tx.Data, &services.TransactionBody_CryptoTransfer{
-		CryptoTransfer: &services.CryptoTransferTransactionBody{
-			Transfers: &services.TransferList{
-				AccountAmounts: []*services.AccountAmount{
-					{
-						AccountID: &services.AccountID{Account: &services.AccountID_AccountNum{4}},
-						Amount:    100000000,
-					},
-					{
-						AccountID: &services.AccountID{Account: &services.AccountID_AccountNum{5}},
-						Amount:    -100000000,
-					},
-				},
+	require.Equal(t, tx.GetCryptoTransfer().Transfers.AccountAmounts,
+		[]*services.AccountAmount{
+			{
+				AccountID: &services.AccountID{Account: &services.AccountID_AccountNum{5}},
+				Amount:    -100000000,
 			},
-		},
-	})
+			{
+				AccountID: &services.AccountID{Account: &services.AccountID_AccountNum{4}},
+				Amount:    100000000,
+			},
+		})
 }
 
 func TestUnitTransactionToFromBytesWithClient(t *testing.T) {
@@ -330,22 +320,17 @@ func TestUnitTransactionToFromBytesWithClient(t *testing.T) {
 	require.NotNil(t, tx.TransactionID, tx.NodeAccountID)
 	require.Equal(t, tx.Memo, "go sdk example multi_app_transfer/main.go")
 	require.Equal(t, duration, _DurationFromProtobuf(tx.TransactionValidDuration))
-	require.Equal(t, tx.Data, &services.TransactionBody_CryptoTransfer{
-		CryptoTransfer: &services.CryptoTransferTransactionBody{
-			Transfers: &services.TransferList{
-				AccountAmounts: []*services.AccountAmount{
-					{
-						AccountID: &services.AccountID{Account: &services.AccountID_AccountNum{4}},
-						Amount:    100000000,
-					},
-					{
-						AccountID: &services.AccountID{Account: &services.AccountID_AccountNum{5}},
-						Amount:    -100000000,
-					},
-				},
+	require.Equal(t, tx.GetCryptoTransfer().Transfers.AccountAmounts,
+		[]*services.AccountAmount{
+			{
+				AccountID: &services.AccountID{Account: &services.AccountID_AccountNum{5}},
+				Amount:    -100000000,
 			},
-		},
-	})
+			{
+				AccountID: &services.AccountID{Account: &services.AccountID_AccountNum{4}},
+				Amount:    100000000,
+			},
+		})
 
 	initialTxID := tx.TransactionID
 	initialNode := tx.NodeAccountID
@@ -361,22 +346,17 @@ func TestUnitTransactionToFromBytesWithClient(t *testing.T) {
 	require.Equal(t, tx.NodeAccountID.String(), initialNode.String())
 	require.Equal(t, tx.Memo, "go sdk example multi_app_transfer/main.go")
 	require.Equal(t, duration, _DurationFromProtobuf(tx.TransactionValidDuration))
-	require.Equal(t, tx.Data, &services.TransactionBody_CryptoTransfer{
-		CryptoTransfer: &services.CryptoTransferTransactionBody{
-			Transfers: &services.TransferList{
-				AccountAmounts: []*services.AccountAmount{
-					{
-						AccountID: &services.AccountID{Account: &services.AccountID_AccountNum{4}},
-						Amount:    100000000,
-					},
-					{
-						AccountID: &services.AccountID{Account: &services.AccountID_AccountNum{5}},
-						Amount:    -100000000,
-					},
-				},
+	require.Equal(t, tx.GetCryptoTransfer().Transfers.AccountAmounts,
+		[]*services.AccountAmount{
+			{
+				AccountID: &services.AccountID{Account: &services.AccountID_AccountNum{5}},
+				Amount:    -100000000,
 			},
-		},
-	})
+			{
+				AccountID: &services.AccountID{Account: &services.AccountID_AccountNum{4}},
+				Amount:    100000000,
+			},
+		})
 }
 
 func TestUnitQueryRegression(t *testing.T) {

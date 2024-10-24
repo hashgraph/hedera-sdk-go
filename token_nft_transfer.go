@@ -21,7 +21,7 @@ package hedera
  */
 
 import (
-	"github.com/hashgraph/hedera-protobufs-go/services"
+	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
 	protobuf "google.golang.org/protobuf/proto"
 )
 
@@ -31,10 +31,6 @@ type _TokenNftTransfer struct {
 	ReceiverAccountID AccountID
 	SerialNumber      int64
 	IsApproved        bool
-}
-
-type _TokenNftTransfers struct {
-	tokenNftTransfers []*_TokenNftTransfer
 }
 
 func _NftTransferFromProtobuf(pb *services.NftTransfer) _TokenNftTransfer {
@@ -91,31 +87,4 @@ func NftTransferFromBytes(data []byte) (_TokenNftTransfer, error) {
 	}
 
 	return _NftTransferFromProtobuf(&pb), nil
-}
-
-func (tokenNftTransfers *_TokenNftTransfers) Len() int {
-	return len(tokenNftTransfers.tokenNftTransfers)
-}
-func (tokenNftTransfers *_TokenNftTransfers) Swap(i, j int) {
-	tokenNftTransfers.tokenNftTransfers[i], tokenNftTransfers.tokenNftTransfers[j] = tokenNftTransfers.tokenNftTransfers[j], tokenNftTransfers.tokenNftTransfers[i]
-}
-
-func (tokenNftTransfers *_TokenNftTransfers) Less(i, j int) bool {
-	if tokenNftTransfers.tokenNftTransfers[i].SenderAccountID.Compare(tokenNftTransfers.tokenNftTransfers[j].SenderAccountID) < 0 { //nolint
-		return true
-	} else if tokenNftTransfers.tokenNftTransfers[i].SenderAccountID.Compare(tokenNftTransfers.tokenNftTransfers[j].SenderAccountID) > 0 {
-		return false
-	}
-
-	if tokenNftTransfers.tokenNftTransfers[i].ReceiverAccountID.Compare(tokenNftTransfers.tokenNftTransfers[j].ReceiverAccountID) < 0 { //nolint
-		return true
-	} else if tokenNftTransfers.tokenNftTransfers[i].ReceiverAccountID.Compare(tokenNftTransfers.tokenNftTransfers[j].ReceiverAccountID) > 0 {
-		return false
-	}
-
-	if tokenNftTransfers.tokenNftTransfers[i].SerialNumber < tokenNftTransfers.tokenNftTransfers[j].SerialNumber { //nolint
-		return true
-	} else { //nolint
-		return false
-	}
 }

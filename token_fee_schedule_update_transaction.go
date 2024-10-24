@@ -23,7 +23,7 @@ package hedera
 import (
 	"github.com/pkg/errors"
 
-	"github.com/hashgraph/hedera-protobufs-go/services"
+	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
 )
 
 // TokenFeeScheduleUpdateTransaction

@@ -4,7 +4,6 @@
 package hedera
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -203,8 +202,6 @@ func TestIntegrationTokenUpdateTransactionUpdateLowerPrivilegeKeysWithInvalidKey
 	require.NoError(t, err)
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.ErrorContains(t, err, "INVALID_SIGNATURE")
-	fmt.Println(resp)
-	fmt.Println(err)
 }
 
 func TestIntegrationTokenUpdateTransactionUpdateAdminKeyWithoutAlreadySetKeyFails(t *testing.T) {
