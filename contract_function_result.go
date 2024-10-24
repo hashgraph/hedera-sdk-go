@@ -25,8 +25,8 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/hashgraph/hedera-protobufs-go/services"
 	"github.com/hashgraph/hedera-sdk-go/v2/math"
+	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
 	"github.com/umbracle/ethgo/abi"
 	protobuf "google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/wrapperspb"

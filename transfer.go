@@ -21,7 +21,7 @@ package hedera
  */
 
 import (
-	"github.com/hashgraph/hedera-protobufs-go/services"
+	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
 )
 
 // Transfer is a transfer of hbars or tokens from one account to another

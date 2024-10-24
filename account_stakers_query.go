@@ -23,7 +23,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-protobufs-go/services"
+	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
 )
 
 // AccountStakersQuery gets all of the accounts that are proxy staking to this account. For each of  them, the amount

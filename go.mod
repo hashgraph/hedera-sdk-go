@@ -6,7 +6,7 @@ require (
 	github.com/btcsuite/btcd/btcec/v2 v2.3.4
 	github.com/cenkalti/backoff/v4 v4.3.0
 	github.com/ethereum/go-ethereum v1.13.15
-	github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20240910141930-3e9d10484c9a
+	github.com/hashgraph/hedera-protobufs-go v0.2.0
 	github.com/json-iterator/go v1.1.12
 	github.com/pkg/errors v0.9.1
 	github.com/rs/zerolog v1.33.0
@@ -32,6 +32,7 @@ require (
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.3.0 // indirect
 	github.com/ethereum/c-kzg-4844 v1.0.1 // indirect
 	github.com/getsentry/sentry-go v0.25.0 // indirect
+	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/holiman/uint256 v1.2.4 // indirect
 	github.com/klauspost/compress v1.16.0 // indirect

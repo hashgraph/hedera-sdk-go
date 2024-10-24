@@ -21,7 +21,7 @@ package hedera
  */
 
 import (
-	"github.com/hashgraph/hedera-protobufs-go/services"
+	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
 )
 
 // A royalty fee is a fractional fee that is assessed each time the ownership of an NFT is transferred from
