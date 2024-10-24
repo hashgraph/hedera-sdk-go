@@ -24,11 +24,10 @@ import (
 	"encoding/binary"
 	"fmt"
 	"math/big"
-	"strings"
 
-	"github.com/ethereum/go-ethereum/accounts/abi"
-	"github.com/ethereum/go-ethereum/common/math"
 	"github.com/hashgraph/hedera-protobufs-go/services"
+	"github.com/hashgraph/hedera-sdk-go/v2/math"
+	"github.com/umbracle/ethgo/abi"
 	protobuf "google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
@@ -38,7 +37,6 @@ import (
 // Use the methods `Get<Type>()` to get a parameter. Not all solidity types
 // are supported out of the box, but the most common types are. The larger variants
 // of number types return just the bytes for the integer instead of converting to a big int type.
-// To convert those bytes into a usable integer using "github.com/ethereum/go-ethereum/common/math" and "math/big" do the following:
 // ```
 // contractFunctionResult.GetUint256(<index>)
 // bInt := new(big.Int)
@@ -242,7 +240,7 @@ func (result ContractFunctionResult) GetInt256(index uint64) []byte {
 // GetBigInt gets an _Solidity integer from the result at the given index and returns it as a big.Int
 func (result ContractFunctionResult) GetBigInt(index uint64) *big.Int {
 	value := new(big.Int).SetBytes(result.ContractCallResult[index*32 : index*32+32])
-	fromTwosComplement := math.S256(value)
+	fromTwosComplement := math.ToSigned256(value)
 	return fromTwosComplement
 }
 
@@ -439,15 +437,18 @@ func (result ContractFunctionResult) AsBytes() []byte {
 // to convert it into the appropriate go type.
 func (result ContractFunctionResult) GetResult(types string) (interface{}, error) {
 	def := fmt.Sprintf(`[{ "name" : "method", "type": "function", "outputs": [{ "type": "%s" }]}]`, types)
-	abi, err := abi.JSON(strings.NewReader(def))
+	abi := abi.ABI{}
+	err := abi.UnmarshalJSON([]byte(def))
 	if err != nil {
 		return nil, err
 	}
-	parsedResult, err := abi.Unpack("method", result.ContractCallResult)
+
+	parsedResult, err := abi.Methods["method"].Decode(result.ContractCallResult)
+
 	if err != nil {
 		return nil, err
 	}
-	return parsedResult, nil
+	return parsedResult["0"], nil
 }
 
 func extractInt64OrZero(pb *services.ContractFunctionResult) int64 {

@@ -31,9 +31,9 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/math"
+	"github.com/hashgraph/hedera-sdk-go/v2/math"
 	"github.com/stretchr/testify/require"
+	"github.com/umbracle/ethgo"
 )
 
 var (
@@ -251,7 +251,7 @@ func intType(t *testing.T, env IntegrationTestEnv, intType string, value string)
 	contractCall, err := NewContractCallQuery().SetGas(15000000).SetQueryPayment(NewHbar(12)).
 		SetContractID(contractID).
 		SetQueryPayment(NewHbar(20)).
-		SetFunction(data.fnName, data.fnAdd(NewContractFunctionParameters(), math.U256Bytes(valueBigInt))).
+		SetFunction(data.fnName, data.fnAdd(NewContractFunctionParameters(), math.To256BitBytes(valueBigInt))).
 		Execute(env.Client)
 
 	require.NoError(t, err)
@@ -260,7 +260,7 @@ func intType(t *testing.T, env IntegrationTestEnv, intType string, value string)
 		resultBigInt = new(big.Int).SetBytes(data.fnExtract(&contractCall))
 	} else {
 		value := new(big.Int).SetBytes(data.fnExtract(&contractCall))
-		resultBigInt = math.S256(value)
+		resultBigInt = math.ToSigned256(value)
 	}
 
 	require.Equal(t, valueBigIntCopy.String(), resultBigInt.String())
@@ -1565,7 +1565,7 @@ func TestMultipleInt256(t *testing.T) {
 	deployContract(env)
 	value, ok := new(big.Int).SetString("-123", 10)
 	require.True(t, ok)
-	valueTwos := math.U256Bytes(value)
+	valueTwos := math.To256BitBytes(value)
 	contractCal, err := NewContractCallQuery().SetGas(15000000).SetQueryPayment(NewHbar(12)).
 		SetContractID(contractID).SetFunction("returnMultipleInt256", NewContractFunctionParameters().AddInt256(valueTwos)).Execute(env.Client)
 	require.NoError(t, err)
@@ -1573,8 +1573,8 @@ func TestMultipleInt256(t *testing.T) {
 	require.True(t, ok)
 	value2, ok := new(big.Int).SetString("-122", 10)
 	require.True(t, ok)
-	require.Equal(t, math.U256Bytes(value1), contractCal.GetInt256(0))
-	require.Equal(t, math.U256Bytes(value2), contractCal.GetInt256(1))
+	require.Equal(t, math.To256BitBytes(value1), contractCal.GetInt256(0))
+	require.Equal(t, math.To256BitBytes(value2), contractCal.GetInt256(1))
 	err = CloseIntegrationTestEnv(env, nil)
 	require.NoError(t, err)
 }
@@ -1665,7 +1665,7 @@ func TestStringArray(t *testing.T) {
 	result, err := contractCal.Execute(env.Client)
 	require.NoError(t, err)
 	parsedResult, _ := result.GetResult("string[]")
-	strArr := parsedResult.([]interface{})[0].([]string)
+	strArr := parsedResult.([]string)
 	require.Equal(t, value[0], strArr[0])
 	require.Equal(t, value[1], strArr[1])
 	err = CloseIntegrationTestEnv(env, nil)
@@ -1700,7 +1700,7 @@ func TestAddressArray(t *testing.T) {
 	require.NoError(t, err)
 	addArr, err := result.GetResult("address[]")
 	require.NoError(t, err)
-	addresses := addArr.([]interface{})[0].([]common.Address)
+	addresses := addArr.([]ethgo.Address)
 	require.Equal(t, value[0], strings.TrimPrefix(addresses[0].String(), "0x"))
 	require.Equal(t, value[1], strings.TrimPrefix(addresses[1].String(), "0x"))
 	err = CloseIntegrationTestEnv(env, nil)
@@ -1749,7 +1749,7 @@ func TestBytesArray(t *testing.T) {
 	require.NoError(t, err)
 	bytesArrInterface, err := result.GetResult("bytes[]")
 	require.NoError(t, err)
-	require.Equal(t, value, bytesArrInterface.([]interface{})[0])
+	require.Equal(t, value, bytesArrInterface.([][]uint8))
 
 	err = CloseIntegrationTestEnv(env, nil)
 	require.NoError(t, err)
@@ -1791,8 +1791,8 @@ func TestBytes32Array(t *testing.T) {
 	require.NoError(t, err)
 	bytes32ArrInterface, err := result.GetResult("bytes32[]")
 	require.NoError(t, err)
-	require.Equal(t, expected1, bytes32ArrInterface.([]interface{})[0].([][32]byte)[0])
-	require.Equal(t, expected2, bytes32ArrInterface.([]interface{})[0].([][32]byte)[1])
+	require.Equal(t, expected1, bytes32ArrInterface.([][32]byte)[0])
+	require.Equal(t, expected2, bytes32ArrInterface.([][32]byte)[1])
 	err = CloseIntegrationTestEnv(env, nil)
 	require.NoError(t, err)
 }
