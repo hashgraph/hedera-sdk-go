@@ -105,7 +105,6 @@ func TestIntegrationAccountIDCanPopulateAccountAliasEvmAddressWithMirror(t *test
 func TestIntegrationAccountIDCanPopulateAccountAliasEvmAddressWithNoMirror(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
-	defer CloseIntegrationTestEnv(env, nil)
 	env.Client.mirrorNetwork = nil
 	privateKey, err := PrivateKeyGenerateEcdsa()
 	require.NoError(t, err)
@@ -128,7 +127,6 @@ func TestIntegrationAccountIDCanPopulateAccountAliasEvmAddressWithNoMirror(t *te
 func TestIntegrationAccountIDCanPopulateAccountAliasEvmAddressWithMirrorAndNoEvmAddress(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
-	defer CloseIntegrationTestEnv(env, nil)
 	env.Client.mirrorNetwork = nil
 	privateKey, err := PrivateKeyGenerateEcdsa()
 	require.NoError(t, err)
