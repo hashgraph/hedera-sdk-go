@@ -25,7 +25,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashgraph/hedera-protobufs-go/services"
+	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
 )
 
 // AccountCreateTransaction creates a new account. After the account is created, the AccountID for it is in the receipt,
@@ -194,6 +194,7 @@ func (tx *AccountCreateTransaction) GetAccountMemo() string {
 func (tx *AccountCreateTransaction) SetStakedAccountID(id AccountID) *AccountCreateTransaction {
 	tx._RequireNotFrozen()
 	tx.stakedAccountID = &id
+	tx.stakedNodeID = nil
 	return tx
 }
 
@@ -210,6 +211,7 @@ func (tx *AccountCreateTransaction) GetStakedAccountID() AccountID {
 func (tx *AccountCreateTransaction) SetStakedNodeID(id int64) *AccountCreateTransaction {
 	tx._RequireNotFrozen()
 	tx.stakedNodeID = &id
+	tx.stakedAccountID = nil
 	return tx
 }
 
