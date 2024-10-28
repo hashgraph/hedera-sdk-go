@@ -32,7 +32,7 @@ import (
 	"testing"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/hashgraph/hedera-sdk-go/v2/math"
+
 	"github.com/stretchr/testify/require"
 )
 
@@ -251,7 +251,7 @@ func intType(t *testing.T, env IntegrationTestEnv, intType string, value string)
 	contractCall, err := NewContractCallQuery().SetGas(15000000).SetQueryPayment(NewHbar(12)).
 		SetContractID(contractID).
 		SetQueryPayment(NewHbar(20)).
-		SetFunction(data.fnName, data.fnAdd(NewContractFunctionParameters(), math.To256BitBytes(valueBigInt))).
+		SetFunction(data.fnName, data.fnAdd(NewContractFunctionParameters(), To256BitBytes(valueBigInt))).
 		Execute(env.Client)
 
 	require.NoError(t, err)
@@ -260,7 +260,7 @@ func intType(t *testing.T, env IntegrationTestEnv, intType string, value string)
 		resultBigInt = new(big.Int).SetBytes(data.fnExtract(&contractCall))
 	} else {
 		value := new(big.Int).SetBytes(data.fnExtract(&contractCall))
-		resultBigInt = math.ToSigned256(value)
+		resultBigInt = ToSigned256(value)
 	}
 
 	require.Equal(t, valueBigIntCopy.String(), resultBigInt.String())
@@ -1565,7 +1565,7 @@ func TestMultipleInt256(t *testing.T) {
 	deployContract(env)
 	value, ok := new(big.Int).SetString("-123", 10)
 	require.True(t, ok)
-	valueTwos := math.To256BitBytes(value)
+	valueTwos := To256BitBytes(value)
 	contractCal, err := NewContractCallQuery().SetGas(15000000).SetQueryPayment(NewHbar(12)).
 		SetContractID(contractID).SetFunction("returnMultipleInt256", NewContractFunctionParameters().AddInt256(valueTwos)).Execute(env.Client)
 	require.NoError(t, err)
@@ -1573,8 +1573,8 @@ func TestMultipleInt256(t *testing.T) {
 	require.True(t, ok)
 	value2, ok := new(big.Int).SetString("-122", 10)
 	require.True(t, ok)
-	require.Equal(t, math.To256BitBytes(value1), contractCal.GetInt256(0))
-	require.Equal(t, math.To256BitBytes(value2), contractCal.GetInt256(1))
+	require.Equal(t, To256BitBytes(value1), contractCal.GetInt256(0))
+	require.Equal(t, To256BitBytes(value2), contractCal.GetInt256(1))
 	err = CloseIntegrationTestEnv(env, nil)
 	require.NoError(t, err)
 }

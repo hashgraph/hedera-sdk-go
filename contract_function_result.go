@@ -27,7 +27,7 @@ import (
 	"strings"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
-	"github.com/hashgraph/hedera-sdk-go/v2/math"
+
 	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
 	protobuf "google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/wrapperspb"
@@ -240,7 +240,7 @@ func (result ContractFunctionResult) GetInt256(index uint64) []byte {
 // GetBigInt gets an _Solidity integer from the result at the given index and returns it as a big.Int
 func (result ContractFunctionResult) GetBigInt(index uint64) *big.Int {
 	value := new(big.Int).SetBytes(result.ContractCallResult[index*32 : index*32+32])
-	fromTwosComplement := math.ToSigned256(value)
+	fromTwosComplement := ToSigned256(value)
 	return fromTwosComplement
 }
 
