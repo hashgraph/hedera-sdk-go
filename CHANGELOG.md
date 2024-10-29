@@ -1,3 +1,9 @@
+## v2.49.0
+
+### Changed
+- Replace `/common/math` package from go-ethereum
+- Update protobufs from `hedera-services`
+
 ## v2.48.0
 
 ### Fixed
