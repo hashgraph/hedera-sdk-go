@@ -33,6 +33,7 @@ import (
 func TestSetKeyUsesAnyKey(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -70,6 +71,7 @@ func TestSetKeyUsesAnyKey(t *testing.T) {
 func DisabledTestECDSAPrivateKey(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newKey, err := PrivateKeyGenerateEcdsa()
 	require.NoError(t, err)
@@ -107,6 +109,4 @@ func DisabledTestECDSAPrivateKey(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }

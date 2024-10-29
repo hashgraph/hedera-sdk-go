@@ -34,6 +34,7 @@ import (
 func TestIntegrationTopicCreateTransactionCanExecute(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	resp, err := NewTopicCreateTransaction().
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
@@ -70,13 +71,12 @@ func TestIntegrationTopicCreateTransactionCanExecute(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationTopicCreateTransactionDifferentKeys(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	keys := make([]PrivateKey, 2)
 	pubKeys := make([]PublicKey, 2)
@@ -134,13 +134,12 @@ func TestIntegrationTopicCreateTransactionDifferentKeys(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationTopicCreateTransactionJustSetMemo(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	resp, err := NewTopicCreateTransaction().
 		SetNodeAccountIDs(env.NodeAccountIDs).
@@ -151,6 +150,4 @@ func TestIntegrationTopicCreateTransactionJustSetMemo(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }

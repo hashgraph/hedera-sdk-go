@@ -34,6 +34,7 @@ import (
 func TestIntegrationTopicDeleteTransactionCanExecute(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	topicMemo := "go-sdk::TestConsensusTopicDeleteTransaction_Execute"
 
@@ -77,13 +78,12 @@ func TestIntegrationTopicDeleteTransactionCanExecute(t *testing.T) {
 		assert.Equal(t, "exceptional precheck status INVALID_TOPIC_ID", err.Error())
 	}
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationTopicDeleteTransactionNoTopicID(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	topicMemo := "go-sdk::TestConsensusTopicDeleteTransaction_Execute"
 
@@ -116,6 +116,4 @@ func TestIntegrationTopicDeleteTransactionNoTopicID(t *testing.T) {
 		assert.ErrorContains(t, err, "exceptional precheck status INVALID_TOPIC_ID")
 	}
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }

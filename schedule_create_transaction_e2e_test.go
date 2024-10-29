@@ -33,6 +33,7 @@ import (
 func TestIntegrationScheduleCreateTransactionCanExecute(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	keys := make([]PrivateKey, 2)
 	pubKeys := make([]PublicKey, 2)

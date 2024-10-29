@@ -33,6 +33,7 @@ import (
 func TestIntegrationTransferTransactionCanTransferHbar(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	resp, err := NewTransferTransaction().
 		SetNodeAccountIDs(env.NodeAccountIDs).
@@ -44,13 +45,12 @@ func TestIntegrationTransferTransactionCanTransferHbar(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationTransferTransactionTransferHbarNothingSet(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	resp, err := NewTransferTransaction().
 		SetNodeAccountIDs(env.NodeAccountIDs).
@@ -60,13 +60,12 @@ func TestIntegrationTransferTransactionTransferHbarNothingSet(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationTransferTransactionTransferHbarPositiveFlippedAmount(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -101,13 +100,12 @@ func TestIntegrationTransferTransactionTransferHbarPositiveFlippedAmount(t *test
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func DisabledTestIntegrationTransferTransactionTransferHbarLoadOf1000(t *testing.T) { // nolint
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 	var err error
 	tx := make([]*TransferTransaction, 500)
 	response := make([]TransactionResponse, len(tx))
@@ -144,6 +142,7 @@ func DisabledTestIntegrationTransferTransactionTransferHbarLoadOf1000(t *testing
 func TestIntegrationTransferTransactionCanTransferFromBytes(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newKey, err := GeneratePrivateKey()
 	require.NoError(t, err)
@@ -190,6 +189,7 @@ func TestIntegrationTransferTransactionCanTransferFromBytes(t *testing.T) {
 func TestIntegrationTransferTransactionCanTransferFromBytesAfter(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newKey, err := GeneratePrivateKey()
 	require.NoError(t, err)
@@ -230,13 +230,12 @@ func TestIntegrationTransferTransactionCanTransferFromBytesAfter(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationTransferTransactionCanTransferSignature(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newKey, err := GeneratePrivateKey()
 	require.NoError(t, err)
@@ -279,13 +278,12 @@ func TestIntegrationTransferTransactionCanTransferSignature(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationTransferTransactionCanTransferHbarWithAliasID(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	key, err := GeneratePrivateKey()
 	require.NoError(t, err)
@@ -300,6 +298,4 @@ func TestIntegrationTransferTransactionCanTransferHbarWithAliasID(t *testing.T) 
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }

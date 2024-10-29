@@ -35,6 +35,7 @@ import (
 func TestIntegrationTokenUpdateTransactionCanExecute(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	tokenID, err := createFungibleToken(&env)
 	require.NoError(t, err)
@@ -55,13 +56,12 @@ func TestIntegrationTokenUpdateTransactionCanExecute(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equalf(t, "A", info.Symbol, "token failed to update")
 
-	err = CloseIntegrationTestEnv(env, &tokenID)
-	require.NoError(t, err)
 }
 
 func TestIntegrationTokenUpdateTransactionDifferentKeys(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	keys := make([]PrivateKey, 5)
 	pubKeys := make([]PublicKey, 5)
@@ -122,13 +122,13 @@ func TestIntegrationTokenUpdateTransactionDifferentKeys(t *testing.T) {
 		freezeKey := info.FreezeKey
 		assert.Equal(t, pubKeys[1].String(), freezeKey.String())
 	}
-	err = CloseIntegrationTestEnv(env, &tokenID)
-	require.NoError(t, err)
+
 }
 
 func TestIntegrationTokenUpdateTransactionNoTokenID(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	tokenID, err := createFungibleToken(&env)
 	require.NoError(t, err)
@@ -147,6 +147,7 @@ func TestIntegrationTokenUpdateTransactionNoTokenID(t *testing.T) {
 func DisabledTestIntegrationTokenUpdateTransactionTreasury(t *testing.T) { // nolint
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -205,8 +206,6 @@ func DisabledTestIntegrationTokenUpdateTransactionTreasury(t *testing.T) { // no
 	require.NoError(t, err)
 	assert.Equalf(t, "A", info.Symbol, "token failed to update")
 
-	err = CloseIntegrationTestEnv(env, &tokenID)
-	require.NoError(t, err)
 }
 
 var newMetadata = []byte{3, 4, 5, 6}
@@ -214,6 +213,7 @@ var newMetadata = []byte{3, 4, 5, 6}
 func TestIntegrationTokenUpdateTransactionFungibleMetadata(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	tokenID, err := createFungibleToken(&env, func(transaction *TokenCreateTransaction) {
 		transaction.SetTokenMetadata(initialMetadata)
@@ -248,6 +248,7 @@ func TestIntegrationTokenUpdateTransactionFungibleMetadata(t *testing.T) {
 func TestIntegrationTokenUpdateTransactionNFTMetadata(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	tokenID, err := createNft(&env, func(transaction *TokenCreateTransaction) {
 		transaction.SetTokenMetadata(initialMetadata)
@@ -282,6 +283,7 @@ func TestIntegrationTokenUpdateTransactionNFTMetadata(t *testing.T) {
 func TestIntegrationTokenUpdateTransactionMetadataImmutableFunbigleToken(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	metadataKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -327,6 +329,7 @@ func TestIntegrationTokenUpdateTransactionMetadataImmutableFunbigleToken(t *test
 func TestIntegrationTokenUpdateTransactionMetadataImmutableNFT(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	metadataKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -370,6 +373,7 @@ func TestIntegrationTokenUpdateTransactionMetadataImmutableNFT(t *testing.T) {
 func TestIntegrationTokenUpdateTransactionCannotUpdateMetadataFungible(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	tokenID, err := createFungibleToken(&env, func(transaction *TokenCreateTransaction) {
 		transaction.SetTokenMetadata(initialMetadata)
@@ -404,6 +408,7 @@ func TestIntegrationTokenUpdateTransactionCannotUpdateMetadataFungible(t *testin
 func TestIntegrationTokenUpdateTransactionCannotUpdateMetadataNFT(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	tokenID, err := createNft(&env, func(transaction *TokenCreateTransaction) {
 		transaction.SetTokenMetadata(initialMetadata)
@@ -438,6 +443,7 @@ func TestIntegrationTokenUpdateTransactionCannotUpdateMetadataNFT(t *testing.T) 
 func TestIntegrationTokenUpdateTransactionEraseMetadataFungibleToken(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	tokenID, err := createFungibleToken(&env, func(transaction *TokenCreateTransaction) {
 		transaction.SetTokenMetadata(initialMetadata)
@@ -472,6 +478,7 @@ func TestIntegrationTokenUpdateTransactionEraseMetadataFungibleToken(t *testing.
 func TestIntegrationTokenUpdateTransactionEraseMetadataNFT(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	tokenID, err := createNft(&env, func(transaction *TokenCreateTransaction) {
 		transaction.SetTokenMetadata(initialMetadata)
@@ -506,6 +513,7 @@ func TestIntegrationTokenUpdateTransactionEraseMetadataNFT(t *testing.T) {
 func TestIntegrationTokenUpdateTransactionCannotUpdateMetadataWithoutKeyFungible(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	metadataKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -536,6 +544,7 @@ func TestIntegrationTokenUpdateTransactionCannotUpdateMetadataWithoutKeyFungible
 func TestIntegrationTokenUpdateTransactionCannotUpdateMetadataWithoutKeyNFT(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	metadataKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -568,6 +577,7 @@ func TestIntegrationTokenUpdateTransactionCannotUpdateMetadataWithoutKeyNFT(t *t
 func TestIntegrationTokenUpdateTransactionCannotUpdateImmutableFungibleToken(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	tokenID, err := createFungibleToken(&env, func(transaction *TokenCreateTransaction) {
 		transaction.
@@ -588,6 +598,7 @@ func TestIntegrationTokenUpdateTransactionCannotUpdateImmutableFungibleToken(t *
 func TestIntegrationTokenUpdateTransactionCannotUpdateImmutableNFT(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	tokenID, err := createNft(&env, func(transaction *TokenCreateTransaction) {
 		transaction.
