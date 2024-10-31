@@ -25,7 +25,6 @@ package hedera
 
 import (
 	"encoding/hex"
-	"io"
 
 	"testing"
 
@@ -47,26 +46,6 @@ type EIP1559RLP struct {
 	recId          []byte
 	r              []byte
 	s              []byte
-}
-
-// EncodeRLP writes l as RLP list [ethereumfield1, ethereumfield2...] Omits r,s,v values on first encode
-func (l *EIP1559RLP) EncodeRLP(w io.Writer) (err error) {
-	fields := []interface{}{
-		l.chainId,
-		l.nonce,
-		l.maxPriorityGas,
-		l.maxGas,
-		l.gasLimit,
-		l.to,
-		l.value,
-		l.callData,
-		l.accessList,
-	}
-	if len(l.recId) > 0 && len(l.r) > 0 && len(l.s) > 0 {
-		fields = append(fields, l.recId, l.r, l.s)
-	}
-
-	return rlp.Encode(w, fields)
 }
 
 // decodeHex is a helper function that decodes a hex string and fails the test if an error occurs.
