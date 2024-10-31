@@ -37,6 +37,7 @@ import (
 func TestIntegrationTransactionAddSignature(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -74,13 +75,12 @@ func TestIntegrationTransactionAddSignature(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationTransactionSignTransaction(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -110,13 +110,12 @@ func TestIntegrationTransactionSignTransaction(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationTransactionGetHash(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -141,8 +140,6 @@ func TestIntegrationTransactionGetHash(t *testing.T) {
 
 	assert.Equal(t, hash, record.TransactionHash)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func DisabledTestTransactionFromBytes(t *testing.T) { // nolint
@@ -263,6 +260,7 @@ func DisabledTestTransactionFromBytes(t *testing.T) { // nolint
 
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	switch tx := transaction.(type) {
 	case *TransferTransaction:
@@ -293,6 +291,7 @@ func DisabledTestTransactionFromBytes(t *testing.T) { // nolint
 func TestIntegrationTransactionFailsWhenSigningWithoutFreezing(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -304,6 +303,4 @@ func TestIntegrationTransactionFailsWhenSigningWithoutFreezing(t *testing.T) {
 	_, err = tx.Sign(newKey).Execute(env.Client)
 	require.ErrorContains(t, err, "transaction is not frozen")
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }

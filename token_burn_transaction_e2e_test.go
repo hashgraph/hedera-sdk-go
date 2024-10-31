@@ -35,6 +35,7 @@ import (
 func TestIntegrationTokenBurnTransactionCanExecute(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -91,13 +92,12 @@ func TestIntegrationTokenBurnTransactionCanExecute(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, &tokenID)
-	require.NoError(t, err)
 }
 
 func TestIntegrationTokenBurnTransactionNoAmount(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -143,13 +143,12 @@ func TestIntegrationTokenBurnTransactionNoAmount(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, &tokenID)
-	require.NoError(t, err)
 }
 
 func TestIntegrationTokenBurnTransactionNoTokenID(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -193,13 +192,12 @@ func TestIntegrationTokenBurnTransactionNoTokenID(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, receipt.TokenID)
-	require.NoError(t, err)
 }
 
 func DisabledTestIntegrationTokenBurnTransactionTreasuryMustOwnBurnedNft(t *testing.T) { // nolint
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newBalance := NewHbar(2)
 
@@ -260,6 +258,7 @@ func DisabledTestIntegrationTokenBurnTransactionTreasuryMustOwnBurnedNft(t *test
 func DisabledTestIntegrationTokenBurnTransactionInvalidMetadata(t *testing.T) { // nolint
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newBalance := NewHbar(2)
 

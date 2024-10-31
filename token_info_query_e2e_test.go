@@ -34,6 +34,7 @@ import (
 func TestIntegrationTokenInfoQueryCanExecute(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	tokenID, err := createFungibleToken(&env, func(transaction *TokenCreateTransaction) {
 		transaction.
@@ -70,13 +71,12 @@ func TestIntegrationTokenInfoQueryCanExecute(t *testing.T) {
 	assert.False(t, *info.DefaultFreezeStatus)
 	assert.False(t, *info.DefaultKycStatus)
 
-	err = CloseIntegrationTestEnv(env, &tokenID)
-	require.NoError(t, err)
 }
 
 func TestIntegrationTokenInfoQueryGetCost(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	tokenID, err := createFungibleToken(&env)
 	require.NoError(t, err)
@@ -91,13 +91,12 @@ func TestIntegrationTokenInfoQueryGetCost(t *testing.T) {
 	_, err = infoQuery.SetQueryPayment(cost).Execute(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, &tokenID)
-	require.NoError(t, err)
 }
 
 func TestIntegrationTokenInfoQuerySetBigMaxPayment(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	tokenID, err := createFungibleToken(&env)
 	require.NoError(t, err)
@@ -112,13 +111,12 @@ func TestIntegrationTokenInfoQuerySetBigMaxPayment(t *testing.T) {
 	_, err = infoQuery.SetQueryPayment(cost).Execute(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, &tokenID)
-	require.NoError(t, err)
 }
 
 func TestIntegrationTokenInfoQuerySetSmallMaxPayment(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	tokenID, err := createFungibleToken(&env)
 	require.NoError(t, err)
@@ -136,13 +134,12 @@ func TestIntegrationTokenInfoQuerySetSmallMaxPayment(t *testing.T) {
 		assert.Equal(t, "cost of TokenInfoQuery ("+cost.String()+") without explicit payment is greater than the max query payment of 1 tℏ", err.Error())
 	}
 
-	err = CloseIntegrationTestEnv(env, &tokenID)
-	require.NoError(t, err)
 }
 
 func TestIntegrationTokenInfoQueryInsufficientCost(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	tokenID, err := createFungibleToken(&env)
 	require.NoError(t, err)
@@ -160,13 +157,12 @@ func TestIntegrationTokenInfoQueryInsufficientCost(t *testing.T) {
 		assert.Equal(t, "exceptional precheck status INSUFFICIENT_TX_FEE", err.Error())
 	}
 
-	err = CloseIntegrationTestEnv(env, &tokenID)
-	require.NoError(t, err)
 }
 
 func TestIntegrationTokenInfoQueryNoPayment(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	tokenID, err := createFungibleToken(&env, func(transaction *TokenCreateTransaction) {
 		transaction.
@@ -189,13 +185,12 @@ func TestIntegrationTokenInfoQueryNoPayment(t *testing.T) {
 	assert.False(t, *info.DefaultFreezeStatus)
 	assert.False(t, *info.DefaultKycStatus)
 
-	err = CloseIntegrationTestEnv(env, &tokenID)
-	require.NoError(t, err)
 }
 
 func TestIntegrationTokenInfoQueryNoTokenID(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	_, err := NewTokenInfoQuery().
 		SetNodeAccountIDs(env.NodeAccountIDs).
@@ -206,6 +201,4 @@ func TestIntegrationTokenInfoQueryNoTokenID(t *testing.T) {
 		assert.Equal(t, "exceptional precheck status INVALID_TOKEN_ID", err.Error())
 	}
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }

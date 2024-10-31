@@ -34,6 +34,7 @@ import (
 func TestIntegrationClientCanExecuteSerializedTransactionFromAnotherClient(t *testing.T) { // nolint
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 	client2 := ClientForNetwork(env.Client.GetNetwork())
 	client2.SetOperator(env.OperatorID, env.OperatorKey)
 
@@ -55,6 +56,7 @@ func TestIntegrationClientCanExecuteSerializedTransactionFromAnotherClient(t *te
 func TestIntegrationClientCanFailGracefullyWhenDoesNotHaveNodeOfAnotherClient(t *testing.T) { // nolint
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	// Get one of the nodes of the network from the original client
 	var address string
@@ -89,6 +91,7 @@ func TestIntegrationClientCanFailGracefullyWhenDoesNotHaveNodeOfAnotherClient(t 
 func DisabledTestIntegrationClientPingAllBadNetwork(t *testing.T) { // nolint
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	netwrk := _NewNetwork()
 	netwrk.SetNetwork(env.Client.GetNetwork())
@@ -135,6 +138,4 @@ func DisabledTestIntegrationClientPingAllBadNetwork(t *testing.T) { // nolint
 
 	assert.Equal(t, 1, len(tempClient.GetNetwork()))
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
