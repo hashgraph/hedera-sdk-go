@@ -29,8 +29,8 @@ import (
 	"strings"
 
 	"github.com/btcsuite/btcd/btcec/v2"
+	ecdsa "github.com/btcsuite/btcd/btcec/v2/ecdsa"
 	"github.com/decred/dcrd/dcrec/secp256k1/v4"
-	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
 	"github.com/pkg/errors"
 )
@@ -235,7 +235,13 @@ func (pk _ECDSAPublicKey) _ToSignaturePairProtobuf(signature []byte) *services.S
 }
 
 func (pk _ECDSAPublicKey) _Verify(message []byte, signature []byte) bool {
-	return crypto.VerifySignature(pk._BytesRaw(), message, signature)
+	recoveredKey, _, err := ecdsa.RecoverCompact(signature, message)
+	if err != nil {
+		fmt.Printf("Failed to parse signature: %v\n", err)
+		return false
+	}
+
+	return pk.IsEqual(recoveredKey)
 }
 
 func (pk _ECDSAPublicKey) _VerifyTransaction(tx Transaction) bool {
@@ -266,11 +272,11 @@ func (pk _ECDSAPublicKey) _VerifyTransaction(tx Transaction) bool {
 }
 
 func (pk _ECDSAPublicKey) _ToFullKey() []byte {
-	return elliptic.Marshal(crypto.S256(), pk.X(), pk.Y())
+	return elliptic.Marshal(btcec.S256(), pk.X(), pk.Y())
 }
 
 func (pk _ECDSAPublicKey) _ToEthereumAddress() string {
 	temp := pk._ToFullKey()[1:]
-	hash := crypto.Keccak256(temp)
+	hash := Keccak256Hash(temp)
 	return hex.EncodeToString(hash[12:])
 }
