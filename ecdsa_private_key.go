@@ -31,7 +31,7 @@ import (
 	"io"
 	"strings"
 
-	becdsa "github.com/btcsuite/btcd/btcec/v2"
+	"github.com/btcsuite/btcd/btcec/v2"
 	ecdsa "github.com/btcsuite/btcd/btcec/v2/ecdsa"
 	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
 	"github.com/pkg/errors"
@@ -39,14 +39,14 @@ import (
 
 // _ECDSAPrivateKey is an Key_ECDSASecp256K1 private key.
 type _ECDSAPrivateKey struct {
-	keyData   *becdsa.PrivateKey
+	keyData   *btcec.PrivateKey
 	chainCode []byte
 }
 
 const _LegacyECDSAPrivateKeyPrefix = "3030020100300706052b8104000a04220420"
 
 func _GenerateECDSAPrivateKey() (*_ECDSAPrivateKey, error) {
-	key, err := becdsa.NewPrivateKey()
+	key, err := btcec.NewPrivateKey()
 	if err != nil {
 		return &_ECDSAPrivateKey{}, err
 	}
@@ -164,7 +164,7 @@ func _ECDSAPrivateKeyFromString(s string) (*_ECDSAPrivateKey, error) {
 
 func (sk _ECDSAPrivateKey) _PublicKey() *_ECDSAPublicKey {
 	return &_ECDSAPublicKey{
-		&sk.keyData.ToECDSA().PublicKey,
+		sk.keyData.PubKey(),
 	}
 }
 
@@ -205,7 +205,7 @@ func _ECDSAPrivateKeyReadPem(source io.Reader, passphrase string) (*_ECDSAPrivat
 func (sk _ECDSAPrivateKey) _Sign(message []byte) []byte {
 	hash := Keccak256Hash(message)
 	sig := ecdsa.SignCompact(sk.keyData, hash.Bytes(), true)
-	return sig[1:]
+	return sig
 }
 
 // SupportsDerivation returns true if the _ECDSAPrivateKey supports derivation.

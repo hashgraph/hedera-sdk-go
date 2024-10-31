@@ -31,7 +31,7 @@ import (
 	"strings"
 
 	"github.com/btcsuite/btcd/btcec/v2"
-	becdsa "github.com/btcsuite/btcd/btcec/v2/ecdsa"
+	ecdsa "github.com/btcsuite/btcd/btcec/v2/ecdsa"
 	eciesgo "github.com/ecies/go/v2"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 
@@ -927,13 +927,13 @@ func VerifySignature(pubkey, digestHash, signature []byte) bool {
 		return false
 	}
 
-	sig, err := becdsa.ParseSignature(signature)
+	recoveredKey, _, err := ecdsa.RecoverCompact(signature, digestHash)
 	if err != nil {
 		fmt.Printf("Failed to parse signature: %v\n", err)
 		return false
 	}
 
-	return sig.Verify(digestHash, pubKey)
+	return pubKey.IsEqual(recoveredKey)
 }
 
 func privateKeyFromBytes(privateKey []byte) (*btcec.PrivateKey, error) {

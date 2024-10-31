@@ -437,8 +437,6 @@ func TestUnitECDSAPrivateKeyFromEncryptedCompressedPEM(t *testing.T) {
 }
 
 func TestUnitPrivateKeyECDSASign(t *testing.T) {
-	// TODO
-	t.Skip()
 	t.Parallel()
 
 	key, err := PrivateKeyGenerateEcdsa()

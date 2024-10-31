@@ -328,8 +328,7 @@ func TestIntegrationAccountCreateTransactionWithAliasFromAdminKey(t *testing.T) 
 
 	assert.NotEmpty(t, info.AccountID)
 	assert.Equal(t, evmAddress, info.ContractAccountID)
-	// TODO
-	// assert.Equal(t, adminKey.PublicKey(), info.Key)
+	assert.Equal(t, adminKey.PublicKey(), info.Key)
 
 	err = CloseIntegrationTestEnv(env, nil)
 	require.NoError(t, err)
@@ -374,8 +373,7 @@ func TestIntegrationAccountCreateTransactionWithAliasFromAdminKeyWithReceiverSig
 
 	assert.NotEmpty(t, info.AccountID)
 	assert.Equal(t, evmAddress, info.ContractAccountID)
-	// TODO
-	// assert.Equal(t, adminKey.PublicKey(), info.Key)
+	assert.Equal(t, adminKey.PublicKey(), info.Key)
 
 	err = CloseIntegrationTestEnv(env, nil)
 	require.NoError(t, err)

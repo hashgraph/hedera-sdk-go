@@ -22,21 +22,21 @@ package hedera
 
 import (
 	"bytes"
-	"crypto/ecdsa"
 	"crypto/elliptic"
 	"encoding/asn1"
 	"encoding/hex"
-	"math/big"
+	"fmt"
 	"strings"
 
 	"github.com/btcsuite/btcd/btcec/v2"
+	"github.com/decred/dcrd/dcrec/secp256k1/v4"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
 	"github.com/pkg/errors"
 )
 
 type _ECDSAPublicKey struct {
-	*ecdsa.PublicKey
+	*secp256k1.PublicKey
 }
 
 const _LegacyECDSAPubKeyPrefix = "302d300706052b8104000a032200"
@@ -63,9 +63,9 @@ func _ECDSAPublicKeyFromBytesRaw(byt []byte) (*_ECDSAPublicKey, error) {
 		return &_ECDSAPublicKey{}, _NewErrBadKeyf("invalid public key length: %v bytes", len(byt))
 	}
 
-	key, err := crypto.DecompressPubkey(byt)
+	key, err := secp256k1.ParsePubKey(byt)
 	if err != nil {
-		return &_ECDSAPublicKey{}, err
+		return &_ECDSAPublicKey{}, fmt.Errorf("invalid public key")
 	}
 
 	return &_ECDSAPublicKey{
@@ -89,7 +89,7 @@ func _LegacyECDSAPublicKeyFromBytesDer(byt []byte) (*_ECDSAPublicKey, error) {
 		return &_ECDSAPublicKey{}, _NewErrBadKeyf("invalid public key length: %v bytes", len(byt))
 	}
 
-	key, err := crypto.DecompressPubkey(decoded)
+	key, err := secp256k1.ParsePubKey(decoded)
 	if err != nil {
 		return &_ECDSAPublicKey{}, err
 	}
@@ -148,17 +148,13 @@ func _ECDSAPublicKeyFromBytesDer(byt []byte) (*_ECDSAPublicKey, error) {
 		return nil, errors.New("invalid public key length")
 	}
 
-	x := new(big.Int).SetBytes(pubKeyBytes[1:33])
-	y := new(big.Int).SetBytes(pubKeyBytes[33:])
-
-	pubKey := &ecdsa.PublicKey{
-		Curve: btcec.S256(),
-		X:     x,
-		Y:     y,
+	pubKey, err := secp256k1.ParsePubKey(pubKeyBytes)
+	if err != nil {
+		return nil, errors.New("invalid public key")
 	}
 
 	// Validate the public key
-	if !pubKey.Curve.IsOnCurve(pubKey.X, pubKey.Y) {
+	if !pubKey.IsOnCurve() {
 		return nil, errors.New("public key is not on the curve")
 	}
 
@@ -177,7 +173,7 @@ func _ECDSAPublicKeyFromString(s string) (*_ECDSAPublicKey, error) {
 }
 
 func (pk _ECDSAPublicKey) _BytesRaw() []byte {
-	return crypto.CompressPubkey(pk.PublicKey)
+	return pk.PublicKey.SerializeCompressed()
 }
 
 func (pk _ECDSAPublicKey) _BytesDer() []byte {
@@ -225,7 +221,7 @@ func (pk _ECDSAPublicKey) _StringDer() string {
 }
 
 func (pk _ECDSAPublicKey) _ToProtoKey() *services.Key {
-	b := crypto.CompressPubkey(pk.PublicKey)
+	b := pk.PublicKey.SerializeCompressed()
 	return &services.Key{Key: &services.Key_ECDSASecp256K1{ECDSASecp256K1: b}}
 }
 
@@ -270,7 +266,7 @@ func (pk _ECDSAPublicKey) _VerifyTransaction(tx Transaction) bool {
 }
 
 func (pk _ECDSAPublicKey) _ToFullKey() []byte {
-	return elliptic.Marshal(crypto.S256(), pk.X, pk.Y)
+	return elliptic.Marshal(crypto.S256(), pk.X(), pk.Y())
 }
 
 func (pk _ECDSAPublicKey) _ToEthereumAddress() string {
