@@ -53,6 +53,7 @@ const (
 func TestIntegrationTokenUpdateTransactionUpdateKeysToEmptyKeyListMakesTokenImmutable(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	validNewKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -77,6 +78,7 @@ func TestIntegrationTokenUpdateTransactionUpdateKeysToEmptyKeyListMakesTokenImmu
 func TestIntegrationTokenUpdateTransactionUpdateKeysToZeroKeyFails(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	zeroNewKey, err := ZeroKey()
 	require.NoError(t, err)
@@ -92,6 +94,7 @@ func TestIntegrationTokenUpdateTransactionUpdateKeysToZeroKeyFails(t *testing.T)
 func TestIntegrationTokenUpdateTransactionUpdateLowerPrivilegeKeysWithAdminKeyFullValidation(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	// Update lower privilege keys to zero key list with admin key
 	zeroKey, err := ZeroKey()
@@ -129,6 +132,7 @@ func TestIntegrationTokenUpdateTransactionUpdateLowerPrivilegeKeysWithAdminKeyFu
 func TestIntegrationTokenUpdateTransactionUpdateLowerPrivilegeKeysWithAdminKeyNoValidation(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	// Update lower privilege keys to zero key list with admin key
 	zeroKey, err := ZeroKey()
@@ -166,6 +170,7 @@ func TestIntegrationTokenUpdateTransactionUpdateLowerPrivilegeKeysWithAdminKeyNo
 func TestIntegrationTokenUpdateTransactionUpdateLowerPrivilegeKeysWithInvalidKeyFails(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	adminKey, err := GeneratePrivateKey()
 	require.NoError(t, err)
@@ -207,6 +212,7 @@ func TestIntegrationTokenUpdateTransactionUpdateLowerPrivilegeKeysWithInvalidKey
 func TestIntegrationTokenUpdateTransactionUpdateAdminKeyWithoutAlreadySetKeyFails(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	someKey, err := GeneratePrivateKey()
 	require.NoError(t, err)
@@ -223,6 +229,7 @@ func TestIntegrationTokenUpdateTransactionUpdateAdminKeyWithoutAlreadySetKeyFail
 func TestIntegrationTokenUpdateTransactionUpdateKeysLowerPrivKeysUpdateThemselvesNoValidation(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	zeroNewKey, err := ZeroKey()
 	require.NoError(t, err)
@@ -250,6 +257,7 @@ func TestIntegrationTokenUpdateTransactionUpdateKeysLowerPrivKeysUpdateThemselve
 func TestIntegrationTokenUpdateTransactionUpdateKeysLowerPrivilegeKeysUpdateThemselvesFullValidation(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	validNewKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -268,6 +276,7 @@ func TestIntegrationTokenUpdateTransactionUpdateKeysLowerPrivilegeKeysUpdateThem
 func TestIntegrationTokenUpdateTransactionUpdateKeysLowerPrivilegeKeysUpdateFullValidationFails(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	zeroNewKey, err := ZeroKey()
 	require.NoError(t, err)
@@ -285,6 +294,7 @@ func TestIntegrationTokenUpdateTransactionUpdateKeysLowerPrivilegeKeysUpdateFull
 func TestIntegrationTokenUpdateTransactionRemoveKeysWithoutAdminKeyFails(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	initialKey := env.OperatorKey
 
@@ -299,6 +309,7 @@ func TestIntegrationTokenUpdateTransactionRemoveKeysWithoutAdminKeyFails(t *test
 func TestIntegrationTokenUpdateTransactionRemoveKeysWithoutAdminKeySignFails(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -351,6 +362,7 @@ func TestIntegrationTokenUpdateTransactionRemoveKeysWithoutAdminKeySignFails(t *
 func TestIntegrationTokenUpdateTransactionUpdateSupplyKeyFailsWhenSignWithWipeKey(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newSupplyKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -389,6 +401,7 @@ func TestIntegrationTokenUpdateTransactionUpdateSupplyKeyFailsWhenSignWithWipeKe
 func TestIntegrationTokenUpdateTransactionUpdateSupplyKeyToEmptyKeyAndVerifyItsImmutable(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newSupplyKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -436,6 +449,7 @@ func TestIntegrationTokenUpdateTransactionUpdateSupplyKeyToEmptyKeyAndVerifyItsI
 func TestIntegrationTokenUpdateTransactionUpdateSupplyKeyFullValidationFails(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	newSupplyKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -491,6 +505,7 @@ func TestIntegrationTokenUpdateTransactionUpdateSupplyKeyFullValidationFails(t *
 func TestIntegrationTokenUpdateTransactionUpdateSupplyKeyWithInvalidKey(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 	var invalidKey _Ed25519PublicKey
 	randomBytes := make([]byte, 32)
 	keyData := [32]byte{

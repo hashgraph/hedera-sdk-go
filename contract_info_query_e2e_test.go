@@ -37,6 +37,7 @@ func TestIntegrationContractInfoQueryCanExecute(t *testing.T) {
 
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	resp, err := NewFileCreateTransaction().
 		SetNodeAccountIDs(env.NodeAccountIDs).
@@ -101,8 +102,6 @@ func TestIntegrationContractInfoQueryCanExecute(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationContractInfoQueryGetCost(t *testing.T) {
@@ -111,6 +110,7 @@ func TestIntegrationContractInfoQueryGetCost(t *testing.T) {
 
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	resp, err := NewFileCreateTransaction().
 		SetKeys(env.Client.GetOperatorPublicKey()).
@@ -178,8 +178,6 @@ func TestIntegrationContractInfoQueryGetCost(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationContractInfoQuerySetBigMaxPayment(t *testing.T) {
@@ -188,6 +186,7 @@ func TestIntegrationContractInfoQuerySetBigMaxPayment(t *testing.T) {
 
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	resp, err := NewFileCreateTransaction().
 		SetKeys(env.Client.GetOperatorPublicKey()).
@@ -255,8 +254,6 @@ func TestIntegrationContractInfoQuerySetBigMaxPayment(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationContractInfoQuerySetSmallMaxPayment(t *testing.T) {
@@ -265,6 +262,7 @@ func TestIntegrationContractInfoQuerySetSmallMaxPayment(t *testing.T) {
 
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	resp, err := NewFileCreateTransaction().
 		SetKeys(env.Client.GetOperatorPublicKey()).
@@ -331,8 +329,6 @@ func TestIntegrationContractInfoQuerySetSmallMaxPayment(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationContractInfoQueryInsufficientFee(t *testing.T) {
@@ -341,6 +337,7 @@ func TestIntegrationContractInfoQueryInsufficientFee(t *testing.T) {
 
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	resp, err := NewFileCreateTransaction().
 		SetKeys(env.Client.GetOperatorPublicKey()).
@@ -406,13 +403,12 @@ func TestIntegrationContractInfoQueryInsufficientFee(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationContractInfoQueryNoContractID(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	_, err := NewContractInfoQuery().
 		SetMaxQueryPayment(NewHbar(2)).
@@ -423,6 +419,4 @@ func TestIntegrationContractInfoQueryNoContractID(t *testing.T) {
 		assert.Equal(t, "exceptional precheck status INVALID_CONTRACT_ID", err.Error())
 	}
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }

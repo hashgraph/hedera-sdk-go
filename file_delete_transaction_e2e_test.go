@@ -34,6 +34,7 @@ import (
 func TestIntegrationFileDeleteTransactionCanExecute(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	resp, err := NewFileCreateTransaction().
 		SetKeys(env.Client.GetOperatorPublicKey()).
@@ -59,13 +60,12 @@ func TestIntegrationFileDeleteTransactionCanExecute(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }
 
 func TestIntegrationFileDeleteTransactionNothingSet(t *testing.T) {
 	t.Parallel()
 	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
 
 	resp, err := NewFileCreateTransaction().
 		SetKeys(env.Client.GetOperatorPublicKey()).
@@ -89,6 +89,4 @@ func TestIntegrationFileDeleteTransactionNothingSet(t *testing.T) {
 	if err != nil {
 		assert.Contains(t, err.Error(), "exceptional precheck status INVALID_FILE_ID")
 	}
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }

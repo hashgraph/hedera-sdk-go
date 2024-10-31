@@ -26,16 +26,12 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
-
-	"github.com/ethereum/go-ethereum/common/math"
 )
 
 // ContractFunctionParameters is a struct which builds a solidity function call
 // Use the builder methods `Add<Type>()` to add a parameter. Not all solidity types
 // are supported out of the box, but the most common types are. The larger variants
-// of number types require the parameter to be `[]byte`. This is a little unintuitive,
-// so here is an example of how to use those larger number variants using
-// "github.com/ethereum/go-ethereum/common/math" and "math/big"
+// of number types require the parameter to be `[]byte`.
 // ```
 // AddUint88(math.PaddedBigBytes(n, 88 / 8))
 // ```
@@ -217,7 +213,7 @@ func (contract *ContractFunctionParameters) AddInt72BigInt(value *big.Int) *Cont
 	argument := _NewArgument()
 
 	valueCopy := new(big.Int).Set(value)
-	argument.value = math.U256Bytes(valueCopy)
+	argument.value = To256BitBytes(valueCopy)
 
 	contract.function.AddInt72()
 	contract.arguments = append(contract.arguments, argument)
@@ -242,7 +238,7 @@ func (contract *ContractFunctionParameters) AddInt80BigInt(value *big.Int) *Cont
 	argument := _NewArgument()
 
 	valueCopy := new(big.Int).Set(value)
-	argument.value = math.U256Bytes(valueCopy)
+	argument.value = To256BitBytes(valueCopy)
 
 	contract.function.AddInt80()
 	contract.arguments = append(contract.arguments, argument)
@@ -267,7 +263,7 @@ func (contract *ContractFunctionParameters) AddIn88BigInt(value *big.Int) *Contr
 	argument := _NewArgument()
 
 	valueCopy := new(big.Int).Set(value)
-	argument.value = math.U256Bytes(valueCopy)
+	argument.value = To256BitBytes(valueCopy)
 
 	contract.function.AddInt88()
 	contract.arguments = append(contract.arguments, argument)
@@ -292,7 +288,7 @@ func (contract *ContractFunctionParameters) AddInt96BigInt(value *big.Int) *Cont
 	argument := _NewArgument()
 
 	valueCopy := new(big.Int).Set(value)
-	argument.value = math.U256Bytes(valueCopy)
+	argument.value = To256BitBytes(valueCopy)
 
 	contract.function.AddInt96()
 	contract.arguments = append(contract.arguments, argument)
@@ -317,7 +313,7 @@ func (contract *ContractFunctionParameters) AddInt104BigInt(value *big.Int) *Con
 	argument := _NewArgument()
 
 	valueCopy := new(big.Int).Set(value)
-	argument.value = math.U256Bytes(valueCopy)
+	argument.value = To256BitBytes(valueCopy)
 
 	contract.function.AddInt104()
 	contract.arguments = append(contract.arguments, argument)
@@ -342,7 +338,7 @@ func (contract *ContractFunctionParameters) AddInt112BigInt(value *big.Int) *Con
 	argument := _NewArgument()
 
 	valueCopy := new(big.Int).Set(value)
-	argument.value = math.U256Bytes(valueCopy)
+	argument.value = To256BitBytes(valueCopy)
 
 	contract.function.AddInt112()
 	contract.arguments = append(contract.arguments, argument)
@@ -367,7 +363,7 @@ func (contract *ContractFunctionParameters) AddInt120BigInt(value *big.Int) *Con
 	argument := _NewArgument()
 
 	valueCopy := new(big.Int).Set(value)
-	argument.value = math.U256Bytes(valueCopy)
+	argument.value = To256BitBytes(valueCopy)
 
 	contract.function.AddInt120()
 	contract.arguments = append(contract.arguments, argument)
@@ -392,7 +388,7 @@ func (contract *ContractFunctionParameters) AddInt128BigInt(value *big.Int) *Con
 	argument := _NewArgument()
 
 	valueCopy := new(big.Int).Set(value)
-	argument.value = math.U256Bytes(valueCopy)
+	argument.value = To256BitBytes(valueCopy)
 
 	contract.function.AddInt128()
 	contract.arguments = append(contract.arguments, argument)
@@ -417,7 +413,7 @@ func (contract *ContractFunctionParameters) AddInt136BigInt(value *big.Int) *Con
 	argument := _NewArgument()
 
 	valueCopy := new(big.Int).Set(value)
-	argument.value = math.U256Bytes(valueCopy)
+	argument.value = To256BitBytes(valueCopy)
 
 	contract.function.AddInt136()
 	contract.arguments = append(contract.arguments, argument)
@@ -442,7 +438,7 @@ func (contract *ContractFunctionParameters) AddInt144BigInt(value *big.Int) *Con
 	argument := _NewArgument()
 
 	valueCopy := new(big.Int).Set(value)
-	argument.value = math.U256Bytes(valueCopy)
+	argument.value = To256BitBytes(valueCopy)
 
 	contract.function.AddInt144()
 	contract.arguments = append(contract.arguments, argument)
@@ -467,7 +463,7 @@ func (contract *ContractFunctionParameters) AddInt152BigInt(value *big.Int) *Con
 	argument := _NewArgument()
 
 	valueCopy := new(big.Int).Set(value)
-	argument.value = math.U256Bytes(valueCopy)
+	argument.value = To256BitBytes(valueCopy)
 
 	contract.function.AddInt152()
 	contract.arguments = append(contract.arguments, argument)
@@ -492,7 +488,7 @@ func (contract *ContractFunctionParameters) AddInt160BigInt(value *big.Int) *Con
 	argument := _NewArgument()
 
 	valueCopy := new(big.Int).Set(value)
-	argument.value = math.U256Bytes(valueCopy)
+	argument.value = To256BitBytes(valueCopy)
 
 	contract.function.AddInt160()
 	contract.arguments = append(contract.arguments, argument)
@@ -517,7 +513,7 @@ func (contract *ContractFunctionParameters) AddInt168BigInt(value *big.Int) *Con
 	argument := _NewArgument()
 
 	valueCopy := new(big.Int).Set(value)
-	argument.value = math.U256Bytes(valueCopy)
+	argument.value = To256BitBytes(valueCopy)
 
 	contract.function.AddInt168()
 	contract.arguments = append(contract.arguments, argument)
@@ -542,7 +538,7 @@ func (contract *ContractFunctionParameters) AddInt176BigInt(value *big.Int) *Con
 	argument := _NewArgument()
 
 	valueCopy := new(big.Int).Set(value)
-	argument.value = math.U256Bytes(valueCopy)
+	argument.value = To256BitBytes(valueCopy)
 
 	contract.function.AddInt176()
 	contract.arguments = append(contract.arguments, argument)
@@ -567,7 +563,7 @@ func (contract *ContractFunctionParameters) AddInt184BigInt(value *big.Int) *Con
 	argument := _NewArgument()
 
 	valueCopy := new(big.Int).Set(value)
-	argument.value = math.U256Bytes(valueCopy)
+	argument.value = To256BitBytes(valueCopy)
 
 	contract.function.AddInt184()
 	contract.arguments = append(contract.arguments, argument)
@@ -592,7 +588,7 @@ func (contract *ContractFunctionParameters) AddInt192BigInt(value *big.Int) *Con
 	argument := _NewArgument()
 
 	valueCopy := new(big.Int).Set(value)
-	argument.value = math.U256Bytes(valueCopy)
+	argument.value = To256BitBytes(valueCopy)
 
 	contract.function.AddInt192()
 	contract.arguments = append(contract.arguments, argument)
@@ -616,7 +612,7 @@ func (contract *ContractFunctionParameters) AddInt200(value []byte) *ContractFun
 func (contract *ContractFunctionParameters) AddInt200BigInt(value *big.Int) *ContractFunctionParameters {
 	argument := _NewArgument()
 	valueCopy := new(big.Int).Set(value)
-	argument.value = math.U256Bytes(valueCopy)
+	argument.value = To256BitBytes(valueCopy)
 
 	contract.function.AddInt200()
 	contract.arguments = append(contract.arguments, argument)
@@ -641,7 +637,7 @@ func (contract *ContractFunctionParameters) AddInt208BigInt(value *big.Int) *Con
 	argument := _NewArgument()
 
 	valueCopy := new(big.Int).Set(value)
-	argument.value = math.U256Bytes(valueCopy)
+	argument.value = To256BitBytes(valueCopy)
 
 	contract.function.AddInt208()
 	contract.arguments = append(contract.arguments, argument)
@@ -666,7 +662,7 @@ func (contract *ContractFunctionParameters) AddInt216BigInt(value *big.Int) *Con
 	argument := _NewArgument()
 
 	valueCopy := new(big.Int).Set(value)
-	argument.value = math.U256Bytes(valueCopy)
+	argument.value = To256BitBytes(valueCopy)
 
 	contract.function.AddInt216()
 	contract.arguments = append(contract.arguments, argument)
@@ -691,7 +687,7 @@ func (contract *ContractFunctionParameters) AddInt224BigInt(value *big.Int) *Con
 	argument := _NewArgument()
 
 	valueCopy := new(big.Int).Set(value)
-	argument.value = math.U256Bytes(valueCopy)
+	argument.value = To256BitBytes(valueCopy)
 
 	contract.function.AddInt224()
 	contract.arguments = append(contract.arguments, argument)
@@ -716,7 +712,7 @@ func (contract *ContractFunctionParameters) AddInt232BigInt(value *big.Int) *Con
 	argument := _NewArgument()
 
 	valueCopy := new(big.Int).Set(value)
-	argument.value = math.U256Bytes(valueCopy)
+	argument.value = To256BitBytes(valueCopy)
 
 	contract.function.AddInt232()
 	contract.arguments = append(contract.arguments, argument)
@@ -741,7 +737,7 @@ func (contract *ContractFunctionParameters) AddInt240BigInt(value *big.Int) *Con
 	argument := _NewArgument()
 
 	valueCopy := new(big.Int).Set(value)
-	argument.value = math.U256Bytes(valueCopy)
+	argument.value = To256BitBytes(valueCopy)
 
 	contract.function.AddInt240()
 	contract.arguments = append(contract.arguments, argument)
@@ -766,7 +762,7 @@ func (contract *ContractFunctionParameters) AddInt248BigInt(value *big.Int) *Con
 	argument := _NewArgument()
 
 	valueCopy := new(big.Int).Set(value)
-	argument.value = math.U256Bytes(valueCopy)
+	argument.value = To256BitBytes(valueCopy)
 
 	contract.function.AddInt248()
 	contract.arguments = append(contract.arguments, argument)
@@ -791,7 +787,7 @@ func (contract *ContractFunctionParameters) AddInt256BigInt(value *big.Int) *Con
 	argument := _NewArgument()
 
 	valueCopy := new(big.Int).Set(value)
-	argument.value = math.U256Bytes(valueCopy)
+	argument.value = To256BitBytes(valueCopy)
 
 	contract.function.AddInt256()
 	contract.arguments = append(contract.arguments, argument)
@@ -912,7 +908,7 @@ func (contract *ContractFunctionParameters) AddUint72BigInt(value *big.Int) *Con
 	argument := _NewArgument()
 
 	valueCopy := new(big.Int).Set(value)
-	argument.value = math.U256Bytes(valueCopy)
+	argument.value = To256BitBytes(valueCopy)
 
 	contract.function.AddUint72()
 	contract.arguments = append(contract.arguments, argument)
@@ -937,7 +933,7 @@ func (contract *ContractFunctionParameters) AddUint80BigInt(value *big.Int) *Con
 	argument := _NewArgument()
 
 	valueCopy := new(big.Int).Set(value)
-	argument.value = math.U256Bytes(valueCopy)
+	argument.value = To256BitBytes(valueCopy)
 
 	contract.function.AddUint80()
 	contract.arguments = append(contract.arguments, argument)
@@ -962,7 +958,7 @@ func (contract *ContractFunctionParameters) AddUint88BigInt(value *big.Int) *Con
 	argument := _NewArgument()
 
 	valueCopy := new(big.Int).Set(value)
-	argument.value = math.U256Bytes(valueCopy)
+	argument.value = To256BitBytes(valueCopy)
 
 	contract.function.AddUint88()
 	contract.arguments = append(contract.arguments, argument)
@@ -987,7 +983,7 @@ func (contract *ContractFunctionParameters) AddUint96BigInt(value *big.Int) *Con
 	argument := _NewArgument()
 
 	valueCopy := new(big.Int).Set(value)
-	argument.value = math.U256Bytes(valueCopy)
+	argument.value = To256BitBytes(valueCopy)
 
 	contract.function.AddUint96()
 	contract.arguments = append(contract.arguments, argument)
@@ -1012,7 +1008,7 @@ func (contract *ContractFunctionParameters) AddUint104igInt(value *big.Int) *Con
 	argument := _NewArgument()
 
 	valueCopy := new(big.Int).Set(value)
-	argument.value = math.U256Bytes(valueCopy)
+	argument.value = To256BitBytes(valueCopy)
 
 	contract.function.AddUint104()
 	contract.arguments = append(contract.arguments, argument)
@@ -1037,7 +1033,7 @@ func (contract *ContractFunctionParameters) AddUint112BigInt(value *big.Int) *Co
 	argument := _NewArgument()
 
 	valueCopy := new(big.Int).Set(value)
-	argument.value = math.U256Bytes(valueCopy)
+	argument.value = To256BitBytes(valueCopy)
 
 	contract.function.AddUint112()
 	contract.arguments = append(contract.arguments, argument)
@@ -1062,7 +1058,7 @@ func (contract *ContractFunctionParameters) AddUint120BigInt(value *big.Int) *Co
 	argument := _NewArgument()
 
 	valueCopy := new(big.Int).Set(value)
-	argument.value = math.U256Bytes(valueCopy)
+	argument.value = To256BitBytes(valueCopy)
 
 	contract.function.AddUint120()
 	contract.arguments = append(contract.arguments, argument)
@@ -1087,7 +1083,7 @@ func (contract *ContractFunctionParameters) AddUint128BigInt(value *big.Int) *Co
 	argument := _NewArgument()
 
 	valueCopy := new(big.Int).Set(value)
-	argument.value = math.U256Bytes(valueCopy)
+	argument.value = To256BitBytes(valueCopy)
 
 	contract.function.AddUint128()
 	contract.arguments = append(contract.arguments, argument)
@@ -1112,7 +1108,7 @@ func (contract *ContractFunctionParameters) AddUint136BigInt(value *big.Int) *Co
 	argument := _NewArgument()
 
 	valueCopy := new(big.Int).Set(value)
-	argument.value = math.U256Bytes(valueCopy)
+	argument.value = To256BitBytes(valueCopy)
 
 	contract.function.AddUint136()
 	contract.arguments = append(contract.arguments, argument)
@@ -1137,7 +1133,7 @@ func (contract *ContractFunctionParameters) AddUint144BigInt(value *big.Int) *Co
 	argument := _NewArgument()
 
 	valueCopy := new(big.Int).Set(value)
-	argument.value = math.U256Bytes(valueCopy)
+	argument.value = To256BitBytes(valueCopy)
 
 	contract.function.AddUint144()
 	contract.arguments = append(contract.arguments, argument)
@@ -1162,7 +1158,7 @@ func (contract *ContractFunctionParameters) AddUint152BigInt(value *big.Int) *Co
 	argument := _NewArgument()
 
 	valueCopy := new(big.Int).Set(value)
-	argument.value = math.U256Bytes(valueCopy)
+	argument.value = To256BitBytes(valueCopy)
 
 	contract.function.AddUint152()
 	contract.arguments = append(contract.arguments, argument)
@@ -1187,7 +1183,7 @@ func (contract *ContractFunctionParameters) AddUint160BigInt(value *big.Int) *Co
 	argument := _NewArgument()
 
 	valueCopy := new(big.Int).Set(value)
-	argument.value = math.U256Bytes(valueCopy)
+	argument.value = To256BitBytes(valueCopy)
 
 	contract.function.AddUint160()
 	contract.arguments = append(contract.arguments, argument)
@@ -1212,7 +1208,7 @@ func (contract *ContractFunctionParameters) AddUint168BigInt(value *big.Int) *Co
 	argument := _NewArgument()
 
 	valueCopy := new(big.Int).Set(value)
-	argument.value = math.U256Bytes(valueCopy)
+	argument.value = To256BitBytes(valueCopy)
 
 	contract.function.AddUint168()
 	contract.arguments = append(contract.arguments, argument)
@@ -1237,7 +1233,7 @@ func (contract *ContractFunctionParameters) AddUint176BigInt(value *big.Int) *Co
 	argument := _NewArgument()
 
 	valueCopy := new(big.Int).Set(value)
-	argument.value = math.U256Bytes(valueCopy)
+	argument.value = To256BitBytes(valueCopy)
 
 	contract.function.AddUint176()
 	contract.arguments = append(contract.arguments, argument)
@@ -1262,7 +1258,7 @@ func (contract *ContractFunctionParameters) AddUint184BigInt(value *big.Int) *Co
 	argument := _NewArgument()
 
 	valueCopy := new(big.Int).Set(value)
-	argument.value = math.U256Bytes(valueCopy)
+	argument.value = To256BitBytes(valueCopy)
 
 	contract.function.AddUint184()
 	contract.arguments = append(contract.arguments, argument)
@@ -1287,7 +1283,7 @@ func (contract *ContractFunctionParameters) AddUint192BigInt(value *big.Int) *Co
 	argument := _NewArgument()
 
 	valueCopy := new(big.Int).Set(value)
-	argument.value = math.U256Bytes(valueCopy)
+	argument.value = To256BitBytes(valueCopy)
 
 	contract.function.AddUint192()
 	contract.arguments = append(contract.arguments, argument)
@@ -1312,7 +1308,7 @@ func (contract *ContractFunctionParameters) AddUint200BigInt(value *big.Int) *Co
 	argument := _NewArgument()
 
 	valueCopy := new(big.Int).Set(value)
-	argument.value = math.U256Bytes(valueCopy)
+	argument.value = To256BitBytes(valueCopy)
 
 	contract.function.AddUint200()
 	contract.arguments = append(contract.arguments, argument)
@@ -1337,7 +1333,7 @@ func (contract *ContractFunctionParameters) AddUint208BigInt(value *big.Int) *Co
 	argument := _NewArgument()
 
 	valueCopy := new(big.Int).Set(value)
-	argument.value = math.U256Bytes(valueCopy)
+	argument.value = To256BitBytes(valueCopy)
 
 	contract.function.AddUint208()
 	contract.arguments = append(contract.arguments, argument)
@@ -1362,7 +1358,7 @@ func (contract *ContractFunctionParameters) AddUint216BigInt(value *big.Int) *Co
 	argument := _NewArgument()
 
 	valueCopy := new(big.Int).Set(value)
-	argument.value = math.U256Bytes(valueCopy)
+	argument.value = To256BitBytes(valueCopy)
 
 	contract.function.AddUint216()
 	contract.arguments = append(contract.arguments, argument)
@@ -1387,7 +1383,7 @@ func (contract *ContractFunctionParameters) AddUint224BigInt(value *big.Int) *Co
 	argument := _NewArgument()
 
 	valueCopy := new(big.Int).Set(value)
-	argument.value = math.U256Bytes(valueCopy)
+	argument.value = To256BitBytes(valueCopy)
 
 	contract.function.AddUint224()
 	contract.arguments = append(contract.arguments, argument)
@@ -1412,7 +1408,7 @@ func (contract *ContractFunctionParameters) AddUint232BigInt(value *big.Int) *Co
 	argument := _NewArgument()
 
 	valueCopy := new(big.Int).Set(value)
-	argument.value = math.U256Bytes(valueCopy)
+	argument.value = To256BitBytes(valueCopy)
 
 	contract.function.AddUint232()
 	contract.arguments = append(contract.arguments, argument)
@@ -1437,7 +1433,7 @@ func (contract *ContractFunctionParameters) AddUint240BigInt(value *big.Int) *Co
 	argument := _NewArgument()
 
 	valueCopy := new(big.Int).Set(value)
-	argument.value = math.U256Bytes(valueCopy)
+	argument.value = To256BitBytes(valueCopy)
 
 	contract.function.AddUint240()
 	contract.arguments = append(contract.arguments, argument)
@@ -1462,7 +1458,7 @@ func (contract *ContractFunctionParameters) AddUint248BigInt(value *big.Int) *Co
 	argument := _NewArgument()
 
 	valueCopy := new(big.Int).Set(value)
-	argument.value = math.U256Bytes(valueCopy)
+	argument.value = To256BitBytes(valueCopy)
 
 	contract.function.AddUint248()
 	contract.arguments = append(contract.arguments, argument)
@@ -1487,7 +1483,7 @@ func (contract *ContractFunctionParameters) AddUint256BigInt(value *big.Int) *Co
 	argument := _NewArgument()
 
 	valueCopy := new(big.Int).Set(value)
-	argument.value = math.U256Bytes(valueCopy)
+	argument.value = To256BitBytes(valueCopy)
 
 	contract.function.AddUint256()
 	contract.arguments = append(contract.arguments, argument)

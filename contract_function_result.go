@@ -27,7 +27,7 @@ import (
 	"strings"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
-	"github.com/ethereum/go-ethereum/common/math"
+
 	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
 	protobuf "google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/wrapperspb"
@@ -36,9 +36,7 @@ import (
 // ContractFunctionResult is a struct which allows users to convert between solidity and Go types, and is typically
 // returned by `ContractCallQuery` and is present in the transaction records of `ContractExecuteTransaction`.
 // Use the methods `Get<Type>()` to get a parameter. Not all solidity types
-// are supported out of the box, but the most common types are. The larger variants
-// of number types return just the bytes for the integer instead of converting to a big int type.
-// To convert those bytes into a usable integer using "github.com/ethereum/go-ethereum/common/math" and "math/big" do the following:
+// are supported out of the box, but the most common types are.
 // ```
 // contractFunctionResult.GetUint256(<index>)
 // bInt := new(big.Int)
@@ -242,7 +240,7 @@ func (result ContractFunctionResult) GetInt256(index uint64) []byte {
 // GetBigInt gets an _Solidity integer from the result at the given index and returns it as a big.Int
 func (result ContractFunctionResult) GetBigInt(index uint64) *big.Int {
 	value := new(big.Int).SetBytes(result.ContractCallResult[index*32 : index*32+32])
-	fromTwosComplement := math.S256(value)
+	fromTwosComplement := ToSigned256(value)
 	return fromTwosComplement
 }
 
