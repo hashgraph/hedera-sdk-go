@@ -923,13 +923,11 @@ func Keccak256Hash(data []byte) (h Hash) {
 func VerifySignature(pubkey, digestHash, signature []byte) bool {
 	pubKey, err := btcec.ParsePubKey(pubkey)
 	if err != nil {
-		fmt.Printf("Failed to parse public key: %v\n", err)
 		return false
 	}
 
 	recoveredKey, _, err := ecdsa.RecoverCompact(signature, digestHash)
 	if err != nil {
-		fmt.Printf("Failed to parse signature: %v\n", err)
 		return false
 	}
 

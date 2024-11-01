@@ -436,6 +436,19 @@ func TestUnitECDSAPrivateKeyFromEncryptedCompressedPEM(t *testing.T) {
 	assert.Equal(t, "c0d3e16ba5a1abbeac4cd327a3c3c1cc10438431d0bac019054e573e67768bb5", privateKey.StringRaw())
 }
 
+func TestUnitPrivateKeyECDSASignFails(t *testing.T) {
+	t.Parallel()
+
+	key, err := PrivateKeyGenerateEcdsa()
+	require.NoError(t, err)
+
+	sig := VerifySignature([]byte("ccc"), []byte("aaa"), []byte("bbb"))
+	require.False(t, sig)
+
+	sig = VerifySignature(key.ecdsaPrivateKey._PublicKey()._BytesRaw(), []byte("aaa"), []byte("bbb"))
+	require.False(t, sig)
+}
+
 func TestUnitPrivateKeyECDSASign(t *testing.T) {
 	t.Parallel()
 
@@ -448,17 +461,27 @@ func TestUnitPrivateKeyECDSASign(t *testing.T) {
 	require.True(t, s2)
 }
 
-func DisabledTestUnitPrivateKeyECDSASign(t *testing.T) {
+func TestUnitPrivateKeyECDSASignVerify(t *testing.T) {
 	t.Parallel()
 
 	message := []byte("hello world")
+	hash := Keccak256Hash([]byte(message))
 	key, err := PrivateKeyFromStringECDSA("8776c6b831a1b61ac10dac0304a2843de4716f54b1919bb91a2685d0fe3f3048")
 	require.NoError(t, err)
 
 	sig := key.Sign(message)
 
-	require.Equal(t, hex.EncodeToString(sig), "f3a13a555f1f8cd6532716b8f388bd4e9d8ed0b252743e923114c0c6cbfe414cf791c8e859afd3c12009ecf2cb20dacf01636d80823bcdbd9ec1ce59afe008f0")
-	require.True(t, key.PublicKey().Verify(message, sig))
+	require.Equal(t, hex.EncodeToString(sig), "20f3a13a555f1f8cd6532716b8f388bd4e9d8ed0b252743e923114c0c6cbfe414c086e3717a6502c3edff6130d34df252fb94b6f662d0cd27e2110903320563851")
+	require.True(t, key.PublicKey().Verify(hash.Bytes(), sig))
+}
+
+func TestUnitPrivateKeyECDSASignVerifyFails(t *testing.T) {
+	t.Parallel()
+
+	key, err := PrivateKeyFromStringECDSA("8776c6b831a1b61ac10dac0304a2843de4716f54b1919bb91a2685d0fe3f3048")
+	require.NoError(t, err)
+
+	require.False(t, key.PublicKey().Verify([]byte{}, []byte{}))
 }
 
 func TestUnitPrivateKeyEd25519FromString(t *testing.T) {
@@ -874,6 +897,25 @@ func TestUnitECDSAPublicKeyFromBytesInvalidLength(t *testing.T) {
 	_, err := _ECDSAPublicKeyFromBytes(invalidPrivateKey)
 	require.Error(t, err)
 	expectedError := fmt.Sprintf("invalid compressed ECDSA public key length: %v bytes", len(invalidPrivateKey))
+	if err.Error() != expectedError {
+		t.Errorf("expected error message %q, but got %q", expectedError, err.Error())
+	}
+}
+func TestUnitECDSAPublicKeyFromBytesDerInvalid(t *testing.T) {
+	prefix, err := hex.DecodeString(_LegacyECDSAPubKeyPrefix)
+	require.NoError(t, err)
+	invalidPrivateKey := make([]byte, 47)
+	copy(invalidPrivateKey[:len(prefix)], prefix)
+
+	_, err = _LegacyECDSAPublicKeyFromBytesDer(invalidPrivateKey)
+	require.Error(t, err)
+}
+
+func TestUnitECDSAPublicKeyFromBytesDerInvalidLength(t *testing.T) {
+	invalidPrivateKey := make([]byte, 50)
+	_, err := _LegacyECDSAPublicKeyFromBytesDer(invalidPrivateKey)
+	require.Error(t, err)
+	expectedError := fmt.Sprintf("invalid public key length: %v bytes", len(invalidPrivateKey))
 	if err.Error() != expectedError {
 		t.Errorf("expected error message %q, but got %q", expectedError, err.Error())
 	}

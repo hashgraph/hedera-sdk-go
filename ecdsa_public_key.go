@@ -237,7 +237,6 @@ func (pk _ECDSAPublicKey) _ToSignaturePairProtobuf(signature []byte) *services.S
 func (pk _ECDSAPublicKey) _Verify(message []byte, signature []byte) bool {
 	recoveredKey, _, err := ecdsa.RecoverCompact(signature, message)
 	if err != nil {
-		fmt.Printf("Failed to parse signature: %v\n", err)
 		return false
 	}
 
