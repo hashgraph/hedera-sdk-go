@@ -1509,3 +1509,28 @@ func TransactionSignWth(tx TransactionInterface, publicKKey PublicKey, signer Tr
 
 	return tx, nil
 }
+
+// Helper function to cast the concrete Transaction to the generic Transaction
+func castFromConcreteToBaseTransaction[T TransactionInterface](baseTx *Transaction[T], tx TransactionInterface) *Transaction[TransactionInterface] {
+	return &Transaction[TransactionInterface]{
+		executable:              baseTx.executable,
+		BaseTransaction:         baseTx.BaseTransaction,
+		childTransaction:        tx,
+		freezeError:             baseTx.freezeError,
+		regenerateTransactionID: baseTx.regenerateTransactionID,
+	}
+}
+
+// Helper function to cast the generic Transaction to another type
+func castFromBaseToConcreteTransaction[T TransactionInterface](baseTx Transaction[TransactionInterface]) *Transaction[T] {
+	concreteTx := &Transaction[T]{
+		executable:              baseTx.executable,
+		BaseTransaction:         baseTx.BaseTransaction,
+		freezeError:             baseTx.freezeError,
+		regenerateTransactionID: baseTx.regenerateTransactionID,
+	}
+	if baseTx.childTransaction != nil {
+		concreteTx.childTransaction = baseTx.childTransaction.(T)
+	}
+	return concreteTx
+}
