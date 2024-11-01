@@ -473,7 +473,7 @@ func TestIntegrationTokenUpdateTransactionUpdateSupplyKeyFullValidationFails(t *
 		FreezeWith(env.Client)
 	assert.NoError(t, err)
 
-	_, err = supplyKey.SignTransaction(&tx.Transaction)
+	_, err = supplyKey.SignTransaction(tx)
 	assert.NoError(t, err)
 
 	// Sign with the old supply key, should fail
@@ -492,7 +492,7 @@ func TestIntegrationTokenUpdateTransactionUpdateSupplyKeyFullValidationFails(t *
 	assert.NoError(t, err)
 
 	// Sign with only the new supply key, should fail
-	_, err = newSupplyKey.SignTransaction(&tx2.Transaction)
+	_, err = newSupplyKey.SignTransaction(tx2)
 	assert.NoError(t, err)
 
 	resp, err = tx2.Execute(env.Client)
@@ -541,7 +541,7 @@ func TestIntegrationTokenUpdateTransactionUpdateSupplyKeyWithInvalidKey(t *testi
 		FreezeWith(env.Client)
 	assert.NoError(t, err)
 
-	_, err = supplyKey.SignTransaction(&tx.Transaction)
+	_, err = supplyKey.SignTransaction(tx)
 	assert.NoError(t, err)
 
 	//Sign with the old supply key
@@ -650,8 +650,8 @@ func updateTokenKeysHelper(t *testing.T, tokenID TokenID, updateKeyType KeyType,
 	assert.NoError(t, err)
 
 	if updateKeyType == ADMIN_KEY || updateKeyType == ALL || verificationMode == FULL_VALIDATION {
-		privateKey.SignTransaction(&tx.Transaction)
-		signerKey.SignTransaction(&tx.Transaction)
+		privateKey.SignTransaction(tx)
+		signerKey.SignTransaction(tx)
 		resp, err := frozenTx.Execute(client)
 		return resp, err
 

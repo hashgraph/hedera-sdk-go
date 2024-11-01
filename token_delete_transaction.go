@@ -21,8 +21,6 @@ package hedera
  */
 
 import (
-	"time"
-
 	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
 )
 
@@ -33,7 +31,7 @@ import (
 // Once deleted update, mint, burn, wipe, freeze, unfreeze, grant kyc, revoke
 // kyc and token transfer transactions will resolve to TOKEN_WAS_DELETED.
 type TokenDeleteTransaction struct {
-	Transaction
+	*Transaction[*TokenDeleteTransaction]
 	tokenID *TokenID
 }
 
@@ -44,20 +42,22 @@ type TokenDeleteTransaction struct {
 // Once deleted update, mint, burn, wipe, freeze, unfreeze, grant kyc, revoke
 // kyc and token transfer transactions will resolve to TOKEN_WAS_DELETED.
 func NewTokenDeleteTransaction() *TokenDeleteTransaction {
-	tx := TokenDeleteTransaction{
-		Transaction: _NewTransaction(),
-	}
+	tx := &TokenDeleteTransaction{}
+	tx.Transaction = _NewTransaction(tx)
 
 	tx._SetDefaultMaxTransactionFee(NewHbar(30))
 
-	return &tx
+	return tx
 }
 
-func _TokenDeleteTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *TokenDeleteTransaction {
-	return &TokenDeleteTransaction{
-		Transaction: tx,
-		tokenID:     _TokenIDFromProtobuf(pb.GetTokenDeletion().GetToken()),
+func _TokenDeleteTransactionFromProtobuf(tx Transaction[*TokenDeleteTransaction], pb *services.TransactionBody) TokenDeleteTransaction {
+	tokenDeleteTransaction := TokenDeleteTransaction{
+		tokenID: _TokenIDFromProtobuf(pb.GetTokenDeletion().GetToken()),
 	}
+
+	tx.childTransaction = &tokenDeleteTransaction
+	tokenDeleteTransaction.Transaction = &tx
+	return tokenDeleteTransaction
 }
 
 // SetTokenID Sets the Token to be deleted
@@ -76,138 +76,13 @@ func (tx *TokenDeleteTransaction) GetTokenID() TokenID {
 	return *tx.tokenID
 }
 
-// ---- Required Interfaces ---- //
-
-// Sign uses the provided privateKey to sign the transaction.
-func (tx *TokenDeleteTransaction) Sign(privateKey PrivateKey) *TokenDeleteTransaction {
-	tx.Transaction.Sign(privateKey)
-	return tx
-}
-
-// SignWithOperator signs the transaction with client's operator privateKey.
-func (tx *TokenDeleteTransaction) SignWithOperator(client *Client) (*TokenDeleteTransaction, error) {
-	_, err := tx.Transaction.signWithOperator(client, tx)
-	if err != nil {
-		return nil, err
-	}
-	return tx, nil
-}
-
-// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
-// with the publicKey as the map key.
-func (tx *TokenDeleteTransaction) SignWith(
-	publicKey PublicKey,
-	signer TransactionSigner,
-) *TokenDeleteTransaction {
-	tx.Transaction.SignWith(publicKey, signer)
-	return tx
-}
-
-// AddSignature adds a signature to the transaction.
-func (tx *TokenDeleteTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenDeleteTransaction {
-	tx.Transaction.AddSignature(publicKey, signature)
-	return tx
-}
-
-// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (tx *TokenDeleteTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenDeleteTransaction {
-	tx.Transaction.SetGrpcDeadline(deadline)
-	return tx
-}
-
-func (tx *TokenDeleteTransaction) Freeze() (*TokenDeleteTransaction, error) {
-	return tx.FreezeWith(nil)
-}
-
-func (tx *TokenDeleteTransaction) FreezeWith(client *Client) (*TokenDeleteTransaction, error) {
-	_, err := tx.Transaction.freezeWith(client, tx)
-	return tx, err
-}
-
-// SetMaxTransactionFee sets the max transaction fee for this TokenDeleteTransaction.
-func (tx *TokenDeleteTransaction) SetMaxTransactionFee(fee Hbar) *TokenDeleteTransaction {
-	tx.Transaction.SetMaxTransactionFee(fee)
-	return tx
-}
-
-// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
-func (tx *TokenDeleteTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *TokenDeleteTransaction {
-	tx.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
-	return tx
-}
-
-// SetTransactionMemo sets the memo for this TokenDeleteTransaction.
-func (tx *TokenDeleteTransaction) SetTransactionMemo(memo string) *TokenDeleteTransaction {
-	tx.Transaction.SetTransactionMemo(memo)
-	return tx
-}
-
-// SetTransactionValidDuration sets the valid duration for this TokenDeleteTransaction.
-func (tx *TokenDeleteTransaction) SetTransactionValidDuration(duration time.Duration) *TokenDeleteTransaction {
-	tx.Transaction.SetTransactionValidDuration(duration)
-	return tx
-}
-
-// ToBytes serialise the tx to bytes, no matter if it is signed (locked), or not
-func (tx *TokenDeleteTransaction) ToBytes() ([]byte, error) {
-	bytes, err := tx.Transaction.toBytes(tx)
-	if err != nil {
-		return nil, err
-	}
-	return bytes, nil
-}
-
-// SetTransactionID sets the TransactionID for this TokenDeleteTransaction.
-func (tx *TokenDeleteTransaction) SetTransactionID(transactionID TransactionID) *TokenDeleteTransaction {
-	tx.Transaction.SetTransactionID(transactionID)
-	return tx
-}
-
-// SetNodeAccountIDs sets the _Node AccountID for this TokenDeleteTransaction.
-func (tx *TokenDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenDeleteTransaction {
-	tx.Transaction.SetNodeAccountIDs(nodeID)
-	return tx
-}
-
-// SetMaxRetry sets the max number of errors before execution will fail.
-func (tx *TokenDeleteTransaction) SetMaxRetry(count int) *TokenDeleteTransaction {
-	tx.Transaction.SetMaxRetry(count)
-	return tx
-}
-
-// SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (tx *TokenDeleteTransaction) SetMaxBackoff(max time.Duration) *TokenDeleteTransaction {
-	tx.Transaction.SetMaxBackoff(max)
-	return tx
-}
-
-// SetMinBackoff sets the minimum amount of time to wait between retries.
-func (tx *TokenDeleteTransaction) SetMinBackoff(min time.Duration) *TokenDeleteTransaction {
-	tx.Transaction.SetMinBackoff(min)
-	return tx
-}
-
-func (tx *TokenDeleteTransaction) SetLogLevel(level LogLevel) *TokenDeleteTransaction {
-	tx.Transaction.SetLogLevel(level)
-	return tx
-}
-
-func (tx *TokenDeleteTransaction) Execute(client *Client) (TransactionResponse, error) {
-	return tx.Transaction.execute(client, tx)
-}
-
-func (tx *TokenDeleteTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	return tx.Transaction.schedule(tx)
-}
-
 // ----------- Overridden functions ----------------
 
-func (tx *TokenDeleteTransaction) getName() string {
+func (tx TokenDeleteTransaction) getName() string {
 	return "TokenDeleteTransaction"
 }
 
-func (tx *TokenDeleteTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx TokenDeleteTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -221,7 +96,7 @@ func (tx *TokenDeleteTransaction) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (tx *TokenDeleteTransaction) build() *services.TransactionBody {
+func (tx TokenDeleteTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
 		Memo:                     tx.Transaction.memo,
@@ -233,7 +108,7 @@ func (tx *TokenDeleteTransaction) build() *services.TransactionBody {
 	}
 }
 
-func (tx *TokenDeleteTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx TokenDeleteTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Memo:           tx.Transaction.memo,
@@ -243,7 +118,7 @@ func (tx *TokenDeleteTransaction) buildScheduled() (*services.SchedulableTransac
 	}, nil
 }
 
-func (tx *TokenDeleteTransaction) buildProtoBody() *services.TokenDeleteTransactionBody {
+func (tx TokenDeleteTransaction) buildProtoBody() *services.TokenDeleteTransactionBody {
 	body := &services.TokenDeleteTransactionBody{}
 	if tx.tokenID != nil {
 		body.Token = tx.tokenID._ToProtobuf()
@@ -252,11 +127,16 @@ func (tx *TokenDeleteTransaction) buildProtoBody() *services.TokenDeleteTransact
 	return body
 }
 
-func (tx *TokenDeleteTransaction) getMethod(channel *_Channel) _Method {
+func (tx TokenDeleteTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetToken().DeleteToken,
 	}
 }
-func (tx *TokenDeleteTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+
+func (tx TokenDeleteTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
+}
+
+func (tx TokenDeleteTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }

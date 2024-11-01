@@ -21,8 +21,6 @@ package hedera
  */
 
 import (
-	"time"
-
 	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
 )
 
@@ -44,7 +42,7 @@ import (
 // On success, associations between the provided account and tokens are made and the account is
 // ready to interact with the tokens.
 type TokenAssociateTransaction struct {
-	Transaction
+	*Transaction[*TokenAssociateTransaction]
 	accountID *AccountID
 	tokens    []TokenID
 }
@@ -68,16 +66,15 @@ type TokenAssociateTransaction struct {
 // On success, associations between the provided account and tokens are made and the account is
 // ready to interact with the tokens.
 func NewTokenAssociateTransaction() *TokenAssociateTransaction {
-	tx := TokenAssociateTransaction{
-		Transaction: _NewTransaction(),
-	}
+	tx := &TokenAssociateTransaction{}
+	tx.Transaction = _NewTransaction(tx)
 
 	tx._SetDefaultMaxTransactionFee(NewHbar(5))
 
-	return &tx
+	return tx
 }
 
-func _TokenAssociateTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *TokenAssociateTransaction {
+func _TokenAssociateTransactionFromProtobuf(tx Transaction[*TokenAssociateTransaction], pb *services.TransactionBody) TokenAssociateTransaction {
 	tokens := make([]TokenID, 0)
 	for _, token := range pb.GetTokenAssociate().Tokens {
 		if tokenID := _TokenIDFromProtobuf(token); tokenID != nil {
@@ -85,11 +82,14 @@ func _TokenAssociateTransactionFromProtobuf(tx Transaction, pb *services.Transac
 		}
 	}
 
-	return &TokenAssociateTransaction{
-		Transaction: tx,
-		accountID:   _AccountIDFromProtobuf(pb.GetTokenAssociate().GetAccount()),
-		tokens:      tokens,
+	tokenAssociateTransaction := TokenAssociateTransaction{
+		accountID: _AccountIDFromProtobuf(pb.GetTokenAssociate().GetAccount()),
+		tokens:    tokens,
 	}
+
+	tx.childTransaction = &tokenAssociateTransaction
+	tokenAssociateTransaction.Transaction = &tx
+	return tokenAssociateTransaction
 }
 
 // SetAccountID Sets the account to be associated with the provided tokens
@@ -137,138 +137,13 @@ func (tx *TokenAssociateTransaction) GetTokenIDs() []TokenID {
 	return tokenIDs
 }
 
-// ---- Required Interfaces ---- //
-
-// Sign uses the provided privateKey to sign the transaction.
-func (tx *TokenAssociateTransaction) Sign(privateKey PrivateKey) *TokenAssociateTransaction {
-	tx.Transaction.Sign(privateKey)
-	return tx
-}
-
-// SignWithOperator signs the transaction with client's operator privateKey.
-func (tx *TokenAssociateTransaction) SignWithOperator(client *Client) (*TokenAssociateTransaction, error) {
-	_, err := tx.Transaction.signWithOperator(client, tx)
-	if err != nil {
-		return nil, err
-	}
-	return tx, nil
-}
-
-// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
-// with the publicKey as the map key.
-func (tx *TokenAssociateTransaction) SignWith(
-	publicKey PublicKey,
-	signer TransactionSigner,
-) *TokenAssociateTransaction {
-	tx.Transaction.SignWith(publicKey, signer)
-	return tx
-}
-
-// AddSignature adds a signature to the transaction.
-func (tx *TokenAssociateTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenAssociateTransaction {
-	tx.Transaction.AddSignature(publicKey, signature)
-	return tx
-}
-
-// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (tx *TokenAssociateTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenAssociateTransaction {
-	tx.Transaction.SetGrpcDeadline(deadline)
-	return tx
-}
-
-func (tx *TokenAssociateTransaction) Freeze() (*TokenAssociateTransaction, error) {
-	return tx.FreezeWith(nil)
-}
-
-func (tx *TokenAssociateTransaction) FreezeWith(client *Client) (*TokenAssociateTransaction, error) {
-	_, err := tx.Transaction.freezeWith(client, tx)
-	return tx, err
-}
-
-// SetMaxTransactionFee sets the max transaction fee for this TokenAssociateTransaction.
-func (tx *TokenAssociateTransaction) SetMaxTransactionFee(fee Hbar) *TokenAssociateTransaction {
-	tx.Transaction.SetMaxTransactionFee(fee)
-	return tx
-}
-
-// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
-func (tx *TokenAssociateTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *TokenAssociateTransaction {
-	tx.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
-	return tx
-}
-
-// SetTransactionMemo sets the memo for this TokenAssociateTransaction.
-func (tx *TokenAssociateTransaction) SetTransactionMemo(memo string) *TokenAssociateTransaction {
-	tx.Transaction.SetTransactionMemo(memo)
-	return tx
-}
-
-// SetTransactionValidDuration sets the valid duration for this TokenAssociateTransaction.
-func (tx *TokenAssociateTransaction) SetTransactionValidDuration(duration time.Duration) *TokenAssociateTransaction {
-	tx.Transaction.SetTransactionValidDuration(duration)
-	return tx
-}
-
-// ToBytes serialise the tx to bytes, no matter if it is signed (locked), or not
-func (tx *TokenAssociateTransaction) ToBytes() ([]byte, error) {
-	bytes, err := tx.Transaction.toBytes(tx)
-	if err != nil {
-		return nil, err
-	}
-	return bytes, nil
-}
-
-// SetTransactionID sets the TransactionID for this TokenAssociateTransaction.
-func (tx *TokenAssociateTransaction) SetTransactionID(transactionID TransactionID) *TokenAssociateTransaction {
-	tx.Transaction.SetTransactionID(transactionID)
-	return tx
-}
-
-// SetNodeAccountIDs sets the _Node AccountID for this TokenAssociateTransaction.
-func (tx *TokenAssociateTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenAssociateTransaction {
-	tx.Transaction.SetNodeAccountIDs(nodeID)
-	return tx
-}
-
-// SetMaxRetry sets the max number of errors before execution will fail.
-func (tx *TokenAssociateTransaction) SetMaxRetry(count int) *TokenAssociateTransaction {
-	tx.Transaction.SetMaxRetry(count)
-	return tx
-}
-
-// SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (tx *TokenAssociateTransaction) SetMaxBackoff(max time.Duration) *TokenAssociateTransaction {
-	tx.Transaction.SetMaxBackoff(max)
-	return tx
-}
-
-// SetMinBackoff sets the minimum amount of time to wait between retries.
-func (tx *TokenAssociateTransaction) SetMinBackoff(min time.Duration) *TokenAssociateTransaction {
-	tx.Transaction.SetMinBackoff(min)
-	return tx
-}
-
-func (tx *TokenAssociateTransaction) SetLogLevel(level LogLevel) *TokenAssociateTransaction {
-	tx.Transaction.SetLogLevel(level)
-	return tx
-}
-
-func (tx *TokenAssociateTransaction) Execute(client *Client) (TransactionResponse, error) {
-	return tx.Transaction.execute(client, tx)
-}
-
-func (tx *TokenAssociateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	return tx.Transaction.schedule(tx)
-}
-
 // ----------- Overridden functions ----------------
 
-func (tx *TokenAssociateTransaction) getName() string {
+func (tx TokenAssociateTransaction) getName() string {
 	return "TokenAssociateTransaction"
 }
 
-func (tx *TokenAssociateTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx TokenAssociateTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -288,7 +163,7 @@ func (tx *TokenAssociateTransaction) validateNetworkOnIDs(client *Client) error 
 	return nil
 }
 
-func (tx *TokenAssociateTransaction) build() *services.TransactionBody {
+func (tx TokenAssociateTransaction) build() *services.TransactionBody {
 	body := tx.buildProtoBody()
 
 	return &services.TransactionBody{
@@ -302,7 +177,7 @@ func (tx *TokenAssociateTransaction) build() *services.TransactionBody {
 	}
 }
 
-func (tx *TokenAssociateTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx TokenAssociateTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Memo:           tx.Transaction.memo,
@@ -312,7 +187,7 @@ func (tx *TokenAssociateTransaction) buildScheduled() (*services.SchedulableTran
 	}, nil
 }
 
-func (tx *TokenAssociateTransaction) buildProtoBody() *services.TokenAssociateTransactionBody {
+func (tx TokenAssociateTransaction) buildProtoBody() *services.TokenAssociateTransactionBody {
 	body := &services.TokenAssociateTransactionBody{}
 	if tx.accountID != nil {
 		body.Account = tx.accountID._ToProtobuf()
@@ -329,11 +204,16 @@ func (tx *TokenAssociateTransaction) buildProtoBody() *services.TokenAssociateTr
 	return body
 }
 
-func (tx *TokenAssociateTransaction) getMethod(channel *_Channel) _Method {
+func (tx TokenAssociateTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetToken().AssociateTokens,
 	}
 }
-func (tx *TokenAssociateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+
+func (tx TokenAssociateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
+}
+
+func (tx TokenAssociateTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }

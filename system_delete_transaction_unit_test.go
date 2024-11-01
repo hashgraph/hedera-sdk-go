@@ -114,8 +114,8 @@ func TestUnitSystemConstructNewScheduleDeleteTransactionProtobuf(t *testing.T) {
 	require.Equal(t, uint64(0), protoBody.TransactionFee)
 }
 
-func _CreateProtoBufTrxBody() (Transaction, *services.TransactionBody) {
-	transaction := Transaction{transactionFee: 5, memo: "memo", defaultMaxTransactionFee: 10}
+func _CreateProtoBufTrxBody() (Transaction[*SystemDeleteTransaction], *services.TransactionBody) {
+	transaction := Transaction[*SystemDeleteTransaction]{BaseTransaction: &BaseTransaction{transactionFee: 5, memo: "memo", defaultMaxTransactionFee: 10}}
 	transactionBody := &services.TransactionBody{
 		Data: &services.TransactionBody_SystemDelete{SystemDelete: &services.SystemDeleteTransactionBody{ExpirationTime: &services.TimestampSeconds{Seconds: 100}}}}
 
