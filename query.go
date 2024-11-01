@@ -170,6 +170,9 @@ func _QueryMakePaymentTransaction(transactionID TransactionID, nodeAccountID Acc
 	}
 
 	signature := operator.signer(bodyBytes)
+	if len(signature) == 65 {
+		signature = signature[1:]
+	}
 	sigPairs := make([]*services.SignaturePair, 0)
 	sigPairs = append(sigPairs, operator.publicKey._ToSignaturePairProtobuf(signature))
 

@@ -204,8 +204,7 @@ func _ECDSAPrivateKeyReadPem(source io.Reader, passphrase string) (*_ECDSAPrivat
 
 func (sk _ECDSAPrivateKey) _Sign(message []byte) []byte {
 	hash := Keccak256Hash(message)
-	sig := ecdsa.SignCompact(sk.keyData, hash.Bytes(), true)
-	return sig
+	return ecdsa.SignCompact(sk.keyData, hash.Bytes(), true)
 }
 
 // SupportsDerivation returns true if the _ECDSAPrivateKey supports derivation.
