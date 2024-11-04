@@ -243,7 +243,7 @@ func (pk _ECDSAPublicKey) _Verify(message []byte, signature []byte) bool {
 	return pk.IsEqual(recoveredKey)
 }
 
-func (pk _ECDSAPublicKey) _VerifyTransaction(tx Transaction) bool {
+func (pk _ECDSAPublicKey) _VerifyTransaction(tx *Transaction[TransactionInterface]) bool {
 	if tx.signedTransactions._Length() == 0 {
 		return false
 	}

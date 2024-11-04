@@ -1050,7 +1050,7 @@ func TestUnitPrivateKeyECDSASignTransaction(t *testing.T) {
 		Freeze()
 	require.NoError(t, err)
 
-	_, err = newKey.SignTransaction(&tx.Transaction)
+	_, err = newKey.SignTransaction(tx)
 	require.NoError(t, err)
 }
 

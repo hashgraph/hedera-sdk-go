@@ -35,25 +35,26 @@ import (
 	protobuf "google.golang.org/protobuf/proto"
 )
 
-// transaction contains the protobuf of a prepared transaction which can be signed and executed.
-
-type ITransaction interface {
-	_ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error)
-}
-
+// Interface that all concrete transactions must implement, eg. TransferTransaction, ContractCreateTransaction, etc.
 type TransactionInterface interface {
+	// common methods for all executables
 	Executable
 
-	build() *services.TransactionBody
-	buildScheduled() (*services.SchedulableTransactionBody, error)
-	preFreezeWith(*Client)
-	regenerateID(*Client) bool
+	// methods implemented by the parent transaction
+	regenerateID(*Client) bool // creates new transaction ID
+
+	// methods implemented by every concrete transaction
+	build() *services.TransactionBody                                         // build a protobuf payload for the transaction
+	buildScheduled() (*services.SchedulableTransactionBody, error)            // builds the protobuf payload for the scheduled transaction
+	preFreezeWith(*Client, TransactionInterface)                              // utility method to set the transaction fields before freezing
+	constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) // TODO remove this method if possible
+	// NOTE: Any changes to the baseTransaction retuned by getBaseTransaction()
+	// will be reflected in the transaction object
+	getBaseTransaction() *Transaction[TransactionInterface]
 }
 
-// Transaction is base struct for all transactions that may be built and submitted to Hedera.
-type Transaction struct {
-	executable
-
+// BaseTransaction contains all the common fields for all transactions.
+type BaseTransaction struct {
 	transactionFee           uint64
 	defaultMaxTransactionFee uint64
 	memo                     string
@@ -65,23 +66,35 @@ type Transaction struct {
 
 	publicKeys         []PublicKey
 	transactionSigners []TransactionSigner
+}
+
+// Transaction is base struct for all transactions that may be built and submitted to Hedera.
+// It's generic over the type of transaction it contains. Example: TransferTransaction, ContractCreateTransaction, etc.
+type Transaction[T TransactionInterface] struct {
+	*executable
+	*BaseTransaction
+	childTransaction T
 
 	freezeError error
 
 	regenerateTransactionID bool
 }
 
-func _NewTransaction() Transaction {
+// Creates new transaction, embedding the concrete transaction.
+func _NewTransaction[T TransactionInterface](concreteTransaction T) *Transaction[T] {
 	duration := 120 * time.Second
 	minBackoff := 250 * time.Millisecond
 	maxBackoff := 8 * time.Second
-	return Transaction{
-		transactionValidDuration: &duration,
-		transactions:             _NewLockableSlice(),
-		signedTransactions:       _NewLockableSlice(),
-		freezeError:              nil,
-		regenerateTransactionID:  true,
-		executable: executable{
+	return &Transaction[T]{
+		BaseTransaction: &BaseTransaction{
+			transactionValidDuration: &duration,
+			transactions:             _NewLockableSlice(),
+			signedTransactions:       _NewLockableSlice(),
+		},
+		childTransaction:        concreteTransaction,
+		freezeError:             nil,
+		regenerateTransactionID: true,
+		executable: &executable{
 			transactionIDs: _NewLockableSlice(),
 			nodeAccountIDs: _NewLockableSlice(),
 			minBackoff:     &minBackoff,
@@ -91,18 +104,16 @@ func _NewTransaction() Transaction {
 	}
 }
 
-func (tx *Transaction) GetSignedTransactionBodyBytes(transactionIndex int) []byte {
-	return tx.signedTransactions._Get(transactionIndex).(*services.SignedTransaction).GetBodyBytes()
-}
-
 // TransactionFromBytes converts transaction bytes to a related *transaction.
-func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
+func TransactionFromBytes(data []byte) (TransactionInterface, error) { // nolint
 	list := sdk.TransactionList{}
 	minBackoff := 250 * time.Millisecond
 	maxBackoff := 8 * time.Second
+	publicKeys := make([]PublicKey, 0)
+	transactionSigners := make([]TransactionSigner, 0)
 	err := protobuf.Unmarshal(data, &list)
 	if err != nil {
-		return Transaction{}, errors.Wrap(err, "error deserializing from bytes to transaction List")
+		return nil, errors.Wrap(err, "error deserializing from bytes to transaction List")
 	}
 
 	transactions := _NewLockableSlice()
@@ -111,14 +122,16 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 		transactions._Push(transaction)
 	}
 
-	tx := Transaction{
-		transactions:            transactions,
-		signedTransactions:      _NewLockableSlice(),
-		publicKeys:              make([]PublicKey, 0),
-		transactionSigners:      make([]TransactionSigner, 0),
+	baseTx := Transaction[TransactionInterface]{
+		BaseTransaction: &BaseTransaction{
+			signedTransactions: _NewLockableSlice(),
+			publicKeys:         publicKeys,
+			transactionSigners: transactionSigners,
+			transactions:       transactions,
+		},
 		freezeError:             nil,
 		regenerateTransactionID: true,
-		executable: executable{
+		executable: &executable{
 			transactionIDs: _NewLockableSlice(),
 			nodeAccountIDs: _NewLockableSlice(),
 			minBackoff:     &minBackoff,
@@ -129,11 +142,11 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 
 	comp, err := _TransactionCompare(&list)
 	if err != nil {
-		return Transaction{}, err
+		return nil, err
 	}
 
 	if !comp {
-		return Transaction{}, errors.New("failed to validate transaction bodies")
+		return nil, errors.New("failed to validate transaction bodies")
 	}
 
 	var first *services.TransactionBody = nil
@@ -148,31 +161,31 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 		if len(transactionFromList.SignedTransactionBytes) == 0 {
 			txIsSigned = false
 			if err := protobuf.Unmarshal(transactionFromList.BodyBytes, &body); err != nil { // nolint
-				return Transaction{}, errors.Wrap(err, "error deserializing BodyBytes in TransactionFromBytes")
+				return nil, errors.Wrap(err, "error deserializing BodyBytes in TransactionFromBytes")
 			}
 		} else { // If the transaction is signed/locked
 			if err := protobuf.Unmarshal(transactionFromList.SignedTransactionBytes, &signedTransaction); err != nil {
-				return Transaction{}, errors.Wrap(err, "error deserializing SignedTransactionBytes in TransactionFromBytes")
+				return nil, errors.Wrap(err, "error deserializing SignedTransactionBytes in TransactionFromBytes")
 			}
 		}
 
 		if txIsSigned {
-			tx.signedTransactions = tx.signedTransactions._Push(&signedTransaction)
+			baseTx.signedTransactions = baseTx.signedTransactions._Push(&signedTransaction)
 
 			if i == 0 {
 				for _, sigPair := range signedTransaction.GetSigMap().GetSigPair() {
 					key, err := PublicKeyFromBytes(sigPair.GetPubKeyPrefix())
 					if err != nil {
-						return Transaction{}, err
+						return nil, err
 					}
 
-					tx.publicKeys = append(tx.publicKeys, key)
-					tx.transactionSigners = append(tx.transactionSigners, nil)
+					baseTx.publicKeys = append(baseTx.publicKeys, key)
+					baseTx.transactionSigners = append(baseTx.transactionSigners, nil)
 				}
 			}
 
 			if err := protobuf.Unmarshal(signedTransaction.GetBodyBytes(), &body); err != nil {
-				return Transaction{}, errors.Wrap(err, "error deserializing BodyBytes in TransactionFromBytes")
+				return nil, errors.Wrap(err, "error deserializing BodyBytes in TransactionFromBytes")
 			}
 		}
 
@@ -184,7 +197,7 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 
 		if body.GetTransactionValidDuration() != nil {
 			duration := _DurationFromProtobuf(body.GetTransactionValidDuration())
-			tx.transactionValidDuration = &duration
+			baseTx.transactionValidDuration = &duration
 		}
 
 		if body.GetTransactionID() != nil {
@@ -197,27 +210,27 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 
 		// If the transaction was serialised, without setting "NodeId", or "TransactionID", we should leave them empty
 		if transactionID.AccountID.Account != 0 {
-			tx.transactionIDs = tx.transactionIDs._Push(transactionID)
+			baseTx.transactionIDs = baseTx.transactionIDs._Push(transactionID)
 		}
 		if !nodeAccountID._IsZero() {
-			tx.nodeAccountIDs = tx.nodeAccountIDs._Push(nodeAccountID)
+			baseTx.nodeAccountIDs = baseTx.nodeAccountIDs._Push(nodeAccountID)
 		}
 
 		if i == 0 {
-			tx.memo = body.Memo
+			baseTx.memo = body.Memo
 			if body.TransactionFee != 0 {
-				tx.transactionFee = body.TransactionFee
+				baseTx.transactionFee = body.TransactionFee
 			}
 		}
 	}
 
 	if txIsSigned {
-		if tx.transactionIDs._Length() > 0 {
-			tx.transactionIDs.locked = true
+		if baseTx.transactionIDs._Length() > 0 {
+			baseTx.transactionIDs.locked = true
 		}
 
-		if tx.nodeAccountIDs._Length() > 0 {
-			tx.nodeAccountIDs.locked = true
+		if baseTx.nodeAccountIDs._Length() > 0 {
+			baseTx.nodeAccountIDs.locked = true
 		}
 	}
 
@@ -225,113 +238,313 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 		return nil, errNoTransactionInBytes
 	}
 
+	var childTx TransactionInterface
+
 	switch first.Data.(type) {
 	case *services.TransactionBody_ContractCall:
-		return *_ContractExecuteTransactionFromProtobuf(tx, first), nil
+		childTx = _ContractExecuteTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*ContractExecuteTransaction](baseTx), first)
 	case *services.TransactionBody_ContractCreateInstance:
-		return *_ContractCreateTransactionFromProtobuf(tx, first), nil
+		childTx = _ContractCreateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*ContractCreateTransaction](baseTx), first)
 	case *services.TransactionBody_ContractUpdateInstance:
-		return *_ContractUpdateTransactionFromProtobuf(tx, first), nil
-	case *services.TransactionBody_ContractDeleteInstance:
-		return *_ContractDeleteTransactionFromProtobuf(tx, first), nil
-	case *services.TransactionBody_CryptoAddLiveHash:
-		return *_LiveHashAddTransactionFromProtobuf(tx, first), nil
-	case *services.TransactionBody_CryptoCreateAccount:
-		return *_AccountCreateTransactionFromProtobuf(tx, first), nil
-	case *services.TransactionBody_CryptoDelete:
-		return *_AccountDeleteTransactionFromProtobuf(tx, first), nil
-	case *services.TransactionBody_CryptoDeleteLiveHash:
-		return *_LiveHashDeleteTransactionFromProtobuf(tx, first), nil
-	case *services.TransactionBody_CryptoTransfer:
-		return *_TransferTransactionFromProtobuf(tx, first), nil
-	case *services.TransactionBody_CryptoUpdateAccount:
-		return *_AccountUpdateTransactionFromProtobuf(tx, first), nil
+		childTx = _ContractUpdateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*ContractUpdateTransaction](baseTx), first)
 	case *services.TransactionBody_CryptoApproveAllowance:
-		return *_AccountAllowanceApproveTransactionFromProtobuf(tx, first), nil
+		childTx = _AccountAllowanceApproveTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*AccountAllowanceApproveTransaction](baseTx), first)
 	case *services.TransactionBody_CryptoDeleteAllowance:
-		return *_AccountAllowanceDeleteTransactionFromProtobuf(tx, first), nil
+		childTx = _AccountAllowanceDeleteTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*AccountAllowanceDeleteTransaction](baseTx), first)
+	case *services.TransactionBody_ContractDeleteInstance:
+		childTx = _ContractDeleteTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*ContractDeleteTransaction](baseTx), first)
+	case *services.TransactionBody_CryptoAddLiveHash:
+		childTx = _LiveHashAddTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*LiveHashAddTransaction](baseTx), first)
+	case *services.TransactionBody_CryptoCreateAccount:
+		childTx = _AccountCreateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*AccountCreateTransaction](baseTx), first)
+	case *services.TransactionBody_CryptoDelete:
+		childTx = _AccountDeleteTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*AccountDeleteTransaction](baseTx), first)
+	case *services.TransactionBody_CryptoDeleteLiveHash:
+		childTx = _LiveHashDeleteTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*LiveHashDeleteTransaction](baseTx), first)
+	case *services.TransactionBody_CryptoTransfer:
+		childTx = _TransferTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TransferTransaction](baseTx), first)
+	case *services.TransactionBody_CryptoUpdateAccount:
+		childTx = _AccountUpdateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*AccountUpdateTransaction](baseTx), first)
 	case *services.TransactionBody_FileAppend:
-		return *_FileAppendTransactionFromProtobuf(tx, first), nil
+		childTx = _FileAppendTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*FileAppendTransaction](baseTx), first)
 	case *services.TransactionBody_FileCreate:
-		return *_FileCreateTransactionFromProtobuf(tx, first), nil
+		childTx = _FileCreateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*FileCreateTransaction](baseTx), first)
 	case *services.TransactionBody_FileDelete:
-		return *_FileDeleteTransactionFromProtobuf(tx, first), nil
+		childTx = _FileDeleteTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*FileDeleteTransaction](baseTx), first)
 	case *services.TransactionBody_FileUpdate:
-		return *_FileUpdateTransactionFromProtobuf(tx, first), nil
+		childTx = _FileUpdateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*FileUpdateTransaction](baseTx), first)
 	case *services.TransactionBody_SystemDelete:
-		return *_SystemDeleteTransactionFromProtobuf(tx, first), nil
+		childTx = _SystemDeleteTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*SystemDeleteTransaction](baseTx), first)
 	case *services.TransactionBody_SystemUndelete:
-		return *_SystemUndeleteTransactionFromProtobuf(tx, first), nil
+		childTx = _SystemUndeleteTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*SystemUndeleteTransaction](baseTx), first)
 	case *services.TransactionBody_Freeze:
-		return *_FreezeTransactionFromProtobuf(tx, first), nil
+		childTx = _FreezeTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*FreezeTransaction](baseTx), first)
 	case *services.TransactionBody_ConsensusCreateTopic:
-		return *_TopicCreateTransactionFromProtobuf(tx, first), nil
+		childTx = _TopicCreateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TopicCreateTransaction](baseTx), first)
 	case *services.TransactionBody_ConsensusUpdateTopic:
-		return *_TopicUpdateTransactionFromProtobuf(tx, first), nil
+		childTx = _TopicUpdateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TopicUpdateTransaction](baseTx), first)
 	case *services.TransactionBody_ConsensusDeleteTopic:
-		return *_TopicDeleteTransactionFromProtobuf(tx, first), nil
+		childTx = _TopicDeleteTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TopicDeleteTransaction](baseTx), first)
 	case *services.TransactionBody_ConsensusSubmitMessage:
-		return *_TopicMessageSubmitTransactionFromProtobuf(tx, first), nil
+		childTx = _TopicMessageSubmitTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TopicMessageSubmitTransaction](baseTx), first)
 	case *services.TransactionBody_TokenCreation:
-		return *_TokenCreateTransactionFromProtobuf(tx, first), nil
+		childTx = _TokenCreateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenCreateTransaction](baseTx), first)
 	case *services.TransactionBody_TokenFreeze:
-		return *_TokenFreezeTransactionFromProtobuf(tx, first), nil
+		childTx = _TokenFreezeTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenFreezeTransaction](baseTx), first)
 	case *services.TransactionBody_TokenUnfreeze:
-		return *_TokenUnfreezeTransactionFromProtobuf(tx, first), nil
+		childTx = _TokenUnfreezeTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenUnfreezeTransaction](baseTx), first)
 	case *services.TransactionBody_TokenGrantKyc:
-		return *_TokenGrantKycTransactionFromProtobuf(tx, first), nil
+		childTx = _TokenGrantKycTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenGrantKycTransaction](baseTx), first)
 	case *services.TransactionBody_TokenRevokeKyc:
-		return *_TokenRevokeKycTransactionFromProtobuf(tx, first), nil
+		childTx = _TokenRevokeKycTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenRevokeKycTransaction](baseTx), first)
 	case *services.TransactionBody_TokenDeletion:
-		return *_TokenDeleteTransactionFromProtobuf(tx, first), nil
+		childTx = _TokenDeleteTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenDeleteTransaction](baseTx), first)
 	case *services.TransactionBody_TokenUpdate:
-		return *_TokenUpdateTransactionFromProtobuf(tx, first), nil
+		childTx = _TokenUpdateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenUpdateTransaction](baseTx), first)
 	case *services.TransactionBody_TokenMint:
-		return *_TokenMintTransactionFromProtobuf(tx, first), nil
+		childTx = _TokenMintTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenMintTransaction](baseTx), first)
 	case *services.TransactionBody_TokenBurn:
-		return *_TokenBurnTransactionFromProtobuf(tx, first), nil
+		childTx = _TokenBurnTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenBurnTransaction](baseTx), first)
 	case *services.TransactionBody_TokenWipe:
-		return *_TokenWipeTransactionFromProtobuf(tx, first), nil
+		childTx = _TokenWipeTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenWipeTransaction](baseTx), first)
 	case *services.TransactionBody_TokenAssociate:
-		return *_TokenAssociateTransactionFromProtobuf(tx, first), nil
+		childTx = _TokenAssociateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenAssociateTransaction](baseTx), first)
 	case *services.TransactionBody_TokenDissociate:
-		return *_TokenDissociateTransactionFromProtobuf(tx, first), nil
+		childTx = _TokenDissociateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenDissociateTransaction](baseTx), first)
 	case *services.TransactionBody_ScheduleCreate:
-		return *_ScheduleCreateTransactionFromProtobuf(tx, first), nil
-	case *services.TransactionBody_ScheduleSign:
-		return *_ScheduleSignTransactionFromProtobuf(tx, first), nil
+		childTx = _ScheduleCreateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*ScheduleCreateTransaction](baseTx), first)
 	case *services.TransactionBody_ScheduleDelete:
-		return *_ScheduleDeleteTransactionFromProtobuf(tx, first), nil
-	case *services.TransactionBody_TokenFeeScheduleUpdate:
-		return *_TokenFeeScheduleUpdateTransactionFromProtobuf(tx, first), nil
+		childTx = _ScheduleDeleteTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*ScheduleDeleteTransaction](baseTx), first)
+	case *services.TransactionBody_ScheduleSign:
+		childTx = _ScheduleSignTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*ScheduleSignTransaction](baseTx), first)
 	case *services.TransactionBody_TokenPause:
-		return *_TokenPauseTransactionFromProtobuf(tx, first), nil
+		childTx = _TokenPauseTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenPauseTransaction](baseTx), first)
 	case *services.TransactionBody_TokenUnpause:
-		return *_TokenUnpauseTransactionFromProtobuf(tx, first), nil
+		childTx = _TokenUnpauseTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenUnpauseTransaction](baseTx), first)
 	case *services.TransactionBody_EthereumTransaction:
-		return *_EthereumTransactionFromProtobuf(tx, first), nil
+		childTx = _EthereumTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*EthereumTransaction](baseTx), first)
 	case *services.TransactionBody_UtilPrng:
-		return *_PrngTransactionFromProtobuf(tx, first), nil
-	case *services.TransactionBody_TokenUpdateNfts:
-		return *_NewTokenUpdateNftsTransactionFromProtobuf(tx, first), nil
+		childTx = _PrngTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*PrngTransaction](baseTx), first)
 	case *services.TransactionBody_TokenReject:
-		return *_TokenRejectTransactionFromProtobuf(tx, first), nil
+		childTx = _TokenRejectTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenRejectTransaction](baseTx), first)
+	case *services.TransactionBody_TokenFeeScheduleUpdate:
+		childTx = _TokenFeeScheduleUpdateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenFeeScheduleUpdateTransaction](baseTx), first)
+	case *services.TransactionBody_TokenUpdateNfts:
+		childTx = _TokenUpdateNftsTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenUpdateNfts](baseTx), first)
 	case *services.TransactionBody_NodeCreate:
-		return *_NodeCreateTransactionFromProtobuf(tx, first), nil
+		childTx = _NodeCreateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*NodeCreateTransaction](baseTx), first)
 	case *services.TransactionBody_NodeUpdate:
-		return *_NodeUpdateTransactionFromProtobuf(tx, first), nil
+		childTx = _NodeUpdateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*NodeUpdateTransaction](baseTx), first)
 	case *services.TransactionBody_NodeDelete:
-		return *_NodeDeleteTransactionFromProtobuf(tx, first), nil
+		childTx = _NodeDeleteTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*NodeDeleteTransaction](baseTx), first)
 	case *services.TransactionBody_TokenAirdrop:
-		return *_TokenAirdropTransactionFromProtobuf(tx, first), nil
-	case *services.TransactionBody_TokenClaimAirdrop:
-		return *_TokenClaimAirdropTransactionFromProtobuf(tx, first), nil
+		childTx = _TokenAirdropTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenAirdropTransaction](baseTx), first)
 	case *services.TransactionBody_TokenCancelAirdrop:
-		return *_TokenCancelAirdropTransactionFromProtobuf(tx, first), nil
+		childTx = _TokenCancelAirdropTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenCancelAirdropTransaction](baseTx), first)
+	case *services.TransactionBody_TokenClaimAirdrop:
+		childTx = _TokenClaimAirdropTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenClaimAirdropTransaction](baseTx), first)
 	default:
-		return Transaction{}, errFailedToDeserializeBytes
+		return nil, errFailedToDeserializeBytes
 	}
+
+	// --- //
+
+	return childTx, nil
 }
+
+// Creates a new transaction from a scheduled transaction body
+func transactionFromScheduledTransaction(scheduledBody *services.SchedulableTransactionBody) (TransactionInterface, error) { // nolint
+	pbBody := &services.TransactionBody{}
+
+	memo := scheduledBody.GetMemo()
+	baseTx := Transaction[TransactionInterface]{
+		BaseTransaction: &BaseTransaction{
+			memo:           memo,
+			transactionFee: scheduledBody.GetTransactionFee(),
+		},
+	}
+
+	var tx TransactionInterface
+
+	switch scheduledBody.Data.(type) {
+	case *services.SchedulableTransactionBody_ContractCall:
+		pbBody.Data = &services.TransactionBody_ContractCall{
+			ContractCall: scheduledBody.GetContractCall(),
+		}
+		tx = _ContractExecuteTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*ContractExecuteTransaction](baseTx), pbBody)
+	case *services.SchedulableTransactionBody_ContractCreateInstance:
+		pbBody.Data = &services.TransactionBody_ContractCreateInstance{
+			ContractCreateInstance: scheduledBody.GetContractCreateInstance(),
+		}
+		tx = _ContractCreateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*ContractCreateTransaction](baseTx), pbBody)
+	case *services.SchedulableTransactionBody_ContractUpdateInstance:
+		pbBody.Data = &services.TransactionBody_ContractUpdateInstance{
+			ContractUpdateInstance: scheduledBody.GetContractUpdateInstance(),
+		}
+		tx = _ContractUpdateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*ContractUpdateTransaction](baseTx), pbBody)
+	case *services.SchedulableTransactionBody_CryptoApproveAllowance:
+		pbBody.Data = &services.TransactionBody_CryptoApproveAllowance{
+			CryptoApproveAllowance: scheduledBody.GetCryptoApproveAllowance(),
+		}
+		tx = _AccountAllowanceApproveTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*AccountAllowanceApproveTransaction](baseTx), pbBody)
+	case *services.SchedulableTransactionBody_CryptoDeleteAllowance:
+		pbBody.Data = &services.TransactionBody_CryptoDeleteAllowance{
+			CryptoDeleteAllowance: scheduledBody.GetCryptoDeleteAllowance(),
+		}
+		tx = _AccountAllowanceDeleteTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*AccountAllowanceDeleteTransaction](baseTx), pbBody)
+	case *services.SchedulableTransactionBody_ContractDeleteInstance:
+		pbBody.Data = &services.TransactionBody_ContractDeleteInstance{
+			ContractDeleteInstance: scheduledBody.GetContractDeleteInstance(),
+		}
+		tx = _ContractDeleteTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*ContractDeleteTransaction](baseTx), pbBody)
+	case *services.SchedulableTransactionBody_CryptoCreateAccount:
+		pbBody.Data = &services.TransactionBody_CryptoCreateAccount{
+			CryptoCreateAccount: scheduledBody.GetCryptoCreateAccount(),
+		}
+		tx = _AccountCreateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*AccountCreateTransaction](baseTx), pbBody)
+	case *services.SchedulableTransactionBody_CryptoDelete:
+		pbBody.Data = &services.TransactionBody_CryptoDelete{
+			CryptoDelete: scheduledBody.GetCryptoDelete(),
+		}
+		tx = _AccountDeleteTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*AccountDeleteTransaction](baseTx), pbBody)
+	case *services.SchedulableTransactionBody_CryptoTransfer:
+		pbBody.Data = &services.TransactionBody_CryptoTransfer{
+			CryptoTransfer: scheduledBody.GetCryptoTransfer(),
+		}
+		tx = _TransferTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TransferTransaction](baseTx), pbBody)
+	case *services.SchedulableTransactionBody_CryptoUpdateAccount:
+		pbBody.Data = &services.TransactionBody_CryptoUpdateAccount{
+			CryptoUpdateAccount: scheduledBody.GetCryptoUpdateAccount(),
+		}
+		tx = _AccountUpdateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*AccountUpdateTransaction](baseTx), pbBody)
+	case *services.SchedulableTransactionBody_FileAppend:
+		pbBody.Data = &services.TransactionBody_FileAppend{
+			FileAppend: scheduledBody.GetFileAppend(),
+		}
+		tx = _FileAppendTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*FileAppendTransaction](baseTx), pbBody)
+	case *services.SchedulableTransactionBody_FileCreate:
+		pbBody.Data = &services.TransactionBody_FileCreate{
+			FileCreate: scheduledBody.GetFileCreate(),
+		}
+		tx = _FileCreateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*FileCreateTransaction](baseTx), pbBody)
+	case *services.SchedulableTransactionBody_FileDelete:
+		pbBody.Data = &services.TransactionBody_FileDelete{
+			FileDelete: scheduledBody.GetFileDelete(),
+		}
+		tx = _FileDeleteTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*FileDeleteTransaction](baseTx), pbBody)
+	case *services.SchedulableTransactionBody_FileUpdate:
+		pbBody.Data = &services.TransactionBody_FileUpdate{
+			FileUpdate: scheduledBody.GetFileUpdate(),
+		}
+		tx = _FileUpdateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*FileUpdateTransaction](baseTx), pbBody)
+	case *services.SchedulableTransactionBody_SystemDelete:
+		pbBody.Data = &services.TransactionBody_SystemDelete{
+			SystemDelete: scheduledBody.GetSystemDelete(),
+		}
+		tx = _SystemDeleteTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*SystemDeleteTransaction](baseTx), pbBody)
+	case *services.SchedulableTransactionBody_SystemUndelete:
+		pbBody.Data = &services.TransactionBody_SystemUndelete{
+			SystemUndelete: scheduledBody.GetSystemUndelete(),
+		}
+		tx = _SystemUndeleteTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*SystemUndeleteTransaction](baseTx), pbBody)
+	case *services.SchedulableTransactionBody_Freeze:
+		pbBody.Data = &services.TransactionBody_Freeze{
+			Freeze: scheduledBody.GetFreeze(),
+		}
+		tx = _FreezeTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*FreezeTransaction](baseTx), pbBody)
+	case *services.SchedulableTransactionBody_ConsensusCreateTopic:
+		pbBody.Data = &services.TransactionBody_ConsensusCreateTopic{
+			ConsensusCreateTopic: scheduledBody.GetConsensusCreateTopic(),
+		}
+		tx = _TopicCreateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TopicCreateTransaction](baseTx), pbBody)
+	case *services.SchedulableTransactionBody_ConsensusUpdateTopic:
+		pbBody.Data = &services.TransactionBody_ConsensusUpdateTopic{
+			ConsensusUpdateTopic: scheduledBody.GetConsensusUpdateTopic(),
+		}
+		tx = _TopicUpdateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TopicUpdateTransaction](baseTx), pbBody)
+	case *services.SchedulableTransactionBody_ConsensusDeleteTopic:
+		pbBody.Data = &services.TransactionBody_ConsensusDeleteTopic{
+			ConsensusDeleteTopic: scheduledBody.GetConsensusDeleteTopic(),
+		}
+		tx = _TopicDeleteTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TopicDeleteTransaction](baseTx), pbBody)
+	case *services.SchedulableTransactionBody_ConsensusSubmitMessage:
+		pbBody.Data = &services.TransactionBody_ConsensusSubmitMessage{
+			ConsensusSubmitMessage: scheduledBody.GetConsensusSubmitMessage(),
+		}
+		tx = _TopicMessageSubmitTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TopicMessageSubmitTransaction](baseTx), pbBody)
+	case *services.SchedulableTransactionBody_TokenCreation:
+		pbBody.Data = &services.TransactionBody_TokenCreation{
+			TokenCreation: scheduledBody.GetTokenCreation(),
+		}
+		tx = _TokenCreateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenCreateTransaction](baseTx), pbBody)
+	case *services.SchedulableTransactionBody_TokenFreeze:
+		pbBody.Data = &services.TransactionBody_TokenFreeze{
+			TokenFreeze: scheduledBody.GetTokenFreeze(),
+		}
+		tx = _TokenFreezeTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenFreezeTransaction](baseTx), pbBody)
+	case *services.SchedulableTransactionBody_TokenUnfreeze:
+		pbBody.Data = &services.TransactionBody_TokenUnfreeze{
+			TokenUnfreeze: scheduledBody.GetTokenUnfreeze(),
+		}
+		tx = _TokenUnfreezeTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenUnfreezeTransaction](baseTx), pbBody)
+	case *services.SchedulableTransactionBody_TokenGrantKyc:
+		pbBody.Data = &services.TransactionBody_TokenGrantKyc{
+			TokenGrantKyc: scheduledBody.GetTokenGrantKyc(),
+		}
+		tx = _TokenGrantKycTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenGrantKycTransaction](baseTx), pbBody)
+	case *services.SchedulableTransactionBody_TokenRevokeKyc:
+		pbBody.Data = &services.TransactionBody_TokenRevokeKyc{
+			TokenRevokeKyc: scheduledBody.GetTokenRevokeKyc(),
+		}
+		tx = _TokenRevokeKycTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenRevokeKycTransaction](baseTx), pbBody)
+	case *services.SchedulableTransactionBody_TokenDeletion:
+		pbBody.Data = &services.TransactionBody_TokenDeletion{
+			TokenDeletion: scheduledBody.GetTokenDeletion(),
+		}
+		tx = _TokenDeleteTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenDeleteTransaction](baseTx), pbBody)
+	case *services.SchedulableTransactionBody_TokenUpdate:
+		pbBody.Data = &services.TransactionBody_TokenUpdate{
+			TokenUpdate: scheduledBody.GetTokenUpdate(),
+		}
+		tx = _TokenUpdateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenUpdateTransaction](baseTx), pbBody)
+	case *services.SchedulableTransactionBody_TokenMint:
+		pbBody.Data = &services.TransactionBody_TokenMint{
+			TokenMint: scheduledBody.GetTokenMint(),
+		}
+		tx = _TokenMintTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenMintTransaction](baseTx), pbBody)
+	case *services.SchedulableTransactionBody_TokenBurn:
+		pbBody.Data = &services.TransactionBody_TokenBurn{
+			TokenBurn: scheduledBody.GetTokenBurn(),
+		}
+		tx = _TokenBurnTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenBurnTransaction](baseTx), pbBody)
+	case *services.SchedulableTransactionBody_TokenWipe:
+		pbBody.Data = &services.TransactionBody_TokenWipe{
+			TokenWipe: scheduledBody.GetTokenWipe(),
+		}
+		tx = _TokenWipeTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenWipeTransaction](baseTx), pbBody)
+	case *services.SchedulableTransactionBody_TokenAssociate:
+		pbBody.Data = &services.TransactionBody_TokenAssociate{
+			TokenAssociate: scheduledBody.GetTokenAssociate(),
+		}
+		tx = _TokenAssociateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenAssociateTransaction](baseTx), pbBody)
+	case *services.SchedulableTransactionBody_TokenDissociate:
+		pbBody.Data = &services.TransactionBody_TokenDissociate{
+			TokenDissociate: scheduledBody.GetTokenDissociate(),
+		}
+		tx = _TokenDissociateTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*TokenDissociateTransaction](baseTx), pbBody)
+	case *services.SchedulableTransactionBody_ScheduleDelete:
+		pbBody.Data = &services.TransactionBody_ScheduleDelete{
+			ScheduleDelete: scheduledBody.GetScheduleDelete(),
+		}
+		tx = _ScheduleDeleteTransactionFromProtobuf(*castFromBaseToConcreteTransaction[*ScheduleDeleteTransaction](baseTx), pbBody)
+	default:
+		return nil, errors.New("unrecognized transaction type")
+	}
+
+	return tx, nil
+}
+
+// Private methods //
 
 func _TransactionCompare(list *sdk.TransactionList) (bool, error) {
 	signed := make([]*services.SignedTransaction, 0)
@@ -364,101 +577,11 @@ func _TransactionCompare(list *sdk.TransactionList) (bool, error) {
 	return true, nil
 }
 
-// GetSignatures Gets all of the signatures stored in the transaction
-func (tx *Transaction) GetSignatures() (map[AccountID]map[*PublicKey][]byte, error) {
-	returnMap := make(map[AccountID]map[*PublicKey][]byte, tx.nodeAccountIDs._Length())
-
-	if tx.signedTransactions._Length() == 0 {
-		return returnMap, nil
-	}
-
-	for i, nodeID := range tx.nodeAccountIDs.slice {
-		var sigMap *services.SignatureMap
-		var tempID AccountID
-		switch k := tx.signedTransactions._Get(i).(type) { //nolint
-		case *services.SignedTransaction:
-			sigMap = k.SigMap
-		}
-
-		switch k := nodeID.(type) { //nolint
-		case AccountID:
-			tempID = k
-		}
-		inner := make(map[*PublicKey][]byte, len(sigMap.SigPair))
-
-		for _, sigPair := range sigMap.SigPair {
-			key, err := PublicKeyFromBytes(sigPair.PubKeyPrefix)
-			if err != nil {
-				return make(map[AccountID]map[*PublicKey][]byte), err
-			}
-			switch sigPair.Signature.(type) {
-			case *services.SignaturePair_Contract:
-				inner[&key] = sigPair.GetContract()
-			case *services.SignaturePair_Ed25519:
-				inner[&key] = sigPair.GetEd25519()
-			case *services.SignaturePair_RSA_3072:
-				inner[&key] = sigPair.GetRSA_3072()
-			case *services.SignaturePair_ECDSA_384:
-				inner[&key] = sigPair.GetECDSA_384()
-			}
-		}
-
-		returnMap[tempID] = inner
-	}
-	tx.transactionIDs.locked = true
-
-	return returnMap, nil
-}
-
-func (tx *Transaction) GetTransactionHash() ([]byte, error) {
-	current, err := tx._BuildTransaction(0)
-	if err != nil {
-		return nil, err
-	}
-	hash := sha512.New384()
-	_, err = hash.Write(current.GetSignedTransactionBytes())
-	if err != nil {
-		return nil, err
-	}
-
-	return hash.Sum(nil), nil
-}
-
-func (tx *Transaction) GetTransactionHashPerNode() (map[AccountID][]byte, error) {
-	transactionHash := make(map[AccountID][]byte)
-	if !tx.IsFrozen() {
-		return transactionHash, errTransactionIsNotFrozen
-	}
-
-	allTx, err := tx._BuildAllTransactions()
-	if err != nil {
-		return transactionHash, err
-	}
-	tx.transactionIDs.locked = true
-
-	for i, node := range tx.nodeAccountIDs.slice {
-		switch n := node.(type) { //nolint
-		case AccountID:
-			hash := sha512.New384()
-			_, err := hash.Write(allTx[i].GetSignedTransactionBytes())
-			if err != nil {
-				return transactionHash, err
-			}
-
-			finalHash := hash.Sum(nil)
-
-			transactionHash[n] = finalHash
-		}
-	}
-
-	return transactionHash, nil
-}
-
 // Sets the maxTransaction fee based on priority:
 // 1. Explicitly set for this Transaction
 // 2. Client has a default value set for all transactions
 // 3. The default for this type of Transaction, which is set during creation
-func (tx *Transaction) _InitFee(client *Client) {
+func (tx *Transaction[T]) _InitFee(client *Client) {
 	if tx.transactionFee == 0 {
 		if client != nil && client.GetDefaultMaxTransactionFee().AsTinybar() != 0 {
 			tx.SetMaxTransactionFee(client.GetDefaultMaxTransactionFee())
@@ -468,7 +591,7 @@ func (tx *Transaction) _InitFee(client *Client) {
 	}
 }
 
-func (tx *Transaction) _InitTransactionID(client *Client) error {
+func (tx *Transaction[T]) _InitTransactionID(client *Client) error {
 	if tx.transactionIDs._Length() == 0 {
 		if client != nil {
 			if client.operator != nil {
@@ -486,70 +609,29 @@ func (tx *Transaction) _InitTransactionID(client *Client) error {
 	return nil
 }
 
-func (tx *Transaction) IsFrozen() bool {
+func (tx *Transaction[T]) IsFrozen() bool {
 	return tx.signedTransactions._Length() > 0
 }
 
-func (tx *Transaction) _RequireFrozen() {
+func (tx *Transaction[T]) _RequireFrozen() {
 	if !tx.IsFrozen() {
 		tx.freezeError = errTransactionIsNotFrozen
 	}
 }
 
-func (tx *Transaction) _RequireNotFrozen() {
+func (tx *Transaction[T]) _RequireNotFrozen() {
 	if tx.IsFrozen() {
 		tx.freezeError = errTransactionIsFrozen
 	}
 }
 
-func (tx *Transaction) _RequireOneNodeAccountID() {
+func (tx *Transaction[T]) _RequireOneNodeAccountID() {
 	if tx.nodeAccountIDs._Length() != 1 {
 		panic("transaction has more than one _Node ID set")
 	}
 }
 
-func _TransactionFreezeWith(
-	transaction *Transaction,
-	client *Client,
-	body *services.TransactionBody,
-) error {
-	if transaction.nodeAccountIDs._IsEmpty() {
-		if client != nil {
-			for _, nodeAccountID := range client.network._GetNodeAccountIDsForExecute() {
-				transaction.nodeAccountIDs._Push(nodeAccountID)
-			}
-		} else {
-			return errNoClientOrTransactionIDOrNodeId
-		}
-	}
-
-	if client != nil {
-		if client.defaultRegenerateTransactionIDs != transaction.regenerateTransactionID {
-			transaction.regenerateTransactionID = client.defaultRegenerateTransactionIDs
-		}
-	}
-
-	for _, nodeAccountID := range transaction.nodeAccountIDs.slice {
-		body.NodeAccountID = nodeAccountID.(AccountID)._ToProtobuf()
-		bodyBytes, err := protobuf.Marshal(body)
-
-		if err != nil {
-			// This should be unreachable
-			// From the documentation this appears to only be possible if there are missing proto types
-			panic(err)
-		}
-		transaction.signedTransactions = transaction.signedTransactions._Push(&services.SignedTransaction{
-			BodyBytes: bodyBytes,
-			SigMap: &services.SignatureMap{
-				SigPair: make([]*services.SignaturePair, 0),
-			},
-		})
-	}
-
-	return nil
-}
-
-func (tx *Transaction) _SignWith(
+func (tx *Transaction[T]) _SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) {
@@ -558,7 +640,7 @@ func (tx *Transaction) _SignWith(
 	tx.transactionSigners = append(tx.transactionSigners, signer)
 }
 
-func (tx *Transaction) _KeyAlreadySigned(
+func (tx *Transaction[T]) _KeyAlreadySigned(
 	pk PublicKey,
 ) bool {
 	for _, key := range tx.publicKeys {
@@ -570,59 +652,18 @@ func (tx *Transaction) _KeyAlreadySigned(
 	return false
 }
 
-// String returns a string representation of the transaction
-func (tx *Transaction) String() string {
-	switch sig := tx.signedTransactions._Get(0).(type) { //nolint
-	case *services.SignedTransaction:
-		return fmt.Sprintf("%+v", sig)
-	}
-
-	return ""
-}
-
-// ToBytes Builds then converts the current transaction to []byte
-// Requires transaction to be frozen
-func (tx *Transaction) ToBytes() ([]byte, error) {
-	return tx.toBytes(tx)
-}
-
-func (tx *Transaction) toBytes(e TransactionInterface) ([]byte, error) {
-	var pbTransactionList []byte
-	var allTx []*services.Transaction
-	var err error
-	// If transaction is frozen, build all transactions and "signedTransactions"
-	if tx.IsFrozen() {
-		allTx, err = tx._BuildAllTransactions()
-		tx.transactionIDs.locked = true
-	} else { // Build only onlt "BodyBytes" for each transaction in the list
-		allTx, err = tx.buildAllUnsignedTransactions(e)
-	}
-	// If error has occurred, when building transactions
-	if err != nil {
-		return make([]byte, 0), err
-	}
-
-	pbTransactionList, err = protobuf.Marshal(&sdk.TransactionList{
-		TransactionList: allTx,
-	})
-	if err != nil {
-		return make([]byte, 0), errors.Wrap(err, "error serializing tx list")
-	}
-	return pbTransactionList, nil
-}
-
-func (tx *Transaction) buildAllUnsignedTransactions(e TransactionInterface) ([]*services.Transaction, error) {
+func (tx *Transaction[T]) buildAllUnsignedTransactions() ([]*services.Transaction, error) {
 	// All unsigned transactions would always be exactly 1
 	allTx := make([]*services.Transaction, 0)
 	if tx.nodeAccountIDs._IsEmpty() {
-		t, err := tx.buildUnsignedTransaction(e, 0)
+		t, err := tx.buildUnsignedTransaction(0)
 		if err != nil {
 			return allTx, err
 		}
 		allTx = append(allTx, t)
 	} else { // If we have set some node account ids, we have to make one transaction copy per node account
 		for range tx.nodeAccountIDs.slice {
-			t, err := tx.buildUnsignedTransaction(e, tx.nodeAccountIDs.index)
+			t, err := tx.buildUnsignedTransaction(tx.nodeAccountIDs.index)
 			tx.nodeAccountIDs._Advance()
 			if err != nil {
 				return allTx, err
@@ -633,8 +674,8 @@ func (tx *Transaction) buildAllUnsignedTransactions(e TransactionInterface) ([]*
 	return allTx, nil
 }
 
-func (tx *Transaction) buildUnsignedTransaction(e TransactionInterface, index int) (*services.Transaction, error) {
-	body := e.build()
+func (tx *Transaction[T]) buildUnsignedTransaction(index int) (*services.Transaction, error) {
+	body := tx.childTransaction.build()
 	if body.NodeAccountID == nil && !tx.nodeAccountIDs._IsEmpty() {
 		body.NodeAccountID = tx.nodeAccountIDs._Get(index).(AccountID)._ToProtobuf()
 	}
@@ -647,7 +688,7 @@ func (tx *Transaction) buildUnsignedTransaction(e TransactionInterface, index in
 	return &services.Transaction{BodyBytes: bodyBytes}, nil
 }
 
-func (tx *Transaction) _SignTransaction(index int) {
+func (tx *Transaction[T]) _SignTransaction(index int) {
 	initialTx := tx.signedTransactions._Get(index).(*services.SignedTransaction)
 	bodyBytes := initialTx.GetBodyBytes()
 	if len(initialTx.SigMap.SigPair) != 0 {
@@ -690,7 +731,7 @@ func (tx *Transaction) _SignTransaction(index int) {
 	}
 
 	for i := 0; i < len(tx.publicKeys); i++ {
-		publicKey := tx.publicKeys[i]
+		publicKey := (tx.publicKeys)[i]
 		signer := tx.transactionSigners[i]
 
 		if signer == nil {
@@ -707,7 +748,7 @@ func (tx *Transaction) _SignTransaction(index int) {
 	}
 }
 
-func (tx *Transaction) _BuildAllTransactions() ([]*services.Transaction, error) {
+func (tx *Transaction[T]) _BuildAllTransactions() ([]*services.Transaction, error) {
 	allTx := make([]*services.Transaction, 0)
 	for i := 0; i < tx.signedTransactions._Length(); i++ {
 		curr, err := tx._BuildTransaction(i)
@@ -721,7 +762,7 @@ func (tx *Transaction) _BuildAllTransactions() ([]*services.Transaction, error) 
 	return allTx, nil
 }
 
-func (tx *Transaction) _BuildTransaction(index int) (*services.Transaction, error) {
+func (tx *Transaction[T]) _BuildTransaction(index int) (*services.Transaction, error) {
 	signedTx := tx.signedTransactions._Get(index).(*services.SignedTransaction)
 
 	txID := tx.transactionIDs._GetCurrent().(TransactionID)
@@ -786,49 +827,181 @@ func (tx *Transaction) _BuildTransaction(index int) (*services.Transaction, erro
 // Shared
 //
 
+// GetSignedTransactionBodyBytes
+func (tx *Transaction[T]) GetSignedTransactionBodyBytes(transactionIndex int) []byte {
+	return tx.signedTransactions._Get(transactionIndex).(*services.SignedTransaction).GetBodyBytes()
+}
+
+// GetSignatures Gets all of the signatures stored in the transaction
+func (tx *Transaction[T]) GetSignatures() (map[AccountID]map[*PublicKey][]byte, error) {
+	returnMap := make(map[AccountID]map[*PublicKey][]byte, tx.nodeAccountIDs._Length())
+
+	if tx.signedTransactions._Length() == 0 {
+		return returnMap, nil
+	}
+
+	for i, nodeID := range tx.nodeAccountIDs.slice {
+		var sigMap *services.SignatureMap
+		var tempID AccountID
+		switch k := tx.signedTransactions._Get(i).(type) { //nolint
+		case *services.SignedTransaction:
+			sigMap = k.SigMap
+		}
+
+		switch k := nodeID.(type) { //nolint
+		case AccountID:
+			tempID = k
+		}
+		inner := make(map[*PublicKey][]byte, len(sigMap.SigPair))
+
+		for _, sigPair := range sigMap.SigPair {
+			key, err := PublicKeyFromBytes(sigPair.PubKeyPrefix)
+			if err != nil {
+				return make(map[AccountID]map[*PublicKey][]byte), err
+			}
+			switch sigPair.Signature.(type) {
+			case *services.SignaturePair_Contract:
+				inner[&key] = sigPair.GetContract()
+			case *services.SignaturePair_Ed25519:
+				inner[&key] = sigPair.GetEd25519()
+			case *services.SignaturePair_RSA_3072:
+				inner[&key] = sigPair.GetRSA_3072()
+			case *services.SignaturePair_ECDSA_384:
+				inner[&key] = sigPair.GetECDSA_384()
+			}
+		}
+
+		returnMap[tempID] = inner
+	}
+	tx.transactionIDs.locked = true
+
+	return returnMap, nil
+}
+
+func (tx *Transaction[T]) GetTransactionHash() ([]byte, error) {
+	current, err := tx._BuildTransaction(0)
+	if err != nil {
+		return nil, err
+	}
+	hash := sha512.New384()
+	_, err = hash.Write(current.GetSignedTransactionBytes())
+	if err != nil {
+		return nil, err
+	}
+
+	return hash.Sum(nil), nil
+}
+
+func (tx *Transaction[T]) GetTransactionHashPerNode() (map[AccountID][]byte, error) {
+	transactionHash := make(map[AccountID][]byte)
+	if !tx.IsFrozen() {
+		return transactionHash, errTransactionIsNotFrozen
+	}
+
+	allTx, err := tx._BuildAllTransactions()
+	if err != nil {
+		return transactionHash, err
+	}
+	tx.transactionIDs.locked = true
+
+	for i, node := range tx.nodeAccountIDs.slice {
+		switch n := node.(type) { //nolint
+		case AccountID:
+			hash := sha512.New384()
+			_, err := hash.Write(allTx[i].GetSignedTransactionBytes())
+			if err != nil {
+				return transactionHash, err
+			}
+
+			finalHash := hash.Sum(nil)
+
+			transactionHash[n] = finalHash
+		}
+	}
+
+	return transactionHash, nil
+}
+
+// String returns a string representation of the transaction
+func (tx *Transaction[T]) String() string {
+	switch sig := tx.signedTransactions._Get(0).(type) { //nolint
+	case *services.SignedTransaction:
+		return fmt.Sprintf("%+v", sig)
+	}
+
+	return ""
+}
+
+// ToBytes Builds then converts the current transaction to []byte
+// Requires transaction to be frozen
+func (tx *Transaction[T]) ToBytes() ([]byte, error) {
+	var pbTransactionList []byte
+	var allTx []*services.Transaction
+	var err error
+	// If transaction is frozen, build all transactions and "signedTransactions"
+	if tx.IsFrozen() {
+		allTx, err = tx._BuildAllTransactions()
+		tx.transactionIDs.locked = true
+	} else { // Build only onlt "BodyBytes" for each transaction in the list
+		allTx, err = tx.buildAllUnsignedTransactions()
+	}
+	// If error has occurred, when building transactions
+	if err != nil {
+		return make([]byte, 0), err
+	}
+
+	pbTransactionList, err = protobuf.Marshal(&sdk.TransactionList{
+		TransactionList: allTx,
+	})
+	if err != nil {
+		return make([]byte, 0), errors.Wrap(err, "error serializing tx list")
+	}
+	return pbTransactionList, nil
+}
+
 // GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
-func (tx *Transaction) GetMaxTransactionFee() Hbar {
+func (tx *Transaction[T]) GetMaxTransactionFee() Hbar {
 	return HbarFromTinybar(int64(tx.transactionFee))
 }
 
 // SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
-func (tx *Transaction) SetMaxTransactionFee(fee Hbar) *Transaction {
+func (tx *Transaction[T]) SetMaxTransactionFee(fee Hbar) T {
 	tx.transactionFee = uint64(fee.AsTinybar())
-	return tx
+	return tx.childTransaction
 }
-func (tx *Transaction) GetDefaultMaxTransactionFee() Hbar {
+func (tx *Transaction[T]) GetDefaultMaxTransactionFee() Hbar {
 	return HbarFromTinybar(int64(tx.defaultMaxTransactionFee))
 }
 
 // SetMaxTransactionFee sets the max Transaction fee for this Transaction.
-func (tx *Transaction) _SetDefaultMaxTransactionFee(fee Hbar) {
+func (tx *Transaction[T]) _SetDefaultMaxTransactionFee(fee Hbar) {
 	tx.defaultMaxTransactionFee = uint64(fee.AsTinybar())
 }
 
 // GetRegenerateTransactionID returns true if transaction ID regeneration is enabled
-func (tx *Transaction) GetRegenerateTransactionID() bool {
+func (tx *Transaction[T]) GetRegenerateTransactionID() bool {
 	return tx.regenerateTransactionID
 }
 
 // SetRegenerateTransactionID sets if transaction IDs should be regenerated when \`TRANSACTION_EXPIRED\` is received
-func (tx *Transaction) SetRegenerateTransactionID(regenerateTransactionID bool) *Transaction {
+func (tx *Transaction[T]) SetRegenerateTransactionID(regenerateTransactionID bool) T {
 	tx.regenerateTransactionID = regenerateTransactionID
-	return tx
+	return tx.childTransaction
 }
 
 // GetTransactionMemo returns the memo for this	transaction.
-func (tx *Transaction) GetTransactionMemo() string {
+func (tx *Transaction[T]) GetTransactionMemo() string {
 	return tx.memo
 }
 
 // SetTransactionMemo sets the memo for this transaction.
-func (tx *Transaction) SetTransactionMemo(memo string) *Transaction {
+func (tx *Transaction[T]) SetTransactionMemo(memo string) T {
 	tx.memo = memo
-	return tx
+	return tx.childTransaction
 }
 
 // GetTransactionValidDuration returns the duration that this transaction is valid for.
-func (tx *Transaction) GetTransactionValidDuration() time.Duration {
+func (tx *Transaction[T]) GetTransactionValidDuration() time.Duration {
 	if tx.transactionValidDuration != nil {
 		return *tx.transactionValidDuration
 	}
@@ -837,13 +1010,13 @@ func (tx *Transaction) GetTransactionValidDuration() time.Duration {
 }
 
 // SetTransactionValidDuration sets the valid duration for this transaction.
-func (tx *Transaction) SetTransactionValidDuration(duration time.Duration) *Transaction {
+func (tx *Transaction[T]) SetTransactionValidDuration(duration time.Duration) T {
 	tx.transactionValidDuration = &duration
-	return tx
+	return tx.childTransaction
 }
 
 // GetTransactionID gets the TransactionID for this	transaction.
-func (tx *Transaction) GetTransactionID() TransactionID {
+func (tx *Transaction[T]) GetTransactionID() TransactionID {
 	if tx.transactionIDs._Length() > 0 {
 		t := tx.transactionIDs._GetCurrent().(TransactionID)
 		return t
@@ -853,42 +1026,42 @@ func (tx *Transaction) GetTransactionID() TransactionID {
 }
 
 // SetTransactionID sets the TransactionID for this transaction.
-func (tx *Transaction) SetTransactionID(transactionID TransactionID) *Transaction {
+func (tx *Transaction[T]) SetTransactionID(transactionID TransactionID) T {
 	tx.transactionIDs._Clear()._Push(transactionID)._SetLocked(true)
-	return tx
+	return tx.childTransaction
 }
 
 // SetNodeAccountIDs sets the node AccountID for this transaction.
-func (tx *Transaction) SetNodeAccountIDs(nodeAccountIDs []AccountID) *Transaction {
+func (tx *Transaction[T]) SetNodeAccountIDs(nodeAccountIDs []AccountID) T {
 	for _, nodeAccountID := range nodeAccountIDs {
 		tx.nodeAccountIDs._Push(nodeAccountID)
 	}
 	tx.nodeAccountIDs._SetLocked(true)
-	return tx
+	return tx.childTransaction
 }
 
 // ------------ Transaction methdos ---------------
-func (tx *Transaction) Sign(privateKey PrivateKey) TransactionInterface {
+func (tx *Transaction[T]) Sign(privateKey PrivateKey) T {
 	return tx.SignWith(privateKey.PublicKey(), privateKey.Sign)
 }
-func (tx *Transaction) signWithOperator(client *Client, e TransactionInterface) (TransactionInterface, error) { // nolint
+func (tx *Transaction[T]) SignWithOperator(client *Client) (T, error) { // nolint
 	// If the transaction is not signed by the _Operator, we need
 	// to sign the transaction with the _Operator
 	if client == nil {
-		return nil, errNoClientProvided
+		return *new(T), errNoClientProvided
 	} else if client.operator == nil {
-		return nil, errClientOperatorSigning
+		return *new(T), errClientOperatorSigning
 	}
 
 	if !tx.IsFrozen() {
-		_, err := tx.freezeWith(client, e)
+		_, err := tx.FreezeWith(client)
 		if err != nil {
-			return tx, err
+			return *new(T), err
 		}
 	}
 	return tx.SignWith(client.operator.publicKey, client.operator.signer), nil
 }
-func (tx *Transaction) SignWith(publicKey PublicKey, signer TransactionSigner) TransactionInterface {
+func (tx *Transaction[T]) SignWith(publicKey PublicKey, signer TransactionSigner) T {
 	// We need to make sure the request is frozen
 	tx._RequireFrozen()
 
@@ -896,17 +1069,17 @@ func (tx *Transaction) SignWith(publicKey PublicKey, signer TransactionSigner) T
 		tx._SignWith(publicKey, signer)
 	}
 
-	return tx
+	return tx.childTransaction
 }
-func (tx *Transaction) AddSignature(publicKey PublicKey, signature []byte) TransactionInterface {
+func (tx *Transaction[T]) AddSignature(publicKey PublicKey, signature []byte) T {
 	tx._RequireOneNodeAccountID()
 
 	if tx._KeyAlreadySigned(publicKey) {
-		return tx
+		return tx.childTransaction
 	}
 
 	if tx.signedTransactions._Length() == 0 {
-		return tx
+		return tx.childTransaction
 	}
 
 	tx.transactions = _NewLockableSlice()
@@ -927,3859 +1100,20 @@ func (tx *Transaction) AddSignature(publicKey PublicKey, signature []byte) Trans
 		tx.signedTransactions._Set(index, temp)
 	}
 
-	return tx
+	return tx.childTransaction
 }
 
-// Building empty object as "default" implementation. All inhertents must implement their own implementation.
-func (tx *Transaction) build() *services.TransactionBody {
-	return &services.TransactionBody{}
+func (tx *Transaction[T]) preFreezeWith(*Client, TransactionInterface) {
+	// No-op for every transaction except TokenCreateTransaction
 }
 
-// Building empty object as "default" implementation. All inhertents must implement their own implementation.
-func (tx *Transaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
-	return &services.SchedulableTransactionBody{}, nil
-}
-
-// -------------------------------------
-
-func TransactionSign(transaction interface{}, privateKey PrivateKey) (interface{}, error) { // nolint
-	switch i := transaction.(type) {
-	case AccountCreateTransaction:
-		return i.Sign(privateKey), nil
-	case AccountDeleteTransaction:
-		return i.Sign(privateKey), nil
-	case AccountUpdateTransaction:
-		return i.Sign(privateKey), nil
-	case AccountAllowanceApproveTransaction:
-		return i.Sign(privateKey), nil
-	case AccountAllowanceDeleteTransaction:
-		return i.Sign(privateKey), nil
-	case ContractCreateTransaction:
-		return i.Sign(privateKey), nil
-	case ContractDeleteTransaction:
-		return i.Sign(privateKey), nil
-	case ContractExecuteTransaction:
-		return i.Sign(privateKey), nil
-	case ContractUpdateTransaction:
-		return i.Sign(privateKey), nil
-	case FileAppendTransaction:
-		return i.Sign(privateKey), nil
-	case FileCreateTransaction:
-		return i.Sign(privateKey), nil
-	case FileDeleteTransaction:
-		return i.Sign(privateKey), nil
-	case FileUpdateTransaction:
-		return i.Sign(privateKey), nil
-	case LiveHashAddTransaction:
-		return i.Sign(privateKey), nil
-	case LiveHashDeleteTransaction:
-		return i.Sign(privateKey), nil
-	case ScheduleCreateTransaction:
-		return i.Sign(privateKey), nil
-	case ScheduleDeleteTransaction:
-		return i.Sign(privateKey), nil
-	case ScheduleSignTransaction:
-		return i.Sign(privateKey), nil
-	case SystemDeleteTransaction:
-		return i.Sign(privateKey), nil
-	case SystemUndeleteTransaction:
-		return i.Sign(privateKey), nil
-	case TokenAssociateTransaction:
-		return i.Sign(privateKey), nil
-	case TokenBurnTransaction:
-		return i.Sign(privateKey), nil
-	case TokenCreateTransaction:
-		return i.Sign(privateKey), nil
-	case TokenDeleteTransaction:
-		return i.Sign(privateKey), nil
-	case TokenDissociateTransaction:
-		return i.Sign(privateKey), nil
-	case TokenFeeScheduleUpdateTransaction:
-		return i.Sign(privateKey), nil
-	case TokenFreezeTransaction:
-		return i.Sign(privateKey), nil
-	case TokenGrantKycTransaction:
-		return i.Sign(privateKey), nil
-	case TokenMintTransaction:
-		return i.Sign(privateKey), nil
-	case TokenRevokeKycTransaction:
-		return i.Sign(privateKey), nil
-	case TokenUnfreezeTransaction:
-		return i.Sign(privateKey), nil
-	case TokenUpdateTransaction:
-		return i.Sign(privateKey), nil
-	case TokenWipeTransaction:
-		return i.Sign(privateKey), nil
-	case TopicCreateTransaction:
-		return i.Sign(privateKey), nil
-	case TopicDeleteTransaction:
-		return i.Sign(privateKey), nil
-	case TopicMessageSubmitTransaction:
-		return i.Sign(privateKey), nil
-	case TopicUpdateTransaction:
-		return i.Sign(privateKey), nil
-	case TransferTransaction:
-		return i.Sign(privateKey), nil
-	case *AccountCreateTransaction:
-		return i.Sign(privateKey), nil
-	case *AccountDeleteTransaction:
-		return i.Sign(privateKey), nil
-	case *AccountUpdateTransaction:
-		return i.Sign(privateKey), nil
-	case *AccountAllowanceApproveTransaction:
-		return i.Sign(privateKey), nil
-	case *AccountAllowanceDeleteTransaction:
-		return i.Sign(privateKey), nil
-	case *ContractCreateTransaction:
-		return i.Sign(privateKey), nil
-	case *ContractDeleteTransaction:
-		return i.Sign(privateKey), nil
-	case *ContractExecuteTransaction:
-		return i.Sign(privateKey), nil
-	case *ContractUpdateTransaction:
-		return i.Sign(privateKey), nil
-	case *FileAppendTransaction:
-		return i.Sign(privateKey), nil
-	case *FileCreateTransaction:
-		return i.Sign(privateKey), nil
-	case *FileDeleteTransaction:
-		return i.Sign(privateKey), nil
-	case *FileUpdateTransaction:
-		return i.Sign(privateKey), nil
-	case *LiveHashAddTransaction:
-		return i.Sign(privateKey), nil
-	case *LiveHashDeleteTransaction:
-		return i.Sign(privateKey), nil
-	case *ScheduleCreateTransaction:
-		return i.Sign(privateKey), nil
-	case *ScheduleDeleteTransaction:
-		return i.Sign(privateKey), nil
-	case *ScheduleSignTransaction:
-		return i.Sign(privateKey), nil
-	case *SystemDeleteTransaction:
-		return i.Sign(privateKey), nil
-	case *SystemUndeleteTransaction:
-		return i.Sign(privateKey), nil
-	case *TokenAssociateTransaction:
-		return i.Sign(privateKey), nil
-	case *TokenBurnTransaction:
-		return i.Sign(privateKey), nil
-	case *TokenCreateTransaction:
-		return i.Sign(privateKey), nil
-	case *TokenDeleteTransaction:
-		return i.Sign(privateKey), nil
-	case *TokenDissociateTransaction:
-		return i.Sign(privateKey), nil
-	case *TokenFeeScheduleUpdateTransaction:
-		return i.Sign(privateKey), nil
-	case *TokenFreezeTransaction:
-		return i.Sign(privateKey), nil
-	case *TokenGrantKycTransaction:
-		return i.Sign(privateKey), nil
-	case *TokenMintTransaction:
-		return i.Sign(privateKey), nil
-	case *TokenRevokeKycTransaction:
-		return i.Sign(privateKey), nil
-	case *TokenUnfreezeTransaction:
-		return i.Sign(privateKey), nil
-	case *TokenUpdateTransaction:
-		return i.Sign(privateKey), nil
-	case *TokenWipeTransaction:
-		return i.Sign(privateKey), nil
-	case *TopicCreateTransaction:
-		return i.Sign(privateKey), nil
-	case *TopicDeleteTransaction:
-		return i.Sign(privateKey), nil
-	case *TopicMessageSubmitTransaction:
-		return i.Sign(privateKey), nil
-	case *TopicUpdateTransaction:
-		return i.Sign(privateKey), nil
-	case *TransferTransaction:
-		return i.Sign(privateKey), nil
-	default:
-		return transaction, errors.New("(BUG) non-exhaustive switch statement")
-	}
-}
-
-func TransactionSignWth(transaction interface{}, publicKKey PublicKey, signer TransactionSigner) (interface{}, error) { // nolint
-	switch i := transaction.(type) {
-	case AccountCreateTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case AccountDeleteTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case AccountUpdateTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case AccountAllowanceApproveTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case AccountAllowanceDeleteTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case ContractCreateTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case ContractDeleteTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case ContractExecuteTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case ContractUpdateTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case FileAppendTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case FileCreateTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case FileDeleteTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case FileUpdateTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case LiveHashAddTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case LiveHashDeleteTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case ScheduleCreateTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case ScheduleDeleteTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case ScheduleSignTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case SystemDeleteTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case SystemUndeleteTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case TokenAssociateTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case TokenBurnTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case TokenCreateTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case TokenDeleteTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case TokenDissociateTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case TokenFeeScheduleUpdateTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case TokenFreezeTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case TokenGrantKycTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case TokenMintTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case TokenRevokeKycTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case TokenUnfreezeTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case TokenUpdateTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case TokenWipeTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case TopicCreateTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case TopicDeleteTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case TopicMessageSubmitTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case TopicUpdateTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case TransferTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case *AccountCreateTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case *AccountDeleteTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case *AccountUpdateTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case *AccountAllowanceApproveTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case *AccountAllowanceDeleteTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case *ContractCreateTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case *ContractDeleteTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case *ContractExecuteTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case *ContractUpdateTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case *FileAppendTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case *FileCreateTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case *FileDeleteTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case *FileUpdateTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case *LiveHashAddTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case *LiveHashDeleteTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case *ScheduleCreateTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case *ScheduleDeleteTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case *ScheduleSignTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case *SystemDeleteTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case *SystemUndeleteTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case *TokenAssociateTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case *TokenBurnTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case *TokenCreateTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case *TokenDeleteTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case *TokenDissociateTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case *TokenFeeScheduleUpdateTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case *TokenFreezeTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case *TokenGrantKycTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case *TokenMintTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case *TokenRevokeKycTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case *TokenUnfreezeTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case *TokenUpdateTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case *TokenWipeTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case *TopicCreateTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case *TopicDeleteTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case *TopicMessageSubmitTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case *TopicUpdateTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	case *TransferTransaction:
-		return i.SignWith(publicKKey, signer), nil
-	default:
-		return transaction, errors.New("(BUG) non-exhaustive switch statement")
-	}
-}
-
-func TransactionSignWithOperator(transaction interface{}, client *Client) (interface{}, error) { // nolint
-	switch i := transaction.(type) {
-	case AccountCreateTransaction:
-		return i.SignWithOperator(client)
-	case AccountDeleteTransaction:
-		return i.SignWithOperator(client)
-	case AccountUpdateTransaction:
-		return i.SignWithOperator(client)
-	case AccountAllowanceApproveTransaction:
-		return i.SignWithOperator(client)
-	case AccountAllowanceDeleteTransaction:
-		return i.SignWithOperator(client)
-	case ContractCreateTransaction:
-		return i.SignWithOperator(client)
-	case ContractDeleteTransaction:
-		return i.SignWithOperator(client)
-	case ContractExecuteTransaction:
-		return i.SignWithOperator(client)
-	case ContractUpdateTransaction:
-		return i.SignWithOperator(client)
-	case FileAppendTransaction:
-		return i.SignWithOperator(client)
-	case FileCreateTransaction:
-		return i.SignWithOperator(client)
-	case FileDeleteTransaction:
-		return i.SignWithOperator(client)
-	case FileUpdateTransaction:
-		return i.SignWithOperator(client)
-	case LiveHashAddTransaction:
-		return i.SignWithOperator(client)
-	case LiveHashDeleteTransaction:
-		return i.SignWithOperator(client)
-	case ScheduleCreateTransaction:
-		return i.SignWithOperator(client)
-	case ScheduleDeleteTransaction:
-		return i.SignWithOperator(client)
-	case ScheduleSignTransaction:
-		return i.SignWithOperator(client)
-	case SystemDeleteTransaction:
-		return i.SignWithOperator(client)
-	case SystemUndeleteTransaction:
-		return i.SignWithOperator(client)
-	case TokenAssociateTransaction:
-		return i.SignWithOperator(client)
-	case TokenBurnTransaction:
-		return i.SignWithOperator(client)
-	case TokenCreateTransaction:
-		return i.SignWithOperator(client)
-	case TokenDeleteTransaction:
-		return i.SignWithOperator(client)
-	case TokenDissociateTransaction:
-		return i.SignWithOperator(client)
-	case TokenFeeScheduleUpdateTransaction:
-		return i.SignWithOperator(client)
-	case TokenFreezeTransaction:
-		return i.SignWithOperator(client)
-	case TokenGrantKycTransaction:
-		return i.SignWithOperator(client)
-	case TokenMintTransaction:
-		return i.SignWithOperator(client)
-	case TokenRevokeKycTransaction:
-		return i.SignWithOperator(client)
-	case TokenUnfreezeTransaction:
-		return i.SignWithOperator(client)
-	case TokenUpdateTransaction:
-		return i.SignWithOperator(client)
-	case TokenWipeTransaction:
-		return i.SignWithOperator(client)
-	case TopicCreateTransaction:
-		return i.SignWithOperator(client)
-	case TopicDeleteTransaction:
-		return i.SignWithOperator(client)
-	case TopicMessageSubmitTransaction:
-		return i.SignWithOperator(client)
-	case TopicUpdateTransaction:
-		return i.SignWithOperator(client)
-	case TransferTransaction:
-		return i.SignWithOperator(client)
-	case *AccountCreateTransaction:
-		return i.SignWithOperator(client)
-	case *AccountDeleteTransaction:
-		return i.SignWithOperator(client)
-	case *AccountUpdateTransaction:
-		return i.SignWithOperator(client)
-	case *AccountAllowanceApproveTransaction:
-		return i.SignWithOperator(client)
-	case *AccountAllowanceDeleteTransaction:
-		return i.SignWithOperator(client)
-	case *ContractCreateTransaction:
-		return i.SignWithOperator(client)
-	case *ContractDeleteTransaction:
-		return i.SignWithOperator(client)
-	case *ContractExecuteTransaction:
-		return i.SignWithOperator(client)
-	case *ContractUpdateTransaction:
-		return i.SignWithOperator(client)
-	case *FileAppendTransaction:
-		return i.SignWithOperator(client)
-	case *FileCreateTransaction:
-		return i.SignWithOperator(client)
-	case *FileDeleteTransaction:
-		return i.SignWithOperator(client)
-	case *FileUpdateTransaction:
-		return i.SignWithOperator(client)
-	case *LiveHashAddTransaction:
-		return i.SignWithOperator(client)
-	case *LiveHashDeleteTransaction:
-		return i.SignWithOperator(client)
-	case *ScheduleCreateTransaction:
-		return i.SignWithOperator(client)
-	case *ScheduleDeleteTransaction:
-		return i.SignWithOperator(client)
-	case *ScheduleSignTransaction:
-		return i.SignWithOperator(client)
-	case *SystemDeleteTransaction:
-		return i.SignWithOperator(client)
-	case *SystemUndeleteTransaction:
-		return i.SignWithOperator(client)
-	case *TokenAssociateTransaction:
-		return i.SignWithOperator(client)
-	case *TokenBurnTransaction:
-		return i.SignWithOperator(client)
-	case *TokenCreateTransaction:
-		return i.SignWithOperator(client)
-	case *TokenDeleteTransaction:
-		return i.SignWithOperator(client)
-	case *TokenDissociateTransaction:
-		return i.SignWithOperator(client)
-	case *TokenFeeScheduleUpdateTransaction:
-		return i.SignWithOperator(client)
-	case *TokenFreezeTransaction:
-		return i.SignWithOperator(client)
-	case *TokenGrantKycTransaction:
-		return i.SignWithOperator(client)
-	case *TokenMintTransaction:
-		return i.SignWithOperator(client)
-	case *TokenRevokeKycTransaction:
-		return i.SignWithOperator(client)
-	case *TokenUnfreezeTransaction:
-		return i.SignWithOperator(client)
-	case *TokenUpdateTransaction:
-		return i.SignWithOperator(client)
-	case *TokenWipeTransaction:
-		return i.SignWithOperator(client)
-	case *TopicCreateTransaction:
-		return i.SignWithOperator(client)
-	case *TopicDeleteTransaction:
-		return i.SignWithOperator(client)
-	case *TopicMessageSubmitTransaction:
-		return i.SignWithOperator(client)
-	case *TopicUpdateTransaction:
-		return i.SignWithOperator(client)
-	case *TransferTransaction:
-		return i.SignWithOperator(client)
-	default:
-		return transaction, errors.New("(BUG) non-exhaustive switch statement")
-	}
-}
-
-func TransactionAddSignature(transaction interface{}, publicKey PublicKey, signature []byte) (interface{}, error) { // nolint
-	switch i := transaction.(type) {
-	case AccountCreateTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case AccountDeleteTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case AccountUpdateTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case AccountAllowanceApproveTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case AccountAllowanceDeleteTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case ContractCreateTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case ContractDeleteTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case ContractExecuteTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case ContractUpdateTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case FileAppendTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case FileCreateTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case FileDeleteTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case FileUpdateTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case LiveHashAddTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case LiveHashDeleteTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case SystemDeleteTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case SystemUndeleteTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case TokenAssociateTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case TokenBurnTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case TokenCreateTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case TokenDeleteTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case TokenDissociateTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case TokenFeeScheduleUpdateTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case TokenFreezeTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case TokenGrantKycTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case TokenMintTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case TokenRevokeKycTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case TokenUnfreezeTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case TokenUpdateTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case TokenWipeTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case TopicCreateTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case TopicDeleteTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case TopicMessageSubmitTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case TopicUpdateTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case TransferTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case *AccountCreateTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case *AccountDeleteTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case *AccountUpdateTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case *AccountAllowanceApproveTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case *AccountAllowanceDeleteTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case *ContractCreateTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case *ContractDeleteTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case *ContractExecuteTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case *ContractUpdateTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case *FileAppendTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case *FileCreateTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case *FileDeleteTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case *FileUpdateTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case *LiveHashAddTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case *LiveHashDeleteTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case *SystemDeleteTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case *SystemUndeleteTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case *TokenAssociateTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case *TokenBurnTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case *TokenCreateTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case *TokenDeleteTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case *TokenDissociateTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case *TokenFeeScheduleUpdateTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case *TokenFreezeTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case *TokenGrantKycTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case *TokenMintTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case *TokenRevokeKycTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case *TokenUnfreezeTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case *TokenUpdateTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case *TokenWipeTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case *TopicCreateTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case *TopicDeleteTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case *TopicMessageSubmitTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case *TopicUpdateTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	case *TransferTransaction:
-		return i.AddSignature(publicKey, signature), nil
-	default:
-		return transaction, errors.New("(BUG) non-exhaustive switch statement")
-	}
-}
-
-func TransactionGetSignatures(transaction interface{}) (map[AccountID]map[*PublicKey][]byte, error) { // nolint
-	switch i := transaction.(type) {
-	case AccountCreateTransaction:
-		return i.GetSignatures()
-	case AccountDeleteTransaction:
-		return i.GetSignatures()
-	case AccountUpdateTransaction:
-		return i.GetSignatures()
-	case AccountAllowanceApproveTransaction:
-		return i.GetSignatures()
-	case AccountAllowanceDeleteTransaction:
-		return i.GetSignatures()
-	case ContractCreateTransaction:
-		return i.GetSignatures()
-	case ContractDeleteTransaction:
-		return i.GetSignatures()
-	case ContractExecuteTransaction:
-		return i.GetSignatures()
-	case ContractUpdateTransaction:
-		return i.GetSignatures()
-	case FileAppendTransaction:
-		return i.GetSignatures()
-	case FileCreateTransaction:
-		return i.GetSignatures()
-	case FileDeleteTransaction:
-		return i.GetSignatures()
-	case FileUpdateTransaction:
-		return i.GetSignatures()
-	case LiveHashAddTransaction:
-		return i.GetSignatures()
-	case LiveHashDeleteTransaction:
-		return i.GetSignatures()
-	case ScheduleCreateTransaction:
-		return i.GetSignatures()
-	case ScheduleDeleteTransaction:
-		return i.GetSignatures()
-	case ScheduleSignTransaction:
-		return i.GetSignatures()
-	case SystemDeleteTransaction:
-		return i.GetSignatures()
-	case SystemUndeleteTransaction:
-		return i.GetSignatures()
-	case TokenAssociateTransaction:
-		return i.GetSignatures()
-	case TokenBurnTransaction:
-		return i.GetSignatures()
-	case TokenCreateTransaction:
-		return i.GetSignatures()
-	case TokenDeleteTransaction:
-		return i.GetSignatures()
-	case TokenDissociateTransaction:
-		return i.GetSignatures()
-	case TokenFeeScheduleUpdateTransaction:
-		return i.GetSignatures()
-	case TokenFreezeTransaction:
-		return i.GetSignatures()
-	case TokenGrantKycTransaction:
-		return i.GetSignatures()
-	case TokenMintTransaction:
-		return i.GetSignatures()
-	case TokenRevokeKycTransaction:
-		return i.GetSignatures()
-	case TokenUnfreezeTransaction:
-		return i.GetSignatures()
-	case TokenUpdateTransaction:
-		return i.GetSignatures()
-	case TokenWipeTransaction:
-		return i.GetSignatures()
-	case TopicCreateTransaction:
-		return i.GetSignatures()
-	case TopicDeleteTransaction:
-		return i.GetSignatures()
-	case TopicMessageSubmitTransaction:
-		return i.GetSignatures()
-	case TopicUpdateTransaction:
-		return i.GetSignatures()
-	case TransferTransaction:
-		return i.GetSignatures()
-	case *AccountCreateTransaction:
-		return i.GetSignatures()
-	case *AccountDeleteTransaction:
-		return i.GetSignatures()
-	case *AccountUpdateTransaction:
-		return i.GetSignatures()
-	case *AccountAllowanceApproveTransaction:
-		return i.GetSignatures()
-	case *AccountAllowanceDeleteTransaction:
-		return i.GetSignatures()
-	case *ContractCreateTransaction:
-		return i.GetSignatures()
-	case *ContractDeleteTransaction:
-		return i.GetSignatures()
-	case *ContractExecuteTransaction:
-		return i.GetSignatures()
-	case *ContractUpdateTransaction:
-		return i.GetSignatures()
-	case *FileAppendTransaction:
-		return i.GetSignatures()
-	case *FileCreateTransaction:
-		return i.GetSignatures()
-	case *FileDeleteTransaction:
-		return i.GetSignatures()
-	case *FileUpdateTransaction:
-		return i.GetSignatures()
-	case *LiveHashAddTransaction:
-		return i.GetSignatures()
-	case *LiveHashDeleteTransaction:
-		return i.GetSignatures()
-	case *ScheduleCreateTransaction:
-		return i.GetSignatures()
-	case *ScheduleDeleteTransaction:
-		return i.GetSignatures()
-	case *ScheduleSignTransaction:
-		return i.GetSignatures()
-	case *SystemDeleteTransaction:
-		return i.GetSignatures()
-	case *SystemUndeleteTransaction:
-		return i.GetSignatures()
-	case *TokenAssociateTransaction:
-		return i.GetSignatures()
-	case *TokenBurnTransaction:
-		return i.GetSignatures()
-	case *TokenCreateTransaction:
-		return i.GetSignatures()
-	case *TokenDeleteTransaction:
-		return i.GetSignatures()
-	case *TokenDissociateTransaction:
-		return i.GetSignatures()
-	case *TokenFeeScheduleUpdateTransaction:
-		return i.GetSignatures()
-	case *TokenFreezeTransaction:
-		return i.GetSignatures()
-	case *TokenGrantKycTransaction:
-		return i.GetSignatures()
-	case *TokenMintTransaction:
-		return i.GetSignatures()
-	case *TokenRevokeKycTransaction:
-		return i.GetSignatures()
-	case *TokenUnfreezeTransaction:
-		return i.GetSignatures()
-	case *TokenUpdateTransaction:
-		return i.GetSignatures()
-	case *TokenWipeTransaction:
-		return i.GetSignatures()
-	case *TopicCreateTransaction:
-		return i.GetSignatures()
-	case *TopicDeleteTransaction:
-		return i.GetSignatures()
-	case *TopicMessageSubmitTransaction:
-		return i.GetSignatures()
-	case *TopicUpdateTransaction:
-		return i.GetSignatures()
-	case *TransferTransaction:
-		return i.GetSignatures()
-	default:
-		return nil, errors.New("(BUG) non-exhaustive switch statement")
-	}
-}
-
-func TransactionSetTransactionID(transaction interface{}, transactionID TransactionID) (interface{}, error) { // nolint
-	switch i := transaction.(type) {
-	case AccountCreateTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case AccountDeleteTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case AccountUpdateTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case AccountAllowanceApproveTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case AccountAllowanceDeleteTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case ContractCreateTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case ContractDeleteTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case ContractExecuteTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case ContractUpdateTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case FileAppendTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case FileCreateTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case FileDeleteTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case FileUpdateTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case LiveHashAddTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case LiveHashDeleteTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case ScheduleCreateTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case ScheduleDeleteTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case ScheduleSignTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case SystemDeleteTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case SystemUndeleteTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case TokenAssociateTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case TokenBurnTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case TokenCreateTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case TokenDeleteTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case TokenDissociateTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case TokenFeeScheduleUpdateTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case TokenFreezeTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case TokenGrantKycTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case TokenMintTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case TokenRevokeKycTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case TokenUnfreezeTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case TokenUpdateTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case TokenWipeTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case TopicCreateTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case TopicDeleteTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case TopicMessageSubmitTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case TopicUpdateTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case TransferTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case *AccountCreateTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case *AccountDeleteTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case *AccountUpdateTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case *AccountAllowanceApproveTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case *AccountAllowanceDeleteTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case *ContractCreateTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case *ContractDeleteTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case *ContractExecuteTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case *ContractUpdateTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case *FileAppendTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case *FileCreateTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case *FileDeleteTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case *FileUpdateTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case *LiveHashAddTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case *LiveHashDeleteTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case *ScheduleCreateTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case *ScheduleDeleteTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case *ScheduleSignTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case *SystemDeleteTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case *SystemUndeleteTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case *TokenAssociateTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case *TokenBurnTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case *TokenCreateTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case *TokenDeleteTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case *TokenDissociateTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case *TokenFeeScheduleUpdateTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case *TokenFreezeTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case *TokenGrantKycTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case *TokenMintTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case *TokenRevokeKycTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case *TokenUnfreezeTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case *TokenUpdateTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case *TokenWipeTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case *TopicCreateTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case *TopicDeleteTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case *TopicMessageSubmitTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case *TopicUpdateTransaction:
-		return i.SetTransactionID(transactionID), nil
-	case *TransferTransaction:
-		return i.SetTransactionID(transactionID), nil
-	default:
-		return transaction, errors.New("(BUG) non-exhaustive switch statement")
-	}
-}
-
-func TransactionGetTransactionID(transaction interface{}) (TransactionID, error) { // nolint
-	switch i := transaction.(type) {
-	case AccountCreateTransaction:
-		return i.GetTransactionID(), nil
-	case AccountDeleteTransaction:
-		return i.GetTransactionID(), nil
-	case AccountUpdateTransaction:
-		return i.GetTransactionID(), nil
-	case AccountAllowanceApproveTransaction:
-		return i.GetTransactionID(), nil
-	case AccountAllowanceDeleteTransaction:
-		return i.GetTransactionID(), nil
-	case ContractCreateTransaction:
-		return i.GetTransactionID(), nil
-	case ContractDeleteTransaction:
-		return i.GetTransactionID(), nil
-	case ContractExecuteTransaction:
-		return i.GetTransactionID(), nil
-	case ContractUpdateTransaction:
-		return i.GetTransactionID(), nil
-	case FileAppendTransaction:
-		return i.GetTransactionID(), nil
-	case FileCreateTransaction:
-		return i.GetTransactionID(), nil
-	case FileDeleteTransaction:
-		return i.GetTransactionID(), nil
-	case FileUpdateTransaction:
-		return i.GetTransactionID(), nil
-	case LiveHashAddTransaction:
-		return i.GetTransactionID(), nil
-	case LiveHashDeleteTransaction:
-		return i.GetTransactionID(), nil
-	case ScheduleCreateTransaction:
-		return i.GetTransactionID(), nil
-	case ScheduleDeleteTransaction:
-		return i.GetTransactionID(), nil
-	case ScheduleSignTransaction:
-		return i.GetTransactionID(), nil
-	case SystemDeleteTransaction:
-		return i.GetTransactionID(), nil
-	case SystemUndeleteTransaction:
-		return i.GetTransactionID(), nil
-	case TokenAssociateTransaction:
-		return i.GetTransactionID(), nil
-	case TokenBurnTransaction:
-		return i.GetTransactionID(), nil
-	case TokenCreateTransaction:
-		return i.GetTransactionID(), nil
-	case TokenDeleteTransaction:
-		return i.GetTransactionID(), nil
-	case TokenDissociateTransaction:
-		return i.GetTransactionID(), nil
-	case TokenFeeScheduleUpdateTransaction:
-		return i.GetTransactionID(), nil
-	case TokenFreezeTransaction:
-		return i.GetTransactionID(), nil
-	case TokenGrantKycTransaction:
-		return i.GetTransactionID(), nil
-	case TokenMintTransaction:
-		return i.GetTransactionID(), nil
-	case TokenRevokeKycTransaction:
-		return i.GetTransactionID(), nil
-	case TokenUnfreezeTransaction:
-		return i.GetTransactionID(), nil
-	case TokenUpdateTransaction:
-		return i.GetTransactionID(), nil
-	case TokenWipeTransaction:
-		return i.GetTransactionID(), nil
-	case TopicCreateTransaction:
-		return i.GetTransactionID(), nil
-	case TopicDeleteTransaction:
-		return i.GetTransactionID(), nil
-	case TopicMessageSubmitTransaction:
-		return i.GetTransactionID(), nil
-	case TopicUpdateTransaction:
-		return i.GetTransactionID(), nil
-	case TransferTransaction:
-		return i.GetTransactionID(), nil
-	case *AccountCreateTransaction:
-		return i.GetTransactionID(), nil
-	case *AccountDeleteTransaction:
-		return i.GetTransactionID(), nil
-	case *AccountUpdateTransaction:
-		return i.GetTransactionID(), nil
-	case *AccountAllowanceApproveTransaction:
-		return i.GetTransactionID(), nil
-	case *AccountAllowanceDeleteTransaction:
-		return i.GetTransactionID(), nil
-	case *ContractCreateTransaction:
-		return i.GetTransactionID(), nil
-	case *ContractDeleteTransaction:
-		return i.GetTransactionID(), nil
-	case *ContractExecuteTransaction:
-		return i.GetTransactionID(), nil
-	case *ContractUpdateTransaction:
-		return i.GetTransactionID(), nil
-	case *FileAppendTransaction:
-		return i.GetTransactionID(), nil
-	case *FileCreateTransaction:
-		return i.GetTransactionID(), nil
-	case *FileDeleteTransaction:
-		return i.GetTransactionID(), nil
-	case *FileUpdateTransaction:
-		return i.GetTransactionID(), nil
-	case *LiveHashAddTransaction:
-		return i.GetTransactionID(), nil
-	case *LiveHashDeleteTransaction:
-		return i.GetTransactionID(), nil
-	case *ScheduleCreateTransaction:
-		return i.GetTransactionID(), nil
-	case *ScheduleDeleteTransaction:
-		return i.GetTransactionID(), nil
-	case *ScheduleSignTransaction:
-		return i.GetTransactionID(), nil
-	case *SystemDeleteTransaction:
-		return i.GetTransactionID(), nil
-	case *SystemUndeleteTransaction:
-		return i.GetTransactionID(), nil
-	case *TokenAssociateTransaction:
-		return i.GetTransactionID(), nil
-	case *TokenBurnTransaction:
-		return i.GetTransactionID(), nil
-	case *TokenCreateTransaction:
-		return i.GetTransactionID(), nil
-	case *TokenDeleteTransaction:
-		return i.GetTransactionID(), nil
-	case *TokenDissociateTransaction:
-		return i.GetTransactionID(), nil
-	case *TokenFeeScheduleUpdateTransaction:
-		return i.GetTransactionID(), nil
-	case *TokenFreezeTransaction:
-		return i.GetTransactionID(), nil
-	case *TokenGrantKycTransaction:
-		return i.GetTransactionID(), nil
-	case *TokenMintTransaction:
-		return i.GetTransactionID(), nil
-	case *TokenRevokeKycTransaction:
-		return i.GetTransactionID(), nil
-	case *TokenUnfreezeTransaction:
-		return i.GetTransactionID(), nil
-	case *TokenUpdateTransaction:
-		return i.GetTransactionID(), nil
-	case *TokenWipeTransaction:
-		return i.GetTransactionID(), nil
-	case *TopicCreateTransaction:
-		return i.GetTransactionID(), nil
-	case *TopicDeleteTransaction:
-		return i.GetTransactionID(), nil
-	case *TopicMessageSubmitTransaction:
-		return i.GetTransactionID(), nil
-	case *TopicUpdateTransaction:
-		return i.GetTransactionID(), nil
-	case *TransferTransaction:
-		return i.GetTransactionID(), nil
-	default:
-		return TransactionID{}, errors.New("(BUG) non-exhaustive switch statement")
-	}
-}
-
-func TransactionSetTransactionMemo(transaction interface{}, transactionMemo string) (interface{}, error) { // nolint
-	switch i := transaction.(type) {
-	case AccountCreateTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case AccountDeleteTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case AccountUpdateTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case AccountAllowanceApproveTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case AccountAllowanceDeleteTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case ContractCreateTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case ContractDeleteTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case ContractExecuteTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case ContractUpdateTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case FileAppendTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case FileCreateTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case FileDeleteTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case FileUpdateTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case LiveHashAddTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case LiveHashDeleteTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case ScheduleCreateTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case ScheduleDeleteTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case ScheduleSignTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case SystemDeleteTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case SystemUndeleteTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case TokenAssociateTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case TokenBurnTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case TokenCreateTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case TokenDeleteTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case TokenDissociateTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case TokenFeeScheduleUpdateTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case TokenFreezeTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case TokenGrantKycTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case TokenMintTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case TokenRevokeKycTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case TokenUnfreezeTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case TokenUpdateTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case TokenWipeTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case TopicCreateTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case TopicDeleteTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case TopicMessageSubmitTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case TopicUpdateTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case TransferTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case *AccountCreateTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case *AccountDeleteTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case *AccountUpdateTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case *AccountAllowanceApproveTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case *AccountAllowanceDeleteTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case *ContractCreateTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case *ContractDeleteTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case *ContractExecuteTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case *ContractUpdateTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case *FileAppendTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case *FileCreateTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case *FileDeleteTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case *FileUpdateTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case *LiveHashAddTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case *LiveHashDeleteTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case *ScheduleCreateTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case *ScheduleDeleteTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case *ScheduleSignTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case *SystemDeleteTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case *SystemUndeleteTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case *TokenAssociateTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case *TokenBurnTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case *TokenCreateTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case *TokenDeleteTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case *TokenDissociateTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case *TokenFeeScheduleUpdateTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case *TokenFreezeTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case *TokenGrantKycTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case *TokenMintTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case *TokenRevokeKycTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case *TokenUnfreezeTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case *TokenUpdateTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case *TokenWipeTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case *TopicCreateTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case *TopicDeleteTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case *TopicMessageSubmitTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case *TopicUpdateTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	case *TransferTransaction:
-		return i.SetTransactionMemo(transactionMemo), nil
-	default:
-		return transaction, errors.New("(BUG) non-exhaustive switch statement")
-	}
-}
-
-func TransactionGetTransactionMemo(transaction interface{}) (string, error) { // nolint
-	switch i := transaction.(type) {
-	case AccountCreateTransaction:
-		return i.GetTransactionMemo(), nil
-	case AccountDeleteTransaction:
-		return i.GetTransactionMemo(), nil
-	case AccountUpdateTransaction:
-		return i.GetTransactionMemo(), nil
-	case AccountAllowanceApproveTransaction:
-		return i.GetTransactionMemo(), nil
-	case AccountAllowanceDeleteTransaction:
-		return i.GetTransactionMemo(), nil
-	case ContractCreateTransaction:
-		return i.GetTransactionMemo(), nil
-	case ContractDeleteTransaction:
-		return i.GetTransactionMemo(), nil
-	case ContractExecuteTransaction:
-		return i.GetTransactionMemo(), nil
-	case ContractUpdateTransaction:
-		return i.GetTransactionMemo(), nil
-	case FileAppendTransaction:
-		return i.GetTransactionMemo(), nil
-	case FileCreateTransaction:
-		return i.GetTransactionMemo(), nil
-	case FileDeleteTransaction:
-		return i.GetTransactionMemo(), nil
-	case FileUpdateTransaction:
-		return i.GetTransactionMemo(), nil
-	case LiveHashAddTransaction:
-		return i.GetTransactionMemo(), nil
-	case LiveHashDeleteTransaction:
-		return i.GetTransactionMemo(), nil
-	case ScheduleCreateTransaction:
-		return i.GetTransactionMemo(), nil
-	case ScheduleDeleteTransaction:
-		return i.GetTransactionMemo(), nil
-	case ScheduleSignTransaction:
-		return i.GetTransactionMemo(), nil
-	case SystemDeleteTransaction:
-		return i.GetTransactionMemo(), nil
-	case SystemUndeleteTransaction:
-		return i.GetTransactionMemo(), nil
-	case TokenAssociateTransaction:
-		return i.GetTransactionMemo(), nil
-	case TokenBurnTransaction:
-		return i.GetTransactionMemo(), nil
-	case TokenCreateTransaction:
-		return i.GetTransactionMemo(), nil
-	case TokenDeleteTransaction:
-		return i.GetTransactionMemo(), nil
-	case TokenDissociateTransaction:
-		return i.GetTransactionMemo(), nil
-	case TokenFeeScheduleUpdateTransaction:
-		return i.GetTransactionMemo(), nil
-	case TokenFreezeTransaction:
-		return i.GetTransactionMemo(), nil
-	case TokenGrantKycTransaction:
-		return i.GetTransactionMemo(), nil
-	case TokenMintTransaction:
-		return i.GetTransactionMemo(), nil
-	case TokenRevokeKycTransaction:
-		return i.GetTransactionMemo(), nil
-	case TokenUnfreezeTransaction:
-		return i.GetTransactionMemo(), nil
-	case TokenUpdateTransaction:
-		return i.GetTransactionMemo(), nil
-	case TokenWipeTransaction:
-		return i.GetTransactionMemo(), nil
-	case TopicCreateTransaction:
-		return i.GetTransactionMemo(), nil
-	case TopicDeleteTransaction:
-		return i.GetTransactionMemo(), nil
-	case TopicMessageSubmitTransaction:
-		return i.GetTransactionMemo(), nil
-	case TopicUpdateTransaction:
-		return i.GetTransactionMemo(), nil
-	case TransferTransaction:
-		return i.GetTransactionMemo(), nil
-	case *AccountCreateTransaction:
-		return i.GetTransactionMemo(), nil
-	case *AccountDeleteTransaction:
-		return i.GetTransactionMemo(), nil
-	case *AccountUpdateTransaction:
-		return i.GetTransactionMemo(), nil
-	case *AccountAllowanceApproveTransaction:
-		return i.GetTransactionMemo(), nil
-	case *AccountAllowanceDeleteTransaction:
-		return i.GetTransactionMemo(), nil
-	case *ContractCreateTransaction:
-		return i.GetTransactionMemo(), nil
-	case *ContractDeleteTransaction:
-		return i.GetTransactionMemo(), nil
-	case *ContractExecuteTransaction:
-		return i.GetTransactionMemo(), nil
-	case *ContractUpdateTransaction:
-		return i.GetTransactionMemo(), nil
-	case *FileAppendTransaction:
-		return i.GetTransactionMemo(), nil
-	case *FileCreateTransaction:
-		return i.GetTransactionMemo(), nil
-	case *FileDeleteTransaction:
-		return i.GetTransactionMemo(), nil
-	case *FileUpdateTransaction:
-		return i.GetTransactionMemo(), nil
-	case *LiveHashAddTransaction:
-		return i.GetTransactionMemo(), nil
-	case *LiveHashDeleteTransaction:
-		return i.GetTransactionMemo(), nil
-	case *ScheduleCreateTransaction:
-		return i.GetTransactionMemo(), nil
-	case *ScheduleDeleteTransaction:
-		return i.GetTransactionMemo(), nil
-	case *ScheduleSignTransaction:
-		return i.GetTransactionMemo(), nil
-	case *SystemDeleteTransaction:
-		return i.GetTransactionMemo(), nil
-	case *SystemUndeleteTransaction:
-		return i.GetTransactionMemo(), nil
-	case *TokenAssociateTransaction:
-		return i.GetTransactionMemo(), nil
-	case *TokenBurnTransaction:
-		return i.GetTransactionMemo(), nil
-	case *TokenCreateTransaction:
-		return i.GetTransactionMemo(), nil
-	case *TokenDeleteTransaction:
-		return i.GetTransactionMemo(), nil
-	case *TokenDissociateTransaction:
-		return i.GetTransactionMemo(), nil
-	case *TokenFeeScheduleUpdateTransaction:
-		return i.GetTransactionMemo(), nil
-	case *TokenFreezeTransaction:
-		return i.GetTransactionMemo(), nil
-	case *TokenGrantKycTransaction:
-		return i.GetTransactionMemo(), nil
-	case *TokenMintTransaction:
-		return i.GetTransactionMemo(), nil
-	case *TokenRevokeKycTransaction:
-		return i.GetTransactionMemo(), nil
-	case *TokenUnfreezeTransaction:
-		return i.GetTransactionMemo(), nil
-	case *TokenUpdateTransaction:
-		return i.GetTransactionMemo(), nil
-	case *TokenWipeTransaction:
-		return i.GetTransactionMemo(), nil
-	case *TopicCreateTransaction:
-		return i.GetTransactionMemo(), nil
-	case *TopicDeleteTransaction:
-		return i.GetTransactionMemo(), nil
-	case *TopicMessageSubmitTransaction:
-		return i.GetTransactionMemo(), nil
-	case *TopicUpdateTransaction:
-		return i.GetTransactionMemo(), nil
-	case *TransferTransaction:
-		return i.GetTransactionMemo(), nil
-	default:
-		return "", errors.New("(BUG) non-exhaustive switch statement")
-	}
-}
-
-func TransactionSetMaxTransactionFee(transaction interface{}, maxTransactionFee Hbar) (interface{}, error) { // nolint
-	switch i := transaction.(type) {
-	case AccountCreateTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case AccountDeleteTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case AccountUpdateTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case AccountAllowanceApproveTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case AccountAllowanceDeleteTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case ContractCreateTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case ContractDeleteTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case ContractExecuteTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case ContractUpdateTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case FileAppendTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case FileCreateTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case FileDeleteTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case FileUpdateTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case LiveHashAddTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case LiveHashDeleteTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case ScheduleCreateTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case ScheduleDeleteTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case ScheduleSignTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case SystemDeleteTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case SystemUndeleteTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case TokenAssociateTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case TokenBurnTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case TokenCreateTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case TokenDeleteTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case TokenDissociateTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case TokenFeeScheduleUpdateTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case TokenFreezeTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case TokenGrantKycTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case TokenMintTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case TokenRevokeKycTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case TokenUnfreezeTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case TokenUpdateTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case TokenWipeTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case TopicCreateTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case TopicDeleteTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case TopicMessageSubmitTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case TopicUpdateTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case TransferTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case *AccountCreateTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case *AccountDeleteTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case *AccountUpdateTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case *AccountAllowanceApproveTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case *AccountAllowanceDeleteTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case *ContractCreateTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case *ContractDeleteTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case *ContractExecuteTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case *ContractUpdateTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case *FileAppendTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case *FileCreateTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case *FileDeleteTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case *FileUpdateTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case *LiveHashAddTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case *LiveHashDeleteTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case *ScheduleCreateTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case *ScheduleDeleteTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case *ScheduleSignTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case *SystemDeleteTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case *SystemUndeleteTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case *TokenAssociateTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case *TokenBurnTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case *TokenCreateTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case *TokenDeleteTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case *TokenDissociateTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case *TokenFeeScheduleUpdateTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case *TokenFreezeTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case *TokenGrantKycTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case *TokenMintTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case *TokenRevokeKycTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case *TokenUnfreezeTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case *TokenUpdateTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case *TokenWipeTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case *TopicCreateTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case *TopicDeleteTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case *TopicMessageSubmitTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case *TopicUpdateTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	case *TransferTransaction:
-		return i.SetMaxTransactionFee(maxTransactionFee), nil
-	default:
-		return transaction, errors.New("(BUG) non-exhaustive switch statement")
-	}
-}
-
-func TransactionGetMaxTransactionFee(transaction interface{}) (Hbar, error) { // nolint
-	switch i := transaction.(type) {
-	case AccountCreateTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case AccountDeleteTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case AccountUpdateTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case AccountAllowanceApproveTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case AccountAllowanceDeleteTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case ContractCreateTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case ContractDeleteTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case ContractExecuteTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case ContractUpdateTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case FileAppendTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case FileCreateTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case FileDeleteTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case FileUpdateTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case LiveHashAddTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case LiveHashDeleteTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case ScheduleCreateTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case ScheduleDeleteTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case ScheduleSignTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case SystemDeleteTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case SystemUndeleteTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case TokenAssociateTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case TokenBurnTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case TokenCreateTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case TokenDeleteTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case TokenDissociateTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case TokenFeeScheduleUpdateTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case TokenFreezeTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case TokenGrantKycTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case TokenMintTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case TokenRevokeKycTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case TokenUnfreezeTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case TokenUpdateTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case TokenWipeTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case TopicCreateTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case TopicDeleteTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case TopicMessageSubmitTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case TopicUpdateTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case TransferTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case *AccountCreateTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case *AccountDeleteTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case *AccountUpdateTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case *AccountAllowanceApproveTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case *AccountAllowanceDeleteTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case *ContractCreateTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case *ContractDeleteTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case *ContractExecuteTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case *ContractUpdateTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case *FileAppendTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case *FileCreateTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case *FileDeleteTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case *FileUpdateTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case *LiveHashAddTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case *LiveHashDeleteTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case *ScheduleCreateTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case *ScheduleDeleteTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case *ScheduleSignTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case *SystemDeleteTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case *SystemUndeleteTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case *TokenAssociateTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case *TokenBurnTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case *TokenCreateTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case *TokenDeleteTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case *TokenDissociateTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case *TokenFeeScheduleUpdateTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case *TokenFreezeTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case *TokenGrantKycTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case *TokenMintTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case *TokenRevokeKycTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case *TokenUnfreezeTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case *TokenUpdateTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case *TokenWipeTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case *TopicCreateTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case *TopicDeleteTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case *TopicMessageSubmitTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case *TopicUpdateTransaction:
-		return i.GetMaxTransactionFee(), nil
-	case *TransferTransaction:
-		return i.GetMaxTransactionFee(), nil
-	default:
-		return Hbar{}, errors.New("(BUG) non-exhaustive switch statement")
-	}
-}
-
-func TransactionSetTransactionValidDuration(transaction interface{}, transactionValidDuration time.Duration) (interface{}, error) { // nolint
-	switch i := transaction.(type) {
-	case AccountCreateTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case AccountDeleteTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case AccountUpdateTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case AccountAllowanceApproveTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case AccountAllowanceDeleteTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case ContractCreateTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case ContractDeleteTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case ContractExecuteTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case ContractUpdateTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case FileAppendTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case FileCreateTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case FileDeleteTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case FileUpdateTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case LiveHashAddTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case LiveHashDeleteTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case ScheduleCreateTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case ScheduleDeleteTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case ScheduleSignTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case SystemDeleteTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case SystemUndeleteTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case TokenAssociateTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case TokenBurnTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case TokenCreateTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case TokenDeleteTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case TokenDissociateTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case TokenFeeScheduleUpdateTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case TokenFreezeTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case TokenGrantKycTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case TokenMintTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case TokenRevokeKycTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case TokenUnfreezeTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case TokenUpdateTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case TokenWipeTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case TopicCreateTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case TopicDeleteTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case TopicMessageSubmitTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case TopicUpdateTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case TransferTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case *AccountCreateTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case *AccountDeleteTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case *AccountUpdateTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case *AccountAllowanceApproveTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case *AccountAllowanceDeleteTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case *ContractCreateTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case *ContractDeleteTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case *ContractExecuteTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case *ContractUpdateTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case *FileAppendTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case *FileCreateTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case *FileDeleteTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case *FileUpdateTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case *LiveHashAddTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case *LiveHashDeleteTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case *ScheduleCreateTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case *ScheduleDeleteTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case *ScheduleSignTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case *SystemDeleteTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case *SystemUndeleteTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case *TokenAssociateTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case *TokenBurnTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case *TokenCreateTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case *TokenDeleteTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case *TokenDissociateTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case *TokenFeeScheduleUpdateTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case *TokenFreezeTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case *TokenGrantKycTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case *TokenMintTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case *TokenRevokeKycTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case *TokenUnfreezeTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case *TokenUpdateTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case *TokenWipeTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case *TopicCreateTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case *TopicDeleteTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case *TopicMessageSubmitTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case *TopicUpdateTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	case *TransferTransaction:
-		return i.SetTransactionValidDuration(transactionValidDuration), nil
-	default:
-		return transaction, errors.New("(BUG) non-exhaustive switch statement")
-	}
-}
-
-func TransactionGetTransactionValidDuration(transaction interface{}) (time.Duration, error) { // nolint
-	switch i := transaction.(type) {
-	case AccountCreateTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case AccountDeleteTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case AccountUpdateTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case AccountAllowanceApproveTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case AccountAllowanceDeleteTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case ContractCreateTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case ContractDeleteTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case ContractExecuteTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case ContractUpdateTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case FileAppendTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case FileCreateTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case FileDeleteTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case FileUpdateTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case LiveHashAddTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case LiveHashDeleteTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case ScheduleCreateTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case ScheduleDeleteTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case ScheduleSignTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case SystemDeleteTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case SystemUndeleteTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case TokenAssociateTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case TokenBurnTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case TokenCreateTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case TokenDeleteTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case TokenDissociateTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case TokenFeeScheduleUpdateTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case TokenFreezeTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case TokenGrantKycTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case TokenMintTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case TokenRevokeKycTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case TokenUnfreezeTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case TokenUpdateTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case TokenWipeTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case TopicCreateTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case TopicDeleteTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case TopicMessageSubmitTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case TopicUpdateTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case TransferTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case *AccountCreateTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case *AccountDeleteTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case *AccountUpdateTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case *AccountAllowanceApproveTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case *AccountAllowanceDeleteTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case *ContractCreateTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case *ContractDeleteTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case *ContractExecuteTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case *ContractUpdateTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case *FileAppendTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case *FileCreateTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case *FileDeleteTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case *FileUpdateTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case *LiveHashAddTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case *LiveHashDeleteTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case *ScheduleCreateTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case *ScheduleDeleteTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case *ScheduleSignTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case *SystemDeleteTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case *SystemUndeleteTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case *TokenAssociateTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case *TokenBurnTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case *TokenCreateTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case *TokenDeleteTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case *TokenDissociateTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case *TokenFeeScheduleUpdateTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case *TokenFreezeTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case *TokenGrantKycTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case *TokenMintTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case *TokenRevokeKycTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case *TokenUnfreezeTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case *TokenUpdateTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case *TokenWipeTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case *TopicCreateTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case *TopicDeleteTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case *TopicMessageSubmitTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case *TopicUpdateTransaction:
-		return i.GetTransactionValidDuration(), nil
-	case *TransferTransaction:
-		return i.GetTransactionValidDuration(), nil
-	default:
-		return time.Duration(0), errors.New("(BUG) non-exhaustive switch statement")
-	}
-}
-
-func TransactionSetNodeAccountIDs(transaction interface{}, nodeAccountIDs []AccountID) (interface{}, error) { // nolint
-	switch i := transaction.(type) {
-	case AccountCreateTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case AccountDeleteTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case AccountUpdateTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case AccountAllowanceApproveTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case AccountAllowanceDeleteTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case ContractCreateTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case ContractDeleteTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case ContractExecuteTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case ContractUpdateTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case FileAppendTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case FileCreateTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case FileDeleteTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case FileUpdateTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case LiveHashAddTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case LiveHashDeleteTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case ScheduleCreateTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case ScheduleDeleteTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case ScheduleSignTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case SystemDeleteTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case SystemUndeleteTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case TokenAssociateTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case TokenBurnTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case TokenCreateTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case TokenDeleteTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case TokenDissociateTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case TokenFeeScheduleUpdateTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case TokenFreezeTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case TokenGrantKycTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case TokenMintTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case TokenRevokeKycTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case TokenUnfreezeTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case TokenUpdateTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case TokenWipeTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case TopicCreateTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case TopicDeleteTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case TopicMessageSubmitTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case TopicUpdateTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case TransferTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case *AccountCreateTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case *AccountDeleteTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case *AccountUpdateTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case *AccountAllowanceApproveTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case *AccountAllowanceDeleteTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case *ContractCreateTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case *ContractDeleteTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case *ContractExecuteTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case *ContractUpdateTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case *FileAppendTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case *FileCreateTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case *FileDeleteTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case *FileUpdateTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case *LiveHashAddTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case *LiveHashDeleteTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case *ScheduleCreateTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case *ScheduleDeleteTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case *ScheduleSignTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case *SystemDeleteTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case *SystemUndeleteTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case *TokenAssociateTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case *TokenBurnTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case *TokenCreateTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case *TokenDeleteTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case *TokenDissociateTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case *TokenFeeScheduleUpdateTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case *TokenFreezeTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case *TokenGrantKycTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case *TokenMintTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case *TokenRevokeKycTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case *TokenUnfreezeTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case *TokenUpdateTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case *TokenWipeTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case *TopicCreateTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case *TopicDeleteTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case *TopicMessageSubmitTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case *TopicUpdateTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	case *TransferTransaction:
-		return i.SetNodeAccountIDs(nodeAccountIDs), nil
-	default:
-		return transaction, errors.New("(BUG) non-exhaustive switch statement")
-	}
-}
-
-func TransactionGetNodeAccountIDs(transaction interface{}) ([]AccountID, error) { // nolint
-	switch i := transaction.(type) {
-	case AccountCreateTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case AccountDeleteTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case AccountUpdateTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case AccountAllowanceApproveTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case AccountAllowanceDeleteTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case ContractCreateTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case ContractDeleteTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case ContractExecuteTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case ContractUpdateTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case FileAppendTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case FileCreateTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case FileDeleteTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case FileUpdateTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case LiveHashAddTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case LiveHashDeleteTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case ScheduleCreateTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case ScheduleDeleteTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case ScheduleSignTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case SystemDeleteTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case SystemUndeleteTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case TokenAssociateTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case TokenBurnTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case TokenCreateTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case TokenDeleteTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case TokenDissociateTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case TokenFeeScheduleUpdateTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case TokenFreezeTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case TokenGrantKycTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case TokenMintTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case TokenRevokeKycTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case TokenUnfreezeTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case TokenUpdateTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case TokenWipeTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case TopicCreateTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case TopicDeleteTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case TopicMessageSubmitTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case TopicUpdateTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case TransferTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case *AccountCreateTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case *AccountDeleteTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case *AccountUpdateTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case *AccountAllowanceApproveTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case *AccountAllowanceDeleteTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case *ContractCreateTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case *ContractDeleteTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case *ContractExecuteTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case *ContractUpdateTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case *FileAppendTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case *FileCreateTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case *FileDeleteTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case *FileUpdateTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case *LiveHashAddTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case *LiveHashDeleteTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case *ScheduleCreateTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case *ScheduleDeleteTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case *ScheduleSignTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case *SystemDeleteTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case *SystemUndeleteTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case *TokenAssociateTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case *TokenBurnTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case *TokenCreateTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case *TokenDeleteTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case *TokenDissociateTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case *TokenFeeScheduleUpdateTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case *TokenFreezeTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case *TokenGrantKycTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case *TokenMintTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case *TokenRevokeKycTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case *TokenUnfreezeTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case *TokenUpdateTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case *TokenWipeTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case *TopicCreateTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case *TopicDeleteTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case *TopicMessageSubmitTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case *TopicUpdateTransaction:
-		return i.GetNodeAccountIDs(), nil
-	case *TransferTransaction:
-		return i.GetNodeAccountIDs(), nil
-	default:
-		return []AccountID{}, errors.New("(BUG) non-exhaustive switch statement")
-	}
-}
-
-func TransactionGetTransactionHash(transaction interface{}) ([]byte, error) { // nolint
-	switch i := transaction.(type) {
-	case AccountCreateTransaction:
-		return i.GetTransactionHash()
-	case AccountDeleteTransaction:
-		return i.GetTransactionHash()
-	case AccountUpdateTransaction:
-		return i.GetTransactionHash()
-	case AccountAllowanceApproveTransaction:
-		return i.GetTransactionHash()
-	case AccountAllowanceDeleteTransaction:
-		return i.GetTransactionHash()
-	case ContractCreateTransaction:
-		return i.GetTransactionHash()
-	case ContractDeleteTransaction:
-		return i.GetTransactionHash()
-	case ContractExecuteTransaction:
-		return i.GetTransactionHash()
-	case ContractUpdateTransaction:
-		return i.GetTransactionHash()
-	case FileAppendTransaction:
-		return i.GetTransactionHash()
-	case FileCreateTransaction:
-		return i.GetTransactionHash()
-	case FileDeleteTransaction:
-		return i.GetTransactionHash()
-	case FileUpdateTransaction:
-		return i.GetTransactionHash()
-	case LiveHashAddTransaction:
-		return i.GetTransactionHash()
-	case LiveHashDeleteTransaction:
-		return i.GetTransactionHash()
-	case ScheduleCreateTransaction:
-		return i.GetTransactionHash()
-	case ScheduleDeleteTransaction:
-		return i.GetTransactionHash()
-	case ScheduleSignTransaction:
-		return i.GetTransactionHash()
-	case SystemDeleteTransaction:
-		return i.GetTransactionHash()
-	case SystemUndeleteTransaction:
-		return i.GetTransactionHash()
-	case TokenAssociateTransaction:
-		return i.GetTransactionHash()
-	case TokenBurnTransaction:
-		return i.GetTransactionHash()
-	case TokenCreateTransaction:
-		return i.GetTransactionHash()
-	case TokenDeleteTransaction:
-		return i.GetTransactionHash()
-	case TokenDissociateTransaction:
-		return i.GetTransactionHash()
-	case TokenFeeScheduleUpdateTransaction:
-		return i.GetTransactionHash()
-	case TokenFreezeTransaction:
-		return i.GetTransactionHash()
-	case TokenGrantKycTransaction:
-		return i.GetTransactionHash()
-	case TokenMintTransaction:
-		return i.GetTransactionHash()
-	case TokenRevokeKycTransaction:
-		return i.GetTransactionHash()
-	case TokenUnfreezeTransaction:
-		return i.GetTransactionHash()
-	case TokenUpdateTransaction:
-		return i.GetTransactionHash()
-	case TokenWipeTransaction:
-		return i.GetTransactionHash()
-	case TopicCreateTransaction:
-		return i.GetTransactionHash()
-	case TopicDeleteTransaction:
-		return i.GetTransactionHash()
-	case TopicMessageSubmitTransaction:
-		return i.GetTransactionHash()
-	case TopicUpdateTransaction:
-		return i.GetTransactionHash()
-	case TransferTransaction:
-		return i.GetTransactionHash()
-	case *AccountCreateTransaction:
-		return i.GetTransactionHash()
-	case *AccountDeleteTransaction:
-		return i.GetTransactionHash()
-	case *AccountUpdateTransaction:
-		return i.GetTransactionHash()
-	case *AccountAllowanceApproveTransaction:
-		return i.GetTransactionHash()
-	case *AccountAllowanceDeleteTransaction:
-		return i.GetTransactionHash()
-	case *ContractCreateTransaction:
-		return i.GetTransactionHash()
-	case *ContractDeleteTransaction:
-		return i.GetTransactionHash()
-	case *ContractExecuteTransaction:
-		return i.GetTransactionHash()
-	case *ContractUpdateTransaction:
-		return i.GetTransactionHash()
-	case *FileAppendTransaction:
-		return i.GetTransactionHash()
-	case *FileCreateTransaction:
-		return i.GetTransactionHash()
-	case *FileDeleteTransaction:
-		return i.GetTransactionHash()
-	case *FileUpdateTransaction:
-		return i.GetTransactionHash()
-	case *LiveHashAddTransaction:
-		return i.GetTransactionHash()
-	case *LiveHashDeleteTransaction:
-		return i.GetTransactionHash()
-	case *ScheduleCreateTransaction:
-		return i.GetTransactionHash()
-	case *ScheduleDeleteTransaction:
-		return i.GetTransactionHash()
-	case *ScheduleSignTransaction:
-		return i.GetTransactionHash()
-	case *SystemDeleteTransaction:
-		return i.GetTransactionHash()
-	case *SystemUndeleteTransaction:
-		return i.GetTransactionHash()
-	case *TokenAssociateTransaction:
-		return i.GetTransactionHash()
-	case *TokenBurnTransaction:
-		return i.GetTransactionHash()
-	case *TokenCreateTransaction:
-		return i.GetTransactionHash()
-	case *TokenDeleteTransaction:
-		return i.GetTransactionHash()
-	case *TokenDissociateTransaction:
-		return i.GetTransactionHash()
-	case *TokenFeeScheduleUpdateTransaction:
-		return i.GetTransactionHash()
-	case *TokenFreezeTransaction:
-		return i.GetTransactionHash()
-	case *TokenGrantKycTransaction:
-		return i.GetTransactionHash()
-	case *TokenMintTransaction:
-		return i.GetTransactionHash()
-	case *TokenRevokeKycTransaction:
-		return i.GetTransactionHash()
-	case *TokenUnfreezeTransaction:
-		return i.GetTransactionHash()
-	case *TokenUpdateTransaction:
-		return i.GetTransactionHash()
-	case *TokenWipeTransaction:
-		return i.GetTransactionHash()
-	case *TopicCreateTransaction:
-		return i.GetTransactionHash()
-	case *TopicDeleteTransaction:
-		return i.GetTransactionHash()
-	case *TopicMessageSubmitTransaction:
-		return i.GetTransactionHash()
-	case *TopicUpdateTransaction:
-		return i.GetTransactionHash()
-	case *TransferTransaction:
-		return i.GetTransactionHash()
-	default:
-		return nil, errors.New("(BUG) non-exhaustive switch statement")
-	}
-}
-
-func TransactionGetTransactionHashPerNode(transaction interface{}) (map[AccountID][]byte, error) { // nolint
-	switch i := transaction.(type) {
-	case AccountCreateTransaction:
-		return i.GetTransactionHashPerNode()
-	case AccountDeleteTransaction:
-		return i.GetTransactionHashPerNode()
-	case AccountUpdateTransaction:
-		return i.GetTransactionHashPerNode()
-	case AccountAllowanceApproveTransaction:
-		return i.GetTransactionHashPerNode()
-	case AccountAllowanceDeleteTransaction:
-		return i.GetTransactionHashPerNode()
-	case ContractCreateTransaction:
-		return i.GetTransactionHashPerNode()
-	case ContractDeleteTransaction:
-		return i.GetTransactionHashPerNode()
-	case ContractExecuteTransaction:
-		return i.GetTransactionHashPerNode()
-	case ContractUpdateTransaction:
-		return i.GetTransactionHashPerNode()
-	case FileAppendTransaction:
-		return i.GetTransactionHashPerNode()
-	case FileCreateTransaction:
-		return i.GetTransactionHashPerNode()
-	case FileDeleteTransaction:
-		return i.GetTransactionHashPerNode()
-	case FileUpdateTransaction:
-		return i.GetTransactionHashPerNode()
-	case LiveHashAddTransaction:
-		return i.GetTransactionHashPerNode()
-	case LiveHashDeleteTransaction:
-		return i.GetTransactionHashPerNode()
-	case ScheduleCreateTransaction:
-		return i.GetTransactionHashPerNode()
-	case ScheduleDeleteTransaction:
-		return i.GetTransactionHashPerNode()
-	case ScheduleSignTransaction:
-		return i.GetTransactionHashPerNode()
-	case SystemDeleteTransaction:
-		return i.GetTransactionHashPerNode()
-	case SystemUndeleteTransaction:
-		return i.GetTransactionHashPerNode()
-	case TokenAssociateTransaction:
-		return i.GetTransactionHashPerNode()
-	case TokenBurnTransaction:
-		return i.GetTransactionHashPerNode()
-	case TokenCreateTransaction:
-		return i.GetTransactionHashPerNode()
-	case TokenDeleteTransaction:
-		return i.GetTransactionHashPerNode()
-	case TokenDissociateTransaction:
-		return i.GetTransactionHashPerNode()
-	case TokenFeeScheduleUpdateTransaction:
-		return i.GetTransactionHashPerNode()
-	case TokenFreezeTransaction:
-		return i.GetTransactionHashPerNode()
-	case TokenGrantKycTransaction:
-		return i.GetTransactionHashPerNode()
-	case TokenMintTransaction:
-		return i.GetTransactionHashPerNode()
-	case TokenRevokeKycTransaction:
-		return i.GetTransactionHashPerNode()
-	case TokenUnfreezeTransaction:
-		return i.GetTransactionHashPerNode()
-	case TokenUpdateTransaction:
-		return i.GetTransactionHashPerNode()
-	case TokenWipeTransaction:
-		return i.GetTransactionHashPerNode()
-	case TopicCreateTransaction:
-		return i.GetTransactionHashPerNode()
-	case TopicDeleteTransaction:
-		return i.GetTransactionHashPerNode()
-	case TopicMessageSubmitTransaction:
-		return i.GetTransactionHashPerNode()
-	case TopicUpdateTransaction:
-		return i.GetTransactionHashPerNode()
-	case TransferTransaction:
-		return i.GetTransactionHashPerNode()
-	case *AccountCreateTransaction:
-		return i.GetTransactionHashPerNode()
-	case *AccountDeleteTransaction:
-		return i.GetTransactionHashPerNode()
-	case *AccountUpdateTransaction:
-		return i.GetTransactionHashPerNode()
-	case *AccountAllowanceApproveTransaction:
-		return i.GetTransactionHashPerNode()
-	case *AccountAllowanceDeleteTransaction:
-		return i.GetTransactionHashPerNode()
-	case *ContractCreateTransaction:
-		return i.GetTransactionHashPerNode()
-	case *ContractDeleteTransaction:
-		return i.GetTransactionHashPerNode()
-	case *ContractExecuteTransaction:
-		return i.GetTransactionHashPerNode()
-	case *ContractUpdateTransaction:
-		return i.GetTransactionHashPerNode()
-	case *FileAppendTransaction:
-		return i.GetTransactionHashPerNode()
-	case *FileCreateTransaction:
-		return i.GetTransactionHashPerNode()
-	case *FileDeleteTransaction:
-		return i.GetTransactionHashPerNode()
-	case *FileUpdateTransaction:
-		return i.GetTransactionHashPerNode()
-	case *LiveHashAddTransaction:
-		return i.GetTransactionHashPerNode()
-	case *LiveHashDeleteTransaction:
-		return i.GetTransactionHashPerNode()
-	case *ScheduleCreateTransaction:
-		return i.GetTransactionHashPerNode()
-	case *ScheduleDeleteTransaction:
-		return i.GetTransactionHashPerNode()
-	case *ScheduleSignTransaction:
-		return i.GetTransactionHashPerNode()
-	case *SystemDeleteTransaction:
-		return i.GetTransactionHashPerNode()
-	case *SystemUndeleteTransaction:
-		return i.GetTransactionHashPerNode()
-	case *TokenAssociateTransaction:
-		return i.GetTransactionHashPerNode()
-	case *TokenBurnTransaction:
-		return i.GetTransactionHashPerNode()
-	case *TokenCreateTransaction:
-		return i.GetTransactionHashPerNode()
-	case *TokenDeleteTransaction:
-		return i.GetTransactionHashPerNode()
-	case *TokenDissociateTransaction:
-		return i.GetTransactionHashPerNode()
-	case *TokenFeeScheduleUpdateTransaction:
-		return i.GetTransactionHashPerNode()
-	case *TokenFreezeTransaction:
-		return i.GetTransactionHashPerNode()
-	case *TokenGrantKycTransaction:
-		return i.GetTransactionHashPerNode()
-	case *TokenMintTransaction:
-		return i.GetTransactionHashPerNode()
-	case *TokenRevokeKycTransaction:
-		return i.GetTransactionHashPerNode()
-	case *TokenUnfreezeTransaction:
-		return i.GetTransactionHashPerNode()
-	case *TokenUpdateTransaction:
-		return i.GetTransactionHashPerNode()
-	case *TokenWipeTransaction:
-		return i.GetTransactionHashPerNode()
-	case *TopicCreateTransaction:
-		return i.GetTransactionHashPerNode()
-	case *TopicDeleteTransaction:
-		return i.GetTransactionHashPerNode()
-	case *TopicMessageSubmitTransaction:
-		return i.GetTransactionHashPerNode()
-	case *TopicUpdateTransaction:
-		return i.GetTransactionHashPerNode()
-	case *TransferTransaction:
-		return i.GetTransactionHashPerNode()
-	default:
-		return nil, errors.New("(BUG) non-exhaustive switch statement")
-	}
-}
-
-func TransactionSetMinBackoff(transaction interface{}, minBackoff time.Duration) (interface{}, error) { // nolint
-	switch i := transaction.(type) {
-	case AccountCreateTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case AccountDeleteTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case AccountUpdateTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case AccountAllowanceApproveTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case AccountAllowanceDeleteTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case ContractCreateTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case ContractDeleteTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case ContractExecuteTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case ContractUpdateTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case FileAppendTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case FileCreateTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case FileDeleteTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case FileUpdateTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case LiveHashAddTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case LiveHashDeleteTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case ScheduleCreateTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case ScheduleDeleteTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case ScheduleSignTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case SystemDeleteTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case SystemUndeleteTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case TokenAssociateTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case TokenBurnTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case TokenCreateTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case TokenDeleteTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case TokenDissociateTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case TokenFeeScheduleUpdateTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case TokenFreezeTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case TokenGrantKycTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case TokenMintTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case TokenRevokeKycTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case TokenUnfreezeTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case TokenUpdateTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case TokenWipeTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case TopicCreateTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case TopicDeleteTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case TopicMessageSubmitTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case TopicUpdateTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case TransferTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case *AccountCreateTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case *AccountDeleteTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case *AccountUpdateTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case *AccountAllowanceApproveTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case *AccountAllowanceDeleteTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case *ContractCreateTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case *ContractDeleteTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case *ContractExecuteTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case *ContractUpdateTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case *FileAppendTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case *FileCreateTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case *FileDeleteTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case *FileUpdateTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case *LiveHashAddTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case *LiveHashDeleteTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case *ScheduleCreateTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case *ScheduleDeleteTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case *ScheduleSignTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case *SystemDeleteTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case *SystemUndeleteTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case *TokenAssociateTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case *TokenBurnTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case *TokenCreateTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case *TokenDeleteTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case *TokenDissociateTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case *TokenFeeScheduleUpdateTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case *TokenFreezeTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case *TokenGrantKycTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case *TokenMintTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case *TokenRevokeKycTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case *TokenUnfreezeTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case *TokenUpdateTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case *TokenWipeTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case *TopicCreateTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case *TopicDeleteTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case *TopicMessageSubmitTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case *TopicUpdateTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	case *TransferTransaction:
-		return i.SetMinBackoff(minBackoff), nil
-	default:
-		return transaction, errors.New("(BUG) non-exhaustive switch statement")
-	}
-}
-
-func TransactionGetMinBackoff(transaction interface{}) (time.Duration, error) { // nolint
-	switch i := transaction.(type) {
-	case AccountCreateTransaction:
-		return i.GetMinBackoff(), nil
-	case AccountDeleteTransaction:
-		return i.GetMinBackoff(), nil
-	case AccountUpdateTransaction:
-		return i.GetMinBackoff(), nil
-	case AccountAllowanceApproveTransaction:
-		return i.GetMinBackoff(), nil
-	case AccountAllowanceDeleteTransaction:
-		return i.GetMinBackoff(), nil
-	case ContractCreateTransaction:
-		return i.GetMinBackoff(), nil
-	case ContractDeleteTransaction:
-		return i.GetMinBackoff(), nil
-	case ContractExecuteTransaction:
-		return i.GetMinBackoff(), nil
-	case ContractUpdateTransaction:
-		return i.GetMinBackoff(), nil
-	case FileAppendTransaction:
-		return i.GetMinBackoff(), nil
-	case FileCreateTransaction:
-		return i.GetMinBackoff(), nil
-	case FileDeleteTransaction:
-		return i.GetMinBackoff(), nil
-	case FileUpdateTransaction:
-		return i.GetMinBackoff(), nil
-	case LiveHashAddTransaction:
-		return i.GetMinBackoff(), nil
-	case LiveHashDeleteTransaction:
-		return i.GetMinBackoff(), nil
-	case ScheduleCreateTransaction:
-		return i.GetMinBackoff(), nil
-	case ScheduleDeleteTransaction:
-		return i.GetMinBackoff(), nil
-	case ScheduleSignTransaction:
-		return i.GetMinBackoff(), nil
-	case SystemDeleteTransaction:
-		return i.GetMinBackoff(), nil
-	case SystemUndeleteTransaction:
-		return i.GetMinBackoff(), nil
-	case TokenAssociateTransaction:
-		return i.GetMinBackoff(), nil
-	case TokenBurnTransaction:
-		return i.GetMinBackoff(), nil
-	case TokenCreateTransaction:
-		return i.GetMinBackoff(), nil
-	case TokenDeleteTransaction:
-		return i.GetMinBackoff(), nil
-	case TokenDissociateTransaction:
-		return i.GetMinBackoff(), nil
-	case TokenFeeScheduleUpdateTransaction:
-		return i.GetMinBackoff(), nil
-	case TokenFreezeTransaction:
-		return i.GetMinBackoff(), nil
-	case TokenGrantKycTransaction:
-		return i.GetMinBackoff(), nil
-	case TokenMintTransaction:
-		return i.GetMinBackoff(), nil
-	case TokenRevokeKycTransaction:
-		return i.GetMinBackoff(), nil
-	case TokenUnfreezeTransaction:
-		return i.GetMinBackoff(), nil
-	case TokenUpdateTransaction:
-		return i.GetMinBackoff(), nil
-	case TokenWipeTransaction:
-		return i.GetMinBackoff(), nil
-	case TopicCreateTransaction:
-		return i.GetMinBackoff(), nil
-	case TopicDeleteTransaction:
-		return i.GetMinBackoff(), nil
-	case TopicMessageSubmitTransaction:
-		return i.GetMinBackoff(), nil
-	case TopicUpdateTransaction:
-		return i.GetMinBackoff(), nil
-	case TransferTransaction:
-		return i.GetMinBackoff(), nil
-	case *AccountCreateTransaction:
-		return i.GetMinBackoff(), nil
-	case *AccountDeleteTransaction:
-		return i.GetMinBackoff(), nil
-	case *AccountUpdateTransaction:
-		return i.GetMinBackoff(), nil
-	case *AccountAllowanceApproveTransaction:
-		return i.GetMinBackoff(), nil
-	case *AccountAllowanceDeleteTransaction:
-		return i.GetMinBackoff(), nil
-	case *ContractCreateTransaction:
-		return i.GetMinBackoff(), nil
-	case *ContractDeleteTransaction:
-		return i.GetMinBackoff(), nil
-	case *ContractExecuteTransaction:
-		return i.GetMinBackoff(), nil
-	case *ContractUpdateTransaction:
-		return i.GetMinBackoff(), nil
-	case *FileAppendTransaction:
-		return i.GetMinBackoff(), nil
-	case *FileCreateTransaction:
-		return i.GetMinBackoff(), nil
-	case *FileDeleteTransaction:
-		return i.GetMinBackoff(), nil
-	case *FileUpdateTransaction:
-		return i.GetMinBackoff(), nil
-	case *LiveHashAddTransaction:
-		return i.GetMinBackoff(), nil
-	case *LiveHashDeleteTransaction:
-		return i.GetMinBackoff(), nil
-	case *ScheduleCreateTransaction:
-		return i.GetMinBackoff(), nil
-	case *ScheduleDeleteTransaction:
-		return i.GetMinBackoff(), nil
-	case *ScheduleSignTransaction:
-		return i.GetMinBackoff(), nil
-	case *SystemDeleteTransaction:
-		return i.GetMinBackoff(), nil
-	case *SystemUndeleteTransaction:
-		return i.GetMinBackoff(), nil
-	case *TokenAssociateTransaction:
-		return i.GetMinBackoff(), nil
-	case *TokenBurnTransaction:
-		return i.GetMinBackoff(), nil
-	case *TokenCreateTransaction:
-		return i.GetMinBackoff(), nil
-	case *TokenDeleteTransaction:
-		return i.GetMinBackoff(), nil
-	case *TokenDissociateTransaction:
-		return i.GetMinBackoff(), nil
-	case *TokenFeeScheduleUpdateTransaction:
-		return i.GetMinBackoff(), nil
-	case *TokenFreezeTransaction:
-		return i.GetMinBackoff(), nil
-	case *TokenGrantKycTransaction:
-		return i.GetMinBackoff(), nil
-	case *TokenMintTransaction:
-		return i.GetMinBackoff(), nil
-	case *TokenRevokeKycTransaction:
-		return i.GetMinBackoff(), nil
-	case *TokenUnfreezeTransaction:
-		return i.GetMinBackoff(), nil
-	case *TokenUpdateTransaction:
-		return i.GetMinBackoff(), nil
-	case *TokenWipeTransaction:
-		return i.GetMinBackoff(), nil
-	case *TopicCreateTransaction:
-		return i.GetMinBackoff(), nil
-	case *TopicDeleteTransaction:
-		return i.GetMinBackoff(), nil
-	case *TopicMessageSubmitTransaction:
-		return i.GetMinBackoff(), nil
-	case *TopicUpdateTransaction:
-		return i.GetMinBackoff(), nil
-	case *TransferTransaction:
-		return i.GetMinBackoff(), nil
-	default:
-		return time.Duration(0), errors.New("(BUG) non-exhaustive switch statement")
-	}
-}
-
-func TransactionSetMaxBackoff(transaction interface{}, maxBackoff time.Duration) (interface{}, error) { // nolint
-	switch i := transaction.(type) {
-	case AccountCreateTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case AccountDeleteTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case AccountUpdateTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case AccountAllowanceApproveTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case AccountAllowanceDeleteTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case ContractCreateTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case ContractDeleteTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case ContractExecuteTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case ContractUpdateTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case FileAppendTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case FileCreateTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case FileDeleteTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case FileUpdateTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case LiveHashAddTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case LiveHashDeleteTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case ScheduleCreateTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case ScheduleDeleteTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case ScheduleSignTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case SystemDeleteTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case SystemUndeleteTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case TokenAssociateTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case TokenBurnTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case TokenCreateTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case TokenDeleteTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case TokenDissociateTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case TokenFeeScheduleUpdateTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case TokenFreezeTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case TokenGrantKycTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case TokenMintTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case TokenRevokeKycTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case TokenUnfreezeTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case TokenUpdateTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case TokenWipeTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case TopicCreateTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case TopicDeleteTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case TopicMessageSubmitTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case TopicUpdateTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case TransferTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case *AccountCreateTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case *AccountDeleteTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case *AccountUpdateTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case *AccountAllowanceApproveTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case *AccountAllowanceDeleteTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case *ContractCreateTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case *ContractDeleteTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case *ContractExecuteTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case *ContractUpdateTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case *FileAppendTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case *FileCreateTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case *FileDeleteTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case *FileUpdateTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case *LiveHashAddTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case *LiveHashDeleteTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case *ScheduleCreateTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case *ScheduleDeleteTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case *ScheduleSignTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case *SystemDeleteTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case *SystemUndeleteTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case *TokenAssociateTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case *TokenBurnTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case *TokenCreateTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case *TokenDeleteTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case *TokenDissociateTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case *TokenFeeScheduleUpdateTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case *TokenFreezeTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case *TokenGrantKycTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case *TokenMintTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case *TokenRevokeKycTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case *TokenUnfreezeTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case *TokenUpdateTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case *TokenWipeTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case *TopicCreateTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case *TopicDeleteTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case *TopicMessageSubmitTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case *TopicUpdateTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	case *TransferTransaction:
-		return i.SetMaxBackoff(maxBackoff), nil
-	default:
-		return transaction, errors.New("(BUG) non-exhaustive switch statement")
-	}
-}
-
-func TransactionGetMaxBackoff(transaction interface{}) (time.Duration, error) { // nolint
-	switch i := transaction.(type) {
-	case AccountCreateTransaction:
-		return i.GetMaxBackoff(), nil
-	case AccountDeleteTransaction:
-		return i.GetMaxBackoff(), nil
-	case AccountUpdateTransaction:
-		return i.GetMaxBackoff(), nil
-	case AccountAllowanceApproveTransaction:
-		return i.GetMaxBackoff(), nil
-	case AccountAllowanceDeleteTransaction:
-		return i.GetMaxBackoff(), nil
-	case ContractCreateTransaction:
-		return i.GetMaxBackoff(), nil
-	case ContractDeleteTransaction:
-		return i.GetMaxBackoff(), nil
-	case ContractExecuteTransaction:
-		return i.GetMaxBackoff(), nil
-	case ContractUpdateTransaction:
-		return i.GetMaxBackoff(), nil
-	case FileAppendTransaction:
-		return i.GetMaxBackoff(), nil
-	case FileCreateTransaction:
-		return i.GetMaxBackoff(), nil
-	case FileDeleteTransaction:
-		return i.GetMaxBackoff(), nil
-	case FileUpdateTransaction:
-		return i.GetMaxBackoff(), nil
-	case LiveHashAddTransaction:
-		return i.GetMaxBackoff(), nil
-	case LiveHashDeleteTransaction:
-		return i.GetMaxBackoff(), nil
-	case ScheduleCreateTransaction:
-		return i.GetMaxBackoff(), nil
-	case ScheduleDeleteTransaction:
-		return i.GetMaxBackoff(), nil
-	case ScheduleSignTransaction:
-		return i.GetMaxBackoff(), nil
-	case SystemDeleteTransaction:
-		return i.GetMaxBackoff(), nil
-	case SystemUndeleteTransaction:
-		return i.GetMaxBackoff(), nil
-	case TokenAssociateTransaction:
-		return i.GetMaxBackoff(), nil
-	case TokenBurnTransaction:
-		return i.GetMaxBackoff(), nil
-	case TokenCreateTransaction:
-		return i.GetMaxBackoff(), nil
-	case TokenDeleteTransaction:
-		return i.GetMaxBackoff(), nil
-	case TokenDissociateTransaction:
-		return i.GetMaxBackoff(), nil
-	case TokenFeeScheduleUpdateTransaction:
-		return i.GetMaxBackoff(), nil
-	case TokenFreezeTransaction:
-		return i.GetMaxBackoff(), nil
-	case TokenGrantKycTransaction:
-		return i.GetMaxBackoff(), nil
-	case TokenMintTransaction:
-		return i.GetMaxBackoff(), nil
-	case TokenRevokeKycTransaction:
-		return i.GetMaxBackoff(), nil
-	case TokenUnfreezeTransaction:
-		return i.GetMaxBackoff(), nil
-	case TokenUpdateTransaction:
-		return i.GetMaxBackoff(), nil
-	case TokenWipeTransaction:
-		return i.GetMaxBackoff(), nil
-	case TopicCreateTransaction:
-		return i.GetMaxBackoff(), nil
-	case TopicDeleteTransaction:
-		return i.GetMaxBackoff(), nil
-	case TopicMessageSubmitTransaction:
-		return i.GetMaxBackoff(), nil
-	case TopicUpdateTransaction:
-		return i.GetMaxBackoff(), nil
-	case TransferTransaction:
-		return i.GetMaxBackoff(), nil
-	case *AccountCreateTransaction:
-		return i.GetMaxBackoff(), nil
-	case *AccountDeleteTransaction:
-		return i.GetMaxBackoff(), nil
-	case *AccountUpdateTransaction:
-		return i.GetMaxBackoff(), nil
-	case *AccountAllowanceApproveTransaction:
-		return i.GetMaxBackoff(), nil
-	case *AccountAllowanceDeleteTransaction:
-		return i.GetMaxBackoff(), nil
-	case *ContractCreateTransaction:
-		return i.GetMaxBackoff(), nil
-	case *ContractDeleteTransaction:
-		return i.GetMaxBackoff(), nil
-	case *ContractExecuteTransaction:
-		return i.GetMaxBackoff(), nil
-	case *ContractUpdateTransaction:
-		return i.GetMaxBackoff(), nil
-	case *FileAppendTransaction:
-		return i.GetMaxBackoff(), nil
-	case *FileCreateTransaction:
-		return i.GetMaxBackoff(), nil
-	case *FileDeleteTransaction:
-		return i.GetMaxBackoff(), nil
-	case *FileUpdateTransaction:
-		return i.GetMaxBackoff(), nil
-	case *LiveHashAddTransaction:
-		return i.GetMaxBackoff(), nil
-	case *LiveHashDeleteTransaction:
-		return i.GetMaxBackoff(), nil
-	case *ScheduleCreateTransaction:
-		return i.GetMaxBackoff(), nil
-	case *ScheduleDeleteTransaction:
-		return i.GetMaxBackoff(), nil
-	case *ScheduleSignTransaction:
-		return i.GetMaxBackoff(), nil
-	case *SystemDeleteTransaction:
-		return i.GetMaxBackoff(), nil
-	case *SystemUndeleteTransaction:
-		return i.GetMaxBackoff(), nil
-	case *TokenAssociateTransaction:
-		return i.GetMaxBackoff(), nil
-	case *TokenBurnTransaction:
-		return i.GetMaxBackoff(), nil
-	case *TokenCreateTransaction:
-		return i.GetMaxBackoff(), nil
-	case *TokenDeleteTransaction:
-		return i.GetMaxBackoff(), nil
-	case *TokenDissociateTransaction:
-		return i.GetMaxBackoff(), nil
-	case *TokenFeeScheduleUpdateTransaction:
-		return i.GetMaxBackoff(), nil
-	case *TokenFreezeTransaction:
-		return i.GetMaxBackoff(), nil
-	case *TokenGrantKycTransaction:
-		return i.GetMaxBackoff(), nil
-	case *TokenMintTransaction:
-		return i.GetMaxBackoff(), nil
-	case *TokenRevokeKycTransaction:
-		return i.GetMaxBackoff(), nil
-	case *TokenUnfreezeTransaction:
-		return i.GetMaxBackoff(), nil
-	case *TokenUpdateTransaction:
-		return i.GetMaxBackoff(), nil
-	case *TokenWipeTransaction:
-		return i.GetMaxBackoff(), nil
-	case *TopicCreateTransaction:
-		return i.GetMaxBackoff(), nil
-	case *TopicDeleteTransaction:
-		return i.GetMaxBackoff(), nil
-	case *TopicMessageSubmitTransaction:
-		return i.GetMaxBackoff(), nil
-	case *TopicUpdateTransaction:
-		return i.GetMaxBackoff(), nil
-	case *TransferTransaction:
-		return i.GetMaxBackoff(), nil
-	default:
-		return time.Duration(0), errors.New("(BUG) non-exhaustive switch statement")
-	}
-}
-
-func TransactionString(transaction interface{}) (string, error) { // nolint
-	switch i := transaction.(type) {
-	case AccountCreateTransaction:
-		return i.String(), nil
-	case AccountDeleteTransaction:
-		return i.String(), nil
-	case AccountUpdateTransaction:
-		return i.String(), nil
-	case AccountAllowanceApproveTransaction:
-		return i.String(), nil
-	case AccountAllowanceDeleteTransaction:
-		return i.String(), nil
-	case ContractCreateTransaction:
-		return i.String(), nil
-	case ContractDeleteTransaction:
-		return i.String(), nil
-	case ContractExecuteTransaction:
-		return i.String(), nil
-	case ContractUpdateTransaction:
-		return i.String(), nil
-	case FileAppendTransaction:
-		return i.String(), nil
-	case FileCreateTransaction:
-		return i.String(), nil
-	case FileDeleteTransaction:
-		return i.String(), nil
-	case FileUpdateTransaction:
-		return i.String(), nil
-	case LiveHashAddTransaction:
-		return i.String(), nil
-	case LiveHashDeleteTransaction:
-		return i.String(), nil
-	case ScheduleCreateTransaction:
-		return i.String(), nil
-	case ScheduleDeleteTransaction:
-		return i.String(), nil
-	case ScheduleSignTransaction:
-		return i.String(), nil
-	case SystemDeleteTransaction:
-		return i.String(), nil
-	case SystemUndeleteTransaction:
-		return i.String(), nil
-	case TokenAssociateTransaction:
-		return i.String(), nil
-	case TokenBurnTransaction:
-		return i.String(), nil
-	case TokenCreateTransaction:
-		return i.String(), nil
-	case TokenDeleteTransaction:
-		return i.String(), nil
-	case TokenDissociateTransaction:
-		return i.String(), nil
-	case TokenFeeScheduleUpdateTransaction:
-		return i.String(), nil
-	case TokenFreezeTransaction:
-		return i.String(), nil
-	case TokenGrantKycTransaction:
-		return i.String(), nil
-	case TokenMintTransaction:
-		return i.String(), nil
-	case TokenRevokeKycTransaction:
-		return i.String(), nil
-	case TokenUnfreezeTransaction:
-		return i.String(), nil
-	case TokenUpdateTransaction:
-		return i.String(), nil
-	case TokenWipeTransaction:
-		return i.String(), nil
-	case TopicCreateTransaction:
-		return i.String(), nil
-	case TopicDeleteTransaction:
-		return i.String(), nil
-	case TopicMessageSubmitTransaction:
-		return i.String(), nil
-	case TopicUpdateTransaction:
-		return i.String(), nil
-	case TransferTransaction:
-		return i.String(), nil
-	case *AccountCreateTransaction:
-		return i.String(), nil
-	case *AccountDeleteTransaction:
-		return i.String(), nil
-	case *AccountUpdateTransaction:
-		return i.String(), nil
-	case *AccountAllowanceApproveTransaction:
-		return i.String(), nil
-	case *AccountAllowanceDeleteTransaction:
-		return i.String(), nil
-	case *ContractCreateTransaction:
-		return i.String(), nil
-	case *ContractDeleteTransaction:
-		return i.String(), nil
-	case *ContractExecuteTransaction:
-		return i.String(), nil
-	case *ContractUpdateTransaction:
-		return i.String(), nil
-	case *FileAppendTransaction:
-		return i.String(), nil
-	case *FileCreateTransaction:
-		return i.String(), nil
-	case *FileDeleteTransaction:
-		return i.String(), nil
-	case *FileUpdateTransaction:
-		return i.String(), nil
-	case *LiveHashAddTransaction:
-		return i.String(), nil
-	case *LiveHashDeleteTransaction:
-		return i.String(), nil
-	case *ScheduleCreateTransaction:
-		return i.String(), nil
-	case *ScheduleDeleteTransaction:
-		return i.String(), nil
-	case *ScheduleSignTransaction:
-		return i.String(), nil
-	case *SystemDeleteTransaction:
-		return i.String(), nil
-	case *SystemUndeleteTransaction:
-		return i.String(), nil
-	case *TokenAssociateTransaction:
-		return i.String(), nil
-	case *TokenBurnTransaction:
-		return i.String(), nil
-	case *TokenCreateTransaction:
-		return i.String(), nil
-	case *TokenDeleteTransaction:
-		return i.String(), nil
-	case *TokenDissociateTransaction:
-		return i.String(), nil
-	case *TokenFeeScheduleUpdateTransaction:
-		return i.String(), nil
-	case *TokenFreezeTransaction:
-		return i.String(), nil
-	case *TokenGrantKycTransaction:
-		return i.String(), nil
-	case *TokenMintTransaction:
-		return i.String(), nil
-	case *TokenRevokeKycTransaction:
-		return i.String(), nil
-	case *TokenUnfreezeTransaction:
-		return i.String(), nil
-	case *TokenUpdateTransaction:
-		return i.String(), nil
-	case *TokenWipeTransaction:
-		return i.String(), nil
-	case *TopicCreateTransaction:
-		return i.String(), nil
-	case *TopicDeleteTransaction:
-		return i.String(), nil
-	case *TopicMessageSubmitTransaction:
-		return i.String(), nil
-	case *TopicUpdateTransaction:
-		return i.String(), nil
-	case *TransferTransaction:
-		return i.String(), nil
-	default:
-		return "", errors.New("(BUG) non-exhaustive switch statement")
-	}
-}
-
-func TransactionToBytes(transaction interface{}) ([]byte, error) { // nolint
-	switch i := transaction.(type) {
-	case AccountCreateTransaction:
-		return i.ToBytes()
-	case AccountDeleteTransaction:
-		return i.ToBytes()
-	case AccountUpdateTransaction:
-		return i.ToBytes()
-	case AccountAllowanceApproveTransaction:
-		return i.ToBytes()
-	case AccountAllowanceDeleteTransaction:
-		return i.ToBytes()
-	case ContractCreateTransaction:
-		return i.ToBytes()
-	case ContractDeleteTransaction:
-		return i.ToBytes()
-	case ContractExecuteTransaction:
-		return i.ToBytes()
-	case ContractUpdateTransaction:
-		return i.ToBytes()
-	case FileAppendTransaction:
-		return i.ToBytes()
-	case FileCreateTransaction:
-		return i.ToBytes()
-	case FileDeleteTransaction:
-		return i.ToBytes()
-	case FileUpdateTransaction:
-		return i.ToBytes()
-	case LiveHashAddTransaction:
-		return i.ToBytes()
-	case LiveHashDeleteTransaction:
-		return i.ToBytes()
-	case ScheduleCreateTransaction:
-		return i.ToBytes()
-	case ScheduleDeleteTransaction:
-		return i.ToBytes()
-	case ScheduleSignTransaction:
-		return i.ToBytes()
-	case SystemDeleteTransaction:
-		return i.ToBytes()
-	case SystemUndeleteTransaction:
-		return i.ToBytes()
-	case TokenAssociateTransaction:
-		return i.ToBytes()
-	case TokenBurnTransaction:
-		return i.ToBytes()
-	case TokenCreateTransaction:
-		return i.ToBytes()
-	case TokenDeleteTransaction:
-		return i.ToBytes()
-	case TokenDissociateTransaction:
-		return i.ToBytes()
-	case TokenFeeScheduleUpdateTransaction:
-		return i.ToBytes()
-	case TokenFreezeTransaction:
-		return i.ToBytes()
-	case TokenGrantKycTransaction:
-		return i.ToBytes()
-	case TokenMintTransaction:
-		return i.ToBytes()
-	case TokenRevokeKycTransaction:
-		return i.ToBytes()
-	case TokenUnfreezeTransaction:
-		return i.ToBytes()
-	case TokenUpdateTransaction:
-		return i.ToBytes()
-	case TokenWipeTransaction:
-		return i.ToBytes()
-	case TopicCreateTransaction:
-		return i.ToBytes()
-	case TopicDeleteTransaction:
-		return i.ToBytes()
-	case TopicMessageSubmitTransaction:
-		return i.ToBytes()
-	case TopicUpdateTransaction:
-		return i.ToBytes()
-	case TransferTransaction:
-		return i.ToBytes()
-	case *AccountCreateTransaction:
-		return i.ToBytes()
-	case *AccountDeleteTransaction:
-		return i.ToBytes()
-	case *AccountUpdateTransaction:
-		return i.ToBytes()
-	case *AccountAllowanceApproveTransaction:
-		return i.ToBytes()
-	case *AccountAllowanceDeleteTransaction:
-		return i.ToBytes()
-	case *ContractCreateTransaction:
-		return i.ToBytes()
-	case *ContractDeleteTransaction:
-		return i.ToBytes()
-	case *ContractExecuteTransaction:
-		return i.ToBytes()
-	case *ContractUpdateTransaction:
-		return i.ToBytes()
-	case *FileAppendTransaction:
-		return i.ToBytes()
-	case *FileCreateTransaction:
-		return i.ToBytes()
-	case *FileDeleteTransaction:
-		return i.ToBytes()
-	case *FileUpdateTransaction:
-		return i.ToBytes()
-	case *LiveHashAddTransaction:
-		return i.ToBytes()
-	case *LiveHashDeleteTransaction:
-		return i.ToBytes()
-	case *ScheduleCreateTransaction:
-		return i.ToBytes()
-	case *ScheduleDeleteTransaction:
-		return i.ToBytes()
-	case *ScheduleSignTransaction:
-		return i.ToBytes()
-	case *SystemDeleteTransaction:
-		return i.ToBytes()
-	case *SystemUndeleteTransaction:
-		return i.ToBytes()
-	case *TokenAssociateTransaction:
-		return i.ToBytes()
-	case *TokenBurnTransaction:
-		return i.ToBytes()
-	case *TokenCreateTransaction:
-		return i.ToBytes()
-	case *TokenDeleteTransaction:
-		return i.ToBytes()
-	case *TokenDissociateTransaction:
-		return i.ToBytes()
-	case *TokenFeeScheduleUpdateTransaction:
-		return i.ToBytes()
-	case *TokenFreezeTransaction:
-		return i.ToBytes()
-	case *TokenGrantKycTransaction:
-		return i.ToBytes()
-	case *TokenMintTransaction:
-		return i.ToBytes()
-	case *TokenRevokeKycTransaction:
-		return i.ToBytes()
-	case *TokenUnfreezeTransaction:
-		return i.ToBytes()
-	case *TokenUpdateTransaction:
-		return i.ToBytes()
-	case *TokenWipeTransaction:
-		return i.ToBytes()
-	case *TopicCreateTransaction:
-		return i.ToBytes()
-	case *TopicDeleteTransaction:
-		return i.ToBytes()
-	case *TopicMessageSubmitTransaction:
-		return i.ToBytes()
-	case *TopicUpdateTransaction:
-		return i.ToBytes()
-	case *TransferTransaction:
-		return i.ToBytes()
-	case *TokenUpdateNfts:
-		return i.ToBytes()
-	case *TokenRejectTransaction:
-		return i.ToBytes()
-	case *TokenAirdropTransaction:
-		return i.ToBytes()
-	case *TokenCancelAirdropTransaction:
-		return i.ToBytes()
-	case *TokenClaimAirdropTransaction:
-		return i.ToBytes()
-	default:
-		return nil, errors.New("(BUG) non-exhaustive switch statement")
-	}
-}
-
-func TransactionExecute(transaction interface{}, client *Client) (TransactionResponse, error) { // nolint
-	switch i := transaction.(type) {
-	case AccountCreateTransaction:
-		return i.Execute(client)
-	case AccountDeleteTransaction:
-		return i.Execute(client)
-	case AccountUpdateTransaction:
-		return i.Execute(client)
-	case AccountAllowanceApproveTransaction:
-		return i.Execute(client)
-	case AccountAllowanceDeleteTransaction:
-		return i.Execute(client)
-	case ContractCreateTransaction:
-		return i.Execute(client)
-	case ContractDeleteTransaction:
-		return i.Execute(client)
-	case ContractExecuteTransaction:
-		return i.Execute(client)
-	case ContractUpdateTransaction:
-		return i.Execute(client)
-	case FileAppendTransaction:
-		return i.Execute(client)
-	case FileCreateTransaction:
-		return i.Execute(client)
-	case FileDeleteTransaction:
-		return i.Execute(client)
-	case FileUpdateTransaction:
-		return i.Execute(client)
-	case FreezeTransaction:
-		return i.Execute(client)
-	case LiveHashAddTransaction:
-		return i.Execute(client)
-	case LiveHashDeleteTransaction:
-		return i.Execute(client)
-	case ScheduleCreateTransaction:
-		return i.Execute(client)
-	case ScheduleDeleteTransaction:
-		return i.Execute(client)
-	case ScheduleSignTransaction:
-		return i.Execute(client)
-	case SystemDeleteTransaction:
-		return i.Execute(client)
-	case SystemUndeleteTransaction:
-		return i.Execute(client)
-	case TokenAssociateTransaction:
-		return i.Execute(client)
-	case TokenBurnTransaction:
-		return i.Execute(client)
-	case TokenCreateTransaction:
-		return i.Execute(client)
-	case TokenDeleteTransaction:
-		return i.Execute(client)
-	case TokenDissociateTransaction:
-		return i.Execute(client)
-	case TokenFeeScheduleUpdateTransaction:
-		return i.Execute(client)
-	case TokenFreezeTransaction:
-		return i.Execute(client)
-	case TokenGrantKycTransaction:
-		return i.Execute(client)
-	case TokenMintTransaction:
-		return i.Execute(client)
-	case TokenPauseTransaction:
-		return i.Execute(client)
-	case TokenRevokeKycTransaction:
-		return i.Execute(client)
-	case TokenUnfreezeTransaction:
-		return i.Execute(client)
-	case TokenUnpauseTransaction:
-		return i.Execute(client)
-	case TokenUpdateTransaction:
-		return i.Execute(client)
-	case TokenWipeTransaction:
-		return i.Execute(client)
-	case TopicCreateTransaction:
-		return i.Execute(client)
-	case TopicDeleteTransaction:
-		return i.Execute(client)
-	case TopicMessageSubmitTransaction:
-		return i.Execute(client)
-	case TopicUpdateTransaction:
-		return i.Execute(client)
-	case TransferTransaction:
-		return i.Execute(client)
-	case *AccountCreateTransaction:
-		return i.Execute(client)
-	case *AccountDeleteTransaction:
-		return i.Execute(client)
-	case *AccountUpdateTransaction:
-		return i.Execute(client)
-	case *AccountAllowanceApproveTransaction:
-		return i.Execute(client)
-	case *AccountAllowanceDeleteTransaction:
-		return i.Execute(client)
-	case *ContractCreateTransaction:
-		return i.Execute(client)
-	case *ContractDeleteTransaction:
-		return i.Execute(client)
-	case *ContractExecuteTransaction:
-		return i.Execute(client)
-	case *ContractUpdateTransaction:
-		return i.Execute(client)
-	case *FileAppendTransaction:
-		return i.Execute(client)
-	case *FileCreateTransaction:
-		return i.Execute(client)
-	case *FileDeleteTransaction:
-		return i.Execute(client)
-	case *FileUpdateTransaction:
-		return i.Execute(client)
-	case *FreezeTransaction:
-		return i.Execute(client)
-	case *LiveHashAddTransaction:
-		return i.Execute(client)
-	case *LiveHashDeleteTransaction:
-		return i.Execute(client)
-	case *ScheduleCreateTransaction:
-		return i.Execute(client)
-	case *ScheduleDeleteTransaction:
-		return i.Execute(client)
-	case *ScheduleSignTransaction:
-		return i.Execute(client)
-	case *SystemDeleteTransaction:
-		return i.Execute(client)
-	case *SystemUndeleteTransaction:
-		return i.Execute(client)
-	case *TokenAssociateTransaction:
-		return i.Execute(client)
-	case *TokenBurnTransaction:
-		return i.Execute(client)
-	case *TokenCreateTransaction:
-		return i.Execute(client)
-	case *TokenDeleteTransaction:
-		return i.Execute(client)
-	case *TokenDissociateTransaction:
-		return i.Execute(client)
-	case *TokenFeeScheduleUpdateTransaction:
-		return i.Execute(client)
-	case *TokenFreezeTransaction:
-		return i.Execute(client)
-	case *TokenGrantKycTransaction:
-		return i.Execute(client)
-	case *TokenMintTransaction:
-		return i.Execute(client)
-	case *TokenPauseTransaction:
-		return i.Execute(client)
-	case *TokenRevokeKycTransaction:
-		return i.Execute(client)
-	case *TokenUnfreezeTransaction:
-		return i.Execute(client)
-	case *TokenUnpauseTransaction:
-		return i.Execute(client)
-	case *TokenUpdateTransaction:
-		return i.Execute(client)
-	case *TokenWipeTransaction:
-		return i.Execute(client)
-	case *TopicCreateTransaction:
-		return i.Execute(client)
-	case *TopicDeleteTransaction:
-		return i.Execute(client)
-	case *TopicMessageSubmitTransaction:
-		return i.Execute(client)
-	case *TopicUpdateTransaction:
-		return i.Execute(client)
-	case *TransferTransaction:
-		return i.Execute(client)
-	case *TokenUpdateNfts:
-		return i.Execute(client)
-	case *TokenRejectTransaction:
-		return i.Execute(client)
-	case *TokenAirdropTransaction:
-		return i.Execute(client)
-	case *TokenCancelAirdropTransaction:
-		return i.Execute(client)
-	case *TokenClaimAirdropTransaction:
-		return i.Execute(client)
-	default:
-		return TransactionResponse{}, errors.New("(BUG) non-exhaustive switch statement")
-	}
+func (tx *Transaction[T]) getLogID(transactionInterface Executable) string {
+	timestamp := tx.transactionIDs._GetCurrent().(TransactionID).ValidStart
+	return fmt.Sprintf("%s:%d", transactionInterface.getName(), timestamp.UnixNano())
 }
 
 // ------------ Executable Functions ------------
-func (tx *Transaction) shouldRetry(_ Executable, response interface{}) _ExecutionState {
+func (tx *Transaction[T]) shouldRetry(_ Executable, response interface{}) _ExecutionState {
 	status := Status(response.(*services.TransactionResponse).NodeTransactionPrecheckCode)
 
 	retryableStatuses := map[Status]bool{
@@ -4803,34 +1137,33 @@ func (tx *Transaction) shouldRetry(_ Executable, response interface{}) _Executio
 	return executionStateError
 }
 
-func (tx *Transaction) makeRequest() interface{} {
+func (tx *Transaction[T]) makeRequest() interface{} {
 	index := tx.nodeAccountIDs._Length()*tx.transactionIDs.index + tx.nodeAccountIDs.index
 	built, _ := tx._BuildTransaction(index)
 
 	return built
 }
 
-func (tx *Transaction) advanceRequest() {
+func (tx *Transaction[T]) advanceRequest() {
 	tx.nodeAccountIDs._Advance()
 	tx.signedTransactions._Advance()
 }
 
-func (tx *Transaction) getNodeAccountID() AccountID {
+func (tx *Transaction[T]) getNodeAccountID() AccountID {
 	return tx.nodeAccountIDs._GetCurrent().(AccountID)
 }
 
-func (tx *Transaction) mapStatusError(
+func (tx *Transaction[T]) mapStatusError(
 	_ Executable,
 	response interface{},
 ) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.(*services.TransactionResponse).NodeTransactionPrecheckCode),
-		//NodeID: request.transaction.nodeAccountIDs,
-		TxID: tx.GetTransactionID(),
+		TxID:   tx.GetTransactionID(),
 	}
 }
 
-func (tx *Transaction) mapResponse(_ interface{}, nodeID AccountID, protoRequest interface{}) (interface{}, error) {
+func (tx *Transaction[T]) mapResponse(_ interface{}, nodeID AccountID, protoRequest interface{}) (interface{}, error) {
 	hash := sha512.New384()
 	_, err := hash.Write(protoRequest.(*services.Transaction).SignedTransactionBytes)
 	if err != nil {
@@ -4844,39 +1177,15 @@ func (tx *Transaction) mapResponse(_ interface{}, nodeID AccountID, protoRequest
 	}, nil
 }
 
-// Building empty object as "default" implementation. All inhertents must implement their own implementation.
-func (tx *Transaction) getMethod(ch *_Channel) _Method {
-	return _Method{}
-}
-
-// Building empty object as "default" implementation. All inhertents must implement their own implementation.
-func (tx *Transaction) getName() string {
-	return "transaction"
-}
-
-func (tx *Transaction) getLogID(transactionInterface Executable) string {
-	timestamp := tx.transactionIDs._GetCurrent().(TransactionID).ValidStart
-	return fmt.Sprintf("%s:%d", transactionInterface.getName(), timestamp.UnixNano())
-}
-
-// Building empty object as "default" implementation. All inhertents must implement their own implementation.
-func (tx *Transaction) validateNetworkOnIDs(client *Client) error {
-	return errors.New("Function not implemented")
-}
-
-func (tx *Transaction) preFreezeWith(*Client) {
-	// NO-OP
-}
-
-func (tx *Transaction) isTransaction() bool {
+func (tx *Transaction[T]) isTransaction() bool {
 	return true
 }
 
-func (tx *Transaction) getTransactionIDAndMessage() (string, string) {
+func (tx *Transaction[T]) getTransactionIDAndMessage() (string, string) {
 	return tx.GetTransactionID().String(), "transaction status received"
 }
 
-func (tx *Transaction) regenerateID(client *Client) bool {
+func (tx *Transaction[T]) regenerateID(client *Client) bool {
 	if !client.GetOperatorAccountID()._IsZero() && tx.regenerateTransactionID && !tx.transactionIDs.locked {
 		tx.transactionIDs._Set(tx.transactionIDs.index, TransactionIDGenerate(client.GetOperatorAccountID()))
 		return true
@@ -4884,7 +1193,7 @@ func (tx *Transaction) regenerateID(client *Client) bool {
 	return false
 }
 
-func (tx *Transaction) execute(client *Client, e TransactionInterface) (TransactionResponse, error) {
+func (tx *Transaction[T]) Execute(client *Client) (TransactionResponse, error) {
 	if client == nil {
 		return TransactionResponse{}, errNoClientProvided
 	}
@@ -4894,7 +1203,7 @@ func (tx *Transaction) execute(client *Client, e TransactionInterface) (Transact
 	}
 
 	if !tx.IsFrozen() {
-		_, err := tx.freezeWith(client, e)
+		_, err := tx.FreezeWith(client)
 		if err != nil {
 			return TransactionResponse{}, err
 		}
@@ -4913,7 +1222,7 @@ func (tx *Transaction) execute(client *Client, e TransactionInterface) (Transact
 		tx.grpcDeadline = client.requestTimeout
 	}
 
-	resp, err := _Execute(client, e)
+	resp, err := _Execute(client, tx.childTransaction)
 
 	if err != nil {
 		return TransactionResponse{
@@ -4923,7 +1232,7 @@ func (tx *Transaction) execute(client *Client, e TransactionInterface) (Transact
 		}, err
 	}
 	originalTxID := tx.GetTransactionID()
-	e.regenerateID(client)
+	tx.regenerateID(client)
 	return TransactionResponse{
 		TransactionID:  originalTxID,
 		NodeID:         resp.(TransactionResponse).NodeID,
@@ -4931,42 +1240,301 @@ func (tx *Transaction) execute(client *Client, e TransactionInterface) (Transact
 		ValidateStatus: true,
 		// set the tx in the response, in case of throttle error in the receipt
 		// we can use this to re-submit the transaction
-		Transaction: e,
+		Transaction: tx.childTransaction,
 	}, nil
 }
 
-func (tx *Transaction) FreezeWith(client *Client, e TransactionInterface) (TransactionInterface, error) {
-	return tx.freezeWith(client, e)
+func (tx *Transaction[T]) Freeze() (T, error) {
+	return tx.FreezeWith(nil)
 }
 
-func (tx *Transaction) freezeWith(client *Client, e TransactionInterface) (TransactionInterface, error) { //nolint
+func (tx *Transaction[T]) FreezeWith(client *Client) (T, error) {
 	if tx.IsFrozen() {
-		return tx, nil
+		return tx.childTransaction, nil
 	}
 
-	e.preFreezeWith(client)
+	tx.childTransaction.preFreezeWith(client, tx.childTransaction)
 
 	tx._InitFee(client)
 	if err := tx._InitTransactionID(client); err != nil {
-		return tx, err
+		return tx.childTransaction, err
 	}
 
-	err := e.validateNetworkOnIDs(client)
+	err := tx.childTransaction.validateNetworkOnIDs(client)
 	if err != nil {
-		return &Transaction{}, err
+		return tx.childTransaction, err
 	}
-	body := e.build()
+	body := tx.childTransaction.build()
 
-	return tx, _TransactionFreezeWith(tx, client, body)
+	if tx.nodeAccountIDs._IsEmpty() {
+		if client != nil {
+			for _, nodeAccountID := range client.network._GetNodeAccountIDsForExecute() {
+				tx.nodeAccountIDs._Push(nodeAccountID)
+			}
+		} else {
+			return tx.childTransaction, errNoClientOrTransactionIDOrNodeId
+		}
+	}
+
+	if client != nil {
+		if client.defaultRegenerateTransactionIDs != tx.regenerateTransactionID {
+			tx.regenerateTransactionID = client.defaultRegenerateTransactionIDs
+		}
+	}
+
+	for _, nodeAccountID := range tx.nodeAccountIDs.slice {
+		body.NodeAccountID = nodeAccountID.(AccountID)._ToProtobuf()
+		bodyBytes, err := protobuf.Marshal(body)
+
+		if err != nil {
+			// This should be unreachable
+			// From the documentation this appears to only be possible if there are missing proto types
+			panic(err)
+		}
+		tx.signedTransactions = tx.signedTransactions._Push(&services.SignedTransaction{
+			BodyBytes: bodyBytes,
+			SigMap: &services.SignatureMap{
+				SigPair: make([]*services.SignaturePair, 0),
+			},
+		})
+	}
+
+	return tx.childTransaction, nil
 }
 
-func (tx *Transaction) schedule(e TransactionInterface) (*ScheduleCreateTransaction, error) {
+func (tx *Transaction[T]) Schedule() (*ScheduleCreateTransaction, error) {
 	tx._RequireNotFrozen()
 
-	scheduled, err := e.buildScheduled()
+	scheduled, err := tx.childTransaction.buildScheduled()
 	if err != nil {
 		return nil, err
 	}
 
 	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
+}
+
+func (tx *Transaction[T]) GetMaxBackoff() time.Duration {
+	if tx.maxBackoff != nil {
+		return *tx.maxBackoff
+	}
+
+	return 8 * time.Second
+}
+
+func (tx *Transaction[T]) GetMinBackoff() time.Duration {
+	if tx.minBackoff != nil {
+		return *tx.minBackoff
+	}
+
+	return 250 * time.Millisecond
+}
+
+func (tx *Transaction[T]) SetMaxBackoff(max time.Duration) T {
+	if max.Nanoseconds() < 0 {
+		panic("maxBackoff must be a positive duration")
+	} else if max.Nanoseconds() < tx.minBackoff.Nanoseconds() {
+		panic("maxBackoff must be greater than or equal to minBackoff")
+	}
+	tx.maxBackoff = &max
+	return tx.childTransaction
+}
+
+func (tx *Transaction[T]) SetMinBackoff(min time.Duration) T {
+	if min.Nanoseconds() < 0 {
+		panic("minBackoff must be a positive duration")
+	} else if tx.maxBackoff.Nanoseconds() < min.Nanoseconds() {
+		panic("minBackoff must be less than or equal to maxBackoff")
+	}
+	tx.minBackoff = &min
+	return tx.childTransaction
+}
+
+// GetGrpcDeadline returns the grpc deadline
+func (tx *Transaction[T]) GetGrpcDeadline() *time.Duration {
+	return tx.grpcDeadline
+}
+
+// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
+func (tx *Transaction[T]) SetGrpcDeadline(deadline *time.Duration) T {
+	tx.grpcDeadline = deadline
+	return tx.childTransaction
+}
+
+// GetMaxRetry returns the max number of errors before execution will fail.
+func (tx *Transaction[T]) GetMaxRetry() int {
+	return tx.maxRetry
+}
+
+// SetMaxRetry sets the max number of errors before execution will fail.
+func (tx *Transaction[T]) SetMaxRetry(max int) T {
+	tx.maxRetry = max
+	return tx.childTransaction
+}
+
+// GetNodeAccountIDs returns the node AccountID for this transaction.
+func (tx *Transaction[T]) GetLogLevel() *LogLevel {
+	return tx.logLevel
+}
+
+// SetNodeAccountIDs sets the node AccountID for this transaction.
+func (tx *Transaction[T]) SetLogLevel(level LogLevel) T {
+	tx.logLevel = &level
+	return tx.childTransaction
+}
+
+// Static Utility functions //
+
+func TransactionExecute(tx TransactionInterface, client *Client) (TransactionResponse, error) {
+	return tx.getBaseTransaction().Execute(client)
+}
+
+func TransactionSign(tx TransactionInterface, key PrivateKey) (TransactionInterface, error) {
+	baseTx := tx.getBaseTransaction()
+	baseTx.Sign(key)
+
+	return tx, nil
+}
+
+func TransactionAddSignature(tx TransactionInterface, publicKey PublicKey, signature []byte) (TransactionInterface, error) {
+	baseTx := tx.getBaseTransaction()
+	baseTx.AddSignature(publicKey, signature)
+
+	return tx, nil
+}
+
+func TransactionToBytes(tx TransactionInterface) ([]byte, error) {
+	return tx.getBaseTransaction().ToBytes()
+}
+
+func TransactionString(tx TransactionInterface) (string, error) {
+	return tx.getBaseTransaction().String(), nil
+}
+
+func TransactionGetMaxBackoff(tx TransactionInterface) (time.Duration, error) {
+	return tx.getBaseTransaction().GetMaxBackoff(), nil
+}
+
+func TransactionSetMaxBackoff(tx TransactionInterface, maxBackoff time.Duration) (TransactionInterface, error) {
+	baseTx := tx.getBaseTransaction()
+	baseTx.SetMaxBackoff(maxBackoff)
+
+	return tx, nil
+}
+
+func TransactionGetMinBackoff(tx TransactionInterface) (time.Duration, error) {
+	return tx.getBaseTransaction().GetMinBackoff(), nil
+}
+
+func TransactionSetMinBackoff(tx TransactionInterface, minBackoff time.Duration) (TransactionInterface, error) {
+	baseTx := tx.getBaseTransaction()
+	baseTx.SetMinBackoff(minBackoff)
+
+	return tx, nil
+}
+
+func TransactionGetTransactionHashPerNode(tx TransactionInterface) (map[AccountID][]byte, error) {
+	return tx.getBaseTransaction().GetTransactionHashPerNode()
+}
+
+func TransactionGetTransactionHash(tx TransactionInterface) ([]byte, error) {
+	return tx.getBaseTransaction().GetTransactionHash()
+}
+
+func TransactionGetNodeAccountIDs(tx TransactionInterface) ([]AccountID, error) {
+	return tx.getBaseTransaction().GetNodeAccountIDs(), nil
+}
+
+func TransactionSetNodeAccountIDs(tx TransactionInterface, nodeAccountIDs []AccountID) (TransactionInterface, error) {
+	baseTx := tx.getBaseTransaction()
+	baseTx.SetNodeAccountIDs(nodeAccountIDs)
+
+	return tx, nil
+}
+
+func TransactionGetTransactionValidDuration(tx TransactionInterface) (time.Duration, error) {
+	return tx.getBaseTransaction().GetTransactionValidDuration(), nil
+}
+
+func TransactionSetTransactionValidDuration(tx TransactionInterface, transactionValidDuration time.Duration) (TransactionInterface, error) {
+	baseTx := tx.getBaseTransaction()
+	baseTx.SetTransactionValidDuration(transactionValidDuration)
+
+	return tx, nil
+}
+
+func TransactionGetMaxTransactionFee(tx TransactionInterface) (Hbar, error) {
+	return tx.getBaseTransaction().GetMaxTransactionFee(), nil
+}
+
+func TransactionSetMaxTransactionFee(tx TransactionInterface, maxTransactionFee Hbar) (TransactionInterface, error) {
+	baseTx := tx.getBaseTransaction()
+	baseTx.SetMaxTransactionFee(maxTransactionFee)
+
+	return tx, nil
+}
+
+func TransactionGetTransactionMemo(tx TransactionInterface) (string, error) {
+	return tx.getBaseTransaction().GetTransactionMemo(), nil
+}
+
+func TransactionSetTransactionMemo(tx TransactionInterface, transactionMemo string) (TransactionInterface, error) {
+	baseTx := tx.getBaseTransaction()
+	baseTx.SetTransactionMemo(transactionMemo)
+	return tx, nil
+}
+
+func TransactionGetTransactionID(tx TransactionInterface) (TransactionID, error) {
+	return tx.getBaseTransaction().GetTransactionID(), nil
+}
+
+func TransactionSetTransactionID(tx TransactionInterface, transactionID TransactionID) (TransactionInterface, error) {
+	baseTx := tx.getBaseTransaction()
+	baseTx.SetTransactionID(transactionID)
+	return tx, nil
+}
+
+func TransactionGetSignatures(tx TransactionInterface) (map[AccountID]map[*PublicKey][]byte, error) {
+	return tx.getBaseTransaction().GetSignatures()
+}
+
+func TransactionSignWithOperator(tx TransactionInterface, client *Client) (TransactionInterface, error) {
+	baseTx := tx.getBaseTransaction()
+	_, err := baseTx.SignWithOperator(client)
+	if err != nil {
+		return tx, err
+	}
+
+	return tx, nil
+}
+
+func TransactionSignWth(tx TransactionInterface, publicKKey PublicKey, signer TransactionSigner) (TransactionInterface, error) {
+	baseTx := tx.getBaseTransaction()
+	baseTx.SignWith(publicKKey, signer)
+
+	return tx, nil
+}
+
+// Helper function to cast the concrete Transaction to the generic Transaction
+func castFromConcreteToBaseTransaction[T TransactionInterface](baseTx *Transaction[T], tx TransactionInterface) *Transaction[TransactionInterface] {
+	return &Transaction[TransactionInterface]{
+		executable:              baseTx.executable,
+		BaseTransaction:         baseTx.BaseTransaction,
+		childTransaction:        tx,
+		freezeError:             baseTx.freezeError,
+		regenerateTransactionID: baseTx.regenerateTransactionID,
+	}
+}
+
+// Helper function to cast the generic Transaction to another type
+func castFromBaseToConcreteTransaction[T TransactionInterface](baseTx Transaction[TransactionInterface]) *Transaction[T] {
+	concreteTx := &Transaction[T]{
+		executable:              baseTx.executable,
+		BaseTransaction:         baseTx.BaseTransaction,
+		freezeError:             baseTx.freezeError,
+		regenerateTransactionID: baseTx.regenerateTransactionID,
+	}
+	if baseTx.childTransaction != nil {
+		concreteTx.childTransaction = baseTx.childTransaction.(T)
+	}
+	return concreteTx
 }

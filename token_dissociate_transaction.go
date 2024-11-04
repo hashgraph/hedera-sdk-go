@@ -21,8 +21,6 @@ package hedera
  */
 
 import (
-	"time"
-
 	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
 )
 
@@ -42,7 +40,7 @@ import (
 // balance is not zero. The transaction will resolve to TRANSACTION_REQUIRED_ZERO_TOKEN_BALANCES.
 // On success, associations between the provided account and tokens are removed.
 type TokenDissociateTransaction struct {
-	Transaction
+	*Transaction[*TokenDissociateTransaction]
 	accountID *AccountID
 	tokens    []TokenID
 }
@@ -63,16 +61,15 @@ type TokenDissociateTransaction struct {
 // balance is not zero. The transaction will resolve to TRANSACTION_REQUIRED_ZERO_TOKEN_BALANCES.
 // On success, associations between the provided account and tokens are removed.
 func NewTokenDissociateTransaction() *TokenDissociateTransaction {
-	tx := TokenDissociateTransaction{
-		Transaction: _NewTransaction(),
-	}
+	tx := &TokenDissociateTransaction{}
+	tx.Transaction = _NewTransaction(tx)
 
 	tx._SetDefaultMaxTransactionFee(NewHbar(5))
 
-	return &tx
+	return tx
 }
 
-func _TokenDissociateTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *TokenDissociateTransaction {
+func _TokenDissociateTransactionFromProtobuf(tx Transaction[*TokenDissociateTransaction], pb *services.TransactionBody) TokenDissociateTransaction {
 	tokens := make([]TokenID, 0)
 	for _, token := range pb.GetTokenDissociate().Tokens {
 		if tokenID := _TokenIDFromProtobuf(token); tokenID != nil {
@@ -80,11 +77,14 @@ func _TokenDissociateTransactionFromProtobuf(tx Transaction, pb *services.Transa
 		}
 	}
 
-	return &TokenDissociateTransaction{
-		Transaction: tx,
-		accountID:   _AccountIDFromProtobuf(pb.GetTokenDissociate().GetAccount()),
-		tokens:      tokens,
+	tokenDissociateTransaction := TokenDissociateTransaction{
+		accountID: _AccountIDFromProtobuf(pb.GetTokenDissociate().GetAccount()),
+		tokens:    tokens,
 	}
+
+	tx.childTransaction = &tokenDissociateTransaction
+	tokenDissociateTransaction.Transaction = &tx
+	return tokenDissociateTransaction
 }
 
 // SetAccountID Sets the account to be dissociated with the provided tokens
@@ -131,138 +131,13 @@ func (tx *TokenDissociateTransaction) GetTokenIDs() []TokenID {
 	return tokenIDs
 }
 
-// ---- Required Interfaces ---- //
-
-// Sign uses the provided privateKey to sign the transaction.
-func (tx *TokenDissociateTransaction) Sign(privateKey PrivateKey) *TokenDissociateTransaction {
-	tx.Transaction.Sign(privateKey)
-	return tx
-}
-
-// SignWithOperator signs the transaction with client's operator privateKey.
-func (tx *TokenDissociateTransaction) SignWithOperator(client *Client) (*TokenDissociateTransaction, error) {
-	_, err := tx.Transaction.signWithOperator(client, tx)
-	if err != nil {
-		return nil, err
-	}
-	return tx, nil
-}
-
-// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
-// with the publicKey as the map key.
-func (tx *TokenDissociateTransaction) SignWith(
-	publicKey PublicKey,
-	signer TransactionSigner,
-) *TokenDissociateTransaction {
-	tx.Transaction.SignWith(publicKey, signer)
-	return tx
-}
-
-// AddSignature adds a signature to the transaction.
-func (tx *TokenDissociateTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenDissociateTransaction {
-	tx.Transaction.AddSignature(publicKey, signature)
-	return tx
-}
-
-// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (tx *TokenDissociateTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenDissociateTransaction {
-	tx.Transaction.SetGrpcDeadline(deadline)
-	return tx
-}
-
-func (tx *TokenDissociateTransaction) Freeze() (*TokenDissociateTransaction, error) {
-	return tx.FreezeWith(nil)
-}
-
-func (tx *TokenDissociateTransaction) FreezeWith(client *Client) (*TokenDissociateTransaction, error) {
-	_, err := tx.Transaction.freezeWith(client, tx)
-	return tx, err
-}
-
-// SetMaxTransactionFee sets the max transaction fee for this TokenDissociateTransaction.
-func (tx *TokenDissociateTransaction) SetMaxTransactionFee(fee Hbar) *TokenDissociateTransaction {
-	tx.Transaction.SetMaxTransactionFee(fee)
-	return tx
-}
-
-// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
-func (tx *TokenDissociateTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *TokenDissociateTransaction {
-	tx.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
-	return tx
-}
-
-// SetTransactionMemo sets the memo for this TokenDissociateTransaction.
-func (tx *TokenDissociateTransaction) SetTransactionMemo(memo string) *TokenDissociateTransaction {
-	tx.Transaction.SetTransactionMemo(memo)
-	return tx
-}
-
-// SetTransactionValidDuration sets the valid duration for this TokenDissociateTransaction.
-func (tx *TokenDissociateTransaction) SetTransactionValidDuration(duration time.Duration) *TokenDissociateTransaction {
-	tx.Transaction.SetTransactionValidDuration(duration)
-	return tx
-}
-
-// ToBytes serialise the tx to bytes, no matter if it is signed (locked), or not
-func (tx *TokenDissociateTransaction) ToBytes() ([]byte, error) {
-	bytes, err := tx.Transaction.toBytes(tx)
-	if err != nil {
-		return nil, err
-	}
-	return bytes, nil
-}
-
-// SetTransactionID sets the TransactionID for this TokenDissociateTransaction.
-func (tx *TokenDissociateTransaction) SetTransactionID(transactionID TransactionID) *TokenDissociateTransaction {
-	tx.Transaction.SetTransactionID(transactionID)
-	return tx
-}
-
-// SetNodeAccountIDs sets the _Node AccountID for this TokenDissociateTransaction.
-func (tx *TokenDissociateTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenDissociateTransaction {
-	tx.Transaction.SetNodeAccountIDs(nodeID)
-	return tx
-}
-
-// SetMaxRetry sets the max number of errors before execution will fail.
-func (tx *TokenDissociateTransaction) SetMaxRetry(count int) *TokenDissociateTransaction {
-	tx.Transaction.SetMaxRetry(count)
-	return tx
-}
-
-// SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (tx *TokenDissociateTransaction) SetMaxBackoff(max time.Duration) *TokenDissociateTransaction {
-	tx.Transaction.SetMaxBackoff(max)
-	return tx
-}
-
-// SetMinBackoff sets the minimum amount of time to wait between retries.
-func (tx *TokenDissociateTransaction) SetMinBackoff(min time.Duration) *TokenDissociateTransaction {
-	tx.Transaction.SetMinBackoff(min)
-	return tx
-}
-
-func (tx *TokenDissociateTransaction) SetLogLevel(level LogLevel) *TokenDissociateTransaction {
-	tx.Transaction.SetLogLevel(level)
-	return tx
-}
-
-func (tx *TokenDissociateTransaction) Execute(client *Client) (TransactionResponse, error) {
-	return tx.Transaction.execute(client, tx)
-}
-
-func (tx *TokenDissociateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	return tx.Transaction.schedule(tx)
-}
-
 // ----------- Overridden functions ----------------
 
-func (tx *TokenDissociateTransaction) getName() string {
+func (tx TokenDissociateTransaction) getName() string {
 	return "TokenDissociateTransaction"
 }
 
-func (tx *TokenDissociateTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx TokenDissociateTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -282,7 +157,7 @@ func (tx *TokenDissociateTransaction) validateNetworkOnIDs(client *Client) error
 	return nil
 }
 
-func (tx *TokenDissociateTransaction) build() *services.TransactionBody {
+func (tx TokenDissociateTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
 		Memo:                     tx.Transaction.memo,
@@ -294,7 +169,7 @@ func (tx *TokenDissociateTransaction) build() *services.TransactionBody {
 	}
 }
 
-func (tx *TokenDissociateTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx TokenDissociateTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Memo:           tx.Transaction.memo,
@@ -304,7 +179,7 @@ func (tx *TokenDissociateTransaction) buildScheduled() (*services.SchedulableTra
 	}, nil
 }
 
-func (tx *TokenDissociateTransaction) buildProtoBody() *services.TokenDissociateTransactionBody {
+func (tx TokenDissociateTransaction) buildProtoBody() *services.TokenDissociateTransactionBody {
 	body := &services.TokenDissociateTransactionBody{}
 	if tx.accountID != nil {
 		body.Account = tx.accountID._ToProtobuf()
@@ -322,12 +197,16 @@ func (tx *TokenDissociateTransaction) buildProtoBody() *services.TokenDissociate
 	return body
 }
 
-func (tx *TokenDissociateTransaction) getMethod(channel *_Channel) _Method {
+func (tx TokenDissociateTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetToken().DissociateTokens,
 	}
 }
 
-func (tx *TokenDissociateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx TokenDissociateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
+}
+
+func (tx TokenDissociateTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }

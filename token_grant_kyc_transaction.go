@@ -21,8 +21,6 @@ package hedera
  */
 
 import (
-	"time"
-
 	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
 )
 
@@ -37,7 +35,7 @@ import (
 // If no KYC Key is defined, the transaction will resolve to TOKEN_HAS_NO_KYC_KEY.
 // Once executed the Account is marked as KYC Granted.
 type TokenGrantKycTransaction struct {
-	Transaction
+	*Transaction[*TokenGrantKycTransaction]
 	tokenID   *TokenID
 	accountID *AccountID
 }
@@ -53,21 +51,23 @@ type TokenGrantKycTransaction struct {
 // If no KYC Key is defined, the transaction will resolve to TOKEN_HAS_NO_KYC_KEY.
 // Once executed the Account is marked as KYC Granted.
 func NewTokenGrantKycTransaction() *TokenGrantKycTransaction {
-	tx := TokenGrantKycTransaction{
-		Transaction: _NewTransaction(),
-	}
+	tx := &TokenGrantKycTransaction{}
+	tx.Transaction = _NewTransaction(tx)
 
 	tx._SetDefaultMaxTransactionFee(NewHbar(30))
 
-	return &tx
+	return tx
 }
 
-func _TokenGrantKycTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *TokenGrantKycTransaction {
-	return &TokenGrantKycTransaction{
-		Transaction: tx,
-		tokenID:     _TokenIDFromProtobuf(pb.GetTokenGrantKyc().GetToken()),
-		accountID:   _AccountIDFromProtobuf(pb.GetTokenGrantKyc().GetAccount()),
+func _TokenGrantKycTransactionFromProtobuf(tx Transaction[*TokenGrantKycTransaction], pb *services.TransactionBody) TokenGrantKycTransaction {
+	tokenGrandKycTransaction := TokenGrantKycTransaction{
+		tokenID:   _TokenIDFromProtobuf(pb.GetTokenGrantKyc().GetToken()),
+		accountID: _AccountIDFromProtobuf(pb.GetTokenGrantKyc().GetAccount()),
 	}
+
+	tx.childTransaction = &tokenGrandKycTransaction
+	tokenGrandKycTransaction.Transaction = &tx
+	return tokenGrandKycTransaction
 }
 
 // SetTokenID Sets the token for which this account will be granted KYC.
@@ -103,138 +103,13 @@ func (tx *TokenGrantKycTransaction) GetAccountID() AccountID {
 	return *tx.accountID
 }
 
-// ---- Required Interfaces ---- //
-
-// Sign uses the provided privateKey to sign the transaction.
-func (tx *TokenGrantKycTransaction) Sign(privateKey PrivateKey) *TokenGrantKycTransaction {
-	tx.Transaction.Sign(privateKey)
-	return tx
-}
-
-// SignWithOperator signs the transaction with client's operator privateKey.
-func (tx *TokenGrantKycTransaction) SignWithOperator(client *Client) (*TokenGrantKycTransaction, error) {
-	_, err := tx.Transaction.signWithOperator(client, tx)
-	if err != nil {
-		return nil, err
-	}
-	return tx, nil
-}
-
-// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
-// with the publicKey as the map key.
-func (tx *TokenGrantKycTransaction) SignWith(
-	publicKey PublicKey,
-	signer TransactionSigner,
-) *TokenGrantKycTransaction {
-	tx.Transaction.SignWith(publicKey, signer)
-	return tx
-}
-
-// AddSignature adds a signature to the transaction.
-func (tx *TokenGrantKycTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenGrantKycTransaction {
-	tx.Transaction.AddSignature(publicKey, signature)
-	return tx
-}
-
-// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (tx *TokenGrantKycTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenGrantKycTransaction {
-	tx.Transaction.SetGrpcDeadline(deadline)
-	return tx
-}
-
-func (tx *TokenGrantKycTransaction) Freeze() (*TokenGrantKycTransaction, error) {
-	return tx.FreezeWith(nil)
-}
-
-func (tx *TokenGrantKycTransaction) FreezeWith(client *Client) (*TokenGrantKycTransaction, error) {
-	_, err := tx.Transaction.freezeWith(client, tx)
-	return tx, err
-}
-
-// SetMaxTransactionFee sets the max transaction fee for this TokenGrantKycTransaction.
-func (tx *TokenGrantKycTransaction) SetMaxTransactionFee(fee Hbar) *TokenGrantKycTransaction {
-	tx.Transaction.SetMaxTransactionFee(fee)
-	return tx
-}
-
-// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
-func (tx *TokenGrantKycTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *TokenGrantKycTransaction {
-	tx.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
-	return tx
-}
-
-// SetTransactionMemo sets the memo for this TokenGrantKycTransaction.
-func (tx *TokenGrantKycTransaction) SetTransactionMemo(memo string) *TokenGrantKycTransaction {
-	tx.Transaction.SetTransactionMemo(memo)
-	return tx
-}
-
-// SetTransactionValidDuration sets the valid duration for this TokenGrantKycTransaction.
-func (tx *TokenGrantKycTransaction) SetTransactionValidDuration(duration time.Duration) *TokenGrantKycTransaction {
-	tx.Transaction.SetTransactionValidDuration(duration)
-	return tx
-}
-
-// ToBytes serialise the tx to bytes, no matter if it is signed (locked), or not
-func (tx *TokenGrantKycTransaction) ToBytes() ([]byte, error) {
-	bytes, err := tx.Transaction.toBytes(tx)
-	if err != nil {
-		return nil, err
-	}
-	return bytes, nil
-}
-
-// SetTransactionID sets the TransactionID for this TokenGrantKycTransaction.
-func (tx *TokenGrantKycTransaction) SetTransactionID(transactionID TransactionID) *TokenGrantKycTransaction {
-	tx.Transaction.SetTransactionID(transactionID)
-	return tx
-}
-
-// SetNodeAccountIDs sets the _Node AccountID for this TokenGrantKycTransaction.
-func (tx *TokenGrantKycTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenGrantKycTransaction {
-	tx.Transaction.SetNodeAccountIDs(nodeID)
-	return tx
-}
-
-// SetMaxRetry sets the max number of errors before execution will fail.
-func (tx *TokenGrantKycTransaction) SetMaxRetry(count int) *TokenGrantKycTransaction {
-	tx.Transaction.SetMaxRetry(count)
-	return tx
-}
-
-// SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (tx *TokenGrantKycTransaction) SetMaxBackoff(max time.Duration) *TokenGrantKycTransaction {
-	tx.Transaction.SetMaxBackoff(max)
-	return tx
-}
-
-// SetMinBackoff sets the minimum amount of time to wait between retries.
-func (tx *TokenGrantKycTransaction) SetMinBackoff(min time.Duration) *TokenGrantKycTransaction {
-	tx.Transaction.SetMinBackoff(min)
-	return tx
-}
-
-func (tx *TokenGrantKycTransaction) SetLogLevel(level LogLevel) *TokenGrantKycTransaction {
-	tx.Transaction.SetLogLevel(level)
-	return tx
-}
-
-func (tx *TokenGrantKycTransaction) Execute(client *Client) (TransactionResponse, error) {
-	return tx.Transaction.execute(client, tx)
-}
-
-func (tx *TokenGrantKycTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	return tx.Transaction.schedule(tx)
-}
-
 // ----------- Overridden functions ----------------
 
-func (tx *TokenGrantKycTransaction) getName() string {
+func (tx TokenGrantKycTransaction) getName() string {
 	return "TokenGrantKycTransaction"
 }
 
-func (tx *TokenGrantKycTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx TokenGrantKycTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -254,7 +129,7 @@ func (tx *TokenGrantKycTransaction) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (tx *TokenGrantKycTransaction) build() *services.TransactionBody {
+func (tx TokenGrantKycTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
 		Memo:                     tx.Transaction.memo,
@@ -266,7 +141,7 @@ func (tx *TokenGrantKycTransaction) build() *services.TransactionBody {
 	}
 }
 
-func (tx *TokenGrantKycTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx TokenGrantKycTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Memo:           tx.Transaction.memo,
@@ -276,7 +151,7 @@ func (tx *TokenGrantKycTransaction) buildScheduled() (*services.SchedulableTrans
 	}, nil
 }
 
-func (tx *TokenGrantKycTransaction) buildProtoBody() *services.TokenGrantKycTransactionBody {
+func (tx TokenGrantKycTransaction) buildProtoBody() *services.TokenGrantKycTransactionBody {
 	body := &services.TokenGrantKycTransactionBody{}
 	if tx.tokenID != nil {
 		body.Token = tx.tokenID._ToProtobuf()
@@ -289,11 +164,16 @@ func (tx *TokenGrantKycTransaction) buildProtoBody() *services.TokenGrantKycTran
 	return body
 }
 
-func (tx *TokenGrantKycTransaction) getMethod(channel *_Channel) _Method {
+func (tx TokenGrantKycTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetToken().GrantKycToTokenAccount,
 	}
 }
-func (tx *TokenGrantKycTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+
+func (tx TokenGrantKycTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
+}
+
+func (tx TokenGrantKycTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }

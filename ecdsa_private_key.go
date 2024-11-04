@@ -286,7 +286,7 @@ func (sk _ECDSAPrivateKey) _ToProtoKey() *services.Key {
 }
 
 // _SignTransaction signes the transaction and adds the signature to the transaction
-func (sk _ECDSAPrivateKey) _SignTransaction(tx *Transaction) ([]byte, error) {
+func (sk _ECDSAPrivateKey) _SignTransaction(tx *Transaction[TransactionInterface]) ([]byte, error) {
 	tx._RequireOneNodeAccountID()
 
 	if tx.signedTransactions._Length() == 0 {

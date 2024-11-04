@@ -21,8 +21,6 @@ package hedera
  */
 
 import (
-	"time"
-
 	"github.com/pkg/errors"
 
 	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
@@ -37,7 +35,7 @@ import (
 // Upon SUCCESS, the receipt includes the scheduledTransactionID to use to query
 // for the record of the scheduled transaction's execution (if it occurs).
 type ScheduleSignTransaction struct {
-	Transaction
+	*Transaction[*ScheduleSignTransaction]
 	scheduleID *ScheduleID
 }
 
@@ -50,19 +48,21 @@ type ScheduleSignTransaction struct {
 // Upon SUCCESS, the receipt includes the scheduledTransactionID to use to query
 // for the record of the scheduled transaction's execution (if it occurs).
 func NewScheduleSignTransaction() *ScheduleSignTransaction {
-	tx := ScheduleSignTransaction{
-		Transaction: _NewTransaction(),
-	}
+	tx := &ScheduleSignTransaction{}
+	tx.Transaction = _NewTransaction(tx)
 	tx._SetDefaultMaxTransactionFee(NewHbar(5))
 
-	return &tx
+	return tx
 }
 
-func _ScheduleSignTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *ScheduleSignTransaction {
-	return &ScheduleSignTransaction{
-		Transaction: tx,
-		scheduleID:  _ScheduleIDFromProtobuf(pb.GetScheduleSign().GetScheduleID()),
+func _ScheduleSignTransactionFromProtobuf(tx Transaction[*ScheduleSignTransaction], pb *services.TransactionBody) ScheduleSignTransaction {
+	scheduleSignTransaction := ScheduleSignTransaction{
+		scheduleID: _ScheduleIDFromProtobuf(pb.GetScheduleSign().GetScheduleID()),
 	}
+
+	tx.childTransaction = &scheduleSignTransaction
+	scheduleSignTransaction.Transaction = &tx
+	return scheduleSignTransaction
 }
 
 // SetScheduleID Sets the id of the schedule to add signing keys to
@@ -81,138 +81,13 @@ func (tx *ScheduleSignTransaction) GetScheduleID() ScheduleID {
 	return *tx.scheduleID
 }
 
-// ---- Required Interfaces ---- //
-
-// Sign uses the provided privateKey to sign the transaction.
-func (tx *ScheduleSignTransaction) Sign(privateKey PrivateKey) *ScheduleSignTransaction {
-	tx.Transaction.Sign(privateKey)
-	return tx
-}
-
-// SignWithOperator signs the transaction with client's operator privateKey.
-func (tx *ScheduleSignTransaction) SignWithOperator(client *Client) (*ScheduleSignTransaction, error) {
-	_, err := tx.Transaction.signWithOperator(client, tx)
-	if err != nil {
-		return nil, err
-	}
-	return tx, nil
-}
-
-// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
-// with the publicKey as the map key.
-func (tx *ScheduleSignTransaction) SignWith(
-	publicKey PublicKey,
-	signer TransactionSigner,
-) *ScheduleSignTransaction {
-	tx.Transaction.SignWith(publicKey, signer)
-	return tx
-}
-
-// AddSignature adds a signature to the transaction.
-func (tx *ScheduleSignTransaction) AddSignature(publicKey PublicKey, signature []byte) *ScheduleSignTransaction {
-	tx.Transaction.AddSignature(publicKey, signature)
-	return tx
-}
-
-// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (tx *ScheduleSignTransaction) SetGrpcDeadline(deadline *time.Duration) *ScheduleSignTransaction {
-	tx.Transaction.SetGrpcDeadline(deadline)
-	return tx
-}
-
-func (tx *ScheduleSignTransaction) Freeze() (*ScheduleSignTransaction, error) {
-	return tx.FreezeWith(nil)
-}
-
-func (tx *ScheduleSignTransaction) FreezeWith(client *Client) (*ScheduleSignTransaction, error) {
-	_, err := tx.Transaction.freezeWith(client, tx)
-	return tx, err
-}
-
-// SetMaxTransactionFee sets the max transaction fee for this ScheduleSignTransaction.
-func (tx *ScheduleSignTransaction) SetMaxTransactionFee(fee Hbar) *ScheduleSignTransaction {
-	tx.Transaction.SetMaxTransactionFee(fee)
-	return tx
-}
-
-// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
-func (tx *ScheduleSignTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *ScheduleSignTransaction {
-	tx.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
-	return tx
-}
-
-// SetTransactionMemo sets the memo for this ScheduleSignTransaction.
-func (tx *ScheduleSignTransaction) SetTransactionMemo(memo string) *ScheduleSignTransaction {
-	tx.Transaction.SetTransactionMemo(memo)
-	return tx
-}
-
-// SetTransactionValidDuration sets the valid duration for this ScheduleSignTransaction.
-func (tx *ScheduleSignTransaction) SetTransactionValidDuration(duration time.Duration) *ScheduleSignTransaction {
-	tx.Transaction.SetTransactionValidDuration(duration)
-	return tx
-}
-
-// ToBytes serialise the tx to bytes, no matter if it is signed (locked), or not
-func (tx *ScheduleSignTransaction) ToBytes() ([]byte, error) {
-	bytes, err := tx.Transaction.toBytes(tx)
-	if err != nil {
-		return nil, err
-	}
-	return bytes, nil
-}
-
-// SetTransactionID sets the TransactionID for this ScheduleSignTransaction.
-func (tx *ScheduleSignTransaction) SetTransactionID(transactionID TransactionID) *ScheduleSignTransaction {
-	tx.Transaction.SetTransactionID(transactionID)
-	return tx
-}
-
-// SetNodeAccountIDs sets the _Node AccountID for this ScheduleSignTransaction.
-func (tx *ScheduleSignTransaction) SetNodeAccountIDs(nodeID []AccountID) *ScheduleSignTransaction {
-	tx.Transaction.SetNodeAccountIDs(nodeID)
-	return tx
-}
-
-// SetMaxRetry sets the max number of errors before execution will fail.
-func (tx *ScheduleSignTransaction) SetMaxRetry(count int) *ScheduleSignTransaction {
-	tx.Transaction.SetMaxRetry(count)
-	return tx
-}
-
-// SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (tx *ScheduleSignTransaction) SetMaxBackoff(max time.Duration) *ScheduleSignTransaction {
-	tx.Transaction.SetMaxBackoff(max)
-	return tx
-}
-
-// SetMinBackoff sets the minimum amount of time to wait between retries.
-func (tx *ScheduleSignTransaction) SetMinBackoff(min time.Duration) *ScheduleSignTransaction {
-	tx.Transaction.SetMinBackoff(min)
-	return tx
-}
-
-func (tx *ScheduleSignTransaction) SetLogLevel(level LogLevel) *ScheduleSignTransaction {
-	tx.Transaction.SetLogLevel(level)
-	return tx
-}
-
-func (tx *ScheduleSignTransaction) Execute(client *Client) (TransactionResponse, error) {
-	return tx.Transaction.execute(client, tx)
-}
-
-func (tx *ScheduleSignTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	return tx.Transaction.schedule(tx)
-}
-
 // ----------- Overridden functions ----------------
 
-func (tx *ScheduleSignTransaction) getName() string {
+func (tx ScheduleSignTransaction) getName() string {
 	return "ScheduleSignTransaction"
 }
 
-func (tx *ScheduleSignTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx ScheduleSignTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -226,7 +101,7 @@ func (tx *ScheduleSignTransaction) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (tx *ScheduleSignTransaction) build() *services.TransactionBody {
+func (tx ScheduleSignTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
 		Memo:                     tx.Transaction.memo,
@@ -238,11 +113,11 @@ func (tx *ScheduleSignTransaction) build() *services.TransactionBody {
 	}
 }
 
-func (tx *ScheduleSignTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx ScheduleSignTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return nil, errors.New("cannot schedule `ScheduleSignTransaction")
 }
 
-func (tx *ScheduleSignTransaction) buildProtoBody() *services.ScheduleSignTransactionBody {
+func (tx ScheduleSignTransaction) buildProtoBody() *services.ScheduleSignTransactionBody {
 	body := &services.ScheduleSignTransactionBody{}
 	if tx.scheduleID != nil {
 		body.ScheduleID = tx.scheduleID._ToProtobuf()
@@ -251,12 +126,16 @@ func (tx *ScheduleSignTransaction) buildProtoBody() *services.ScheduleSignTransa
 	return body
 }
 
-func (tx *ScheduleSignTransaction) getMethod(channel *_Channel) _Method {
+func (tx ScheduleSignTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetSchedule().SignSchedule,
 	}
 }
 
-func (tx *ScheduleSignTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx ScheduleSignTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
+}
+
+func (tx ScheduleSignTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }

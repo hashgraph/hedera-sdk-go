@@ -867,9 +867,11 @@ func (pk PublicKey) _ToSignaturePairProtobuf(signature []byte) *services.Signatu
 }
 
 // SignTransaction signes the transaction and adds the signature to the transaction
-func (sk PrivateKey) SignTransaction(tx *Transaction) ([]byte, error) {
+func (sk PrivateKey) SignTransaction(tx TransactionInterface) ([]byte, error) {
+	baseTx := tx.getBaseTransaction()
+
 	if sk.ecdsaPrivateKey != nil {
-		b, err := sk.ecdsaPrivateKey._SignTransaction(tx)
+		b, err := sk.ecdsaPrivateKey._SignTransaction(baseTx)
 		if err != nil {
 			return []byte{}, err
 		}
@@ -878,7 +880,7 @@ func (sk PrivateKey) SignTransaction(tx *Transaction) ([]byte, error) {
 	}
 
 	if sk.ed25519PrivateKey != nil {
-		b, err := sk.ed25519PrivateKey._SignTransaction(tx)
+		b, err := sk.ed25519PrivateKey._SignTransaction(baseTx)
 		if err != nil {
 			return []byte{}, err
 		}
@@ -901,13 +903,15 @@ func (pk PublicKey) Verify(message []byte, signature []byte) bool {
 	return false
 }
 
-func (pk PublicKey) VerifyTransaction(transaction Transaction) bool {
+func (pk PublicKey) VerifyTransaction(tx TransactionInterface) bool {
+	baseTx := tx.getBaseTransaction()
+
 	if pk.ecdsaPublicKey != nil {
-		return pk.ecdsaPublicKey._VerifyTransaction(transaction)
+		return pk.ecdsaPublicKey._VerifyTransaction(baseTx)
 	}
 
 	if pk.ed25519PublicKey != nil {
-		return pk.ed25519PublicKey._VerifyTransaction(transaction)
+		return pk.ed25519PublicKey._VerifyTransaction(baseTx)
 	}
 
 	return false

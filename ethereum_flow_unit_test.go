@@ -192,18 +192,8 @@ func TestUnitEthereumFlowCoverage(t *testing.T) {
 	transaction._CreateFile(byt, client)
 
 	require.NoError(t, err)
-	transaction.GetTransactionID()
 	transaction.GetNodeAccountIDs()
-	transaction.GetMaxRetry()
-	transaction.GetMaxTransactionFee()
-	transaction.GetRegenerateTransactionID()
-
-	transaction.GetMaxTransactionFee()
-	transaction.GetTransactionMemo()
-	transaction.GetRegenerateTransactionID()
 	transaction.GetEthereumData()
 	transaction.GetCallDataFileID()
 	transaction.GetMaxGasAllowance()
-	_, err = transaction.GetSignatures()
-	require.NoError(t, err)
 }
