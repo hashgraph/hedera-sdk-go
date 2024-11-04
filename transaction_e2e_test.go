@@ -61,7 +61,7 @@ func TestIntegrationTransactionAddSignature(t *testing.T) {
 	updateBytes, err := tx.ToBytes()
 	require.NoError(t, err)
 
-	sig1, err := newKey.SignTransaction(&tx.Transaction)
+	sig1, err := newKey.SignTransaction(tx)
 	require.NoError(t, err)
 
 	tx2, err := TransactionFromBytes(updateBytes)
@@ -101,7 +101,7 @@ func TestIntegrationTransactionSignTransaction(t *testing.T) {
 		FreezeWith(env.Client)
 	require.NoError(t, err)
 
-	_, err = newKey.SignTransaction(&tx.Transaction)
+	_, err = newKey.SignTransaction(tx)
 	require.NoError(t, err)
 
 	resp, err = tx.Execute(env.Client)
@@ -263,7 +263,7 @@ func DisabledTestTransactionFromBytes(t *testing.T) { // nolint
 	defer CloseIntegrationTestEnv(env, nil)
 
 	switch tx := transaction.(type) {
-	case TransferTransaction:
+	case *TransferTransaction:
 		assert.Equal(t, tx.GetHbarTransfers()[AccountID{0, 0, 542348, nil, nil, nil}].AsTinybar(), int64(-10))
 		assert.Equal(t, tx.GetHbarTransfers()[AccountID{0, 0, 47439, nil, nil, nil}].AsTinybar(), int64(10))
 

@@ -36,7 +36,7 @@ import (
 // The current API ignores shardID, realmID, and newRealmAdminKey, and creates everything in shard 0 and realm 0, with
 // a null key. Future versions of the API will support multiple realms and multiple shards.
 type FileCreateTransaction struct {
-	Transaction
+	*Transaction[*FileCreateTransaction]
 	keys           *KeyList
 	expirationTime *time.Time
 	contents       []byte
@@ -53,27 +53,28 @@ type FileCreateTransaction struct {
 // The current API ignores shardID, realmID, and newRealmAdminKey, and creates everything in shard 0 and realm 0, with
 // a null key. Future versions of the API will support multiple realms and multiple shards.
 func NewFileCreateTransaction() *FileCreateTransaction {
-	tx := FileCreateTransaction{
-		Transaction: _NewTransaction(),
-	}
+	tx := &FileCreateTransaction{}
+	tx.Transaction = _NewTransaction(tx)
 
 	tx.SetExpirationTime(time.Now().Add(7890000 * time.Second))
 	tx._SetDefaultMaxTransactionFee(NewHbar(5))
 
-	return &tx
+	return tx
 }
 
-func _FileCreateTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *FileCreateTransaction {
+func _FileCreateTransactionFromProtobuf(tx Transaction[*FileCreateTransaction], pb *services.TransactionBody) FileCreateTransaction {
 	keys, _ := _KeyListFromProtobuf(pb.GetFileCreate().GetKeys())
 	expiration := _TimeFromProtobuf(pb.GetFileCreate().GetExpirationTime())
 
-	return &FileCreateTransaction{
-		Transaction:    tx,
+	fileCreateTransaction := FileCreateTransaction{
 		keys:           &keys,
 		expirationTime: &expiration,
 		contents:       pb.GetFileCreate().GetContents(),
 		memo:           pb.GetMemo(),
 	}
+	tx.childTransaction = &fileCreateTransaction
+	fileCreateTransaction.Transaction = &tx
+	return fileCreateTransaction
 }
 
 // AddKey adds a key to the internal list of keys associated with the file. All of the keys on the list must sign to
@@ -151,159 +152,12 @@ func (tx *FileCreateTransaction) GetMemo() string {
 	return tx.memo
 }
 
-// ---- Required Interfaces ---- //
-
-// Sign uses the provided privateKey to sign the transaction.
-func (tx *FileCreateTransaction) Sign(
-	privateKey PrivateKey,
-) *FileCreateTransaction {
-	tx.Transaction.Sign(privateKey)
-	return tx
-}
-
-// SignWithOperator signs the transaction with client's operator privateKey.
-func (tx *FileCreateTransaction) SignWithOperator(
-	client *Client,
-) (*FileCreateTransaction, error) {
-	// If the transaction is not signed by the _Operator, we need
-	// to sign the transaction with the _Operator
-	_, err := tx.Transaction.signWithOperator(client, tx)
-	if err != nil {
-		return nil, err
-	}
-	return tx, nil
-}
-
-// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
-// with the publicKey as the map key.
-func (tx *FileCreateTransaction) SignWith(
-	publicKey PublicKey,
-	signer TransactionSigner,
-) *FileCreateTransaction {
-	tx.Transaction.SignWith(publicKey, signer)
-	return tx
-}
-
-// AddSignature adds a signature to the transaction.
-func (tx *FileCreateTransaction) AddSignature(publicKey PublicKey, signature []byte) *FileCreateTransaction {
-	tx.Transaction.AddSignature(publicKey, signature)
-	return tx
-}
-
-// When execution is attempted, a single attempt will timeout when tx deadline is reached. (The SDK may subsequently retry the execution.)
-func (tx *FileCreateTransaction) SetGrpcDeadline(deadline *time.Duration) *FileCreateTransaction {
-	tx.Transaction.SetGrpcDeadline(deadline)
-	return tx
-}
-
-func (tx *FileCreateTransaction) Freeze() (*FileCreateTransaction, error) {
-	_, err := tx.FreezeWith(nil)
-	return tx, err
-}
-
-func (tx *FileCreateTransaction) FreezeWith(client *Client) (*FileCreateTransaction, error) {
-	if tx.IsFrozen() {
-		return tx, nil
-	}
-	tx._InitFee(client)
-	if err := tx._InitTransactionID(client); err != nil {
-		return tx, err
-	}
-	body := tx.build()
-
-	return tx, _TransactionFreezeWith(&tx.Transaction, client, body)
-}
-
-// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
-func (tx *FileCreateTransaction) SetMaxTransactionFee(fee Hbar) *FileCreateTransaction {
-	tx._RequireNotFrozen()
-	tx.Transaction.SetMaxTransactionFee(fee)
-	return tx
-}
-
-// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
-func (tx *FileCreateTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *FileCreateTransaction {
-	tx._RequireNotFrozen()
-	tx.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
-	return tx
-}
-
-// SetTransactionMemo sets the memo for this FileCreateTransaction.
-func (tx *FileCreateTransaction) SetTransactionMemo(memo string) *FileCreateTransaction {
-	tx._RequireNotFrozen()
-	tx.Transaction.SetTransactionMemo(memo)
-	return tx
-}
-
-// SetTransactionValidDuration sets the valid duration for this FileCreateTransaction.
-func (tx *FileCreateTransaction) SetTransactionValidDuration(duration time.Duration) *FileCreateTransaction {
-	tx._RequireNotFrozen()
-	tx.Transaction.SetTransactionValidDuration(duration)
-	return tx
-}
-
-// ToBytes serialise the tx to bytes, no matter if it is signed (locked), or not
-func (tx *FileCreateTransaction) ToBytes() ([]byte, error) {
-	bytes, err := tx.Transaction.toBytes(tx)
-	if err != nil {
-		return nil, err
-	}
-	return bytes, nil
-}
-
-// SetTransactionID sets the TransactionID for this FileCreateTransaction.
-func (tx *FileCreateTransaction) SetTransactionID(transactionID TransactionID) *FileCreateTransaction {
-	tx._RequireNotFrozen()
-
-	tx.Transaction.SetTransactionID(transactionID)
-	return tx
-}
-
-// SetNodeAccountID sets the _Node AccountID for this FileCreateTransaction.
-func (tx *FileCreateTransaction) SetNodeAccountIDs(nodeID []AccountID) *FileCreateTransaction {
-	tx._RequireNotFrozen()
-	tx.Transaction.SetNodeAccountIDs(nodeID)
-	return tx
-}
-
-// SetMaxRetry sets the max number of errors before execution will fail.
-func (tx *FileCreateTransaction) SetMaxRetry(count int) *FileCreateTransaction {
-	tx.Transaction.SetMaxRetry(count)
-	return tx
-}
-
-// SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (tx *FileCreateTransaction) SetMaxBackoff(max time.Duration) *FileCreateTransaction {
-	tx.Transaction.SetMaxBackoff(max)
-	return tx
-}
-
-// SetMinBackoff sets the minimum amount of time to wait between retries.
-func (tx *FileCreateTransaction) SetMinBackoff(min time.Duration) *FileCreateTransaction {
-	tx.Transaction.SetMinBackoff(min)
-	return tx
-}
-
-func (tx *FileCreateTransaction) SetLogLevel(level LogLevel) *FileCreateTransaction {
-	tx.Transaction.SetLogLevel(level)
-	return tx
-}
-
-func (tx *FileCreateTransaction) Execute(client *Client) (TransactionResponse, error) {
-	return tx.Transaction.execute(client, tx)
-}
-
-func (tx *FileCreateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	return tx.Transaction.schedule(tx)
-}
-
 // ----------- Overridden functions ----------------
 
-func (tx *FileCreateTransaction) getName() string {
+func (tx FileCreateTransaction) getName() string {
 	return "FileCreateTransaction"
 }
-func (tx *FileCreateTransaction) build() *services.TransactionBody {
+func (tx FileCreateTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
 		Memo:                     tx.Transaction.memo,
@@ -315,11 +169,11 @@ func (tx *FileCreateTransaction) build() *services.TransactionBody {
 	}
 }
 
-func (tx *FileCreateTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx FileCreateTransaction) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (tx *FileCreateTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx FileCreateTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Memo:           tx.Transaction.memo,
@@ -329,7 +183,7 @@ func (tx *FileCreateTransaction) buildScheduled() (*services.SchedulableTransact
 	}, nil
 }
 
-func (tx *FileCreateTransaction) buildProtoBody() *services.FileCreateTransactionBody {
+func (tx FileCreateTransaction) buildProtoBody() *services.FileCreateTransactionBody {
 	body := &services.FileCreateTransactionBody{
 		Memo: tx.memo,
 	}
@@ -349,11 +203,15 @@ func (tx *FileCreateTransaction) buildProtoBody() *services.FileCreateTransactio
 	return body
 }
 
-func (tx *FileCreateTransaction) getMethod(channel *_Channel) _Method {
+func (tx FileCreateTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetFile().CreateFile,
 	}
 }
-func (tx *FileCreateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx FileCreateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
+}
+
+func (tx FileCreateTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, tx)
 }

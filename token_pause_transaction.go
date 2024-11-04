@@ -21,8 +21,6 @@ package hedera
  */
 
 import (
-	"time"
-
 	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
 )
 
@@ -35,7 +33,7 @@ import (
 // Once executed the Token is marked as paused and will be not able to be a part of any transaction.
 // The operation is idempotent - becomes a no-op if the Token is already Paused.
 type TokenPauseTransaction struct {
-	Transaction
+	*Transaction[*TokenPauseTransaction]
 	tokenID *TokenID
 }
 
@@ -48,20 +46,22 @@ type TokenPauseTransaction struct {
 // Once executed the Token is marked as paused and will be not able to be a part of any transaction.
 // The operation is idempotent - becomes a no-op if the Token is already Paused.
 func NewTokenPauseTransaction() *TokenPauseTransaction {
-	tx := TokenPauseTransaction{
-		Transaction: _NewTransaction(),
-	}
+	tx := &TokenPauseTransaction{}
+	tx.Transaction = _NewTransaction(tx)
 
 	tx._SetDefaultMaxTransactionFee(NewHbar(30))
 
-	return &tx
+	return tx
 }
 
-func _TokenPauseTransactionFromProtobuf(tx Transaction, pb *services.TransactionBody) *TokenPauseTransaction {
-	return &TokenPauseTransaction{
-		Transaction: tx,
-		tokenID:     _TokenIDFromProtobuf(pb.GetTokenDeletion().GetToken()),
+func _TokenPauseTransactionFromProtobuf(tx Transaction[*TokenPauseTransaction], pb *services.TransactionBody) TokenPauseTransaction {
+	tokenPauseTransaction := TokenPauseTransaction{
+		tokenID: _TokenIDFromProtobuf(pb.GetTokenDeletion().GetToken()),
 	}
+
+	tx.childTransaction = &tokenPauseTransaction
+	tokenPauseTransaction.Transaction = &tx
+	return tokenPauseTransaction
 }
 
 // SetTokenID Sets the token to be paused
@@ -80,138 +80,13 @@ func (tx *TokenPauseTransaction) GetTokenID() TokenID {
 	return *tx.tokenID
 }
 
-// ---- Required Interfaces ---- //
-
-// Sign uses the provided privateKey to sign the transaction.
-func (tx *TokenPauseTransaction) Sign(privateKey PrivateKey) *TokenPauseTransaction {
-	tx.Transaction.Sign(privateKey)
-	return tx
-}
-
-// SignWithOperator signs the transaction with client's operator privateKey.
-func (tx *TokenPauseTransaction) SignWithOperator(client *Client) (*TokenPauseTransaction, error) {
-	_, err := tx.Transaction.signWithOperator(client, tx)
-	if err != nil {
-		return nil, err
-	}
-	return tx, nil
-}
-
-// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
-// with the publicKey as the map key.
-func (tx *TokenPauseTransaction) SignWith(
-	publicKey PublicKey,
-	signer TransactionSigner,
-) *TokenPauseTransaction {
-	tx.Transaction.SignWith(publicKey, signer)
-	return tx
-}
-
-// AddSignature adds a signature to the transaction.
-func (tx *TokenPauseTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenPauseTransaction {
-	tx.Transaction.AddSignature(publicKey, signature)
-	return tx
-}
-
-// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (tx *TokenPauseTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenPauseTransaction {
-	tx.Transaction.SetGrpcDeadline(deadline)
-	return tx
-}
-
-func (tx *TokenPauseTransaction) Freeze() (*TokenPauseTransaction, error) {
-	return tx.FreezeWith(nil)
-}
-
-func (tx *TokenPauseTransaction) FreezeWith(client *Client) (*TokenPauseTransaction, error) {
-	_, err := tx.Transaction.freezeWith(client, tx)
-	return tx, err
-}
-
-// SetMaxTransactionFee sets the max transaction fee for this TokenPauseTransaction.
-func (tx *TokenPauseTransaction) SetMaxTransactionFee(fee Hbar) *TokenPauseTransaction {
-	tx.Transaction.SetMaxTransactionFee(fee)
-	return tx
-}
-
-// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
-func (tx *TokenPauseTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *TokenPauseTransaction {
-	tx.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
-	return tx
-}
-
-// SetTransactionMemo sets the memo for this TokenPauseTransaction.
-func (tx *TokenPauseTransaction) SetTransactionMemo(memo string) *TokenPauseTransaction {
-	tx.Transaction.SetTransactionMemo(memo)
-	return tx
-}
-
-// SetTransactionValidDuration sets the valid duration for this TokenPauseTransaction.
-func (tx *TokenPauseTransaction) SetTransactionValidDuration(duration time.Duration) *TokenPauseTransaction {
-	tx.Transaction.SetTransactionValidDuration(duration)
-	return tx
-}
-
-// ToBytes serialise the tx to bytes, no matter if it is signed (locked), or not
-func (tx *TokenPauseTransaction) ToBytes() ([]byte, error) {
-	bytes, err := tx.Transaction.toBytes(tx)
-	if err != nil {
-		return nil, err
-	}
-	return bytes, nil
-}
-
-// SetTransactionID sets the TransactionID for this TokenPauseTransaction.
-func (tx *TokenPauseTransaction) SetTransactionID(transactionID TransactionID) *TokenPauseTransaction {
-	tx.Transaction.SetTransactionID(transactionID)
-	return tx
-}
-
-// SetNodeAccountIDs sets the _Node AccountID for this TokenPauseTransaction.
-func (tx *TokenPauseTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenPauseTransaction {
-	tx.Transaction.SetNodeAccountIDs(nodeID)
-	return tx
-}
-
-// SetMaxRetry sets the max number of errors before execution will fail.
-func (tx *TokenPauseTransaction) SetMaxRetry(count int) *TokenPauseTransaction {
-	tx.Transaction.SetMaxRetry(count)
-	return tx
-}
-
-// SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (tx *TokenPauseTransaction) SetMaxBackoff(max time.Duration) *TokenPauseTransaction {
-	tx.Transaction.SetMaxBackoff(max)
-	return tx
-}
-
-// SetMinBackoff sets the minimum amount of time to wait between retries.
-func (tx *TokenPauseTransaction) SetMinBackoff(min time.Duration) *TokenPauseTransaction {
-	tx.Transaction.SetMinBackoff(min)
-	return tx
-}
-
-func (tx *TokenPauseTransaction) SetLogLevel(level LogLevel) *TokenPauseTransaction {
-	tx.Transaction.SetLogLevel(level)
-	return tx
-}
-
-func (tx *TokenPauseTransaction) Execute(client *Client) (TransactionResponse, error) {
-	return tx.Transaction.execute(client, tx)
-}
-
-func (tx *TokenPauseTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	return tx.Transaction.schedule(tx)
-}
-
 // ----------- Overridden functions ----------------
 
-func (tx *TokenPauseTransaction) getName() string {
+func (tx TokenPauseTransaction) getName() string {
 	return "TokenPauseTransaction"
 }
 
-func (tx *TokenPauseTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx TokenPauseTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -225,7 +100,7 @@ func (tx *TokenPauseTransaction) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (tx *TokenPauseTransaction) build() *services.TransactionBody {
+func (tx TokenPauseTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
 		Memo:                     tx.Transaction.memo,
@@ -237,7 +112,7 @@ func (tx *TokenPauseTransaction) build() *services.TransactionBody {
 	}
 }
 
-func (tx *TokenPauseTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) { //nolint
+func (tx TokenPauseTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) { //nolint
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Memo:           tx.Transaction.memo,
@@ -247,7 +122,7 @@ func (tx *TokenPauseTransaction) buildScheduled() (*services.SchedulableTransact
 	}, nil
 }
 
-func (tx *TokenPauseTransaction) buildProtoBody() *services.TokenPauseTransactionBody {
+func (tx TokenPauseTransaction) buildProtoBody() *services.TokenPauseTransactionBody {
 	body := &services.TokenPauseTransactionBody{}
 	if tx.tokenID != nil {
 		body.Token = tx.tokenID._ToProtobuf()
@@ -255,12 +130,16 @@ func (tx *TokenPauseTransaction) buildProtoBody() *services.TokenPauseTransactio
 	return body
 }
 
-func (tx *TokenPauseTransaction) getMethod(channel *_Channel) _Method {
+func (tx TokenPauseTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetToken().DeleteToken,
 	}
 }
 
-func (tx *TokenPauseTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+func (tx TokenPauseTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return tx.buildScheduled()
+}
+
+func (tx TokenPauseTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }

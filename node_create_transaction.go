@@ -1,8 +1,6 @@
 package hedera
 
 import (
-	"time"
-
 	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
 )
 
@@ -51,7 +49,7 @@ import (
  * receipt.
  */
 type NodeCreateTransaction struct {
-	Transaction
+	*Transaction[*NodeCreateTransaction]
 	accountID           *AccountID
 	description         string
 	gossipEndpoints     []Endpoint
@@ -62,18 +60,17 @@ type NodeCreateTransaction struct {
 }
 
 func NewNodeCreateTransaction() *NodeCreateTransaction {
-	tx := &NodeCreateTransaction{
-		Transaction: _NewTransaction(),
-	}
+	tx := &NodeCreateTransaction{}
+	tx.Transaction = _NewTransaction(tx)
 	tx._SetDefaultMaxTransactionFee(NewHbar(5))
 
 	return tx
 }
 
-func _NodeCreateTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) *NodeCreateTransaction {
+func _NodeCreateTransactionFromProtobuf(tx Transaction[*NodeCreateTransaction], pb *services.TransactionBody) NodeCreateTransaction {
 	adminKey, err := _KeyFromProtobuf(pb.GetNodeCreate().GetAdminKey())
 	if err != nil {
-		return &NodeCreateTransaction{}
+		return NodeCreateTransaction{}
 	}
 
 	accountID := _AccountIDFromProtobuf(pb.GetNodeCreate().GetAccountId())
@@ -86,8 +83,7 @@ func _NodeCreateTransactionFromProtobuf(transaction Transaction, pb *services.Tr
 		serviceEndpoints = append(serviceEndpoints, EndpointFromProtobuf(endpoint))
 	}
 
-	return &NodeCreateTransaction{
-		Transaction:         transaction,
+	nodeCreateTransaction := NodeCreateTransaction{
 		accountID:           accountID,
 		description:         pb.GetNodeCreate().GetDescription(),
 		gossipEndpoints:     gossipEndpoints,
@@ -96,6 +92,10 @@ func _NodeCreateTransactionFromProtobuf(transaction Transaction, pb *services.Tr
 		grpcCertificateHash: pb.GetNodeCreate().GetGrpcCertificateHash(),
 		adminKey:            adminKey,
 	}
+
+	tx.childTransaction = &nodeCreateTransaction
+	nodeCreateTransaction.Transaction = &tx
+	return nodeCreateTransaction
 }
 
 // GetAccountID AccountID of the node
@@ -202,138 +202,13 @@ func (tx *NodeCreateTransaction) SetAdminKey(adminKey Key) *NodeCreateTransactio
 	return tx
 }
 
-// ---- Required Interfaces ---- //
-
-// Sign uses the provided privateKey to sign the transaction.
-func (tx *NodeCreateTransaction) Sign(privateKey PrivateKey) *NodeCreateTransaction {
-	tx.Transaction.Sign(privateKey)
-	return tx
-}
-
-// SignWithOperator signs the transaction with client's operator privateKey.
-func (tx *NodeCreateTransaction) SignWithOperator(client *Client) (*NodeCreateTransaction, error) {
-	_, err := tx.Transaction.signWithOperator(client, tx)
-	if err != nil {
-		return nil, err
-	}
-	return tx, nil
-}
-
-// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
-// with the publicKey as the map key.
-func (tx *NodeCreateTransaction) SignWith(
-	publicKey PublicKey,
-	signer TransactionSigner,
-) *NodeCreateTransaction {
-	tx.Transaction.SignWith(publicKey, signer)
-	return tx
-}
-
-// AddSignature adds a signature to the transaction.
-func (tx *NodeCreateTransaction) AddSignature(publicKey PublicKey, signature []byte) *NodeCreateTransaction {
-	tx.Transaction.AddSignature(publicKey, signature)
-	return tx
-}
-
-// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
-func (tx *NodeCreateTransaction) SetGrpcDeadline(deadline *time.Duration) *NodeCreateTransaction {
-	tx.Transaction.SetGrpcDeadline(deadline)
-	return tx
-}
-
-func (tx *NodeCreateTransaction) Freeze() (*NodeCreateTransaction, error) {
-	return tx.FreezeWith(nil)
-}
-
-func (tx *NodeCreateTransaction) FreezeWith(client *Client) (*NodeCreateTransaction, error) {
-	_, err := tx.Transaction.freezeWith(client, tx)
-	return tx, err
-}
-
-// SetMaxTransactionFee sets the max transaction fee for this NodeCreateTransaction.
-func (tx *NodeCreateTransaction) SetMaxTransactionFee(fee Hbar) *NodeCreateTransaction {
-	tx.Transaction.SetMaxTransactionFee(fee)
-	return tx
-}
-
-// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
-func (tx *NodeCreateTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *NodeCreateTransaction {
-	tx.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
-	return tx
-}
-
-// SetTransactionMemo sets the memo for this NodeCreateTransaction.
-func (tx *NodeCreateTransaction) SetTransactionMemo(memo string) *NodeCreateTransaction {
-	tx.Transaction.SetTransactionMemo(memo)
-	return tx
-}
-
-// SetTransactionValidDuration sets the valid duration for this NodeCreateTransaction.
-func (tx *NodeCreateTransaction) SetTransactionValidDuration(duration time.Duration) *NodeCreateTransaction {
-	tx.Transaction.SetTransactionValidDuration(duration)
-	return tx
-}
-
-// ToBytes serialise the tx to bytes, no matter if it is signed (locked), or not
-func (tx *NodeCreateTransaction) ToBytes() ([]byte, error) {
-	bytes, err := tx.Transaction.toBytes(tx)
-	if err != nil {
-		return nil, err
-	}
-	return bytes, nil
-}
-
-// SetTransactionID sets the TransactionID for this NodeCreateTransaction.
-func (tx *NodeCreateTransaction) SetTransactionID(transactionID TransactionID) *NodeCreateTransaction {
-	tx.Transaction.SetTransactionID(transactionID)
-	return tx
-}
-
-// SetNodeAccountIDs sets the _Node AccountID for this NodeCreateTransaction.
-func (tx *NodeCreateTransaction) SetNodeAccountIDs(nodeID []AccountID) *NodeCreateTransaction {
-	tx.Transaction.SetNodeAccountIDs(nodeID)
-	return tx
-}
-
-// SetMaxRetry sets the max number of errors before execution will fail.
-func (tx *NodeCreateTransaction) SetMaxRetry(count int) *NodeCreateTransaction {
-	tx.Transaction.SetMaxRetry(count)
-	return tx
-}
-
-// SetMaxBackoff The maximum amount of time to wait between retries.
-// Every retry attempt will increase the wait time exponentially until it reaches this time.
-func (tx *NodeCreateTransaction) SetMaxBackoff(max time.Duration) *NodeCreateTransaction {
-	tx.Transaction.SetMaxBackoff(max)
-	return tx
-}
-
-// SetMinBackoff sets the minimum amount of time to wait between retries.
-func (tx *NodeCreateTransaction) SetMinBackoff(min time.Duration) *NodeCreateTransaction {
-	tx.Transaction.SetMinBackoff(min)
-	return tx
-}
-
-func (tx *NodeCreateTransaction) SetLogLevel(level LogLevel) *NodeCreateTransaction {
-	tx.Transaction.SetLogLevel(level)
-	return tx
-}
-
-func (tx *NodeCreateTransaction) Execute(client *Client) (TransactionResponse, error) {
-	return tx.Transaction.execute(client, tx)
-}
-
-func (tx *NodeCreateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	return tx.Transaction.schedule(tx)
-}
-
 // ----------- Overridden functions ----------------
 
-func (tx *NodeCreateTransaction) getName() string {
+func (tx NodeCreateTransaction) getName() string {
 	return "NodeCreateTransaction"
 }
 
-func (tx *NodeCreateTransaction) validateNetworkOnIDs(client *Client) error {
+func (tx NodeCreateTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -347,7 +222,7 @@ func (tx *NodeCreateTransaction) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (tx *NodeCreateTransaction) build() *services.TransactionBody {
+func (tx NodeCreateTransaction) build() *services.TransactionBody {
 	return &services.TransactionBody{
 		TransactionFee:           tx.transactionFee,
 		Memo:                     tx.Transaction.memo,
@@ -359,7 +234,7 @@ func (tx *NodeCreateTransaction) build() *services.TransactionBody {
 	}
 }
 
-func (tx *NodeCreateTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
+func (tx NodeCreateTransaction) buildScheduled() (*services.SchedulableTransactionBody, error) {
 	return &services.SchedulableTransactionBody{
 		TransactionFee: tx.transactionFee,
 		Memo:           tx.Transaction.memo,
@@ -369,7 +244,7 @@ func (tx *NodeCreateTransaction) buildScheduled() (*services.SchedulableTransact
 	}, nil
 }
 
-func (tx *NodeCreateTransaction) buildProtoBody() *services.NodeCreateTransactionBody {
+func (tx NodeCreateTransaction) buildProtoBody() *services.NodeCreateTransactionBody {
 	body := &services.NodeCreateTransactionBody{
 		Description: tx.description,
 	}
@@ -401,16 +276,16 @@ func (tx *NodeCreateTransaction) buildProtoBody() *services.NodeCreateTransactio
 	return body
 }
 
-func (tx *NodeCreateTransaction) getMethod(channel *_Channel) _Method {
+func (tx NodeCreateTransaction) getMethod(channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetAddressBook().CreateNode,
 	}
 }
 
-func (tx *NodeCreateTransaction) preFreezeWith(client *Client) {
-	// No special actions needed.
+func (tx NodeCreateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	return tx.buildScheduled()
 }
 
-func (tx *NodeCreateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
-	return tx.buildScheduled()
+func (tx NodeCreateTransaction) getBaseTransaction() *Transaction[TransactionInterface] {
+	return castFromConcreteToBaseTransaction(tx.Transaction, &tx)
 }
