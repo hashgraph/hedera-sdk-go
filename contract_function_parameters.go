@@ -32,13 +32,6 @@ import (
 // Use the builder methods `Add<Type>()` to add a parameter. Not all solidity types
 // are supported out of the box, but the most common types are. The larger variants
 // of number types require the parameter to be `[]byte`.
-// ```
-// AddUint88(math.PaddedBigBytes(n, 88 / 8))
-// ```
-// If you're using `Uint256` specifically you can opt into using
-// ```
-// AddUin256(math.PaddedBigBytes(math.U256(n), 32))
-// ```
 type ContractFunctionParameters struct {
 	function  ContractFunctionSelector
 	arguments []Argument
