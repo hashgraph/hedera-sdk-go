@@ -1,212 +1,188 @@
-package main
+package hedera
 
-import (
-	"bytes"
-	"encoding/hex"
-	"errors"
-	"fmt"
-)
+// RLPType represents the type of RLP item.
+type RLPType int
 
-// RLP encoding constants representing the prefixes for short strings and lists.
 const (
-	OffsetShortString = 0x80 // Offset for short strings
-	OffsetLongString  = 0xb7 // Offset for long strings
-	OffsetShortList   = 0xc0 // Offset for short lists
-	OffsetLongList    = 0xf7 // Offset for long lists
+	VALUE_TYPE RLPType = iota
+	LIST_TYPE
 )
 
-// Decode takes an RLP-encoded byte slice and decodes it into an interface{}.
-// The result can be a string, byte slice, or a list of decoded values.
-func Decode(input []byte) (interface{}, error) {
-	if len(input) == 0 {
-		return nil, errors.New("input is empty") // Guard clause for empty input
-	}
-	return decodeRLP(input) // Start the recursive decoding process
+// RLPItem represents a single RLP item.
+type RLPItem struct {
+	itemType   RLPType    // Type of the RLP item (value or list)
+	itemValue  []byte     // Holds the byte value for value-type items
+	childItems []*RLPItem // Holds child items for list-type items
 }
 
-// decodeRLP decodes an RLP byte slice based on its prefix type.
-func decodeRLP(input []byte) (interface{}, error) {
-	if len(input) == 0 {
-		return nil, errors.New("input is empty") // Guard clause for empty input
+// NewRLPItem creates a new RLP item.
+func NewRLPItem(typ RLPType) *RLPItem {
+	return &RLPItem{itemType: typ}
+}
+
+// EncodeBinary encodes a number into a byte slice.
+func encodeBinary(num uint64) []byte {
+	var bytes []byte
+	for num != 0 {
+		bytes = append([]byte{byte(num & 0xFF)}, bytes...)
+		num >>= 8
 	}
+	return bytes
+}
 
-	prefix := input[0] // Read the first byte to determine the type
-
-	// Handle small integers (0-127)
-	if prefix < OffsetShortString {
-		return uint64(input[0]), nil
+// EncodeLength encodes the length of an item with an offset.
+func encodeLength(num int, offset byte) []byte {
+	if num < 56 {
+		return []byte{offset + byte(num)}
 	}
+	encodedLength := encodeBinary(uint64(num))
+	return append([]byte{byte(len(encodedLength) + int(offset) + 55)}, encodedLength...)
+}
 
-	// Handle short strings
-	if prefix < OffsetLongString {
-		length := int(prefix - OffsetShortString)
-		if len(input) < 1+length {
-			return nil, errors.New("input too short for short string")
+// Gets Child items for RLPItem
+func (item *RLPItem) GetChildItems() []*RLPItem {
+	return item.childItems
+}
+
+// Gets the item value for RLPItem
+func (item *RLPItem) GetItemValue() []byte {
+	return item.itemValue
+}
+
+// Assign methods to set values for the RLPItem
+func (item *RLPItem) AssignBytes(value []byte) {
+	item.itemType = VALUE_TYPE
+	item.itemValue = value
+}
+
+func (item *RLPItem) AssignString(value string) {
+	item.AssignBytes([]byte(value))
+}
+
+func (item *RLPItem) AssignList() {
+	item.itemType = LIST_TYPE
+}
+
+// Clear resets the item values.
+func (item *RLPItem) Clear() {
+	item.itemValue = nil
+	item.childItems = nil
+}
+
+// PushBack adds a value to a list item.
+func (item *RLPItem) PushBack(child *RLPItem) {
+	item.childItems = append(item.childItems, child)
+}
+
+// Size returns the size of the RLPItem.
+func (item *RLPItem) Size() int {
+	if item.itemType == VALUE_TYPE {
+		return len(item.itemValue)
+	}
+	size := 0
+	for _, child := range item.childItems {
+		size += child.Size()
+	}
+	return size
+}
+
+// Write encodes the RLPItem to a byte slice.
+func (item *RLPItem) Write() ([]byte, error) {
+	if item.itemType == VALUE_TYPE {
+		if len(item.itemValue) == 1 && item.itemValue[0] < 0x80 {
+			return item.itemValue, nil
 		}
-		return input[1 : 1+length], nil // Return the string slice
+		return append(encodeLength(len(item.itemValue), 0x80), item.itemValue...), nil
 	}
 
-	// Handle long strings
-	if prefix < OffsetShortList {
-		lengthLength := int(prefix - OffsetLongString)
-		if len(input) < 1+lengthLength {
-			return nil, errors.New("input too short for long string length")
-		}
-		length, err := parseLength(input[1 : 1+lengthLength])
+	var bytes []byte
+	for _, child := range item.childItems {
+		childBytes, err := child.Write()
 		if err != nil {
 			return nil, err
 		}
-		if len(input) < 1+lengthLength+length {
-			return nil, errors.New("input too short for long string data")
-		}
-		return input[1+lengthLength : 1+lengthLength+length], nil
+		bytes = append(bytes, childBytes...)
 	}
-
-	// Handle short lists
-	if prefix < OffsetLongList {
-		length := int(prefix - OffsetShortList)
-		if len(input) < 1+length {
-			return nil, errors.New("input too short for short list")
-		}
-		return decodeList(input[1 : 1+length]) // Decode list elements
-	}
-
-	// Handle long lists
-	lengthLength := int(prefix - OffsetLongList)
-	if len(input) < 1+lengthLength {
-		return nil, errors.New("input too short for long list length")
-	}
-	length, err := parseLength(input[1 : 1+lengthLength])
-	if err != nil {
-		return nil, err
-	}
-	if len(input) < 1+lengthLength+length {
-		return nil, errors.New("input too short for long list data")
-	}
-	return decodeList(input[1+lengthLength : 1+lengthLength+length]) // Decode list elements
+	return append(encodeLength(len(bytes), 0xC0), bytes...), nil
 }
 
-// parseLength decodes the length of a byte slice in big-endian format.
-func parseLength(data []byte) (int, error) {
-	length := 0
-	for _, b := range data {
-		length = (length << 8) + int(b) // Convert byte to length
+// Read decodes a byte slice into an RLPItem.
+func (item *RLPItem) Read(bytes []byte) error {
+	item.Clear()
+
+	if len(bytes) == 0 {
+		return nil
 	}
-	return length, nil
+
+	index := 0
+	return item.decodeBytes(bytes, &index)
 }
 
-// decodeList recursively decodes a list of RLP-encoded elements.
-func decodeList(input []byte) ([]interface{}, error) {
-	var result []interface{}
-	for len(input) > 0 {
-		element, err := decodeRLP(input)
-		if err != nil {
-			return nil, err // Handle decoding errors
-		}
+// decodeBytes decodes the bytes starting from the given index.
+func (item *RLPItem) decodeBytes(bytes []byte, index *int) error {
+	prefix := bytes[*index]
+	(*index)++
 
-		elemBytes, err := encodeRLP(element) // Encode element to calculate size
-		if err != nil {
-			return nil, err
-		}
-		result = append(result, element) // Append the decoded element to the result
-		input = input[len(elemBytes):]   // Move to the next element
+	// Single byte case
+	if prefix < 0x80 {
+		item.itemValue = []byte{prefix}
+		item.itemType = VALUE_TYPE
+		return nil
 	}
-	return result, nil
-}
 
-// encodeRLP encodes an element into its RLP-encoded format.
-func encodeRLP(value interface{}) ([]byte, error) {
-	switch v := value.(type) {
-	case byte:
-		if v < OffsetShortString {
-			return []byte{v}, nil // Encode small byte directly
+	// Short string case
+	if prefix < 0xB8 {
+		stringLength := int(prefix) - 0x80
+		item.itemValue = bytes[*index : *index+stringLength]
+		item.itemType = VALUE_TYPE
+		*index += stringLength
+		return nil
+	}
+
+	// Long string case
+	if prefix < 0xC0 {
+		stringLengthLength := int(prefix) - 0xB7
+		stringLength := 0
+		for i := 0; i < stringLengthLength; i++ {
+			stringLength = (stringLength << 8) + int(bytes[*index])
+			(*index)++
 		}
-	case uint64:
-		return encodeRLP([]byte{byte(v)}) // Recursively encode uint64
-	case []byte:
-		length := len(v)
-		// Encode short byte array
-		if length == 1 && v[0] < OffsetShortString {
-			return v, nil
-		} else if length <= 55 {
-			return append([]byte{byte(OffsetShortString + length)}, v...), nil
-		}
-		// Encode long byte array
-		lengthBytes := encodeLength(length)
-		return append(append([]byte{byte(OffsetLongString + len(lengthBytes))}, lengthBytes...), v...), nil
-	case []interface{}:
-		var buffer bytes.Buffer
-		for _, elem := range v {
-			encodedElem, err := encodeRLP(elem)
-			if err != nil {
-				return nil, err
+		item.itemValue = bytes[*index : *index+stringLength]
+		item.itemType = VALUE_TYPE
+		*index += stringLength
+		return nil
+	}
+
+	// Short list case
+	if prefix < 0xF7 {
+		listLength := int(prefix) - 0xC0
+		startIndex := *index
+		for *index < startIndex+listLength {
+			childItem := NewRLPItem(LIST_TYPE)
+			if err := childItem.decodeBytes(bytes, index); err != nil {
+				return err
 			}
-			buffer.Write(encodedElem) // Write each encoded element to the buffer
+			item.PushBack(childItem)
 		}
-		listBytes := buffer.Bytes()
-		// Encode short list
-		if len(listBytes) <= 55 {
-			return append([]byte{byte(OffsetShortList + len(listBytes))}, listBytes...), nil
+		item.itemType = LIST_TYPE
+		return nil
+	}
+
+	// Long list case
+	listLengthLength := int(prefix) - 0xF7
+	listLength := 0
+	for i := 0; i < listLengthLength; i++ {
+		listLength = (listLength << 8) + int(bytes[*index])
+		(*index)++
+	}
+	startIndex := *index
+	for *index < startIndex+listLength {
+		childItem := NewRLPItem(LIST_TYPE)
+		if err := childItem.decodeBytes(bytes, index); err != nil {
+			return err
 		}
-		// Encode long list
-		lengthBytes := encodeLength(len(listBytes))
-		return append(append([]byte{byte(OffsetLongList + len(lengthBytes))}, lengthBytes...), listBytes...), nil
+		item.PushBack(childItem)
 	}
-	return nil, errors.New("unsupported RLP encoding type") // Handle unsupported types
-}
-
-// encodeLength converts an integer length to a big-endian byte slice format.
-func encodeLength(length int) []byte {
-	if length == 0 {
-		return []byte{0} // Return zero-length byte
-	}
-	var result []byte
-	for length > 0 {
-		result = append([]byte{byte(length & 0xff)}, result...) // Build the byte slice in reverse order
-		length >>= 8                                            // Shift right to get the next byte
-	}
-	return result
-}
-
-// toUint64 converts a byte slice or interface to uint64.
-func toUint64(data interface{}) uint64 {
-	bytes, ok := data.([]byte) // Check if data is a byte slice
-	if !ok {
-		return 0 // Return 0 if conversion fails
-	}
-	var result uint64
-	for _, b := range bytes {
-		result = (result << 8) + uint64(b) // Convert byte slice to uint64
-	}
-	return result
-}
-
-func main() {
-	// Sample RLP-encoded Ethereum transaction (in hex string format)
-	encodedTxHex := "f87282012a808085d1385c7bf082609094927e41ff8307835a1c081e0d7fd250625f2d4d0e8502540be4008406fdde03c080a0d0af512df4e0b4abdf5e3ff7a8b86aaf6bec465b9b89a2c3a4cd157e55c1afe1a0b1b2549650ff426312476c3f9e52f1a51242b9e726251430b0be13da81d94d4f"
-
-	// Decode the hex string into a byte slice
-	encodedTx, err := hex.DecodeString(encodedTxHex)
-	if err != nil {
-		fmt.Println("Failed to decode transaction hex:", err)
-		return
-	}
-
-	// Decode the RLP data
-	decoded, err := Decode(encodedTx)
-	if err != nil {
-		fmt.Println("Decoding error:", err)
-		return
-	}
-
-	// Display the decoded data
-	fmt.Println("Decoded Ethereum Transaction Fields:")
-	decodedData, ok := decoded.([]interface{}) // Type assertion to a list of interface{}
-	if ok {
-		for i, field := range decodedData {
-			fmt.Printf("Field %d: %v\n", i, field) // Print each decoded field
-		}
-	} else {
-		fmt.Println("Unexpected decoded format.")
-	}
+	item.itemType = LIST_TYPE
+	return nil
 }
