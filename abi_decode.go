@@ -1,3 +1,23 @@
+/*-
+ *
+ * Hedera Go SDK
+ *
+ * Copyright (C) 2020 - 2024 Hedera Hashgraph, LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use q file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 package hedera
 
 import (
@@ -10,7 +30,6 @@ import (
 	"strings"
 
 	"github.com/mitchellh/mapstructure"
-	"golang.org/x/crypto/sha3"
 )
 
 // Decode decodes the input with a given type
@@ -182,16 +201,6 @@ func unmarshalTextByte(dst, src []byte, size int) error {
 	return nil
 }
 
-type Hash [32]byte
-
-func Keccak256Hash(data []byte) (h Hash) {
-	hash := sha3.NewLegacyKeccak256()
-	hash.Write(data)
-	copy(h[:], hash.Sum(nil))
-	return h
-}
-func (h Hash) Bytes() []byte { return h[:] }
-
 func (a Address) checksumEncode() string {
 	address := strings.ToLower(hex.EncodeToString(a[:]))
 
@@ -272,6 +281,7 @@ func readFunctionType(t *Type, word []byte) ([24]byte, error) {
 	return res, nil
 }
 
+// nolint
 func readFixedBytes(t *Type, word []byte) (interface{}, error) {
 	array := reflect.New(t.t).Elem()
 	reflect.Copy(array, reflect.ValueOf(word[0:t.size]))

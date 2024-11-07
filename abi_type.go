@@ -1,3 +1,23 @@
+/*-
+ *
+ * Hedera Go SDK
+ *
+ * Copyright (C) 2020 - 2024 Hedera Hashgraph, LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use q file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 package hedera
 
 import (
@@ -129,11 +149,6 @@ func NewTupleTypeFromArgs(inputs []*ArgumentStr) (*Type, error) {
 	return NewTupleType(elems), nil
 }
 
-// ParseLog parses a log using this type
-func (t *Type) ParseLog(log *Log) (map[string]interface{}, error) {
-	return ParseLog(t, log)
-}
-
 // Decode decodes an object using this type
 func (t *Type) Decode(input []byte) (interface{}, error) {
 	return Decode(t, input)
@@ -154,11 +169,11 @@ func (t *Type) Encode(v interface{}) ([]byte, error) {
 	return Encode(v, t)
 }
 
+// String returns the raw representation of the type
 func (t *Type) String() string {
 	return t.Format(false)
 }
 
-// String returns the raw representation of the type
 // nolint
 func (t *Type) Format(includeArgs bool) string {
 	switch t.kind {
@@ -343,15 +358,6 @@ func NewType(s string) (*Type, error) {
 	l.nextToken()
 
 	return readType(l)
-}
-
-// MustNewType parses a type in string format or panics if its invalid
-func MustNewType(s string) *Type {
-	t, err := NewType(s)
-	if err != nil {
-		panic(err)
-	}
-	return t
 }
 
 func getTypeSize(t *Type) int {

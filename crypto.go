@@ -29,10 +29,12 @@ import (
 	"math/big"
 	"strings"
 
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
 	"github.com/pkg/errors"
 	"golang.org/x/crypto/pbkdf2"
+	"golang.org/x/crypto/sha3"
 	protobuf "google.golang.org/protobuf/proto"
 )
 
@@ -909,3 +911,21 @@ func (pk PublicKey) VerifyTransaction(tx TransactionInterface) bool {
 
 	return false
 }
+
+func Keccak256Hash(data []byte) (h Hash) {
+	hash := sha3.NewLegacyKeccak256()
+	hash.Write(data)
+	copy(h[:], hash.Sum(nil))
+	return h
+}
+
+// Hash represents the 32 byte Keccak256 hash of arbitrary data.
+type Hash [32]byte
+
+func (h Hash) Hex() string { return hexutil.Encode(h[:]) }
+
+func (h Hash) String() string {
+	return h.Hex()
+}
+
+func (h Hash) Bytes() []byte { return h[:] }

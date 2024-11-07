@@ -1,3 +1,23 @@
+/*-
+ *
+ * Hedera Go SDK
+ *
+ * Copyright (C) 2020 - 2024 Hedera Hashgraph, LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use q file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 package hedera
 
 import (
@@ -173,7 +193,7 @@ func encodeFixedBytes(v reflect.Value) ([]byte, error) {
 		v = convertArrayToBytes(v)
 	}
 	if v.Kind() == reflect.String {
-		value, err := decodeHexx(v.String())
+		value, err := decodeHex(v.String())
 		if err != nil {
 			return nil, err
 		}
@@ -202,7 +222,7 @@ func encodeBytes(v reflect.Value) ([]byte, error) {
 		v = convertArrayToBytes(v)
 	}
 	if v.Kind() == reflect.String {
-		value, err := decodeHexx(v.String())
+		value, err := decodeHex(v.String())
 		if err != nil {
 			return nil, err
 		}
@@ -347,7 +367,7 @@ func rightPad(b []byte, size int) []byte {
 	return padBytes(b, size, false)
 }
 
-func decodeHexx(str string) ([]byte, error) {
+func decodeHex(str string) ([]byte, error) {
 	str = strings.TrimPrefix(str, "0x")
 	buf, err := hex.DecodeString(str)
 	if err != nil {

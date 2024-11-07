@@ -69,8 +69,8 @@ func (l *EIP1559RLP) EncodeRLP(w io.Writer) (err error) {
 	return rlp.Encode(w, fields)
 }
 
-// decodeHex is a helper function that decodes a hex string and fails the test if an error occurs.
-func decodeHex(t *testing.T, s string) []byte {
+// decodeHexTestUtil is a helper function that decodes a hex string and fails the test if an error occurs.
+func decodeHexTestUtil(t *testing.T, s string) []byte {
 	bytes, err := hex.DecodeString(s)
 	if err != nil {
 		t.Fatalf("Failed to decode string %s: %v", s, err)
@@ -133,12 +133,12 @@ func TestIntegrationEthereumTransaction(t *testing.T) {
 
 	// build the RLP list that should be signed with the test ECDSA private key
 	list := &EIP1559RLP{
-		chainId:        decodeHex(t, "012a"),
+		chainId:        decodeHexTestUtil(t, "012a"),
 		nonce:          []byte{},
-		maxPriorityGas: decodeHex(t, "00"),
-		maxGas:         decodeHex(t, "d1385c7bf0"),
-		gasLimit:       decodeHex(t, "0249f0"),
-		to:             decodeHex(t, contractID.ToSolidityAddress()),
+		maxPriorityGas: decodeHexTestUtil(t, "00"),
+		maxGas:         decodeHexTestUtil(t, "d1385c7bf0"),
+		gasLimit:       decodeHexTestUtil(t, "0249f0"),
+		to:             decodeHexTestUtil(t, contractID.ToSolidityAddress()),
 		value:          []byte{},
 		callData:       NewContractFunctionParameters().AddString("new message")._Build(msgPointer),
 		accessList:     [][]byte{},
@@ -147,17 +147,17 @@ func TestIntegrationEthereumTransaction(t *testing.T) {
 	bytes, _ := rlp.EncodeToBytes(list)
 
 	// 02 is the type of the transaction EIP1559 and should be concatenated to the RLP by service requirement
-	bytesToSign := append(decodeHex(t, "02"), bytes...)
+	bytesToSign := append(decodeHexTestUtil(t, "02"), bytes...)
 	signedBytes := ecdsaPrivateKey.Sign(bytesToSign)
 
 	// Add signature data to the RLP list for EthereumTransaction submition
-	list.recId = decodeHex(t, "01")
+	list.recId = decodeHexTestUtil(t, "01")
 	list.r = signedBytes[:32]
 	list.s = signedBytes[len(signedBytes)-32:]
 
 	ethereumTransactionData, _ := rlp.EncodeToBytes(list)
 	// 02 is the type of the transaction EIP1559 and should be concatenated to the RLP by service requirement
-	resp, err = NewEthereumTransaction().SetEthereumData(append(decodeHex(t, "02"), ethereumTransactionData...)).Execute(env.Client)
+	resp, err = NewEthereumTransaction().SetEthereumData(append(decodeHexTestUtil(t, "02"), ethereumTransactionData...)).Execute(env.Client)
 
 	require.NoError(t, err)
 

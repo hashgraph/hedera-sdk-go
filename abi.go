@@ -206,6 +206,43 @@ func (a *ABI) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// nolint
+func NewABIFromList(humanReadableAbi []string) (*ABI, error) {
+	res := &ABI{}
+	for _, c := range humanReadableAbi {
+		if strings.HasPrefix(c, "constructor") {
+			typ, err := NewType("tuple" + strings.TrimPrefix(c, "constructor"))
+			if err != nil {
+				return nil, err
+			}
+			res.Constructor = &Method{
+				Inputs: typ,
+			}
+		} else if strings.HasPrefix(c, "function ") {
+			method, err := NewMethod(c)
+			if err != nil {
+				return nil, err
+			}
+			res.addMethod(method)
+		} else if strings.HasPrefix(c, "event ") {
+			evnt, err := NewEvent(c)
+			if err != nil {
+				return nil, err
+			}
+			res.addEvent(evnt)
+		} else if strings.HasPrefix(c, "error ") {
+			errTyp, err := NewError(c)
+			if err != nil {
+				return nil, err
+			}
+			res.addError(errTyp)
+		} else {
+			return nil, fmt.Errorf("either event or function expected")
+		}
+	}
+	return res, nil
+}
+
 // Method is a callable function in the contract
 type Method struct {
 	Name    string
@@ -251,15 +288,6 @@ func (m *Method) Decode(data []byte) (map[string]interface{}, error) {
 	return resp, nil
 }
 
-// MustNewMethod creates a new solidity method object or fails
-func MustNewMethod(name string) *Method {
-	method, err := NewMethod(name)
-	if err != nil {
-		panic(err)
-	}
-	return method
-}
-
 func NewMethod(name string) (*Method, error) {
 	name, inputs, outputs, err := parseMethodSignature(name)
 	if err != nil {
@@ -273,6 +301,78 @@ var (
 	funcRegexpWithReturn    = regexp.MustCompile(`(\w*)\s*\((.*)\)(.*)\s*returns\s*\((.*)\)`)
 	funcRegexpWithoutReturn = regexp.MustCompile(`(\w*)\s*\((.*)\)(.*)`)
 )
+
+// Event is a triggered log mechanism
+type Event struct {
+	Name      string
+	Anonymous bool
+	Inputs    *Type
+}
+
+// NewEvent creates a new solidity event object using the signature
+func NewEvent(name string) (*Event, error) {
+	name, typ, err := parseEventOrErrorSignature("event ", name)
+	if err != nil {
+		return nil, err
+	}
+	return NewEventFromType(name, typ), nil
+}
+
+// NewEventFromType creates a new solidity event object using the name and type
+func NewEventFromType(name string, typ *Type) *Event {
+	return &Event{Name: name, Inputs: typ}
+}
+
+// Error is a solidity error object
+type Error struct {
+	Name   string
+	Inputs *Type
+}
+
+// NewError creates a new solidity error object
+func NewError(name string) (*Error, error) {
+	name, typ, err := parseEventOrErrorSignature("error ", name)
+	if err != nil {
+		return nil, err
+	}
+	return &Error{Name: name, Inputs: typ}, nil
+}
+
+// ArgumentStr encodes a type object
+type ArgumentStr struct {
+	Name         string
+	Type         string
+	Indexed      bool
+	Components   []*ArgumentStr
+	InternalType string
+}
+
+var keccakPool = sync.Pool{
+	New: func() interface{} {
+		return sha3.NewLegacyKeccak256()
+	},
+}
+
+func acquireKeccak() hash.Hash {
+	return keccakPool.Get().(hash.Hash)
+}
+
+func releaseKeccak(k hash.Hash) {
+	k.Reset()
+	keccakPool.Put(k)
+}
+
+type Log struct {
+	Removed          bool
+	LogIndex         uint64
+	TransactionIndex uint64
+	TransactionHash  Hash
+	BlockHash        Hash
+	BlockNumber      uint64
+	Address          Address
+	Topics           []Hash
+	Data             []byte
+}
 
 // nolint
 func parseMethodSignature(name string) (string, *Type, *Type, error) {
@@ -312,59 +412,13 @@ func parseMethodSignature(name string) (string, *Type, *Type, error) {
 	return funcName, input, output, nil
 }
 
-// Event is a triggered log mechanism
-type Event struct {
-	Name      string
-	Anonymous bool
-	Inputs    *Type
-}
-
-// Sig returns the signature of the event
-func (e *Event) Sig() string {
-	return buildSignature(e.Name, e.Inputs)
-}
-
-// ID returns the id of the event used during logs
-// func (e *Event) ID() (res ethgo.Hash) {
-// 	k := acquireKeccak()
-// 	k.Write([]byte(e.Sig()))
-// 	dst := k.Sum(nil)
-// 	releaseKeccak(k)
-// 	copy(res[:], dst)
-// 	return
-// }
-
-// MustNewEvent creates a new solidity event object or fails
-func MustNewEvent(name string) *Event {
-	evnt, err := NewEvent(name)
-	if err != nil {
-		panic(err)
+func buildSignature(name string, typ *Type) string {
+	types := make([]string, len(typ.tuple))
+	for i, input := range typ.tuple {
+		// nolint
+		types[i] = strings.Replace(input.Elem.String(), "tuple", "", -1)
 	}
-	return evnt
-}
-
-// NewEvent creates a new solidity event object using the signature
-func NewEvent(name string) (*Event, error) {
-	name, typ, err := parseEventOrErrorSignature("event ", name)
-	if err != nil {
-		return nil, err
-	}
-	return NewEventFromType(name, typ), nil
-}
-
-// Error is a solidity error object
-type Error struct {
-	Name   string
-	Inputs *Type
-}
-
-// NewError creates a new solidity error object
-func NewError(name string) (*Error, error) {
-	name, typ, err := parseEventOrErrorSignature("error ", name)
-	if err != nil {
-		return nil, err
-	}
-	return &Error{Name: name, Inputs: typ}, nil
+	return fmt.Sprintf("%v(%v)", name, strings.Join(types, ","))
 }
 
 func parseEventOrErrorSignature(prefix string, name string) (string, *Type, error) {
@@ -389,98 +443,4 @@ func parseEventOrErrorSignature(prefix string, name string) (string, *Type, erro
 		return "", nil, err
 	}
 	return funcName, typ, nil
-}
-
-// NewEventFromType creates a new solidity event object using the name and type
-func NewEventFromType(name string, typ *Type) *Event {
-	return &Event{Name: name, Inputs: typ}
-}
-
-func buildSignature(name string, typ *Type) string {
-	types := make([]string, len(typ.tuple))
-	for i, input := range typ.tuple {
-		// nolint
-		types[i] = strings.Replace(input.Elem.String(), "tuple", "", -1)
-	}
-	return fmt.Sprintf("%v(%v)", name, strings.Join(types, ","))
-}
-
-// ArgumentStr encodes a type object
-type ArgumentStr struct {
-	Name         string
-	Type         string
-	Indexed      bool
-	Components   []*ArgumentStr
-	InternalType string
-}
-
-var keccakPool = sync.Pool{
-	New: func() interface{} {
-		return sha3.NewLegacyKeccak256()
-	},
-}
-
-func acquireKeccak() hash.Hash {
-	return keccakPool.Get().(hash.Hash)
-}
-
-func releaseKeccak(k hash.Hash) {
-	k.Reset()
-	keccakPool.Put(k)
-}
-
-// nolint
-func NewABIFromList(humanReadableAbi []string) (*ABI, error) {
-	res := &ABI{}
-	for _, c := range humanReadableAbi {
-		if strings.HasPrefix(c, "constructor") {
-			typ, err := NewType("tuple" + strings.TrimPrefix(c, "constructor"))
-			if err != nil {
-				return nil, err
-			}
-			res.Constructor = &Method{
-				Inputs: typ,
-			}
-		} else if strings.HasPrefix(c, "function ") {
-			method, err := NewMethod(c)
-			if err != nil {
-				return nil, err
-			}
-			res.addMethod(method)
-		} else if strings.HasPrefix(c, "event ") {
-			evnt, err := NewEvent(c)
-			if err != nil {
-				return nil, err
-			}
-			res.addEvent(evnt)
-		} else if strings.HasPrefix(c, "error ") {
-			errTyp, err := NewError(c)
-			if err != nil {
-				return nil, err
-			}
-			res.addError(errTyp)
-		} else {
-			return nil, fmt.Errorf("either event or function expected")
-		}
-	}
-	return res, nil
-}
-
-type Log struct {
-	Removed          bool
-	LogIndex         uint64
-	TransactionIndex uint64
-	TransactionHash  Hash
-	BlockHash        Hash
-	BlockNumber      uint64
-	Address          Address
-	Topics           []Hash
-	Data             []byte
-}
-
-func (l *Log) Copy() *Log {
-	ll := new(Log)
-	*ll = *l
-	ll.Data = append(ll.Data[:0], l.Data...)
-	return ll
 }
