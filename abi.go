@@ -100,15 +100,6 @@ func NewABI(s string) (*ABI, error) {
 	return NewABIFromReader(bytes.NewReader([]byte(s)))
 }
 
-// MustNewABI returns a parsed ABI contract or panics if fails
-func MustNewABI(s string) *ABI {
-	a, err := NewABI(s)
-	if err != nil {
-		panic(err)
-	}
-	return a
-}
-
 // NewABIFromReader returns an ABI object from a reader
 func NewABIFromReader(r io.Reader) (*ABI, error) {
 	var abi *ABI
@@ -125,7 +116,6 @@ func (a *ABI) UnmarshalJSON(data []byte) error {
 	var fields []struct {
 		Type            string
 		Name            string
-		Constant        bool
 		Anonymous       bool
 		StateMutability string
 		Inputs          []*ArgumentStr
@@ -144,25 +134,22 @@ func (a *ABI) UnmarshalJSON(data []byte) error {
 			}
 			input, err := NewTupleTypeFromArgs(field.Inputs)
 			if err != nil {
-				panic(err)
+				return err
 			}
 			a.Constructor = &Method{
 				Inputs: input,
 			}
 
 		case "function", "":
-			c := field.Constant
-			if field.StateMutability == "view" || field.StateMutability == "pure" {
-				c = true
-			}
+			c := field.StateMutability == "view" || field.StateMutability == "pure"
 
 			inputs, err := NewTupleTypeFromArgs(field.Inputs)
 			if err != nil {
-				panic(err)
+				return err
 			}
 			outputs, err := NewTupleTypeFromArgs(field.Outputs)
 			if err != nil {
-				panic(err)
+				return err
 			}
 			method := &Method{
 				Name:    field.Name,
@@ -175,7 +162,7 @@ func (a *ABI) UnmarshalJSON(data []byte) error {
 		case "event":
 			input, err := NewTupleTypeFromArgs(field.Inputs)
 			if err != nil {
-				panic(err)
+				return err
 			}
 			event := &Event{
 				Name:      field.Name,
@@ -187,7 +174,7 @@ func (a *ABI) UnmarshalJSON(data []byte) error {
 		case "error":
 			input, err := NewTupleTypeFromArgs(field.Inputs)
 			if err != nil {
-				panic(err)
+				return err
 			}
 			errObj := &Error{
 				Name:   field.Name,

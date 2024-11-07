@@ -48,12 +48,12 @@ var (
 	bigIntT       = reflect.TypeOf(new(big.Int))
 )
 
-// Kind represents the kind of abi type
-type Kind int
+// AbiTypeKind represents the kind of abi type
+type AbiTypeKind int
 
 const (
 	// KindBool is a boolean
-	KindBool Kind = iota
+	KindBool AbiTypeKind = iota
 
 	// KindUInt is an uint
 	KindUInt
@@ -89,7 +89,7 @@ const (
 	KindFunction
 )
 
-func (k Kind) String() string {
+func (k AbiTypeKind) String() string {
 	names := [...]string{
 		"Bool",
 		"Uint",
@@ -117,7 +117,7 @@ type TupleElem struct {
 
 // Type is an ABI type
 type Type struct {
-	kind  Kind
+	kind  AbiTypeKind
 	size  int
 	elem  *Type
 	tuple []*TupleElem
@@ -249,7 +249,7 @@ func (t *Type) GoType() reflect.Type {
 }
 
 // Kind returns the kind of the type
-func (t *Type) Kind() Kind {
+func (t *Type) Kind() AbiTypeKind {
 	return t.kind
 }
 
