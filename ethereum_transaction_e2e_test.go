@@ -100,7 +100,7 @@ func TestIntegrationEthereumTransaction(t *testing.T) {
 	// Populate rlp fields
 
 	// 02 is the type of the transaction EIP1559 and should be concatenated to the RLP by service requirement
-	resp, err = NewEthereumTransaction().SetEthereumData(append(decodeHex(t, "02"), txDataBytes...)).Execute(env.Client)
+	resp, err = NewEthereumTransaction().SetEthereumData(txDataBytes).Execute(env.Client)
 
 	require.NoError(t, err)
 

@@ -106,22 +106,22 @@ func EthereumEIP1559TransactionFromBytes(bytes []byte) (*EthereumEIP1559Transact
 // ToBytes encodes the EthereumEIP1559Transaction into RLP format.
 func (txn *EthereumEIP1559Transaction) ToBytes() ([]byte, error) {
 	item := NewRLPItem(LIST_TYPE)
-	item.PushBack(NewRLPItem(VALUE_TYPE).EIP1559TransactionAssignBytes(txn.ChainId))
-	item.PushBack(NewRLPItem(VALUE_TYPE).EIP1559TransactionAssignBytes(txn.Nonce))
-	item.PushBack(NewRLPItem(VALUE_TYPE).EIP1559TransactionAssignBytes(txn.MaxPriorityGas))
-	item.PushBack(NewRLPItem(VALUE_TYPE).EIP1559TransactionAssignBytes(txn.MaxGas))
-	item.PushBack(NewRLPItem(VALUE_TYPE).EIP1559TransactionAssignBytes(txn.GasLimit))
-	item.PushBack(NewRLPItem(VALUE_TYPE).EIP1559TransactionAssignBytes(txn.To))
-	item.PushBack(NewRLPItem(VALUE_TYPE).EIP1559TransactionAssignBytes(txn.Value))
-	item.PushBack(NewRLPItem(VALUE_TYPE).EIP1559TransactionAssignBytes(txn.CallData))
+	item.PushBack(NewRLPItem(VALUE_TYPE).AssignValue(txn.ChainId))
+	item.PushBack(NewRLPItem(VALUE_TYPE).AssignValue(txn.Nonce))
+	item.PushBack(NewRLPItem(VALUE_TYPE).AssignValue(txn.MaxPriorityGas))
+	item.PushBack(NewRLPItem(VALUE_TYPE).AssignValue(txn.MaxGas))
+	item.PushBack(NewRLPItem(VALUE_TYPE).AssignValue(txn.GasLimit))
+	item.PushBack(NewRLPItem(VALUE_TYPE).AssignValue(txn.To))
+	item.PushBack(NewRLPItem(VALUE_TYPE).AssignValue(txn.Value))
+	item.PushBack(NewRLPItem(VALUE_TYPE).AssignValue(txn.CallData))
 	accessListItem := NewRLPItem(LIST_TYPE)
 	for _, itemBytes := range txn.AccessList {
-		accessListItem.PushBack(NewRLPItem(VALUE_TYPE).EIP1559TransactionAssignBytes(itemBytes))
+		accessListItem.PushBack(NewRLPItem(VALUE_TYPE).AssignValue(itemBytes))
 	}
 	item.PushBack(accessListItem)
-	item.PushBack(NewRLPItem(VALUE_TYPE).EIP1559TransactionAssignBytes(txn.RecoveryId))
-	item.PushBack(NewRLPItem(VALUE_TYPE).EIP1559TransactionAssignBytes(txn.R))
-	item.PushBack(NewRLPItem(VALUE_TYPE).EIP1559TransactionAssignBytes(txn.S))
+	item.PushBack(NewRLPItem(VALUE_TYPE).AssignValue(txn.RecoveryId))
+	item.PushBack(NewRLPItem(VALUE_TYPE).AssignValue(txn.R))
+	item.PushBack(NewRLPItem(VALUE_TYPE).AssignValue(txn.S))
 
 	transactionBytes, err := item.Write()
 	if err != nil {
@@ -157,11 +157,4 @@ func (txn *EthereumEIP1559Transaction) String() string {
 		hex.EncodeToString(txn.R),
 		hex.EncodeToString(txn.S),
 	)
-}
-
-// Helper function to create an RLP item for value assignment
-func (item *RLPItem) EIP1559TransactionAssignBytes(value []byte) *RLPItem {
-	item.itemType = VALUE_TYPE
-	item.itemValue = value
-	return item
 }

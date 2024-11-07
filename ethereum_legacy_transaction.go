@@ -88,15 +88,15 @@ func EthereumLegacyTransactionFromBytes(bytes []byte) (*EthereumLegacyTransactio
 // ToBytes encodes the EthereumLegacyTransaction into RLP format.
 func (txn *EthereumLegacyTransaction) ToBytes() ([]byte, error) {
 	item := NewRLPItem(LIST_TYPE)
-	item.PushBack(NewRLPItem(VALUE_TYPE).LegacyTransactionAssignBytes(txn.Nonce))
-	item.PushBack(NewRLPItem(VALUE_TYPE).LegacyTransactionAssignBytes(txn.GasPrice))
-	item.PushBack(NewRLPItem(VALUE_TYPE).LegacyTransactionAssignBytes(txn.GasLimit))
-	item.PushBack(NewRLPItem(VALUE_TYPE).LegacyTransactionAssignBytes(txn.To))
-	item.PushBack(NewRLPItem(VALUE_TYPE).LegacyTransactionAssignBytes(txn.Value))
-	item.PushBack(NewRLPItem(VALUE_TYPE).LegacyTransactionAssignBytes(txn.CallData))
-	item.PushBack(NewRLPItem(VALUE_TYPE).LegacyTransactionAssignBytes(txn.V))
-	item.PushBack(NewRLPItem(VALUE_TYPE).LegacyTransactionAssignBytes(txn.R))
-	item.PushBack(NewRLPItem(VALUE_TYPE).LegacyTransactionAssignBytes(txn.S))
+	item.PushBack(NewRLPItem(VALUE_TYPE).AssignValue(txn.Nonce))
+	item.PushBack(NewRLPItem(VALUE_TYPE).AssignValue(txn.GasPrice))
+	item.PushBack(NewRLPItem(VALUE_TYPE).AssignValue(txn.GasLimit))
+	item.PushBack(NewRLPItem(VALUE_TYPE).AssignValue(txn.To))
+	item.PushBack(NewRLPItem(VALUE_TYPE).AssignValue(txn.Value))
+	item.PushBack(NewRLPItem(VALUE_TYPE).AssignValue(txn.CallData))
+	item.PushBack(NewRLPItem(VALUE_TYPE).AssignValue(txn.V))
+	item.PushBack(NewRLPItem(VALUE_TYPE).AssignValue(txn.R))
+	item.PushBack(NewRLPItem(VALUE_TYPE).AssignValue(txn.S))
 
 	return item.Write()
 }
@@ -114,11 +114,4 @@ func (txn *EthereumLegacyTransaction) String() string {
 		hex.EncodeToString(txn.R),
 		hex.EncodeToString(txn.S),
 	)
-}
-
-// Helper function to create an RLP item for value assignment
-func (item *RLPItem) LegacyTransactionAssignBytes(value []byte) *RLPItem {
-	item.itemType = VALUE_TYPE
-	item.itemValue = value
-	return item
 }
