@@ -82,8 +82,6 @@ func TestIntegrationEthereumTransaction(t *testing.T) {
 	contractID := *receipt.ContractID
 
 	// Call data for the smart contract
-	contractMsg := "setMessage"
-	msgPointer := &contractMsg
 
 	// signedBytes := ecdsaPrivateKey.Sign(bytesToSign)
 
