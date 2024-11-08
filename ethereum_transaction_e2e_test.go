@@ -32,7 +32,7 @@ import (
 )
 
 // Testing the signer nonce defined in HIP-844
-// This test should be reworked
+// TODO This test should be reworked
 func TestIntegrationEthereumTransaction(t *testing.T) {
 	// Skip this test because it is flaky with newest version of Local Node
 	t.Skip()
@@ -82,9 +82,6 @@ func TestIntegrationEthereumTransaction(t *testing.T) {
 	contractID := *receipt.ContractID
 
 	// Call data for the smart contract
-
-	// signedBytes := ecdsaPrivateKey.Sign(bytesToSign)
-
 	// dummy signed data until test is revisitted
 	rlp, err := hex.DecodeString("02f87082012a022f2f83018000947e3a9eaf9bcc39e2ffa38eb30bf7a93feacbc181880de0b6b3a764000083123456c001a0df48f2efd10421811de2bfb125ab75b2d3c44139c4642837fb1fccce911fd479a01aaf7ae92bee896651dfc9d99ae422a296bf5d9f1ca49b2d96d82b79eb112d66")
 	require.NoError(t, err)
@@ -94,10 +91,6 @@ func TestIntegrationEthereumTransaction(t *testing.T) {
 
 	txDataBytes, err := txData.ToBytes()
 
-	// Add signature data to the RLP list for EthereumTransaction submition
-	// Populate rlp fields
-
-	// 02 is the type of the transaction EIP1559 and should be concatenated to the RLP by service requirement
 	resp, err = NewEthereumTransaction().SetEthereumData(txDataBytes).Execute(env.Client)
 
 	require.NoError(t, err)

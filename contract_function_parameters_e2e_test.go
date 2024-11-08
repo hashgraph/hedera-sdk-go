@@ -31,8 +31,6 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/ethereum/go-ethereum/common"
-
 	"github.com/stretchr/testify/require"
 )
 
@@ -1662,7 +1660,7 @@ func TestStringArray(t *testing.T) {
 	result, err := contractCal.Execute(env.Client)
 	require.NoError(t, err)
 	parsedResult, _ := result.GetResult("string[]")
-	strArr := parsedResult.([]interface{})[0].([]string)
+	strArr := parsedResult.([]string)
 	require.Equal(t, value[0], strArr[0])
 	require.Equal(t, value[1], strArr[1])
 
@@ -1697,7 +1695,7 @@ func TestAddressArray(t *testing.T) {
 	require.NoError(t, err)
 	addArr, err := result.GetResult("address[]")
 	require.NoError(t, err)
-	addresses := addArr.([]interface{})[0].([]common.Address)
+	addresses := addArr.([]Address)
 	require.Equal(t, value[0], strings.TrimPrefix(addresses[0].String(), "0x"))
 	require.Equal(t, value[1], strings.TrimPrefix(addresses[1].String(), "0x"))
 
@@ -1746,7 +1744,7 @@ func TestBytesArray(t *testing.T) {
 	require.NoError(t, err)
 	bytesArrInterface, err := result.GetResult("bytes[]")
 	require.NoError(t, err)
-	require.Equal(t, value, bytesArrInterface.([]interface{})[0])
+	require.Equal(t, value, bytesArrInterface.([][]uint8))
 
 }
 
@@ -1787,8 +1785,8 @@ func TestBytes32Array(t *testing.T) {
 	require.NoError(t, err)
 	bytes32ArrInterface, err := result.GetResult("bytes32[]")
 	require.NoError(t, err)
-	require.Equal(t, expected1, bytes32ArrInterface.([]interface{})[0].([][32]byte)[0])
-	require.Equal(t, expected2, bytes32ArrInterface.([]interface{})[0].([][32]byte)[1])
+	require.Equal(t, expected1, bytes32ArrInterface.([][32]byte)[0])
+	require.Equal(t, expected2, bytes32ArrInterface.([][32]byte)[1])
 
 }
 
