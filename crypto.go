@@ -33,7 +33,6 @@ import (
 	"github.com/btcsuite/btcd/btcec/v2"
 	ecdsa "github.com/btcsuite/btcd/btcec/v2/ecdsa"
 	eciesgo "github.com/ecies/go/v2"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 
 	"github.com/decred/dcrd/dcrec/secp256k1/v4"
 
@@ -961,11 +960,5 @@ func CompressPubkey(pubKey *secp256k1.PublicKey) []byte {
 
 // Hash represents the 32 byte Keccak256 hash of arbitrary data.
 type Hash [32]byte
-
-func (h Hash) Hex() string { return hexutil.Encode(h[:]) }
-
-func (h Hash) String() string {
-	return h.Hex()
-}
 
 func (h Hash) Bytes() []byte { return h[:] }

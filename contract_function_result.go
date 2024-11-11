@@ -24,9 +24,6 @@ import (
 	"encoding/binary"
 	"fmt"
 	"math/big"
-	"strings"
-
-	"github.com/ethereum/go-ethereum/accounts/abi"
 
 	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
 	protobuf "google.golang.org/protobuf/proto"
@@ -36,7 +33,8 @@ import (
 // ContractFunctionResult is a struct which allows users to convert between solidity and Go types, and is typically
 // returned by `ContractCallQuery` and is present in the transaction records of `ContractExecuteTransaction`.
 // Use the methods `Get<Type>()` to get a parameter. Not all solidity types
-// are supported out of the box, but the most common types are.
+// are supported out of the box, but the most common types are. The larger variants
+// of number types return just the bytes for the integer instead of converting to a big int type.
 // ```
 // contractFunctionResult.GetUint256(<index>)
 // bInt := new(big.Int)
@@ -437,15 +435,18 @@ func (result ContractFunctionResult) AsBytes() []byte {
 // to convert it into the appropriate go type.
 func (result ContractFunctionResult) GetResult(types string) (interface{}, error) {
 	def := fmt.Sprintf(`[{ "name" : "method", "type": "function", "outputs": [{ "type": "%s" }]}]`, types)
-	abi, err := abi.JSON(strings.NewReader(def))
+	abi := ABI{}
+	err := abi.UnmarshalJSON([]byte(def))
 	if err != nil {
 		return nil, err
 	}
-	parsedResult, err := abi.Unpack("method", result.ContractCallResult)
+
+	parsedResult, err := abi.Methods["method"].Decode(result.ContractCallResult)
+
 	if err != nil {
 		return nil, err
 	}
-	return parsedResult, nil
+	return parsedResult["0"], nil
 }
 
 func extractInt64OrZero(pb *services.ContractFunctionResult) int64 {

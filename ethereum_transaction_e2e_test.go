@@ -25,39 +25,14 @@ package hedera
 
 import (
 	"encoding/hex"
-
 	"testing"
 
-	"github.com/ethereum/go-ethereum/rlp"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-type EIP1559RLP struct {
-	chainId        []byte
-	nonce          []byte
-	maxPriorityGas []byte
-	maxGas         []byte
-	gasLimit       []byte
-	to             []byte
-	value          []byte
-	callData       []byte
-	accessList     [][]byte
-	recId          []byte
-	r              []byte
-	s              []byte
-}
-
-// decodeHex is a helper function that decodes a hex string and fails the test if an error occurs.
-func decodeHex(t *testing.T, s string) []byte {
-	bytes, err := hex.DecodeString(s)
-	if err != nil {
-		t.Fatalf("Failed to decode string %s: %v", s, err)
-	}
-	return bytes
-}
-
 // Testing the signer nonce defined in HIP-844
+// TODO This test should be reworked
 func TestIntegrationEthereumTransaction(t *testing.T) {
 	// Skip this test because it is flaky with newest version of Local Node
 	t.Skip()
@@ -107,36 +82,16 @@ func TestIntegrationEthereumTransaction(t *testing.T) {
 	contractID := *receipt.ContractID
 
 	// Call data for the smart contract
-	contractMsg := "setMessage"
-	msgPointer := &contractMsg
+	// dummy signed data until test is revisitted
+	rlp, err := hex.DecodeString("02f87082012a022f2f83018000947e3a9eaf9bcc39e2ffa38eb30bf7a93feacbc181880de0b6b3a764000083123456c001a0df48f2efd10421811de2bfb125ab75b2d3c44139c4642837fb1fccce911fd479a01aaf7ae92bee896651dfc9d99ae422a296bf5d9f1ca49b2d96d82b79eb112d66")
+	require.NoError(t, err)
 
-	// build the RLP list that should be signed with the test ECDSA private key
-	list := &EIP1559RLP{
-		chainId:        decodeHex(t, "012a"),
-		nonce:          []byte{},
-		maxPriorityGas: decodeHex(t, "00"),
-		maxGas:         decodeHex(t, "d1385c7bf0"),
-		gasLimit:       decodeHex(t, "0249f0"),
-		to:             decodeHex(t, contractID.ToSolidityAddress()),
-		value:          []byte{},
-		callData:       NewContractFunctionParameters().AddString("new message")._Build(msgPointer),
-		accessList:     [][]byte{},
-	}
+	txData, err := EthereumTransactionDataFromBytes(rlp)
+	require.NoError(t, err)
 
-	bytes, _ := rlp.EncodeToBytes(list)
+	txDataBytes, err := txData.ToBytes()
 
-	// 02 is the type of the transaction EIP1559 and should be concatenated to the RLP by service requirement
-	bytesToSign := append(decodeHex(t, "02"), bytes...)
-	signedBytes := ecdsaPrivateKey.Sign(bytesToSign)
-
-	// Add signature data to the RLP list for EthereumTransaction submition
-	list.recId = decodeHex(t, "01")
-	list.r = signedBytes[:32]
-	list.s = signedBytes[len(signedBytes)-32:]
-
-	ethereumTransactionData, _ := rlp.EncodeToBytes(list)
-	// 02 is the type of the transaction EIP1559 and should be concatenated to the RLP by service requirement
-	resp, err = NewEthereumTransaction().SetEthereumData(append(decodeHex(t, "02"), ethereumTransactionData...)).Execute(env.Client)
+	resp, err = NewEthereumTransaction().SetEthereumData(txDataBytes).Execute(env.Client)
 
 	require.NoError(t, err)
 
