@@ -21,9 +21,7 @@ package hedera
  */
 
 import (
-	"crypto/ecdsa"
 	"crypto/hmac"
-	"crypto/rand"
 	"crypto/sha512"
 	"crypto/x509"
 	"encoding/asn1"
@@ -33,21 +31,22 @@ import (
 	"io"
 	"strings"
 
-	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/btcsuite/btcd/btcec/v2"
+	ecdsa "github.com/btcsuite/btcd/btcec/v2/ecdsa"
 	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
 	"github.com/pkg/errors"
 )
 
 // _ECDSAPrivateKey is an Key_ECDSASecp256K1 private key.
 type _ECDSAPrivateKey struct {
-	keyData   *ecdsa.PrivateKey
+	keyData   *btcec.PrivateKey
 	chainCode []byte
 }
 
 const _LegacyECDSAPrivateKeyPrefix = "3030020100300706052b8104000a04220420"
 
 func _GenerateECDSAPrivateKey() (*_ECDSAPrivateKey, error) {
-	key, err := ecdsa.GenerateKey(crypto.S256(), rand.Reader)
+	key, err := btcec.NewPrivateKey()
 	if err != nil {
 		return &_ECDSAPrivateKey{}, err
 	}
@@ -75,11 +74,10 @@ func _ECDSAPrivateKeyFromBytesRaw(byt []byte) (*_ECDSAPrivateKey, error) {
 		return &_ECDSAPrivateKey{}, _NewErrBadKeyf("invalid private key length: %v bytes", len(byt))
 	}
 
-	key, err := crypto.ToECDSA(byt)
+	key, err := privateKeyFromBytes(byt)
 	if err != nil {
 		return nil, err
 	}
-
 	return &_ECDSAPrivateKey{
 		keyData: key,
 	}, nil
@@ -98,7 +96,7 @@ func _LegacyECDSAPrivateKeyFromBytesDer(byt []byte) (*_ECDSAPrivateKey, error) {
 		return &_ECDSAPrivateKey{}, _NewErrBadKeyf("invalid private key length: %v bytes", len(byt))
 	}
 
-	key, err := crypto.ToECDSA(decoded)
+	key, err := privateKeyFromBytes(decoded)
 	if err != nil {
 		return nil, err
 	}
@@ -126,7 +124,7 @@ func _ECDSAPrivateKeyFromBytesDer(data []byte) (*_ECDSAPrivateKey, error) {
 	} else if len(rest) != 0 {
 		return nil, errors.New("x509: trailing data after ASN.1 of public-key")
 	}
-	key, err := crypto.ToECDSA(ecKey.PrivateKey)
+	key, err := privateKeyFromBytes(ecKey.PrivateKey)
 	if err != nil {
 		return nil, err
 	}
@@ -165,26 +163,8 @@ func _ECDSAPrivateKeyFromString(s string) (*_ECDSAPrivateKey, error) {
 }
 
 func (sk _ECDSAPrivateKey) _PublicKey() *_ECDSAPublicKey {
-	if sk.keyData.Y == nil && sk.keyData.X == nil {
-		b := sk.keyData.D.Bytes()
-		x, y := crypto.S256().ScalarBaseMult(b)
-		sk.keyData.X = x
-		sk.keyData.Y = y
-		return &_ECDSAPublicKey{
-			&ecdsa.PublicKey{
-				Curve: crypto.S256(),
-				X:     x,
-				Y:     y,
-			},
-		}
-	}
-
 	return &_ECDSAPublicKey{
-		&ecdsa.PublicKey{
-			Curve: sk.keyData.Curve,
-			X:     sk.keyData.X,
-			Y:     sk.keyData.Y,
-		},
+		sk.keyData.PubKey(),
 	}
 }
 
@@ -223,15 +203,8 @@ func _ECDSAPrivateKeyReadPem(source io.Reader, passphrase string) (*_ECDSAPrivat
 }
 
 func (sk _ECDSAPrivateKey) _Sign(message []byte) []byte {
-	hash := crypto.Keccak256Hash(message)
-	sig, err := crypto.Sign(hash.Bytes(), sk.keyData)
-	if err != nil {
-		panic(err)
-	}
-
-	// signature returned has a ecdsa recovery byte at the end,
-	// need to remove it for verification to work.
-	return sig[:len(sig)-1]
+	hash := Keccak256Hash(message)
+	return ecdsa.SignCompact(sk.keyData, hash.Bytes(), true)
 }
 
 // SupportsDerivation returns true if the _ECDSAPrivateKey supports derivation.
@@ -265,7 +238,7 @@ func (sk _ECDSAPrivateKey) _Derive(index uint32) (*_ECDSAPrivateKey, error) {
 
 func (sk _ECDSAPrivateKey) _BytesRaw() []byte {
 	privateKey := make([]byte, 32)
-	temp := sk.keyData.D.Bytes()
+	temp := sk.keyData.ToECDSA().D.Bytes()
 	copy(privateKey[32-len(temp):], temp)
 
 	return privateKey

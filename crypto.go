@@ -25,12 +25,16 @@ import (
 	"crypto/sha512"
 	"encoding/binary"
 	"encoding/hex"
+	"fmt"
 	"io"
 	"math/big"
 	"strings"
 
-	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/btcsuite/btcd/btcec/v2"
+	ecdsa "github.com/btcsuite/btcd/btcec/v2/ecdsa"
+
+	"github.com/decred/dcrd/dcrec/secp256k1/v4"
+
 	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
 	"github.com/pkg/errors"
 	"golang.org/x/crypto/pbkdf2"
@@ -482,17 +486,16 @@ func _DeriveECDSAChildKey(parentKey []byte, chainCode []byte, index uint32) ([]b
 
 	isHardened := IsHardenedIndex(index)
 	input := make([]byte, 37)
-	key, err := crypto.ToECDSA(parentKey)
-	if err != nil {
-		return nil, nil, err
+	if len(parentKey) != 32 {
+		return nil, nil, fmt.Errorf("invalid private key length")
 	}
+	privKey, pubKey := btcec.PrivKeyFromBytes(parentKey)
 
 	if isHardened {
 		offset := 33 - len(parentKey)
 		copy(input[offset:], parentKey)
 	} else {
-		pubKey := crypto.CompressPubkey(&key.PublicKey)
-		copy(input, pubKey)
+		copy(input, pubKey.SerializeCompressed())
 	}
 
 	binary.BigEndian.PutUint32(input[33:37], index)
@@ -508,8 +511,8 @@ func _DeriveECDSAChildKey(parentKey []byte, chainCode []byte, index uint32) ([]b
 	ir := i[32:]
 
 	ki := new(big.Int)
-	ki.Add(key.D, il)
-	ki.Mod(ki, key.Curve.Params().N)
+	ki.Add(privKey.ToECDSA().D, il)
+	ki.Mod(ki, privKey.ToECDSA().Curve.Params().N)
 
 	return ki.Bytes(), ir, nil
 }
@@ -919,13 +922,42 @@ func Keccak256Hash(data []byte) (h Hash) {
 	return h
 }
 
+func VerifySignature(pubkey, digestHash, signature []byte) bool {
+	pubKey, err := btcec.ParsePubKey(pubkey)
+	if err != nil {
+		return false
+	}
+
+	recoveredKey, _, err := ecdsa.RecoverCompact(signature, digestHash)
+	if err != nil {
+		return false
+	}
+
+	return pubKey.IsEqual(recoveredKey)
+}
+
+func privateKeyFromBytes(privateKey []byte) (*btcec.PrivateKey, error) {
+	if len(privateKey) != 32 {
+		return nil, fmt.Errorf("invalid private key length")
+	}
+	var allNonPositive bool = true
+	for _, v := range privateKey {
+		if v > 0 {
+			allNonPositive = false
+		}
+	}
+	if allNonPositive {
+		return nil, fmt.Errorf("invalid private key, zero or negative")
+	}
+	pk, _ := btcec.PrivKeyFromBytes(privateKey)
+	return pk, nil
+}
+
+func CompressPubkey(pubKey *secp256k1.PublicKey) []byte {
+	return pubKey.SerializeCompressed()
+}
+
 // Hash represents the 32 byte Keccak256 hash of arbitrary data.
 type Hash [32]byte
-
-func (h Hash) Hex() string { return hexutil.Encode(h[:]) }
-
-func (h Hash) String() string {
-	return h.Hex()
-}
 
 func (h Hash) Bytes() []byte { return h[:] }

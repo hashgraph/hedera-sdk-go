@@ -33,7 +33,6 @@ import (
 
 	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
 
-	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/proto"
@@ -437,29 +436,52 @@ func TestUnitECDSAPrivateKeyFromEncryptedCompressedPEM(t *testing.T) {
 	assert.Equal(t, "c0d3e16ba5a1abbeac4cd327a3c3c1cc10438431d0bac019054e573e67768bb5", privateKey.StringRaw())
 }
 
+func TestUnitPrivateKeyECDSASignFails(t *testing.T) {
+	t.Parallel()
+
+	key, err := PrivateKeyGenerateEcdsa()
+	require.NoError(t, err)
+
+	sig := VerifySignature([]byte("ccc"), []byte("aaa"), []byte("bbb"))
+	require.False(t, sig)
+
+	sig = VerifySignature(key.ecdsaPrivateKey._PublicKey()._BytesRaw(), []byte("aaa"), []byte("bbb"))
+	require.False(t, sig)
+}
+
 func TestUnitPrivateKeyECDSASign(t *testing.T) {
 	t.Parallel()
 
 	key, err := PrivateKeyGenerateEcdsa()
 	require.NoError(t, err)
 
-	hash := crypto.Keccak256Hash([]byte("aaa"))
+	hash := Keccak256Hash([]byte("aaa"))
 	sig := key.Sign([]byte("aaa"))
-	s2 := crypto.VerifySignature(key.ecdsaPrivateKey._PublicKey()._BytesRaw(), hash.Bytes(), sig)
+	s2 := VerifySignature(key.ecdsaPrivateKey._PublicKey()._BytesRaw(), hash.Bytes(), sig)
 	require.True(t, s2)
 }
 
-func DisabledTestUnitPrivateKeyECDSASign(t *testing.T) {
+func TestUnitPrivateKeyECDSASignVerify(t *testing.T) {
 	t.Parallel()
 
 	message := []byte("hello world")
+	hash := Keccak256Hash([]byte(message))
 	key, err := PrivateKeyFromStringECDSA("8776c6b831a1b61ac10dac0304a2843de4716f54b1919bb91a2685d0fe3f3048")
 	require.NoError(t, err)
 
 	sig := key.Sign(message)
 
-	require.Equal(t, hex.EncodeToString(sig), "f3a13a555f1f8cd6532716b8f388bd4e9d8ed0b252743e923114c0c6cbfe414cf791c8e859afd3c12009ecf2cb20dacf01636d80823bcdbd9ec1ce59afe008f0")
-	require.True(t, key.PublicKey().Verify(message, sig))
+	require.Equal(t, hex.EncodeToString(sig), "20f3a13a555f1f8cd6532716b8f388bd4e9d8ed0b252743e923114c0c6cbfe414c086e3717a6502c3edff6130d34df252fb94b6f662d0cd27e2110903320563851")
+	require.True(t, key.PublicKey().Verify(hash.Bytes(), sig))
+}
+
+func TestUnitPrivateKeyECDSASignVerifyFails(t *testing.T) {
+	t.Parallel()
+
+	key, err := PrivateKeyFromStringECDSA("8776c6b831a1b61ac10dac0304a2843de4716f54b1919bb91a2685d0fe3f3048")
+	require.NoError(t, err)
+
+	require.False(t, key.PublicKey().Verify([]byte{}, []byte{}))
 }
 
 func TestUnitPrivateKeyEd25519FromString(t *testing.T) {
@@ -809,7 +831,7 @@ func TestUnitPrivateKeyBytesRawECDSA(t *testing.T) {
 
 	key, err := PrivateKeyGenerateEcdsa()
 	require.NoError(t, err)
-	require.Equal(t, key.ecdsaPrivateKey.keyData.D.Bytes(), key.BytesRaw())
+	require.Equal(t, key.ecdsaPrivateKey.keyData.ToECDSA().D.Bytes(), key.BytesRaw())
 }
 
 func TestUnitPublicKeyBytesRawEd25519(t *testing.T) {
@@ -818,14 +840,6 @@ func TestUnitPublicKeyBytesRawEd25519(t *testing.T) {
 	key, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 	require.Equal(t, key.PublicKey().ed25519PublicKey.keyData, key.PublicKey().BytesRaw())
-}
-
-func TestUnitPublicKeyBytesRawECDSA(t *testing.T) {
-	t.Parallel()
-
-	key, err := PrivateKeyGenerateEcdsa()
-	require.NoError(t, err)
-	require.Equal(t, crypto.CompressPubkey(&key.ecdsaPrivateKey.keyData.PublicKey), key.PublicKey().BytesRaw())
 }
 
 func TestUnitECDSAPrivateKeyFromBytesInvalidLength(t *testing.T) {
@@ -883,6 +897,25 @@ func TestUnitECDSAPublicKeyFromBytesInvalidLength(t *testing.T) {
 	_, err := _ECDSAPublicKeyFromBytes(invalidPrivateKey)
 	require.Error(t, err)
 	expectedError := fmt.Sprintf("invalid compressed ECDSA public key length: %v bytes", len(invalidPrivateKey))
+	if err.Error() != expectedError {
+		t.Errorf("expected error message %q, but got %q", expectedError, err.Error())
+	}
+}
+func TestUnitECDSAPublicKeyFromBytesDerInvalid(t *testing.T) {
+	prefix, err := hex.DecodeString(_LegacyECDSAPubKeyPrefix)
+	require.NoError(t, err)
+	invalidPrivateKey := make([]byte, 47)
+	copy(invalidPrivateKey[:len(prefix)], prefix)
+
+	_, err = _LegacyECDSAPublicKeyFromBytesDer(invalidPrivateKey)
+	require.Error(t, err)
+}
+
+func TestUnitECDSAPublicKeyFromBytesDerInvalidLength(t *testing.T) {
+	invalidPrivateKey := make([]byte, 50)
+	_, err := _LegacyECDSAPublicKeyFromBytesDer(invalidPrivateKey)
+	require.Error(t, err)
+	expectedError := fmt.Sprintf("invalid public key length: %v bytes", len(invalidPrivateKey))
 	if err.Error() != expectedError {
 		t.Errorf("expected error message %q, but got %q", expectedError, err.Error())
 	}
@@ -1063,11 +1096,11 @@ func TestSlip10Ed25519Vector1(t *testing.T) {
 	test6ChainCode := "68789923a0cac2cd5a29172a475fe9e0fb14cd6adb5ad98a3fa70333e7afa230"
 
 	seed, err := hex.DecodeString("000102030405060708090a0b0c0d0e0f")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	//Chain m
 	key1, err := PrivateKeyFromSeedEd25519(seed)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, key1.StringRaw(), test1PrivateKey)
 	assert.Equal(t, key1.PublicKey().StringRaw(), test1PublicKey)
@@ -1075,7 +1108,7 @@ func TestSlip10Ed25519Vector1(t *testing.T) {
 
 	// Chain m/0'
 	key2, err := key1.Derive(0)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, key2.StringRaw(), test2PrivateKey)
 	assert.Equal(t, key2.PublicKey().StringRaw(), test2PublicKey)
@@ -1083,28 +1116,28 @@ func TestSlip10Ed25519Vector1(t *testing.T) {
 
 	// Chain m/0'/1'
 	key3, err := key2.Derive(1)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, key3.StringRaw(), test3PrivateKey)
 	assert.Equal(t, key3.PublicKey().StringRaw(), test3PublicKey)
 	assert.Equal(t, hex.EncodeToString(key3.ed25519PrivateKey.chainCode), test3ChainCode)
 
 	// Chain m/0'/1'/2'
 	key4, err := key3.Derive(2)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, key4.StringRaw(), test4PrivateKey)
 	assert.Equal(t, key4.PublicKey().StringRaw(), test4PublicKey)
 	assert.Equal(t, hex.EncodeToString(key4.ed25519PrivateKey.chainCode), test4ChainCode)
 
 	//Chain m/0'/1'/2'/2'
 	key5, err := key4.Derive(2)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, key5.StringRaw(), test5PrivateKey)
 	assert.Equal(t, key5.PublicKey().StringRaw(), test5PublicKey)
 	assert.Equal(t, hex.EncodeToString(key5.ed25519PrivateKey.chainCode), test5ChainCode)
 
 	// Chain m/0'/1'/2'/2'/1000000000'
 	key6, err := key5.Derive(1000000000)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, key6.StringRaw(), test6PrivateKey)
 	assert.Equal(t, key6.PublicKey().StringRaw(), test6PublicKey)
 	assert.Equal(t, hex.EncodeToString(key6.ed25519PrivateKey.chainCode), test6ChainCode)
@@ -1134,11 +1167,11 @@ func TestSlip10Ed25519Vector2(t *testing.T) {
 	test6ChainCode := "5d70af781f3a37b829f0d060924d5e960bdc02e85423494afc0b1a41bbe196d4"
 
 	seed, err := hex.DecodeString("fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc9c6c3c0bdbab7b4b1aeaba8a5a29f9c999693908d8a8784817e7b7875726f6c696663605d5a5754514e4b484542")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	// Chain m
 	key1, err := PrivateKeyFromSeedEd25519(seed)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, key1.StringRaw(), test1PrivateKey)
 	assert.Equal(t, key1.PublicKey().StringRaw(), test1PublicKey)
@@ -1146,7 +1179,7 @@ func TestSlip10Ed25519Vector2(t *testing.T) {
 
 	// Chain m/0'
 	key2, err := key1.Derive(0)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, key2.StringRaw(), test2PrivateKey)
 	assert.Equal(t, key2.PublicKey().StringRaw(), test2PublicKey)
@@ -1154,28 +1187,28 @@ func TestSlip10Ed25519Vector2(t *testing.T) {
 
 	// Chain m/0'/2147483647'
 	key3, err := key2.Derive(2147483647)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, key3.StringRaw(), test3PrivateKey)
 	assert.Equal(t, key3.PublicKey().StringRaw(), test3PublicKey)
 	assert.Equal(t, hex.EncodeToString(key3.ed25519PrivateKey.chainCode), test3ChainCode)
 
 	// Chain m/0'/2147483647'/1'
 	key4, err := key3.Derive(1)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, key4.StringRaw(), test4PrivateKey)
 	assert.Equal(t, key4.PublicKey().StringRaw(), test4PublicKey)
 	assert.Equal(t, hex.EncodeToString(key4.ed25519PrivateKey.chainCode), test4ChainCode)
 
 	// Chain m/0'/2147483647'/1'/2147483646'
 	key5, err := key4.Derive(2147483646)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, key5.StringRaw(), test5PrivateKey)
 	assert.Equal(t, key5.PublicKey().StringRaw(), test5PublicKey)
 	assert.Equal(t, hex.EncodeToString(key5.ed25519PrivateKey.chainCode), test5ChainCode)
 
 	// Chain m/0'/2147483647'/1'/2147483646'/2'
 	key6, err := key5.Derive(2)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, key6.StringRaw(), test6PrivateKey)
 	assert.Equal(t, key6.PublicKey().StringRaw(), test6PublicKey)
 	assert.Equal(t, hex.EncodeToString(key6.ed25519PrivateKey.chainCode), test6ChainCode)
@@ -1205,11 +1238,11 @@ func TestSlip10ECDSAVector1(t *testing.T) {
 	test6ChainCode := "c783e67b921d2beb8f6b389cc646d7263b4145701dadd2161548a8b078e65e9e"
 
 	seed, err := hex.DecodeString("000102030405060708090a0b0c0d0e0f")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	// Chain m
 	key1, err := PrivateKeyFromSeedECDSAsecp256k1(seed)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, key1.StringRaw(), test1PrivateKey)
 	assert.Equal(t, key1.PublicKey().StringRaw(), test1PublicKey)
@@ -1217,7 +1250,7 @@ func TestSlip10ECDSAVector1(t *testing.T) {
 
 	// Chain m/0'
 	key2, err := key1.Derive(ToHardenedIndex(0))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, key2.StringRaw(), test2PrivateKey)
 	assert.Equal(t, key2.PublicKey().StringRaw(), test2PublicKey)
@@ -1225,28 +1258,28 @@ func TestSlip10ECDSAVector1(t *testing.T) {
 
 	// Chain m/0'/1
 	key3, err := key2.Derive(1)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, key3.StringRaw(), test3PrivateKey)
 	assert.Equal(t, key3.PublicKey().StringRaw(), test3PublicKey)
 	assert.Equal(t, hex.EncodeToString(key3.ecdsaPrivateKey.chainCode), test3ChainCode)
 
 	// Chain m/0'/1/2'
 	key4, err := key3.Derive(ToHardenedIndex(2))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, key4.StringRaw(), test4PrivateKey)
 	assert.Equal(t, key4.PublicKey().StringRaw(), test4PublicKey)
 	assert.Equal(t, hex.EncodeToString(key4.ecdsaPrivateKey.chainCode), test4ChainCode)
 
 	// Chain m/0'/1/2'/2
 	key5, err := key4.Derive(2)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, key5.StringRaw(), test5PrivateKey)
 	assert.Equal(t, key5.PublicKey().StringRaw(), test5PublicKey)
 	assert.Equal(t, hex.EncodeToString(key5.ecdsaPrivateKey.chainCode), test5ChainCode)
 
 	// Chain m/0'/1/2'/2/1000000000
 	key6, err := key5.Derive(1000000000)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, key6.StringRaw(), test6PrivateKey)
 	assert.Equal(t, key6.PublicKey().StringRaw(), test6PublicKey)
 	assert.Equal(t, hex.EncodeToString(key6.ecdsaPrivateKey.chainCode), test6ChainCode)
@@ -1276,11 +1309,11 @@ func TestSlip10ECDSAVector2(t *testing.T) {
 	test6ChainCode := "9452b549be8cea3ecb7a84bec10dcfd94afe4d129ebfd3b3cb58eedf394ed271"
 
 	seed, err := hex.DecodeString("fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc9c6c3c0bdbab7b4b1aeaba8a5a29f9c999693908d8a8784817e7b7875726f6c696663605d5a5754514e4b484542")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	// Chain m
 	key1, err := PrivateKeyFromSeedECDSAsecp256k1(seed)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, key1.StringRaw(), test1PrivateKey)
 	assert.Equal(t, key1.PublicKey().StringRaw(), test1PublicKey)
@@ -1288,7 +1321,7 @@ func TestSlip10ECDSAVector2(t *testing.T) {
 
 	// Chain m/0
 	key2, err := key1.Derive(0)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, key2.StringRaw(), test2PrivateKey)
 	assert.Equal(t, key2.PublicKey().StringRaw(), test2PublicKey)
@@ -1296,28 +1329,28 @@ func TestSlip10ECDSAVector2(t *testing.T) {
 
 	// Chain m/0/2147483647'
 	key3, err := key2.Derive(ToHardenedIndex(2147483647))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, key3.StringRaw(), test3PrivateKey)
 	assert.Equal(t, key3.PublicKey().StringRaw(), test3PublicKey)
 	assert.Equal(t, hex.EncodeToString(key3.ecdsaPrivateKey.chainCode), test3ChainCode)
 
 	// Chain m/0/2147483647'/1
 	key4, err := key3.Derive(1)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, key4.StringRaw(), test4PrivateKey)
 	assert.Equal(t, key4.PublicKey().StringRaw(), test4PublicKey)
 	assert.Equal(t, hex.EncodeToString(key4.ecdsaPrivateKey.chainCode), test4ChainCode)
 
 	// Chain m/0/2147483647'/1/2147483646'
 	key5, err := key4.Derive(ToHardenedIndex(2147483646))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, key5.StringRaw(), test5PrivateKey)
 	assert.Equal(t, key5.PublicKey().StringRaw(), test5PublicKey)
 	assert.Equal(t, hex.EncodeToString(key5.ecdsaPrivateKey.chainCode), test5ChainCode)
 
 	// Chain m/0/2147483647'/1/2147483646'/2
 	key6, err := key5.Derive(2)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, key6.StringRaw(), test6PrivateKey)
 	assert.Equal(t, key6.PublicKey().StringRaw(), test6PublicKey)
 	assert.Equal(t, hex.EncodeToString(key6.ecdsaPrivateKey.chainCode), test6ChainCode)

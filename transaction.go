@@ -738,8 +738,12 @@ func (tx *Transaction[T]) _SignTransaction(index int) {
 			continue
 		}
 
+		signature := signer(bodyBytes)
+		if len(signature) == 65 {
+			signature = signature[1:]
+		}
 		modifiedTx := tx.signedTransactions._Get(index).(*services.SignedTransaction)
-		modifiedTx.SigMap.SigPair = append(modifiedTx.SigMap.SigPair, publicKey._ToSignaturePairProtobuf(signer(bodyBytes)))
+		modifiedTx.SigMap.SigPair = append(modifiedTx.SigMap.SigPair, publicKey._ToSignaturePairProtobuf(signature))
 		tx.signedTransactions._Set(index, modifiedTx)
 	}
 }
