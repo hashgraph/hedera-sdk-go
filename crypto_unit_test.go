@@ -1096,11 +1096,11 @@ func TestSlip10Ed25519Vector1(t *testing.T) {
 	test6ChainCode := "68789923a0cac2cd5a29172a475fe9e0fb14cd6adb5ad98a3fa70333e7afa230"
 
 	seed, err := hex.DecodeString("000102030405060708090a0b0c0d0e0f")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	//Chain m
 	key1, err := PrivateKeyFromSeedEd25519(seed)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, key1.StringRaw(), test1PrivateKey)
 	assert.Equal(t, key1.PublicKey().StringRaw(), test1PublicKey)
@@ -1108,7 +1108,7 @@ func TestSlip10Ed25519Vector1(t *testing.T) {
 
 	// Chain m/0'
 	key2, err := key1.Derive(0)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, key2.StringRaw(), test2PrivateKey)
 	assert.Equal(t, key2.PublicKey().StringRaw(), test2PublicKey)
@@ -1116,28 +1116,28 @@ func TestSlip10Ed25519Vector1(t *testing.T) {
 
 	// Chain m/0'/1'
 	key3, err := key2.Derive(1)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, key3.StringRaw(), test3PrivateKey)
 	assert.Equal(t, key3.PublicKey().StringRaw(), test3PublicKey)
 	assert.Equal(t, hex.EncodeToString(key3.ed25519PrivateKey.chainCode), test3ChainCode)
 
 	// Chain m/0'/1'/2'
 	key4, err := key3.Derive(2)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, key4.StringRaw(), test4PrivateKey)
 	assert.Equal(t, key4.PublicKey().StringRaw(), test4PublicKey)
 	assert.Equal(t, hex.EncodeToString(key4.ed25519PrivateKey.chainCode), test4ChainCode)
 
 	//Chain m/0'/1'/2'/2'
 	key5, err := key4.Derive(2)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, key5.StringRaw(), test5PrivateKey)
 	assert.Equal(t, key5.PublicKey().StringRaw(), test5PublicKey)
 	assert.Equal(t, hex.EncodeToString(key5.ed25519PrivateKey.chainCode), test5ChainCode)
 
 	// Chain m/0'/1'/2'/2'/1000000000'
 	key6, err := key5.Derive(1000000000)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, key6.StringRaw(), test6PrivateKey)
 	assert.Equal(t, key6.PublicKey().StringRaw(), test6PublicKey)
 	assert.Equal(t, hex.EncodeToString(key6.ed25519PrivateKey.chainCode), test6ChainCode)
@@ -1167,11 +1167,11 @@ func TestSlip10Ed25519Vector2(t *testing.T) {
 	test6ChainCode := "5d70af781f3a37b829f0d060924d5e960bdc02e85423494afc0b1a41bbe196d4"
 
 	seed, err := hex.DecodeString("fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc9c6c3c0bdbab7b4b1aeaba8a5a29f9c999693908d8a8784817e7b7875726f6c696663605d5a5754514e4b484542")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	// Chain m
 	key1, err := PrivateKeyFromSeedEd25519(seed)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, key1.StringRaw(), test1PrivateKey)
 	assert.Equal(t, key1.PublicKey().StringRaw(), test1PublicKey)
@@ -1179,7 +1179,7 @@ func TestSlip10Ed25519Vector2(t *testing.T) {
 
 	// Chain m/0'
 	key2, err := key1.Derive(0)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, key2.StringRaw(), test2PrivateKey)
 	assert.Equal(t, key2.PublicKey().StringRaw(), test2PublicKey)
@@ -1187,28 +1187,28 @@ func TestSlip10Ed25519Vector2(t *testing.T) {
 
 	// Chain m/0'/2147483647'
 	key3, err := key2.Derive(2147483647)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, key3.StringRaw(), test3PrivateKey)
 	assert.Equal(t, key3.PublicKey().StringRaw(), test3PublicKey)
 	assert.Equal(t, hex.EncodeToString(key3.ed25519PrivateKey.chainCode), test3ChainCode)
 
 	// Chain m/0'/2147483647'/1'
 	key4, err := key3.Derive(1)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, key4.StringRaw(), test4PrivateKey)
 	assert.Equal(t, key4.PublicKey().StringRaw(), test4PublicKey)
 	assert.Equal(t, hex.EncodeToString(key4.ed25519PrivateKey.chainCode), test4ChainCode)
 
 	// Chain m/0'/2147483647'/1'/2147483646'
 	key5, err := key4.Derive(2147483646)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, key5.StringRaw(), test5PrivateKey)
 	assert.Equal(t, key5.PublicKey().StringRaw(), test5PublicKey)
 	assert.Equal(t, hex.EncodeToString(key5.ed25519PrivateKey.chainCode), test5ChainCode)
 
 	// Chain m/0'/2147483647'/1'/2147483646'/2'
 	key6, err := key5.Derive(2)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, key6.StringRaw(), test6PrivateKey)
 	assert.Equal(t, key6.PublicKey().StringRaw(), test6PublicKey)
 	assert.Equal(t, hex.EncodeToString(key6.ed25519PrivateKey.chainCode), test6ChainCode)
@@ -1238,11 +1238,11 @@ func TestSlip10ECDSAVector1(t *testing.T) {
 	test6ChainCode := "c783e67b921d2beb8f6b389cc646d7263b4145701dadd2161548a8b078e65e9e"
 
 	seed, err := hex.DecodeString("000102030405060708090a0b0c0d0e0f")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	// Chain m
 	key1, err := PrivateKeyFromSeedECDSAsecp256k1(seed)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, key1.StringRaw(), test1PrivateKey)
 	assert.Equal(t, key1.PublicKey().StringRaw(), test1PublicKey)
@@ -1250,7 +1250,7 @@ func TestSlip10ECDSAVector1(t *testing.T) {
 
 	// Chain m/0'
 	key2, err := key1.Derive(ToHardenedIndex(0))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, key2.StringRaw(), test2PrivateKey)
 	assert.Equal(t, key2.PublicKey().StringRaw(), test2PublicKey)
@@ -1258,28 +1258,28 @@ func TestSlip10ECDSAVector1(t *testing.T) {
 
 	// Chain m/0'/1
 	key3, err := key2.Derive(1)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, key3.StringRaw(), test3PrivateKey)
 	assert.Equal(t, key3.PublicKey().StringRaw(), test3PublicKey)
 	assert.Equal(t, hex.EncodeToString(key3.ecdsaPrivateKey.chainCode), test3ChainCode)
 
 	// Chain m/0'/1/2'
 	key4, err := key3.Derive(ToHardenedIndex(2))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, key4.StringRaw(), test4PrivateKey)
 	assert.Equal(t, key4.PublicKey().StringRaw(), test4PublicKey)
 	assert.Equal(t, hex.EncodeToString(key4.ecdsaPrivateKey.chainCode), test4ChainCode)
 
 	// Chain m/0'/1/2'/2
 	key5, err := key4.Derive(2)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, key5.StringRaw(), test5PrivateKey)
 	assert.Equal(t, key5.PublicKey().StringRaw(), test5PublicKey)
 	assert.Equal(t, hex.EncodeToString(key5.ecdsaPrivateKey.chainCode), test5ChainCode)
 
 	// Chain m/0'/1/2'/2/1000000000
 	key6, err := key5.Derive(1000000000)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, key6.StringRaw(), test6PrivateKey)
 	assert.Equal(t, key6.PublicKey().StringRaw(), test6PublicKey)
 	assert.Equal(t, hex.EncodeToString(key6.ecdsaPrivateKey.chainCode), test6ChainCode)
@@ -1309,11 +1309,11 @@ func TestSlip10ECDSAVector2(t *testing.T) {
 	test6ChainCode := "9452b549be8cea3ecb7a84bec10dcfd94afe4d129ebfd3b3cb58eedf394ed271"
 
 	seed, err := hex.DecodeString("fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc9c6c3c0bdbab7b4b1aeaba8a5a29f9c999693908d8a8784817e7b7875726f6c696663605d5a5754514e4b484542")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	// Chain m
 	key1, err := PrivateKeyFromSeedECDSAsecp256k1(seed)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, key1.StringRaw(), test1PrivateKey)
 	assert.Equal(t, key1.PublicKey().StringRaw(), test1PublicKey)
@@ -1321,7 +1321,7 @@ func TestSlip10ECDSAVector2(t *testing.T) {
 
 	// Chain m/0
 	key2, err := key1.Derive(0)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, key2.StringRaw(), test2PrivateKey)
 	assert.Equal(t, key2.PublicKey().StringRaw(), test2PublicKey)
@@ -1329,28 +1329,28 @@ func TestSlip10ECDSAVector2(t *testing.T) {
 
 	// Chain m/0/2147483647'
 	key3, err := key2.Derive(ToHardenedIndex(2147483647))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, key3.StringRaw(), test3PrivateKey)
 	assert.Equal(t, key3.PublicKey().StringRaw(), test3PublicKey)
 	assert.Equal(t, hex.EncodeToString(key3.ecdsaPrivateKey.chainCode), test3ChainCode)
 
 	// Chain m/0/2147483647'/1
 	key4, err := key3.Derive(1)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, key4.StringRaw(), test4PrivateKey)
 	assert.Equal(t, key4.PublicKey().StringRaw(), test4PublicKey)
 	assert.Equal(t, hex.EncodeToString(key4.ecdsaPrivateKey.chainCode), test4ChainCode)
 
 	// Chain m/0/2147483647'/1/2147483646'
 	key5, err := key4.Derive(ToHardenedIndex(2147483646))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, key5.StringRaw(), test5PrivateKey)
 	assert.Equal(t, key5.PublicKey().StringRaw(), test5PublicKey)
 	assert.Equal(t, hex.EncodeToString(key5.ecdsaPrivateKey.chainCode), test5ChainCode)
 
 	// Chain m/0/2147483647'/1/2147483646'/2
 	key6, err := key5.Derive(2)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, key6.StringRaw(), test6PrivateKey)
 	assert.Equal(t, key6.PublicKey().StringRaw(), test6PublicKey)
 	assert.Equal(t, hex.EncodeToString(key6.ecdsaPrivateKey.chainCode), test6ChainCode)

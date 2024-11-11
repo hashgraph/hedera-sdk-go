@@ -32,7 +32,6 @@ import (
 
 	"github.com/btcsuite/btcd/btcec/v2"
 	ecdsa "github.com/btcsuite/btcd/btcec/v2/ecdsa"
-	eciesgo "github.com/ecies/go/v2"
 
 	"github.com/decred/dcrd/dcrec/secp256k1/v4"
 
@@ -490,13 +489,13 @@ func _DeriveECDSAChildKey(parentKey []byte, chainCode []byte, index uint32) ([]b
 	if len(parentKey) != 32 {
 		return nil, nil, fmt.Errorf("invalid private key length")
 	}
-	key := eciesgo.NewPrivateKeyFromBytes(parentKey)
+	privKey, pubKey := btcec.PrivKeyFromBytes(parentKey)
+
 	if isHardened {
 		offset := 33 - len(parentKey)
 		copy(input[offset:], parentKey)
 	} else {
-		pubKey := key.PublicKey.Bytes(true)
-		copy(input, pubKey)
+		copy(input, pubKey.SerializeCompressed())
 	}
 
 	binary.BigEndian.PutUint32(input[33:37], index)
@@ -512,8 +511,8 @@ func _DeriveECDSAChildKey(parentKey []byte, chainCode []byte, index uint32) ([]b
 	ir := i[32:]
 
 	ki := new(big.Int)
-	ki.Add(key.D, il)
-	ki.Mod(ki, key.Curve.Params().N)
+	ki.Add(privKey.ToECDSA().D, il)
+	ki.Mod(ki, privKey.ToECDSA().Curve.Params().N)
 
 	return ki.Bytes(), ir, nil
 }
