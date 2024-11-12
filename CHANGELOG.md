@@ -1,3 +1,9 @@
+## v2.50.0
+
+### Changed
+- Implemented generics in `Transaction.go`
+- Replaced go-ethereum library
+
 ## v2.49.0
 
 ### Changed
