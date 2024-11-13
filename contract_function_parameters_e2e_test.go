@@ -34,6 +34,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const gas = 50_000
+
 var (
 	contractID   ContractID
 	deployedOnce sync.Once
@@ -246,7 +248,7 @@ func intType(t *testing.T, env IntegrationTestEnv, intType string, value string)
 	require.True(t, ok)
 	valueBigIntCopy := new(big.Int).Set(valueBigInt)
 
-	contractCall, err := NewContractCallQuery().SetGas(50_000).SetQueryPayment(NewHbar(1)).
+	contractCall, err := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).
 		SetContractID(contractID).
 		SetQueryPayment(NewHbar(20)).
 		SetFunction(data.fnName, data.fnAdd(NewContractFunctionParameters(), To256BitBytes(valueBigInt))).
@@ -320,7 +322,7 @@ func TestUint8Min(t *testing.T) {
 	defer CloseIntegrationTestEnv(env, nil)
 	deployContract(env)
 	value := uint8(0)
-	contractCal, err := NewContractCallQuery().SetGas(50_000).SetQueryPayment(NewHbar(1)).
+	contractCal, err := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).
 		SetContractID(contractID).SetFunction("returnUint8", NewContractFunctionParameters().AddUint8(value)).SetMaxQueryPayment(NewHbar(20)).Execute(env.Client)
 	require.NoError(t, err)
 	require.Equal(t, value, contractCal.GetUint8(0))
@@ -331,7 +333,7 @@ func TestUint8Max(t *testing.T) {
 	defer CloseIntegrationTestEnv(env, nil)
 	deployContract(env)
 	value := uint8(255)
-	contractCal, err := NewContractCallQuery().SetGas(50_000).SetQueryPayment(NewHbar(1)).
+	contractCal, err := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).
 		SetContractID(contractID).SetFunction("returnUint8", NewContractFunctionParameters().AddUint8(value)).SetMaxQueryPayment(NewHbar(20)).Execute(env.Client)
 	require.NoError(t, err)
 	require.Equal(t, value, contractCal.GetUint8(0))
@@ -343,7 +345,7 @@ func TestUint16Min(t *testing.T) {
 	defer CloseIntegrationTestEnv(env, nil)
 	deployContract(env)
 	value := uint16(0)
-	contractCal, err := NewContractCallQuery().SetGas(50_000).SetQueryPayment(NewHbar(1)).
+	contractCal, err := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).
 		SetContractID(contractID).SetFunction("returnUint16", NewContractFunctionParameters().AddUint16(value)).SetMaxQueryPayment(NewHbar(20)).Execute(env.Client)
 	require.NoError(t, err)
 	require.Equal(t, value, contractCal.GetUint16(0))
@@ -355,7 +357,7 @@ func TestUint16Max(t *testing.T) {
 	defer CloseIntegrationTestEnv(env, nil)
 	deployContract(env)
 	value := uint16(65535)
-	contractCal, err := NewContractCallQuery().SetGas(50_000).SetQueryPayment(NewHbar(1)).
+	contractCal, err := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).
 		SetContractID(contractID).SetFunction("returnUint16", NewContractFunctionParameters().AddUint16(value)).SetMaxQueryPayment(NewHbar(20)).Execute(env.Client)
 	require.NoError(t, err)
 	require.Equal(t, value, contractCal.GetUint16(0))
@@ -368,7 +370,7 @@ func TestUint24Min(t *testing.T) {
 	defer CloseIntegrationTestEnv(env, nil)
 	deployContract(env)
 	value := uint32(0)
-	contractCal, err := NewContractCallQuery().SetGas(50_000).SetQueryPayment(NewHbar(1)).
+	contractCal, err := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).
 		SetContractID(contractID).SetFunction("returnUint24", NewContractFunctionParameters().AddUint24(value)).SetMaxQueryPayment(NewHbar(20)).Execute(env.Client)
 	require.NoError(t, err)
 	require.Equal(t, value, contractCal.GetUint24(0))
@@ -380,7 +382,7 @@ func TestUint24Max(t *testing.T) {
 	defer CloseIntegrationTestEnv(env, nil)
 	deployContract(env)
 	value := uint32(16777215)
-	contractCal, err := NewContractCallQuery().SetGas(50_000).SetQueryPayment(NewHbar(1)).
+	contractCal, err := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).
 		SetContractID(contractID).SetFunction("returnUint24", NewContractFunctionParameters().AddUint24(value)).SetMaxQueryPayment(NewHbar(20)).Execute(env.Client)
 	require.NoError(t, err)
 	require.Equal(t, value, contractCal.GetUint24(0))
@@ -392,7 +394,7 @@ func TestUint32Min(t *testing.T) {
 	defer CloseIntegrationTestEnv(env, nil)
 	deployContract(env)
 	value := uint32(0)
-	contractCal, err := NewContractCallQuery().SetGas(50_000).SetQueryPayment(NewHbar(1)).
+	contractCal, err := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).
 		SetContractID(contractID).SetFunction("returnUint32", NewContractFunctionParameters().AddUint32(value)).SetMaxQueryPayment(NewHbar(20)).Execute(env.Client)
 	require.NoError(t, err)
 	require.Equal(t, value, contractCal.GetUint32(0))
@@ -403,7 +405,7 @@ func TestUint32Max(t *testing.T) {
 	defer CloseIntegrationTestEnv(env, nil)
 	deployContract(env)
 	value := uint32(4294967295)
-	contractCal, err := NewContractCallQuery().SetGas(50_000).SetQueryPayment(NewHbar(1)).
+	contractCal, err := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).
 		SetContractID(contractID).SetFunction("returnUint32", NewContractFunctionParameters().AddUint32(value)).SetMaxQueryPayment(NewHbar(20)).Execute(env.Client)
 	require.NoError(t, err)
 	require.Equal(t, value, contractCal.GetUint32(0))
@@ -415,7 +417,7 @@ func TestUint40Min(t *testing.T) {
 	defer CloseIntegrationTestEnv(env, nil)
 	deployContract(env)
 	value := uint64(0)
-	contractCal, err := NewContractCallQuery().SetGas(50_000).SetQueryPayment(NewHbar(1)).
+	contractCal, err := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).
 		SetContractID(contractID).SetFunction("returnUint40", NewContractFunctionParameters().AddUint40(value)).SetMaxQueryPayment(NewHbar(20)).Execute(env.Client)
 	require.NoError(t, err)
 	require.Equal(t, value, contractCal.GetUint40(0))
@@ -427,7 +429,7 @@ func TestUint40Max(t *testing.T) {
 	defer CloseIntegrationTestEnv(env, nil)
 	deployContract(env)
 	value := uint64(109951162777)
-	contractCal, err := NewContractCallQuery().SetGas(50_000).SetQueryPayment(NewHbar(1)).
+	contractCal, err := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).
 		SetContractID(contractID).SetFunction("returnUint40", NewContractFunctionParameters().AddUint40(value)).SetMaxQueryPayment(NewHbar(20)).Execute(env.Client)
 	require.NoError(t, err)
 	require.Equal(t, value, contractCal.GetUint40(0))
@@ -440,7 +442,7 @@ func TestUint48Min(t *testing.T) {
 	defer CloseIntegrationTestEnv(env, nil)
 	deployContract(env)
 	value := uint64(0)
-	contractCal, err := NewContractCallQuery().SetGas(50_000).SetQueryPayment(NewHbar(1)).
+	contractCal, err := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).
 		SetContractID(contractID).SetFunction("returnUint48", NewContractFunctionParameters().AddUint48(value)).SetMaxQueryPayment(NewHbar(20)).Execute(env.Client)
 	require.NoError(t, err)
 	require.Equal(t, value, contractCal.GetUint48(0))
@@ -452,7 +454,7 @@ func TestUint48Max(t *testing.T) {
 	defer CloseIntegrationTestEnv(env, nil)
 	deployContract(env)
 	value := uint64(281474976710655)
-	contractCal, err := NewContractCallQuery().SetGas(50_000).SetQueryPayment(NewHbar(1)).
+	contractCal, err := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).
 		SetContractID(contractID).SetFunction("returnUint48", NewContractFunctionParameters().AddUint48(value)).SetMaxQueryPayment(NewHbar(20)).Execute(env.Client)
 	require.NoError(t, err)
 	require.Equal(t, value, contractCal.GetUint48(0))
@@ -465,7 +467,7 @@ func TestUint56Min(t *testing.T) {
 	defer CloseIntegrationTestEnv(env, nil)
 	deployContract(env)
 	value := uint64(0)
-	contractCal, err := NewContractCallQuery().SetGas(50_000).SetQueryPayment(NewHbar(1)).
+	contractCal, err := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).
 		SetContractID(contractID).SetFunction("returnUint56", NewContractFunctionParameters().AddUint56(value)).SetMaxQueryPayment(NewHbar(20)).Execute(env.Client)
 	require.NoError(t, err)
 	require.Equal(t, value, contractCal.GetUint56(0))
@@ -477,7 +479,7 @@ func TestUint56Max(t *testing.T) {
 	defer CloseIntegrationTestEnv(env, nil)
 	deployContract(env)
 	value := uint64(72057594037927935)
-	contractCal, err := NewContractCallQuery().SetGas(50_000).SetQueryPayment(NewHbar(1)).
+	contractCal, err := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).
 		SetContractID(contractID).SetFunction("returnUint56", NewContractFunctionParameters().AddUint56(value)).SetMaxQueryPayment(NewHbar(20)).Execute(env.Client)
 	require.NoError(t, err)
 	require.Equal(t, value, contractCal.GetUint56(0))
@@ -490,7 +492,7 @@ func TestUint64Min(t *testing.T) {
 	defer CloseIntegrationTestEnv(env, nil)
 	deployContract(env)
 	value := uint64(0)
-	contractCal, err := NewContractCallQuery().SetGas(50_000).SetQueryPayment(NewHbar(1)).
+	contractCal, err := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).
 		SetContractID(contractID).SetFunction("returnUint64", NewContractFunctionParameters().AddUint64(value)).SetMaxQueryPayment(NewHbar(20)).Execute(env.Client)
 	require.NoError(t, err)
 	require.Equal(t, value, contractCal.GetUint64(0))
@@ -502,7 +504,7 @@ func TestUint64Max(t *testing.T) {
 	defer CloseIntegrationTestEnv(env, nil)
 	deployContract(env)
 	value := uint64(9223372036854775807)
-	contractCal, err := NewContractCallQuery().SetGas(50_000).SetQueryPayment(NewHbar(1)).
+	contractCal, err := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).
 		SetContractID(contractID).SetFunction("returnUint64", NewContractFunctionParameters().AddUint64(value)).SetMaxQueryPayment(NewHbar(20)).Execute(env.Client)
 	require.NoError(t, err)
 	require.Equal(t, value, contractCal.GetUint64(0))
@@ -902,7 +904,7 @@ func TestInt8Min(t *testing.T) {
 	defer CloseIntegrationTestEnv(env, nil)
 	deployContract(env)
 	value := int8(-128)
-	contractCal, err := NewContractCallQuery().SetGas(50_000).SetQueryPayment(NewHbar(1)).
+	contractCal, err := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).
 		SetContractID(contractID).SetFunction("returnInt8", NewContractFunctionParameters().AddInt8(value)).SetMaxQueryPayment(NewHbar(20)).Execute(env.Client)
 	require.NoError(t, err)
 	require.Equal(t, value, contractCal.GetInt8(0))
@@ -914,7 +916,7 @@ func TestInt8Max(t *testing.T) {
 	defer CloseIntegrationTestEnv(env, nil)
 	deployContract(env)
 	value := int8(127)
-	contractCal, err := NewContractCallQuery().SetGas(50_000).SetQueryPayment(NewHbar(1)).
+	contractCal, err := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).
 		SetContractID(contractID).SetFunction("returnInt8", NewContractFunctionParameters().AddInt8(value)).SetMaxQueryPayment(NewHbar(20)).Execute(env.Client)
 	require.NoError(t, err)
 	require.Equal(t, value, contractCal.GetInt8(0))
@@ -927,7 +929,7 @@ func TestInt16Min(t *testing.T) {
 	defer CloseIntegrationTestEnv(env, nil)
 	deployContract(env)
 	value := int16(-32768)
-	contractCal, err := NewContractCallQuery().SetGas(50_000).SetQueryPayment(NewHbar(1)).
+	contractCal, err := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).
 		SetContractID(contractID).SetFunction("returnInt16", NewContractFunctionParameters().AddInt16(value)).SetMaxQueryPayment(NewHbar(20)).Execute(env.Client)
 	require.NoError(t, err)
 	require.Equal(t, value, contractCal.GetInt16(0))
@@ -939,7 +941,7 @@ func TestInt16Max(t *testing.T) {
 	defer CloseIntegrationTestEnv(env, nil)
 	deployContract(env)
 	value := int16(32767)
-	contractCal, err := NewContractCallQuery().SetGas(50_000).SetQueryPayment(NewHbar(1)).
+	contractCal, err := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).
 		SetContractID(contractID).SetFunction("returnInt16", NewContractFunctionParameters().AddInt16(value)).SetMaxQueryPayment(NewHbar(20)).Execute(env.Client)
 	require.NoError(t, err)
 	require.Equal(t, value, contractCal.GetInt16(0))
@@ -952,7 +954,7 @@ func TestInt24Min(t *testing.T) {
 	defer CloseIntegrationTestEnv(env, nil)
 	deployContract(env)
 	value := int32(-8388608)
-	contractCal, err := NewContractCallQuery().SetGas(50_000).SetQueryPayment(NewHbar(1)).
+	contractCal, err := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).
 		SetContractID(contractID).SetFunction("returnInt24", NewContractFunctionParameters().AddInt24(value)).SetMaxQueryPayment(NewHbar(20)).Execute(env.Client)
 	require.NoError(t, err)
 	require.Equal(t, value, contractCal.GetInt24(0))
@@ -964,7 +966,7 @@ func TestInt24Max(t *testing.T) {
 	defer CloseIntegrationTestEnv(env, nil)
 	deployContract(env)
 	value := int32(8388607)
-	contractCal, err := NewContractCallQuery().SetGas(50_000).SetQueryPayment(NewHbar(1)).
+	contractCal, err := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).
 		SetContractID(contractID).SetFunction("returnInt24", NewContractFunctionParameters().AddInt24(value)).SetMaxQueryPayment(NewHbar(20)).Execute(env.Client)
 	require.NoError(t, err)
 	require.Equal(t, value, contractCal.GetInt24(0))
@@ -976,7 +978,7 @@ func TestInt32Min(t *testing.T) {
 	defer CloseIntegrationTestEnv(env, nil)
 	deployContract(env)
 	value := int32(-2147483648)
-	contractCal, err := NewContractCallQuery().SetGas(50_000).SetQueryPayment(NewHbar(1)).
+	contractCal, err := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).
 		SetContractID(contractID).SetFunction("returnInt32", NewContractFunctionParameters().AddInt32(value)).SetMaxQueryPayment(NewHbar(20)).Execute(env.Client)
 	require.NoError(t, err)
 	require.Equal(t, value, contractCal.GetInt32(0))
@@ -988,7 +990,7 @@ func TestInt32Max(t *testing.T) {
 	defer CloseIntegrationTestEnv(env, nil)
 	deployContract(env)
 	value := int32(2147483647)
-	contractCal, err := NewContractCallQuery().SetGas(50_000).SetQueryPayment(NewHbar(1)).
+	contractCal, err := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).
 		SetContractID(contractID).SetFunction("returnInt32", NewContractFunctionParameters().AddInt32(value)).SetMaxQueryPayment(NewHbar(20)).Execute(env.Client)
 	require.NoError(t, err)
 	require.Equal(t, value, contractCal.GetInt32(0))
@@ -1001,7 +1003,7 @@ func TestInt40Min(t *testing.T) {
 	defer CloseIntegrationTestEnv(env, nil)
 	deployContract(env)
 	value := int64(-549755813888)
-	contractCal, err := NewContractCallQuery().SetGas(50_000).SetQueryPayment(NewHbar(1)).
+	contractCal, err := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).
 		SetContractID(contractID).SetFunction("returnInt40", NewContractFunctionParameters().AddInt40(value)).SetMaxQueryPayment(NewHbar(20)).Execute(env.Client)
 	require.NoError(t, err)
 	require.Equal(t, int64(value), contractCal.GetInt40(0))
@@ -1013,7 +1015,7 @@ func TestInt40Max(t *testing.T) {
 	defer CloseIntegrationTestEnv(env, nil)
 	deployContract(env)
 	value := int64(549755813887)
-	contractCal, err := NewContractCallQuery().SetGas(50_000).SetQueryPayment(NewHbar(1)).
+	contractCal, err := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).
 		SetContractID(contractID).SetFunction("returnInt40", NewContractFunctionParameters().AddInt40(value)).SetMaxQueryPayment(NewHbar(20)).Execute(env.Client)
 	require.NoError(t, err)
 	require.Equal(t, int64(value), contractCal.GetInt40(0))
@@ -1026,7 +1028,7 @@ func TestInt48Min(t *testing.T) {
 	defer CloseIntegrationTestEnv(env, nil)
 	deployContract(env)
 	value := int64(-140737488355328)
-	contractCal, err := NewContractCallQuery().SetGas(50_000).SetQueryPayment(NewHbar(1)).
+	contractCal, err := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).
 		SetContractID(contractID).SetFunction("returnInt48", NewContractFunctionParameters().AddInt48(value)).SetMaxQueryPayment(NewHbar(20)).Execute(env.Client)
 	require.NoError(t, err)
 	require.Equal(t, int64(value), contractCal.GetInt48(0))
@@ -1038,7 +1040,7 @@ func TestInt48Max(t *testing.T) {
 	defer CloseIntegrationTestEnv(env, nil)
 	deployContract(env)
 	value := int64(140737488355327)
-	contractCal, err := NewContractCallQuery().SetGas(50_000).SetQueryPayment(NewHbar(1)).
+	contractCal, err := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).
 		SetContractID(contractID).SetFunction("returnInt48", NewContractFunctionParameters().AddInt48(value)).SetMaxQueryPayment(NewHbar(20)).Execute(env.Client)
 	require.NoError(t, err)
 	require.Equal(t, int64(value), contractCal.GetInt48(0))
@@ -1051,7 +1053,7 @@ func TestInt56Min(t *testing.T) {
 	defer CloseIntegrationTestEnv(env, nil)
 	deployContract(env)
 	value := int64(-36028797018963968)
-	contractCal, err := NewContractCallQuery().SetGas(50_000).SetQueryPayment(NewHbar(1)).
+	contractCal, err := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).
 		SetContractID(contractID).SetFunction("returnInt56", NewContractFunctionParameters().AddInt56(value)).SetMaxQueryPayment(NewHbar(20)).Execute(env.Client)
 	require.NoError(t, err)
 	require.Equal(t, value, contractCal.GetInt56(0))
@@ -1063,7 +1065,7 @@ func TestInt56Max(t *testing.T) {
 	defer CloseIntegrationTestEnv(env, nil)
 	deployContract(env)
 	value := int64(36028797018963967)
-	contractCal, err := NewContractCallQuery().SetGas(50_000).SetQueryPayment(NewHbar(1)).
+	contractCal, err := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).
 		SetContractID(contractID).SetFunction("returnInt56", NewContractFunctionParameters().AddInt56(value)).SetMaxQueryPayment(NewHbar(20)).Execute(env.Client)
 	require.NoError(t, err)
 	require.Equal(t, value, contractCal.GetInt56(0))
@@ -1076,7 +1078,7 @@ func TestInt64Min(t *testing.T) {
 	defer CloseIntegrationTestEnv(env, nil)
 	deployContract(env)
 	value := int64(-9223372036854775808)
-	contractCal, err := NewContractCallQuery().SetGas(50_000).SetQueryPayment(NewHbar(1)).
+	contractCal, err := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).
 		SetContractID(contractID).SetFunction("returnInt64", NewContractFunctionParameters().AddInt64(value)).SetMaxQueryPayment(NewHbar(20)).Execute(env.Client)
 	require.NoError(t, err)
 	require.Equal(t, value, contractCal.GetInt64(0))
@@ -1088,7 +1090,7 @@ func TestInt64Max(t *testing.T) {
 	defer CloseIntegrationTestEnv(env, nil)
 	deployContract(env)
 	value := int64(9223372036854775807)
-	contractCal, err := NewContractCallQuery().SetGas(50_000).SetQueryPayment(NewHbar(1)).
+	contractCal, err := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).
 		SetContractID(contractID).SetFunction("returnInt64", NewContractFunctionParameters().AddInt64(value)).SetMaxQueryPayment(NewHbar(20)).Execute(env.Client)
 	require.NoError(t, err)
 	require.Equal(t, value, contractCal.GetInt64(0))
@@ -1533,7 +1535,7 @@ func TestMultipleInt8(t *testing.T) {
 	defer CloseIntegrationTestEnv(env, nil)
 	deployContract(env)
 	value := int8(-128)
-	contractCal, err := NewContractCallQuery().SetGas(50_000).SetQueryPayment(NewHbar(1)).
+	contractCal, err := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).
 		SetContractID(contractID).SetFunction("returnInt8Multiple", NewContractFunctionParameters().AddInt8(value)).Execute(env.Client)
 	require.NoError(t, err)
 	require.Equal(t, value, contractCal.GetInt8(0))
@@ -1546,7 +1548,7 @@ func TestMultipleInt40(t *testing.T) {
 	defer CloseIntegrationTestEnv(env, nil)
 	deployContract(env)
 	value := int64(549755813885)
-	contractCal, err := NewContractCallQuery().SetGas(50_000).SetQueryPayment(NewHbar(1)).
+	contractCal, err := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).
 		SetContractID(contractID).SetFunction("returnMultipleInt40", NewContractFunctionParameters().AddInt40(value)).Execute(env.Client)
 	require.NoError(t, err)
 	require.Equal(t, int64(549755813885), contractCal.GetInt40(0))
@@ -1561,7 +1563,7 @@ func TestMultipleInt256(t *testing.T) {
 	value, ok := new(big.Int).SetString("-123", 10)
 	require.True(t, ok)
 	valueTwos := To256BitBytes(value)
-	contractCal, err := NewContractCallQuery().SetGas(50_000).SetQueryPayment(NewHbar(1)).
+	contractCal, err := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).
 		SetContractID(contractID).SetFunction("returnMultipleInt256", NewContractFunctionParameters().AddInt256(valueTwos)).Execute(env.Client)
 	require.NoError(t, err)
 	value1, ok := new(big.Int).SetString("-123", 10)
@@ -1578,7 +1580,7 @@ func TestMultipleTypes(t *testing.T) {
 	defer CloseIntegrationTestEnv(env, nil)
 	deployContract(env)
 	value := uint32(4294967295)
-	contractCal, err := NewContractCallQuery().SetGas(50_000).SetQueryPayment(NewHbar(1)).
+	contractCal, err := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).
 		SetContractID(contractID).SetFunction("returnMultipleTypeParams", NewContractFunctionParameters().AddUint32(value)).Execute(env.Client)
 	require.NoError(t, err)
 	require.Equal(t, value, contractCal.GetUint32(0))
@@ -1595,7 +1597,7 @@ func TestBigInt256(t *testing.T) {
 	value, ok := new(big.Int).SetString("-123", 10)
 	require.True(t, ok)
 
-	contractCal, err := NewContractCallQuery().SetGas(50_000).SetQueryPayment(NewHbar(1)).
+	contractCal, err := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).
 		SetContractID(contractID).SetFunction("returnInt256", NewContractFunctionParameters().AddInt256BigInt(value)).Execute(env.Client)
 	require.NoError(t, err)
 	require.Equal(t, value, contractCal.GetBigInt(0))
@@ -1610,7 +1612,7 @@ func TestBigUint256(t *testing.T) {
 	value, ok := new(big.Int).SetString("123", 10)
 	require.True(t, ok)
 
-	contractCal, err := NewContractCallQuery().SetGas(50_000).SetQueryPayment(NewHbar(1)).
+	contractCal, err := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).
 		SetContractID(contractID).SetFunction("returnUint256", NewContractFunctionParameters().AddUint256BigInt(value)).Execute(env.Client)
 	require.NoError(t, err)
 	require.Equal(t, value, contractCal.GetBigInt(0))
@@ -1625,7 +1627,7 @@ func TestMultiplBigInt256(t *testing.T) {
 	value, ok := new(big.Int).SetString("-123", 10)
 	require.True(t, ok)
 
-	contractCal, err := NewContractCallQuery().SetGas(50_000).SetQueryPayment(NewHbar(1)).
+	contractCal, err := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).
 		SetContractID(contractID).SetFunction("returnMultipleInt256", NewContractFunctionParameters().AddInt256BigInt(value)).Execute(env.Client)
 	require.NoError(t, err)
 	require.Equal(t, value, contractCal.GetBigInt(0))
@@ -1639,7 +1641,7 @@ func TestString(t *testing.T) {
 	deployContract(env)
 	value := "Test"
 
-	contractCal := NewContractCallQuery().SetGas(50_000).SetQueryPayment(NewHbar(1)).
+	contractCal := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).
 		SetContractID(contractID).SetFunction("returnString", NewContractFunctionParameters().AddString(value))
 	result, err := contractCal.Execute(env.Client)
 	require.NoError(t, err)
@@ -1654,7 +1656,7 @@ func TestStringArray(t *testing.T) {
 	deployContract(env)
 	value := []string{"Test1", "Test2"}
 
-	contractCal := NewContractCallQuery().SetGas(50_000).SetQueryPayment(NewHbar(1)).
+	contractCal := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).
 		SetContractID(contractID).SetFunction("returnStringArr", NewContractFunctionParameters().AddStringArray(value))
 	result, err := contractCal.Execute(env.Client)
 	require.NoError(t, err)
@@ -1672,7 +1674,7 @@ func TestAddress(t *testing.T) {
 	value := "1234567890123456789012345678901234567890"
 	params, err := NewContractFunctionParameters().AddAddress(value)
 	require.NoError(t, err)
-	contractCal := NewContractCallQuery().SetGas(50_000).SetQueryPayment(NewHbar(1)).
+	contractCal := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).
 		SetContractID(contractID).SetFunction("returnAddress", params)
 	result, err := contractCal.Execute(env.Client)
 	require.NoError(t, err)
@@ -1688,7 +1690,7 @@ func TestAddressArray(t *testing.T) {
 	value := []string{"1234567890123456789012345678901234567890", "1234567890123456789012345678901234567891"}
 	params, err := NewContractFunctionParameters().AddAddressArray(value)
 	require.NoError(t, err)
-	contractCal := NewContractCallQuery().SetGas(50_000).SetQueryPayment(NewHbar(1)).
+	contractCal := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).
 		SetContractID(contractID).SetFunction("returnAddressArr", params)
 	result, err := contractCal.Execute(env.Client)
 	require.NoError(t, err)
@@ -1707,7 +1709,7 @@ func TestBoolean(t *testing.T) {
 	deployContract(env)
 	value := true
 
-	contractCal := NewContractCallQuery().SetGas(50_000).SetQueryPayment(NewHbar(1)).
+	contractCal := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).
 		SetContractID(contractID).SetFunction("returnBoolean", NewContractFunctionParameters().AddBool(value))
 	result, err := contractCal.Execute(env.Client)
 	require.NoError(t, err)
@@ -1722,7 +1724,7 @@ func TestBytes(t *testing.T) {
 	deployContract(env)
 	value := []byte("Test")
 
-	contractCal := NewContractCallQuery().SetGas(50_000).SetQueryPayment(NewHbar(1)).
+	contractCal := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).
 		SetContractID(contractID).SetFunction("returnBytes", NewContractFunctionParameters().AddBytes(value))
 	result, err := contractCal.Execute(env.Client)
 	require.NoError(t, err)
@@ -1737,7 +1739,7 @@ func TestBytesArray(t *testing.T) {
 	deployContract(env)
 	value := [][]byte{[]byte("Test1"), []byte("Test2")}
 
-	contractCal := NewContractCallQuery().SetGas(50_000).SetQueryPayment(NewHbar(1)).
+	contractCal := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).
 		SetContractID(contractID).SetFunction("returnBytesArr", NewContractFunctionParameters().AddBytesArray(value))
 	result, err := contractCal.Execute(env.Client)
 	require.NoError(t, err)
@@ -1755,7 +1757,7 @@ func TestBytes32(t *testing.T) {
 	value := [32]byte{}
 	copy(value[:], []byte("Test"))
 
-	contractCal := NewContractCallQuery().SetGas(50_000).SetQueryPayment(NewHbar(1)).
+	contractCal := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).
 		SetContractID(contractID).SetFunction("returnBytes32", NewContractFunctionParameters().AddBytes32(value))
 	result, err := contractCal.Execute(env.Client)
 	require.NoError(t, err)
@@ -1778,7 +1780,7 @@ func TestBytes32Array(t *testing.T) {
 	copy(expected1[len(expected1)-len(value[0]):], value[0])
 	copy(expected2[len(expected2)-len(value[1]):], value[1])
 
-	contractCal := NewContractCallQuery().SetGas(50_000).SetQueryPayment(NewHbar(1)).SetQueryPayment(NewHbar(11)).
+	contractCal := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).SetQueryPayment(NewHbar(11)).
 		SetContractID(contractID).SetFunction("returnBytes32Arr", NewContractFunctionParameters().AddBytes32Array(value))
 	result, err := contractCal.Execute(env.Client)
 	require.NoError(t, err)
