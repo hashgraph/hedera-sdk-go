@@ -91,6 +91,10 @@ func (response TransactionResponse) GetRecord(client *Client) (TransactionRecord
 		SetNodeAccountIDs([]AccountID{response.NodeID}).
 		Execute(client)
 
+	for receipt.Status == StatusThrottledAtConsensus {
+		receipt, err = retryTransaction(client, response.Transaction)
+	}
+
 	if err != nil {
 		// Manually add the receipt, because an empty TransactionRecord will have an empty receipt and empty receipt has no status and no status defaults to 0, which means success
 		return TransactionRecord{Receipt: receipt}, err
