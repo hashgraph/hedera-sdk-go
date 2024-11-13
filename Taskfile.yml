@@ -41,7 +41,7 @@ tasks:
               for example in examples/*; do
                  dir_name=$(basename "$example")
                   # Skip the consensus_pub_sub_chunked directory
-                  if [ "$dir_name" == "consensus_pub_sub_chunked" ]; then
+                  if [ "$dir_name" == "consensus_pub_sub_chunked" ] || [ "$dir_name" == "initialize-client-with-mirror-node-adress-book" ]; then
                       echo "Skipping $example"
                       continue
                   fi
