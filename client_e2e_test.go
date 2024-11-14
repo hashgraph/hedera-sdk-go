@@ -139,3 +139,15 @@ func DisabledTestIntegrationClientPingAllBadNetwork(t *testing.T) { // nolint
 	assert.Equal(t, 1, len(tempClient.GetNetwork()))
 
 }
+
+func TestClientInitWithMirrorNetwork(t *testing.T) {
+	t.Parallel()
+	mirrorNetworkString := "testnet.mirrornode.hedera.com:443"
+	client, err := ClientForMirrorNetwork([]string{mirrorNetworkString})
+	require.NoError(t, err)
+
+	mirrorNetwork := client.GetMirrorNetwork()
+	assert.Equal(t, 1, len(mirrorNetwork))
+	assert.Equal(t, mirrorNetworkString, mirrorNetwork[0])
+	assert.NotEmpty(t, client.GetNetwork())
+}

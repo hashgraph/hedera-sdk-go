@@ -81,6 +81,20 @@ var mainnetMirror = []string{"mainnet-public.mirrornode.hedera.com:443"}
 var testnetMirror = []string{"testnet.mirrornode.hedera.com:443"}
 var previewnetMirror = []string{"previewnet.mirrornode.hedera.com:443"}
 
+// ClientForMirrorNetwork constructs a client given a set of mirror network nodes.
+func ClientForMirrorNetwork(mirrorNetwork []string) (*Client, error) {
+	net := _NewNetwork()
+	client := _NewClient(net, mirrorNetwork, nil)
+	addressbook, err := NewAddressBookQuery().
+		SetFileID(FileIDForAddressBook()).
+		Execute(client)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query address book: %v", err)
+	}
+	client.SetNetworkFromAddressBook(addressbook)
+	return client, nil
+}
+
 // ClientForNetwork constructs a client given a set of nodes.
 func ClientForNetwork(network map[string]AccountID) *Client {
 	net := _NewNetwork()
