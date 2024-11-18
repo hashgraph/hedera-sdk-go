@@ -2,8 +2,6 @@ module github.com/hashgraph/hedera-sdk-go/tck
 
 go 1.21
 
-toolchain go1.22.5
-
 require (
 	github.com/creachadair/jrpc2 v1.1.2
 	github.com/hashgraph/hedera-sdk-go/v2 v2.42.0
