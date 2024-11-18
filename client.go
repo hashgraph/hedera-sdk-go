@@ -84,7 +84,7 @@ var previewnetMirror = []string{"previewnet.mirrornode.hedera.com:443"}
 // ClientForMirrorNetwork constructs a client given a set of mirror network nodes.
 func ClientForMirrorNetwork(mirrorNetwork []string) (*Client, error) {
 	net := _NewNetwork()
-	client := _NewClient(net, mirrorNetwork, nil)
+	client := _NewClient(net, mirrorNetwork, nil, true)
 	addressbook, err := NewAddressBookQuery().
 		SetFileID(FileIDForAddressBook()).
 		Execute(client)
@@ -98,7 +98,7 @@ func ClientForMirrorNetwork(mirrorNetwork []string) (*Client, error) {
 // ClientForNetwork constructs a client given a set of nodes.
 func ClientForNetwork(network map[string]AccountID) *Client {
 	net := _NewNetwork()
-	client := _NewClient(net, []string{}, nil)
+	client := _NewClient(net, []string{}, nil, true)
 	_ = client.SetNetwork(network)
 	net._SetLedgerID(*NewLedgerIDMainnet())
 	return client
@@ -109,7 +109,7 @@ func ClientForNetwork(network map[string]AccountID) *Client {
 // Most users will want to set an _Operator account with .SetOperator so
 // transactions can be automatically given TransactionIDs and signed.
 func ClientForMainnet() *Client {
-	return _NewClient(*_NetworkForMainnet(mainnetNodes._ToMap()), mainnetMirror, NewLedgerIDMainnet())
+	return _NewClient(*_NetworkForMainnet(mainnetNodes._ToMap()), mainnetMirror, NewLedgerIDMainnet(), true)
 }
 
 // ClientForTestnet returns a preconfigured client for use with the standard
@@ -117,7 +117,7 @@ func ClientForMainnet() *Client {
 // Most users will want to set an _Operator account with .SetOperator so
 // transactions can be automatically given TransactionIDs and signed.
 func ClientForTestnet() *Client {
-	return _NewClient(*_NetworkForTestnet(testnetNodes._ToMap()), testnetMirror, NewLedgerIDTestnet())
+	return _NewClient(*_NetworkForTestnet(testnetNodes._ToMap()), testnetMirror, NewLedgerIDTestnet(), true)
 }
 
 // ClientForPreviewnet returns a preconfigured client for use with the standard
@@ -125,12 +125,12 @@ func ClientForTestnet() *Client {
 // Most users will want to set an _Operator account with .SetOperator so
 // transactions can be automatically given TransactionIDs and signed.
 func ClientForPreviewnet() *Client {
-	return _NewClient(*_NetworkForPreviewnet(previewnetNodes._ToMap()), previewnetMirror, NewLedgerIDPreviewnet())
+	return _NewClient(*_NetworkForPreviewnet(previewnetNodes._ToMap()), previewnetMirror, NewLedgerIDPreviewnet(), true)
 }
 
 // newClient takes in a map of _Node addresses to their respective IDS (_Network)
 // and returns a Client instance which can be used to
-func _NewClient(network _Network, mirrorNetwork []string, ledgerId *LedgerID) *Client {
+func _NewClient(network _Network, mirrorNetwork []string, ledgerId *LedgerID, shouldScheduleNetworkUpdate bool) *Client {
 	ctx, cancel := context.WithCancel(context.Background())
 	logger := NewLogger("hedera-sdk-go", LogLevel(os.Getenv("HEDERA_SDK_GO_LOG_LEVEL")))
 	var defaultLogger Logger = logger
@@ -159,7 +159,9 @@ func _NewClient(network _Network, mirrorNetwork []string, ledgerId *LedgerID) *C
 	if len(mirrorNetwork) > 0 {
 		// Update the Addressbook, before the default timeout starts
 		client._UpdateAddressBook()
-		go client._ScheduleNetworkUpdate(ctx, client.defaultNetworkUpdatePeriod)
+		if shouldScheduleNetworkUpdate {
+			go client._ScheduleNetworkUpdate(ctx, client.defaultNetworkUpdatePeriod)
+		}
 	}
 
 	return &client
@@ -240,6 +242,16 @@ type _ClientConfig struct {
 // ClientFromConfig takes in the byte slice representation of a JSON string or
 // document and returns Client based on the configuration.
 func ClientFromConfig(jsonBytes []byte) (*Client, error) {
+	return clientFromConfig(jsonBytes, true)
+}
+
+// ClientFromConfigWithoutScheduleNetworkUpdate does not schedule network update
+// the user has to call SetNetworkUpdatePeriod manually
+func ClientFromConfigWithoutScheduleNetworkUpdate(jsonBytes []byte) (*Client, error) {
+	return clientFromConfig(jsonBytes, false)
+}
+
+func clientFromConfig(jsonBytes []byte, shouldScheduleNetworkUpdate bool) (*Client, error) {
 	var clientConfig _ClientConfig
 	var client *Client
 
@@ -295,20 +307,20 @@ func ClientFromConfig(jsonBytes []byte) (*Client, error) {
 				return client, errors.New("mirrorNetwork is expected to be either string or an array of strings")
 			}
 		}
-		client = _NewClient(network, arr, nil)
+		client = _NewClient(network, arr, nil, shouldScheduleNetworkUpdate)
 	case string:
 		if len(mirror) > 0 {
 			switch mirror {
 			case string(NetworkNameMainnet):
-				client = _NewClient(network, mainnetMirror, NewLedgerIDMainnet())
+				client = _NewClient(network, mainnetMirror, NewLedgerIDMainnet(), shouldScheduleNetworkUpdate)
 			case string(NetworkNameTestnet):
-				client = _NewClient(network, testnetMirror, NewLedgerIDTestnet())
+				client = _NewClient(network, testnetMirror, NewLedgerIDTestnet(), shouldScheduleNetworkUpdate)
 			case string(NetworkNamePreviewnet):
-				client = _NewClient(network, previewnetMirror, NewLedgerIDPreviewnet())
+				client = _NewClient(network, previewnetMirror, NewLedgerIDPreviewnet(), shouldScheduleNetworkUpdate)
 			}
 		}
 	case nil:
-		client = _NewClient(network, []string{}, nil)
+		client = _NewClient(network, []string{}, nil, true)
 	default:
 		return client, errors.New("mirrorNetwork is expected to be a string, an array of strings or nil")
 	}
