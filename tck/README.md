@@ -1,6 +1,6 @@
 # Go SDK TCK server
 
-This is a server that implements the [SDK TCK specification](https://github.com/hashgraph/hedera-sdk-tck/) for the Go SDK.
+This is a server that implements the [SDK TCK specification](https://github.com/hiero-ledger/hiero-sdk-tck/) for the Go SDK.
 
 ## Running the server
 

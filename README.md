@@ -1,6 +1,6 @@
 ![](https://img.shields.io/github/v/tag/hiero-project/hiero-sdk-go)
 ![](https://img.shields.io/github/go-mod/go-version/hiero-project/hiero-sdk-go)
-[![](https://godoc.org/github.com/hiero-project/hiero-sdk-go/v2?status.svg)](http://godoc.org/github.com/hiero-project/hiero-sdk-go/v2)
+[![](https://godoc.org/github.com/hiero-ledger/hiero-sdk-go/v2?status.svg)](http://godoc.org/github.com/hiero-project/hiero-sdk-go/v2)
 
 # Hiero Go SDK
 
@@ -13,7 +13,7 @@ the Protobufs definitions for the protocol are available in the [hashgraph/heder
 ### Install
 
 ```sh
-$ go get github.com/hiero-project/hiero-sdk-go/v2
+$ go install github.com/hiero-ledger/hiero-sdk-go/v2@latest
 ```
 
 > [!NOTE]  
