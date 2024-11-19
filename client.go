@@ -156,12 +156,10 @@ func _NewClient(network _Network, mirrorNetwork []string, ledgerId *LedgerID, sh
 	}
 
 	// We can't ask for AddressBook from non existent Mirror node
-	if len(mirrorNetwork) > 0 {
+	if len(mirrorNetwork) > 0 && shouldScheduleNetworkUpdate {
 		// Update the Addressbook, before the default timeout starts
 		client._UpdateAddressBook()
-		if shouldScheduleNetworkUpdate {
-			go client._ScheduleNetworkUpdate(ctx, client.defaultNetworkUpdatePeriod)
-		}
+		go client._ScheduleNetworkUpdate(ctx, client.defaultNetworkUpdatePeriod)
 	}
 
 	return &client
