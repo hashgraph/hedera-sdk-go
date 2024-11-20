@@ -15,33 +15,33 @@ type CommonTransactionParams struct {
 	Signers                  *[]string `json:"signers"`
 }
 
-func (common *CommonTransactionParams) FillOutTransaction(transactionInterface hedera.TransactionInterface, transaction *hedera.Transaction, client *hedera.Client) {
+func (common *CommonTransactionParams) FillOutTransaction(transactionInterface hedera.TransactionInterface, client *hedera.Client) {
 	if common.TransactionId != nil {
 		txId, _ := hedera.TransactionIdFromString(*common.TransactionId)
-		transaction.SetTransactionID(txId)
+		hedera.TransactionSetTransactionID(transactionInterface, txId)
 	}
 
 	if common.MaxTransactionFee != nil {
-		transaction.SetMaxTransactionFee(hedera.HbarFromTinybar(*common.MaxTransactionFee))
+		hedera.TransactionSetMaxTransactionFee(transactionInterface, hedera.HbarFromTinybar(*common.MaxTransactionFee))
 	}
 
 	if common.ValidTransactionDuration != nil {
-		transaction.SetTransactionValidDuration(time.Duration(*common.ValidTransactionDuration) * time.Second)
+		hedera.TransactionSetTransactionValidDuration(transactionInterface, time.Duration(*common.ValidTransactionDuration)*time.Second)
 	}
 
 	if common.Memo != nil {
-		transaction.SetTransactionMemo(*common.Memo)
+		hedera.TransactionSetTransactionMemo(transactionInterface, *common.Memo)
 	}
 
 	if common.RegenerateTransactionId != nil {
-		transaction.SetRegenerateTransactionID(*common.RegenerateTransactionId)
+		hedera.TransactionSetTransactionID(transactionInterface, hedera.TransactionIDGenerate(client.GetOperatorAccountID()))
 	}
 
 	if common.Signers != nil {
-		transaction.FreezeWith(client, transactionInterface)
+		hedera.TransactionFreezeWith(transactionInterface, client)
 		for _, signer := range *common.Signers {
 			s, _ := hedera.PrivateKeyFromString(signer)
-			transaction.Sign(s)
+			hedera.TransactionSign(transactionInterface, s)
 		}
 	}
 }
