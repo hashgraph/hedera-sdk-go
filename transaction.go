@@ -1497,6 +1497,16 @@ func TransactionGetSignatures(tx TransactionInterface) (map[AccountID]map[*Publi
 	return tx.getBaseTransaction().GetSignatures()
 }
 
+func TransactionFreezeWith(tx TransactionInterface, client *Client) (TransactionInterface, error) {
+	baseTx := tx.getBaseTransaction()
+	_, err := baseTx.FreezeWith(client)
+	if err != nil {
+		return tx, err
+	}
+
+	return tx, nil
+}
+
 func TransactionSignWithOperator(tx TransactionInterface, client *Client) (TransactionInterface, error) {
 	baseTx := tx.getBaseTransaction()
 	_, err := baseTx.SignWithOperator(client)

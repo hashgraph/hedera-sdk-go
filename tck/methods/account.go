@@ -70,7 +70,7 @@ func (a *AccountService) CreateAccount(_ context.Context, accountCreateParams pa
 		transaction.SetAlias(*accountCreateParams.Alias)
 	}
 	if accountCreateParams.CommonTransactionParams != nil {
-		accountCreateParams.CommonTransactionParams.FillOutTransaction(transaction, &transaction.Transaction, a.sdkService.Client)
+		accountCreateParams.CommonTransactionParams.FillOutTransaction(transaction, a.sdkService.Client)
 	}
 	txResponse, err := transaction.Execute(a.sdkService.Client)
 	if err != nil {
@@ -144,7 +144,7 @@ func (a *AccountService) UpdateAccount(_ context.Context, accountUpdateParams pa
 	}
 
 	if accountUpdateParams.CommonTransactionParams != nil {
-		accountUpdateParams.CommonTransactionParams.FillOutTransaction(transaction, &transaction.Transaction, a.sdkService.Client)
+		accountUpdateParams.CommonTransactionParams.FillOutTransaction(transaction, a.sdkService.Client)
 	}
 
 	txResponse, err := transaction.Execute(a.sdkService.Client)
@@ -172,7 +172,7 @@ func (a *AccountService) DeleteAccount(_ context.Context, deleteAccountParams pa
 	}
 
 	if deleteAccountParams.CommonTransactionParams != nil {
-		deleteAccountParams.CommonTransactionParams.FillOutTransaction(transaction, &transaction.Transaction, a.sdkService.Client)
+		deleteAccountParams.CommonTransactionParams.FillOutTransaction(transaction, a.sdkService.Client)
 	}
 
 	txResponse, err := transaction.Execute(a.sdkService.Client)

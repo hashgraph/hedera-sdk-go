@@ -271,6 +271,7 @@ func (pk _ECDSAPublicKey) _VerifyTransaction(tx *Transaction[TransactionInterfac
 }
 
 func (pk _ECDSAPublicKey) _ToFullKey() []byte {
+	// nolint
 	return elliptic.Marshal(btcec.S256(), pk.X(), pk.Y())
 }
 
