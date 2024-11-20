@@ -1,96 +1,105 @@
 ## v2.50.0
 
 ### Changed
-- Implemented generics in `Transaction.go`
-- Replaced go-ethereum library
+
+-   Implemented generics in `Transaction.go`
+-   Replaced go-ethereum library
 
 ## v2.49.0
 
 ### Changed
-- Replace `/common/math` package from go-ethereum
-- Update protobufs from `hedera-services`
+
+-   Replace `/common/math` package from go-ethereum
+-   Update protobufs from `hedera-services`
 
 ## v2.48.0
 
 ### Fixed
-- Reset `stakedAccountID` when setting `stakedNodeID` and vice versa
-- Fix `FEE_SCHEDULE_FILE_PART_UPLOADED` marked as error
+
+-   Reset `stakedAccountID` when setting `stakedNodeID` and vice versa
+-   Fix `FEE_SCHEDULE_FILE_PART_UPLOADED` marked as error
 
 ## v2.47.0
 
 ### Added
-- Functionality to pass a string in `SetMessage` function for `TopicMessageSubmitTransaction`
+
+-   Functionality to pass a string in `SetMessage` function for `TopicMessageSubmitTransaction`
 
 ### Fixed
-- Resubmit transaction in case of throttle status at receipt
+
+-   Resubmit transaction in case of throttle status at receipt
 
 ## v2.46.0
 
 ### Added
-- `TokenClaimAirdropTransaction` and `TokenCancelAirdropTransaction` (part of HIP-904)
+
+-   `TokenClaimAirdropTransaction` and `TokenCancelAirdropTransaction` (part of HIP-904)
 
 ### Fixed
-- Handling of `0x` prefix when constructing ECDSA keys
+
+-   Handling of `0x` prefix when constructing ECDSA keys
 
 ## v2.45.0
 
 ### Added
-- `TokenAirdropTransaction` (part of HIP-904)
+
+-   `TokenAirdropTransaction` (part of HIP-904)
 
 ### Fixed
-- Handling of `THROTTLED_AT_CONSENSUS` status code
+
+-   Handling of `THROTTLED_AT_CONSENSUS` status code
 
 ## v2.44.0
 
 ### Added
 
-- `NodeCreateTransaction`,`NodeUpdateTransaction`,`NodeDeleteTransaction` (part of HIP-869)
+-   `NodeCreateTransaction`,`NodeUpdateTransaction`,`NodeDeleteTransaction` (part of HIP-869)
 
 ## v2.43.0
 
 ### Added
 
--  `Key` functions such as `KeyFromBytes` `KeyToBytes`
--  `KeyList` functions such as `SetThreshold`
+-   `Key` functions such as `KeyFromBytes` `KeyToBytes`
+-   `KeyList` functions such as `SetThreshold`
 
 ## v2.42.0
 
 ### Added
 
--  `TokenReject` functionality (part of HIP-904)
+-   `TokenReject` functionality (part of HIP-904)
 
 ### Fixed
 
--  `TransactionReceiptQuery` and `AccountBalanceQuery` execution flows
+-   `TransactionReceiptQuery` and `AccountBalanceQuery` execution flows
 
 ## v2.41.0
 
 ### Added
 
--  Modified `AccountUpdateTransaction` to allow `maxAutomaticTokenAssociations` to support `-1` as a valid value
+-   Modified `AccountUpdateTransaction` to allow `maxAutomaticTokenAssociations` to support `-1` as a valid value
 
 ## v2.40.0
 
 ### Added
 
--  Implemented custom derivation paths in Menmonic ECDSA private key derivation 
+-   Implemented custom derivation paths in Menmonic ECDSA private key derivation
 
 ### Fixed
 
--  Revisited and fix failing examples
--  Gracefully handle `PlatformNotActive` status code
+-   Revisited and fix failing examples
+-   Gracefully handle `PlatformNotActive` status code
 
 ## v2.39.0
 
 ### Added
 
--  Implemented HIP-540: Change or remove existing keys from a token
+-   Implemented HIP-540: Change or remove existing keys from a token
 
 ## v2.38.1
 
 ### Changed
 
--  `AccountBalanceQuery`, `AccountInfoQuery`, and `ContractInfoQuery` get all the data from consensus nodes again
+-   `AccountBalanceQuery`, `AccountInfoQuery`, and `ContractInfoQuery` get all the data from consensus nodes again
 
 ## v2.38.0
 
@@ -104,7 +113,7 @@
 
 -   Raise an error if the transaction is not frozen while signing
 -   Undeprecate `AccountBalance.TokenDecimals`, `AccountInfo.TokenRelationships`
--   Account alias for hollow account Mirror Node Queries 
+-   Account alias for hollow account Mirror Node Queries
 
 ### Deprecated
 
@@ -1225,7 +1234,7 @@
 
 ### Fixed
 
--   Updated protobufs [#120](https://github.com/hashgraph/hedera-sdk-go/issues/120)
+-   Updated protobufs [#120](https://github.com/hiero-ledger/hiero-sdk-go/issues/120)
 
 ### Deprecate
 

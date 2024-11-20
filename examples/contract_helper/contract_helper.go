@@ -5,22 +5,22 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/hashgraph/hedera-sdk-go/v2"
+	"github.com/hiero-ledger/hiero-sdk-go/v2"
 	"github.com/pkg/errors"
 )
 
 type ContractHelper struct {
-	ContractID             hedera.ContractID
-	stepResultValidators   map[int32]func(hedera.ContractFunctionResult) bool
-	stepParameterSuppliers map[int32]func() *hedera.ContractFunctionParameters
-	stepPayableAmounts     map[int32]*hedera.Hbar
-	stepSigners            map[int32][]hedera.PrivateKey
-	stepFeePayers          map[int32]*hedera.AccountID
+	ContractID             hiero.ContractID
+	stepResultValidators   map[int32]func(hiero.ContractFunctionResult) bool
+	stepParameterSuppliers map[int32]func() *hiero.ContractFunctionParameters
+	stepPayableAmounts     map[int32]*hiero.Hbar
+	stepSigners            map[int32][]hiero.PrivateKey
+	stepFeePayers          map[int32]*hiero.AccountID
 	stepLogic              map[int32]func(address string)
 }
 
-func NewContractHelper(bytecode []byte, constructorParameters hedera.ContractFunctionParameters, client *hedera.Client) *ContractHelper {
-	response, err := hedera.NewContractCreateFlow().
+func NewContractHelper(bytecode []byte, constructorParameters hiero.ContractFunctionParameters, client *hiero.Client) *ContractHelper {
+	response, err := hiero.NewContractCreateFlow().
 		SetBytecode(bytecode).
 		SetGas(8000000).
 		SetMaxChunks(30).
@@ -37,11 +37,11 @@ func NewContractHelper(bytecode []byte, constructorParameters hedera.ContractFun
 	if receipt.ContractID != nil {
 		return &ContractHelper{
 			ContractID:             *receipt.ContractID,
-			stepResultValidators:   make(map[int32]func(hedera.ContractFunctionResult) bool),
-			stepParameterSuppliers: make(map[int32]func() *hedera.ContractFunctionParameters),
-			stepPayableAmounts:     make(map[int32]*hedera.Hbar),
-			stepSigners:            make(map[int32][]hedera.PrivateKey),
-			stepFeePayers:          make(map[int32]*hedera.AccountID),
+			stepResultValidators:   make(map[int32]func(hiero.ContractFunctionResult) bool),
+			stepParameterSuppliers: make(map[int32]func() *hiero.ContractFunctionParameters),
+			stepPayableAmounts:     make(map[int32]*hiero.Hbar),
+			stepSigners:            make(map[int32][]hiero.PrivateKey),
+			stepFeePayers:          make(map[int32]*hiero.AccountID),
 			stepLogic:              make(map[int32]func(address string)),
 		}
 	}
@@ -49,33 +49,33 @@ func NewContractHelper(bytecode []byte, constructorParameters hedera.ContractFun
 	return &ContractHelper{}
 }
 
-func (this *ContractHelper) SetResultValidatorForStep(stepIndex int32, validator func(hedera.ContractFunctionResult) bool) *ContractHelper {
+func (this *ContractHelper) SetResultValidatorForStep(stepIndex int32, validator func(hiero.ContractFunctionResult) bool) *ContractHelper {
 	this.stepResultValidators[stepIndex] = validator
 	return this
 }
 
-func (this *ContractHelper) SetParameterSupplierForStep(stepIndex int32, supplier func() *hedera.ContractFunctionParameters) *ContractHelper {
+func (this *ContractHelper) SetParameterSupplierForStep(stepIndex int32, supplier func() *hiero.ContractFunctionParameters) *ContractHelper {
 	this.stepParameterSuppliers[stepIndex] = supplier
 	return this
 }
 
-func (this *ContractHelper) SetPayableAmountForStep(stepIndex int32, amount hedera.Hbar) *ContractHelper {
+func (this *ContractHelper) SetPayableAmountForStep(stepIndex int32, amount hiero.Hbar) *ContractHelper {
 	this.stepPayableAmounts[stepIndex] = &amount
 	return this
 }
 
-func (this *ContractHelper) AddSignerForStep(stepIndex int32, signer hedera.PrivateKey) *ContractHelper {
+func (this *ContractHelper) AddSignerForStep(stepIndex int32, signer hiero.PrivateKey) *ContractHelper {
 	if _, ok := this.stepSigners[stepIndex]; ok {
 		this.stepSigners[stepIndex] = append(this.stepSigners[stepIndex], signer)
 	} else {
-		this.stepSigners[stepIndex] = make([]hedera.PrivateKey, 0)
+		this.stepSigners[stepIndex] = make([]hiero.PrivateKey, 0)
 		this.stepSigners[stepIndex] = append(this.stepSigners[stepIndex], signer)
 	}
 
 	return this
 }
 
-func (this *ContractHelper) SetFeePayerForStep(stepIndex int32, account hedera.AccountID, accountKey hedera.PrivateKey) *ContractHelper {
+func (this *ContractHelper) SetFeePayerForStep(stepIndex int32, account hiero.AccountID, accountKey hiero.PrivateKey) *ContractHelper {
 	this.stepFeePayers[stepIndex] = &account
 	return this.AddSignerForStep(stepIndex, accountKey)
 }
@@ -85,14 +85,14 @@ func (this *ContractHelper) SetStepLogic(stepIndex int32, specialFunction func(a
 	return this
 }
 
-func (this *ContractHelper) GetResultValidator(stepIndex int32) func(hedera.ContractFunctionResult) bool {
+func (this *ContractHelper) GetResultValidator(stepIndex int32) func(hiero.ContractFunctionResult) bool {
 	if _, ok := this.stepResultValidators[stepIndex]; ok {
 		return this.stepResultValidators[stepIndex]
 	}
 
-	return func(result hedera.ContractFunctionResult) bool {
-		responseStatus := hedera.Status(result.GetInt32(0))
-		isValid := responseStatus == hedera.StatusSuccess
+	return func(result hiero.ContractFunctionResult) bool {
+		responseStatus := hiero.Status(result.GetInt32(0))
+		isValid := responseStatus == hiero.StatusSuccess
 		if !isValid {
 			println("Encountered invalid response status", responseStatus.String())
 		}
@@ -100,33 +100,33 @@ func (this *ContractHelper) GetResultValidator(stepIndex int32) func(hedera.Cont
 	}
 }
 
-func (this *ContractHelper) GetParameterSupplier(stepIndex int32) func() *hedera.ContractFunctionParameters {
+func (this *ContractHelper) GetParameterSupplier(stepIndex int32) func() *hiero.ContractFunctionParameters {
 	if _, ok := this.stepParameterSuppliers[stepIndex]; ok {
 		return this.stepParameterSuppliers[stepIndex]
 	}
 
-	return func() *hedera.ContractFunctionParameters {
+	return func() *hiero.ContractFunctionParameters {
 		return nil
 	}
 }
 
-func (this *ContractHelper) GetPayableAmount(stepIndex int32) *hedera.Hbar {
+func (this *ContractHelper) GetPayableAmount(stepIndex int32) *hiero.Hbar {
 	return this.stepPayableAmounts[stepIndex]
 }
 
-func (this *ContractHelper) GetSigners(stepIndex int32) []hedera.PrivateKey {
+func (this *ContractHelper) GetSigners(stepIndex int32) []hiero.PrivateKey {
 	if _, ok := this.stepSigners[stepIndex]; ok {
 		return this.stepSigners[stepIndex]
 	}
 
-	return []hedera.PrivateKey{}
+	return []hiero.PrivateKey{}
 }
 
-func (this *ContractHelper) ExecuteSteps(firstStep int32, lastStep int32, client *hedera.Client) (*ContractHelper, error) {
+func (this *ContractHelper) ExecuteSteps(firstStep int32, lastStep int32, client *hiero.Client) (*ContractHelper, error) {
 	for stepIndex := firstStep; stepIndex <= lastStep; stepIndex++ {
 		println("Attempting to execuite step", stepIndex)
 
-		transaction := hedera.NewContractExecuteTransaction().
+		transaction := hiero.NewContractExecuteTransaction().
 			SetContractID(this.ContractID).
 			SetGas(10000000)
 
@@ -144,7 +144,7 @@ func (this *ContractHelper) ExecuteSteps(firstStep int32, lastStep int32, client
 		}
 
 		if feePayerAccountID, ok := this.stepFeePayers[stepIndex]; ok {
-			transaction.SetTransactionID(hedera.TransactionIDGenerate(*feePayerAccountID))
+			transaction.SetTransactionID(hiero.TransactionIDGenerate(*feePayerAccountID))
 		}
 
 		frozen, err := transaction.FreezeWith(client)

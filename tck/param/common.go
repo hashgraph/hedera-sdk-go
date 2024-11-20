@@ -3,7 +3,7 @@ package param
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2"
+	"github.com/hiero-ledger/hiero-sdk-go/v2"
 )
 
 type CommonTransactionParams struct {
@@ -15,33 +15,33 @@ type CommonTransactionParams struct {
 	Signers                  *[]string `json:"signers"`
 }
 
-func (common *CommonTransactionParams) FillOutTransaction(transactionInterface hedera.TransactionInterface, transaction *hedera.Transaction, client *hedera.Client) {
+func (common *CommonTransactionParams) FillOutTransaction(transactionInterface hiero.TransactionInterface, client *hiero.Client) {
 	if common.TransactionId != nil {
-		txId, _ := hedera.TransactionIdFromString(*common.TransactionId)
-		transaction.SetTransactionID(txId)
+		txId, _ := hiero.TransactionIdFromString(*common.TransactionId)
+		hiero.TransactionSetTransactionID(transactionInterface, txId)
 	}
 
 	if common.MaxTransactionFee != nil {
-		transaction.SetMaxTransactionFee(hedera.HbarFromTinybar(*common.MaxTransactionFee))
+		hiero.TransactionSetMaxTransactionFee(transactionInterface, hiero.HbarFromTinybar(*common.MaxTransactionFee))
 	}
 
 	if common.ValidTransactionDuration != nil {
-		transaction.SetTransactionValidDuration(time.Duration(*common.ValidTransactionDuration) * time.Second)
+		hiero.TransactionSetTransactionValidDuration(transactionInterface, time.Duration(*common.ValidTransactionDuration)*time.Second)
 	}
 
 	if common.Memo != nil {
-		transaction.SetTransactionMemo(*common.Memo)
+		hiero.TransactionSetTransactionMemo(transactionInterface, *common.Memo)
 	}
 
 	if common.RegenerateTransactionId != nil {
-		transaction.SetRegenerateTransactionID(*common.RegenerateTransactionId)
+		hiero.TransactionSetTransactionID(transactionInterface, hiero.TransactionIDGenerate(client.GetOperatorAccountID()))
 	}
 
 	if common.Signers != nil {
-		transaction.FreezeWith(client, transactionInterface)
+		hiero.TransactionFreezeWith(transactionInterface, client)
 		for _, signer := range *common.Signers {
-			s, _ := hedera.PrivateKeyFromString(signer)
-			transaction.Sign(s)
+			s, _ := hiero.PrivateKeyFromString(signer)
+			hiero.TransactionSign(transactionInterface, s)
 		}
 	}
 }

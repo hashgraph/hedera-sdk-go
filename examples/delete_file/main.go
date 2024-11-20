@@ -4,27 +4,27 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/hashgraph/hedera-sdk-go/v2"
+	"github.com/hiero-ledger/hiero-sdk-go/v2"
 )
 
 func main() {
-	var client *hedera.Client
+	var client *hiero.Client
 	var err error
 
 	// Retrieving network type from environment variable HEDERA_NETWORK
-	client, err = hedera.ClientForName(os.Getenv("HEDERA_NETWORK"))
+	client, err = hiero.ClientForName(os.Getenv("HEDERA_NETWORK"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error creating client", err))
 	}
 
 	// Retrieving operator ID from environment variable OPERATOR_ID
-	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
+	operatorAccountID, err := hiero.AccountIDFromString(os.Getenv("OPERATOR_ID"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error converting string to AccountID", err))
 	}
 
 	// Retrieving operator key from environment variable OPERATOR_KEY
-	operatorKey, err := hedera.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
+	operatorKey, err := hiero.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error converting string to PrivateKey", err))
 	}
@@ -33,7 +33,7 @@ func main() {
 	client.SetOperator(operatorAccountID, operatorKey)
 
 	// Generate the key to be used with the new file
-	newKey, err := hedera.GeneratePrivateKey()
+	newKey, err := hiero.GeneratePrivateKey()
 	if err != nil {
 		panic(fmt.Sprintf("%v : error generating PrivateKey", err))
 	}
@@ -41,14 +41,14 @@ func main() {
 	fmt.Println("Creating a file to delete:")
 
 	// First create a file
-	freezeTransaction, err := hedera.NewFileCreateTransaction().
+	freezeTransaction, err := hiero.NewFileCreateTransaction().
 		// Mock contents
 		SetContents([]byte("The quick brown fox jumps over the lazy dog")).
 		// All keys at the top level of a key list must sign to create or modify the file. Any one of
 		// the keys at the top level key list can sign to delete the file.
 		SetKeys(newKey.PublicKey()).
 		SetTransactionMemo("go sdk example delete_file/main.go").
-		SetMaxTransactionFee(hedera.HbarFrom(8, hedera.HbarUnits.Hbar)).
+		SetMaxTransactionFee(hiero.HbarFrom(8, hiero.HbarUnits.Hbar)).
 		FreezeWith(client)
 
 	if err != nil {
@@ -73,7 +73,7 @@ func main() {
 	fmt.Println("deleting created file")
 
 	// To delete a file you must do the following:
-	deleteTransaction, err := hedera.NewFileDeleteTransaction().
+	deleteTransaction, err := hiero.NewFileDeleteTransaction().
 		// Set file ID
 		SetFileID(newFileID).
 		FreezeWith(client)
@@ -101,7 +101,7 @@ func main() {
 
 	// Querying for file info on a deleted file will result in FILE_DELETED
 	// Good way to check if file was actually deleted
-	fileInfo, err := hedera.NewFileInfoQuery().
+	fileInfo, err := hiero.NewFileInfoQuery().
 		// Only file ID required
 		SetFileID(newFileID).
 		Execute(client)

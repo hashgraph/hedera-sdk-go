@@ -1,27 +1,9 @@
 //go:build all || e2e
 // +build all e2e
 
-package hedera
+package hiero
 
-/*-
- *
- * Hedera Go SDK
- *
- * Copyright (C) 2020 - 2024 Hedera Hashgraph, LLC
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import (
 	"testing"
@@ -41,7 +23,7 @@ func TestIntegrationContractCreateFlowCanExecute(t *testing.T) {
 		SetBytecode(testContractByteCode).
 		SetAdminKey(env.OperatorKey).
 		SetGas(200000).
-		SetConstructorParameters(NewContractFunctionParameters().AddString("hello from hedera")).
+		SetConstructorParameters(NewContractFunctionParameters().AddString("hello from hiero")).
 		SetContractMemo("[e2e::ContractCreateFlow]").
 		Execute(env.Client)
 	require.NoError(t, err)
@@ -120,7 +102,7 @@ func TestIntegrationContractCreateFlowGettersAndSetters(t *testing.T) {
 			params:     "wooow",
 			paramTypes: []_Solidity{}},
 		arguments: []Argument{Argument{
-			value:   []byte("hello from hedera"),
+			value:   []byte("hello from hiero"),
 			dynamic: false,
 		}}}
 
@@ -128,7 +110,7 @@ func TestIntegrationContractCreateFlowGettersAndSetters(t *testing.T) {
 		SetBytecodeWithString(testContractByteCode).
 		SetAdminKey(env.OperatorKey).
 		SetGas(100000).
-		SetConstructorParameters(NewContractFunctionParameters().AddString("hello from hedera")).
+		SetConstructorParameters(NewContractFunctionParameters().AddString("hello from hiero")).
 		SetContractMemo("[e2e::ContractCreateFlow]").
 		SetInitialBalance(testInitialBalance).
 		SetProxyAccountID(testProxyAccountID).

@@ -4,25 +4,25 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/hashgraph/hedera-sdk-go/v2"
+	"github.com/hiero-ledger/hiero-sdk-go/v2"
 )
 
 func main() {
 	// Our hypothetical primary service only knows the operator/sender's account ID and the recipient's accountID
-	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
+	operatorAccountID, err := hiero.AccountIDFromString(os.Getenv("OPERATOR_ID"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error converting string to AccountID", err))
 	}
 
-	operatorPrivateKey, err := hedera.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
+	operatorPrivateKey, err := hiero.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error converting string to PrivateKey", err))
 	}
 
-	recipientAccountID := hedera.AccountID{Account: 3}
+	recipientAccountID := hiero.AccountID{Account: 3}
 
 	// We create a client without a set operator
-	client, err := hedera.ClientForName(os.Getenv("HEDERA_NETWORK"))
+	client, err := hiero.ClientForName(os.Getenv("HEDERA_NETWORK"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error creating client", err))
 	}
@@ -31,16 +31,16 @@ func main() {
 
 	// We must manually construct a TransactionID with the accountID of the operator/sender
 	// This is the account that will be charged the transaction fee
-	txID := hedera.TransactionIDGenerate(operatorAccountID)
+	txID := hiero.TransactionIDGenerate(operatorAccountID)
 
 	// The following steps are required for manually signing
-	transaction, err := hedera.NewTransferTransaction().
+	transaction, err := hiero.NewTransferTransaction().
 		// 1. Manually set the transaction ID
 		SetTransactionID(txID).
 		// 2. Add your sender and amount to be send
-		AddHbarTransfer(operatorAccountID, hedera.NewHbar(-1)).
+		AddHbarTransfer(operatorAccountID, hiero.NewHbar(-1)).
 		// 3. add the recipient(s) and amount to be received
-		AddHbarTransfer(recipientAccountID, hedera.NewHbar(1)).
+		AddHbarTransfer(recipientAccountID, hiero.NewHbar(1)).
 		SetTransactionMemo("go sdk example multi_app_transfer/main.go").
 		// 4. build the transaction using the client that does not have a set operator
 		FreezeWith(client)
@@ -69,15 +69,15 @@ func main() {
 	fmt.Printf("Received bytes for signed transaction: \n%v\n", signedTxBytes)
 
 	// Unmarshal your bytes into the signed transaction
-	var signedTx hedera.TransferTransaction
-	tx, err := hedera.TransactionFromBytes(signedTxBytes)
+	var signedTx hiero.TransferTransaction
+	tx, err := hiero.TransactionFromBytes(signedTxBytes)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error converting bytes to transfer transaction", err))
 	}
 
 	// Converting from interface{} to TransferTransaction, if that's what we got
 	switch t := tx.(type) {
-	case hedera.TransferTransaction:
+	case hiero.TransferTransaction:
 		signedTx = t
 	default:
 		panic("Did not receive `TransferTransaction` back from signed bytes")
@@ -107,21 +107,21 @@ func signingService(txBytes []byte) ([]byte, error) {
 	fmt.Println("\nSigning service has received the transaction")
 
 	// Your signing service is aware of the operator's private key
-	operatorPrivateKey, err := hedera.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
+	operatorPrivateKey, err := hiero.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
 	if err != nil {
 		return txBytes, err
 	}
 
 	// Unmarshal the unsigned transaction's bytes
-	var unsignedTx hedera.TransferTransaction
-	tx, err := hedera.TransactionFromBytes(txBytes)
+	var unsignedTx hiero.TransferTransaction
+	tx, err := hiero.TransactionFromBytes(txBytes)
 	if err != nil {
 		return txBytes, err
 	}
 
 	// Converting from interface{} to TransferTransaction, if that's what we got
 	switch t := tx.(type) {
-	case hedera.TransferTransaction:
+	case hiero.TransferTransaction:
 		unsignedTx = t
 	default:
 		panic("Did not receive `TransferTransaction` back from signed bytes")

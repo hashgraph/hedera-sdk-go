@@ -1,15 +1,15 @@
-module github.com/hashgraph/hedera-sdk-go/tck
+module github.com/hiero-ledger/hiero-sdk-go/tck
 
 go 1.21
 
 require (
 	github.com/creachadair/jrpc2 v1.1.2
-	github.com/hashgraph/hedera-sdk-go/v2 v2.42.0
+	github.com/hiero-ledger/hiero-sdk-go/v2 v2.42.0
 	github.com/joho/godotenv v1.5.1
 	github.com/stretchr/testify v1.9.0
 )
 
-replace github.com/hashgraph/hedera-sdk-go/v2 => ../
+replace github.com/hiero-ledger/hiero-sdk-go/v2 => ../
 
 require (
 	github.com/btcsuite/btcd/btcec/v2 v2.3.4 // indirect

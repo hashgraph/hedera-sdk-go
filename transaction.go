@@ -1,24 +1,6 @@
-package hedera
+package hiero
 
-/*-
- *
- * Hedera Go SDK
- *
- * Copyright (C) 2020 - 2024 Hedera Hashgraph, LLC
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import (
 	"bytes"
@@ -30,8 +12,8 @@ import (
 
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto/sdk"
-	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
+	"github.com/hiero-ledger/hiero-sdk-go/v2/proto/sdk"
+	"github.com/hiero-ledger/hiero-sdk-go/v2/proto/services"
 	protobuf "google.golang.org/protobuf/proto"
 )
 
@@ -68,7 +50,7 @@ type BaseTransaction struct {
 	transactionSigners []TransactionSigner
 }
 
-// Transaction is base struct for all transactions that may be built and submitted to Hedera.
+// Transaction is base struct for all transactions that may be built and submitted to hiero.
 // It's generic over the type of transaction it contains. Example: TransferTransaction, ContractCreateTransaction, etc.
 type Transaction[T TransactionInterface] struct {
 	*executable
@@ -1495,6 +1477,16 @@ func TransactionSetTransactionID(tx TransactionInterface, transactionID Transact
 
 func TransactionGetSignatures(tx TransactionInterface) (map[AccountID]map[*PublicKey][]byte, error) {
 	return tx.getBaseTransaction().GetSignatures()
+}
+
+func TransactionFreezeWith(tx TransactionInterface, client *Client) (TransactionInterface, error) {
+	baseTx := tx.getBaseTransaction()
+	_, err := baseTx.FreezeWith(client)
+	if err != nil {
+		return tx, err
+	}
+
+	return tx, nil
 }
 
 func TransactionSignWithOperator(tx TransactionInterface, client *Client) (TransactionInterface, error) {

@@ -4,27 +4,27 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/hashgraph/hedera-sdk-go/v2"
+	"github.com/hiero-ledger/hiero-sdk-go/v2"
 )
 
 func main() {
-	var client *hedera.Client
+	var client *hiero.Client
 	var err error
 
 	// Retrieving network type from environment variable HEDERA_NETWORK
-	client, err = hedera.ClientForName(os.Getenv("HEDERA_NETWORK"))
+	client, err = hiero.ClientForName(os.Getenv("HEDERA_NETWORK"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error creating client", err))
 	}
 
 	// Retrieving operator ID from environment variable OPERATOR_ID
-	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
+	operatorAccountID, err := hiero.AccountIDFromString(os.Getenv("OPERATOR_ID"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error converting string to AccountID", err))
 	}
 
 	// Retrieving operator key from environment variable OPERATOR_KEY
-	operatorKey, err := hedera.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
+	operatorKey, err := hiero.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error converting string to PrivateKey", err))
 	}
@@ -32,11 +32,11 @@ func main() {
 	// Setting the client operator ID and key
 	client.SetOperator(operatorAccountID, operatorKey)
 
-	initialAdminKeys := make([]hedera.PrivateKey, 3)
+	initialAdminKeys := make([]hiero.PrivateKey, 3)
 
 	// Generating the keys for the KeyList
 	for i := range initialAdminKeys {
-		key, err := hedera.GeneratePrivateKey()
+		key, err := hiero.GeneratePrivateKey()
 		if err != nil {
 			panic(fmt.Sprintf("%v : error generating PrivateKey", err))
 		}
@@ -44,12 +44,12 @@ func main() {
 	}
 
 	// Creating KeyList with a threshold 2
-	keyList := hedera.KeyListWithThreshold(2)
+	keyList := hiero.KeyListWithThreshold(2)
 	for _, key := range initialAdminKeys {
 		keyList.Add(key.PublicKey())
 	}
 
-	topicTx, err := hedera.NewTopicCreateTransaction().
+	topicTx, err := hiero.NewTopicCreateTransaction().
 		SetTopicMemo("demo topic").
 		// Access control for UpdateTopicTransaction/DeleteTopicTransaction.
 		// Anyone can increase the topic's expirationTime via UpdateTopicTransaction, regardless of the adminKey.
@@ -84,11 +84,11 @@ func main() {
 
 	println("Created new topic ", topicID.String(), " with 2-of-3 threshold key as adminKey.")
 
-	newAdminKeys := make([]hedera.PrivateKey, 4)
+	newAdminKeys := make([]hiero.PrivateKey, 4)
 
 	// Generating the keys
 	for i := range newAdminKeys {
-		key, err := hedera.GeneratePrivateKey()
+		key, err := hiero.GeneratePrivateKey()
 		if err != nil {
 			panic(fmt.Sprintf("%v : error generating PrivateKey", err))
 		}
@@ -96,12 +96,12 @@ func main() {
 	}
 
 	// Creating KeyList with a threshold 3
-	keyList = hedera.KeyListWithThreshold(3)
+	keyList = hiero.KeyListWithThreshold(3)
 	for _, key := range newAdminKeys {
 		keyList.Add(key.PublicKey())
 	}
 
-	topicUpdate, err := hedera.NewTopicUpdateTransaction().
+	topicUpdate, err := hiero.NewTopicUpdateTransaction().
 		SetTopicID(topicID).
 		SetTopicMemo("updated topic demo").
 		// Updating with new KeyList here
@@ -138,7 +138,7 @@ func main() {
 	println("Updated topic ", topicID.String(), " with 3-of-4 threshold key as adminKey")
 
 	// Make sure everything worked by checking the topic memo
-	topicInfo, err := hedera.NewTopicInfoQuery().
+	topicInfo, err := hiero.NewTopicInfoQuery().
 		SetTopicID(topicID).
 		Execute(client)
 	if err != nil {

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/hashgraph/hedera-sdk-go/v2"
+	"github.com/hiero-ledger/hiero-sdk-go/v2"
 )
 
 /**
@@ -12,23 +12,23 @@ import (
  * @description Change or remove existing keys from a token
  */
 func main() {
-	var client *hedera.Client
+	var client *hiero.Client
 	var err error
 
 	// Retrieving network type from environment variable HEDERA_NETWORK
-	client, err = hedera.ClientForName(os.Getenv("HEDERA_NETWORK"))
+	client, err = hiero.ClientForName(os.Getenv("HEDERA_NETWORK"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error creating client", err))
 	}
 
 	// Retrieving operator ID from environment variable OPERATOR_ID
-	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
+	operatorAccountID, err := hiero.AccountIDFromString(os.Getenv("OPERATOR_ID"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error converting string to AccountID", err))
 	}
 
 	// Retrieving operator key from environment variable OPERATOR_KEY
-	operatorKey, err := hedera.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
+	operatorKey, err := hiero.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error converting string to PrivateKey", err))
 	}
@@ -37,32 +37,32 @@ func main() {
 	client.SetOperator(operatorAccountID, operatorKey)
 
 	// Create admin key
-	adminKey, err := hedera.PrivateKeyGenerateEd25519()
+	adminKey, err := hiero.PrivateKeyGenerateEd25519()
 	if err != nil {
 		panic(fmt.Sprintf("%v : error creating admin key", err))
 	}
 	fmt.Println("create wipe key: ", adminKey.String())
 
 	// Create supply key
-	supplyKey, err := hedera.PrivateKeyGenerateEd25519()
+	supplyKey, err := hiero.PrivateKeyGenerateEd25519()
 	if err != nil {
 		panic(fmt.Sprintf("%v : error creating supply key", err))
 	}
 	fmt.Println("create supply key: ", supplyKey.String())
 
 	// Create wipe key
-	wipeKey, err := hedera.PrivateKeyGenerateEd25519()
+	wipeKey, err := hiero.PrivateKeyGenerateEd25519()
 	if err != nil {
 		panic(fmt.Sprintf("%v : error creating supply key", err))
 	}
 	fmt.Println("create wipe key: ", supplyKey.String())
 
 	// Create the token
-	tx, err := hedera.NewTokenCreateTransaction().
+	tx, err := hiero.NewTokenCreateTransaction().
 		SetTokenName("ffff").
 		SetTokenSymbol("F").
 		SetDecimals(3).
-		SetTokenType(hedera.TokenTypeFungibleCommon).
+		SetTokenType(hiero.TokenTypeFungibleCommon).
 		SetInitialSupply(1000000).
 		SetTreasuryAccountID(client.GetOperatorAccountID()).
 		SetFreezeDefault(false).
@@ -86,7 +86,7 @@ func main() {
 	fmt.Println("created token: ", tokenID)
 
 	// Query the token info after creation
-	info, err := hedera.NewTokenInfoQuery().
+	info, err := hiero.NewTokenInfoQuery().
 		SetTokenID(*receipt.TokenID).
 		Execute(client)
 	if err != nil {
@@ -106,12 +106,12 @@ func main() {
 // structure is a 1/2 threshold with components:
 //   - Admin key
 //   - A 2/2 list including the role key and its replacement key
-func removeWipeKeyFullValidation(client *hedera.Client, tokenID hedera.TokenID, adminKey hedera.PrivateKey) {
+func removeWipeKeyFullValidation(client *hiero.Client, tokenID hiero.TokenID, adminKey hiero.PrivateKey) {
 	// Remove wipe key by setting it to a empty key list
-	tx, err := hedera.NewTokenUpdateTransaction().
+	tx, err := hiero.NewTokenUpdateTransaction().
 		SetTokenID(tokenID).
-		SetWipeKey(hedera.NewKeyList()).
-		SetKeyVerificationMode(hedera.FULL_VALIDATION).
+		SetWipeKey(hiero.NewKeyList()).
+		SetKeyVerificationMode(hiero.FULL_VALIDATION).
 		FreezeWith(client)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error updating token", err))
@@ -126,7 +126,7 @@ func removeWipeKeyFullValidation(client *hedera.Client, tokenID hedera.TokenID, 
 	}
 
 	// Query the token info to get the wipe key after removal
-	info, err := hedera.NewTokenInfoQuery().
+	info, err := hiero.NewTokenInfoQuery().
 		SetTokenID(tokenID).
 		Execute(client)
 	if err != nil {
@@ -135,14 +135,14 @@ func removeWipeKeyFullValidation(client *hedera.Client, tokenID hedera.TokenID, 
 	fmt.Println("token's wipe key after removal: ", info.WipeKey)
 }
 
-func updateSupplyKeyFullValidation(client *hedera.Client, tokenID hedera.TokenID, oldSupplyKey hedera.PrivateKey) hedera.PrivateKey {
-	newSupplyKey, _ := hedera.GeneratePrivateKey()
+func updateSupplyKeyFullValidation(client *hiero.Client, tokenID hiero.TokenID, oldSupplyKey hiero.PrivateKey) hiero.PrivateKey {
+	newSupplyKey, _ := hiero.GeneratePrivateKey()
 
 	// Update  supply key by setting it to a new key
-	tx, err := hedera.NewTokenUpdateTransaction().
+	tx, err := hiero.NewTokenUpdateTransaction().
 		SetTokenID(tokenID).
 		SetSupplyKey(newSupplyKey.PublicKey()).
-		SetKeyVerificationMode(hedera.FULL_VALIDATION).
+		SetKeyVerificationMode(hiero.FULL_VALIDATION).
 		FreezeWith(client)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error updating token", err))
@@ -168,7 +168,7 @@ func updateSupplyKeyFullValidation(client *hedera.Client, tokenID hedera.TokenID
 	}
 
 	// Query the token info to get the supply key after update
-	info, err := hedera.NewTokenInfoQuery().
+	info, err := hiero.NewTokenInfoQuery().
 		SetTokenID(tokenID).
 		Execute(client)
 	if err != nil {
@@ -179,14 +179,14 @@ func updateSupplyKeyFullValidation(client *hedera.Client, tokenID hedera.TokenID
 	return newSupplyKey
 }
 
-func removeSupplyKeyNoValidation(client *hedera.Client, tokenID hedera.TokenID, oldSupplyKey hedera.PrivateKey) {
-	zeroNewKey, _ := hedera.ZeroKey()
+func removeSupplyKeyNoValidation(client *hiero.Client, tokenID hiero.TokenID, oldSupplyKey hiero.PrivateKey) {
+	zeroNewKey, _ := hiero.ZeroKey()
 
 	// Remove supply key by setting it to a zero key
-	tx, err := hedera.NewTokenUpdateTransaction().
+	tx, err := hiero.NewTokenUpdateTransaction().
 		SetTokenID(tokenID).
 		SetSupplyKey(zeroNewKey).
-		SetKeyVerificationMode(hedera.NO_VALIDATION).
+		SetKeyVerificationMode(hiero.NO_VALIDATION).
 		FreezeWith(client)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error updating token", err))
@@ -203,23 +203,23 @@ func removeSupplyKeyNoValidation(client *hedera.Client, tokenID hedera.TokenID, 
 	}
 
 	// Query the token info to get the supply key after removal
-	info, err := hedera.NewTokenInfoQuery().
+	info, err := hiero.NewTokenInfoQuery().
 		SetTokenID(tokenID).
 		Execute(client)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error getting token info", err))
 	}
 
-	newSupplyKey := info.SupplyKey.(hedera.PublicKey)
+	newSupplyKey := info.SupplyKey.(hiero.PublicKey)
 	fmt.Println("token's supply key after zero out: ", newSupplyKey.StringRaw())
 }
 
-func removeAdminKeyNoValidation(client *hedera.Client, tokenID hedera.TokenID, oldAdminKey hedera.PrivateKey) {
+func removeAdminKeyNoValidation(client *hiero.Client, tokenID hiero.TokenID, oldAdminKey hiero.PrivateKey) {
 	// Remove admin key by setting it to a zero key
-	tx, err := hedera.NewTokenUpdateTransaction().
+	tx, err := hiero.NewTokenUpdateTransaction().
 		SetTokenID(tokenID).
-		SetAdminKey(hedera.NewKeyList()).
-		SetKeyVerificationMode(hedera.NO_VALIDATION).
+		SetAdminKey(hiero.NewKeyList()).
+		SetKeyVerificationMode(hiero.NO_VALIDATION).
 		FreezeWith(client)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error updating token", err))
@@ -236,7 +236,7 @@ func removeAdminKeyNoValidation(client *hedera.Client, tokenID hedera.TokenID, o
 	}
 
 	// Query the token info to get the admin key after removal
-	info, err := hedera.NewTokenInfoQuery().
+	info, err := hiero.NewTokenInfoQuery().
 		SetTokenID(tokenID).
 		Execute(client)
 	if err != nil {

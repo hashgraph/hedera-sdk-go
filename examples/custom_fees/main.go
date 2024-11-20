@@ -4,27 +4,27 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/hashgraph/hedera-sdk-go/v2"
+	"github.com/hiero-ledger/hiero-sdk-go/v2"
 )
 
 func main() {
-	var client *hedera.Client
+	var client *hiero.Client
 	var err error
 
 	// Retrieving network type from environment variable HEDERA_NETWORK
-	client, err = hedera.ClientForName(os.Getenv("HEDERA_NETWORK"))
+	client, err = hiero.ClientForName(os.Getenv("HEDERA_NETWORK"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error creating client", err))
 	}
 
 	// Retrieving operator ID from environment variable OPERATOR_ID
-	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
+	operatorAccountID, err := hiero.AccountIDFromString(os.Getenv("OPERATOR_ID"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error converting string to AccountID", err))
 	}
 
 	// Retrieving operator key from environment variable OPERATOR_KEY
-	operatorKey, err := hedera.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
+	operatorKey, err := hiero.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error converting string to PrivateKey", err))
 	}
@@ -33,7 +33,7 @@ func main() {
 	client.SetOperator(operatorAccountID, operatorKey)
 
 	// Generate new key to be used with new account
-	aliceKey, err := hedera.GeneratePrivateKey()
+	aliceKey, err := hiero.GeneratePrivateKey()
 	if err != nil {
 		panic(fmt.Sprintf("%v : error generating PrivateKey", err))
 	}
@@ -41,8 +41,8 @@ func main() {
 	// Create three accounts, Alice, Bob, and Charlie.  Alice will be the treasury for our example token.
 	// Fees only apply in transactions not involving the treasury, so we need two other accounts.
 
-	aliceAccountCreate, err := hedera.NewAccountCreateTransaction().
-		SetInitialBalance(hedera.NewHbar(10)).
+	aliceAccountCreate, err := hiero.NewAccountCreateTransaction().
+		SetInitialBalance(hiero.NewHbar(10)).
 		SetKey(aliceKey).
 		FreezeWith(client)
 	if err != nil {
@@ -60,20 +60,20 @@ func main() {
 		panic(fmt.Sprintf("%v : error getting receipt for alice account create", err))
 	}
 
-	var aliceId hedera.AccountID
+	var aliceId hiero.AccountID
 	if receipt.AccountID != nil {
 		aliceId = *receipt.AccountID
 	} else {
 		panic("Receipt didn't return alice's ID")
 	}
 
-	bobKey, err := hedera.GeneratePrivateKey()
+	bobKey, err := hiero.GeneratePrivateKey()
 	if err != nil {
 		panic(fmt.Sprintf("%v : error generating PrivateKey", err))
 	}
 
-	bobAccountCreate, err := hedera.NewAccountCreateTransaction().
-		SetInitialBalance(hedera.NewHbar(10)).
+	bobAccountCreate, err := hiero.NewAccountCreateTransaction().
+		SetInitialBalance(hiero.NewHbar(10)).
 		SetKey(bobKey).
 		FreezeWith(client)
 	if err != nil {
@@ -91,20 +91,20 @@ func main() {
 		panic(fmt.Sprintf("%v : error getting receipt for bob account create", err))
 	}
 
-	var bobId hedera.AccountID
+	var bobId hiero.AccountID
 	if receipt.AccountID != nil {
 		bobId = *receipt.AccountID
 	} else {
 		panic("Receipt didn't return bob's ID")
 	}
 
-	charlieKey, err := hedera.GeneratePrivateKey()
+	charlieKey, err := hiero.GeneratePrivateKey()
 	if err != nil {
 		panic(fmt.Sprintf("%v : error generating PrivateKey", err))
 	}
 
-	charlieAccountCreate, err := hedera.NewAccountCreateTransaction().
-		SetInitialBalance(hedera.NewHbar(10)).
+	charlieAccountCreate, err := hiero.NewAccountCreateTransaction().
+		SetInitialBalance(hiero.NewHbar(10)).
 		SetKey(charlieKey).
 		FreezeWith(client)
 	if err != nil {
@@ -122,7 +122,7 @@ func main() {
 		panic(fmt.Sprintf("%v : error getting receipt for charlie account create", err))
 	}
 
-	var charlieId hedera.AccountID
+	var charlieId hiero.AccountID
 	if receipt.AccountID != nil {
 		charlieId = *receipt.AccountID
 	} else {
@@ -139,8 +139,8 @@ func main() {
 	// Alice will collect 1 Hbar from each account involved in the transaction who is SENDING
 	// the Token (in this case, Bob).
 
-	customHbarFee := hedera.NewCustomFixedFee().
-		SetHbarAmount(hedera.NewHbar(1)).
+	customHbarFee := hiero.NewCustomFixedFee().
+		SetHbarAmount(hiero.NewHbar(1)).
 		SetFeeCollectorAccountID(aliceId)
 
 	// In this example the fee is in Hbar, but you can charge a fixed fee in a token if you'd like.
@@ -153,7 +153,7 @@ func main() {
 	// fees list on this token later using the TokenFeeScheduleUpdateTransaction.
 	// We will create an initial supply of 100 of these tokens.
 
-	tokenCreate, err := hedera.NewTokenCreateTransaction().
+	tokenCreate, err := hiero.NewTokenCreateTransaction().
 		// Token name and symbol are only things required to create a token
 		SetTokenName("Example Token").
 		SetTokenSymbol("EX").
@@ -170,7 +170,7 @@ func main() {
 		// will receive the specified initial supply or the newly minted NFTs
 		SetTreasuryAccountID(aliceId).
 		// The custom fees to be assessed during a CryptoTransfer that transfers units of this token
-		SetCustomFees([]hedera.Fee{*customHbarFee}).
+		SetCustomFees([]hiero.Fee{*customHbarFee}).
 		// Specifies the initial supply of tokens to be put in circulation. The
 		// initial supply is sent to the Treasury Account.
 		SetInitialSupply(100).
@@ -193,7 +193,7 @@ func main() {
 	}
 
 	// Get the token out of the receipt
-	var tokenId hedera.TokenID
+	var tokenId hiero.TokenID
 	if receipt.TokenID != nil {
 		tokenId = *receipt.TokenID
 	} else {
@@ -202,21 +202,21 @@ func main() {
 
 	println("TokenID:", tokenId.String())
 
-	tokenInfo1, err := hedera.NewTokenInfoQuery().
+	tokenInfo1, err := hiero.NewTokenInfoQuery().
 		SetTokenID(tokenId).
 		Execute(client)
 
 	println("Custom Fees according to TokenInfoQuery:")
 	for _, i := range tokenInfo1.CustomFees {
 		switch t := i.(type) {
-		case hedera.CustomFixedFee:
+		case hiero.CustomFixedFee:
 			println(t.String())
 		}
 	}
 
 	// We must associate the token with Bob and Charlie before they can trade in it.
 
-	tokenAssociate, err := hedera.NewTokenAssociateTransaction().
+	tokenAssociate, err := hiero.NewTokenAssociateTransaction().
 		// Account to associate token with
 		SetAccountID(bobId).
 		// The token to associate with
@@ -239,7 +239,7 @@ func main() {
 	}
 
 	// Associating charlie's account with the token
-	tokenAssociate, err = hedera.NewTokenAssociateTransaction().
+	tokenAssociate, err = hiero.NewTokenAssociateTransaction().
 		// Account to associate token with
 		SetAccountID(charlieId).
 		// The token to associate with
@@ -262,7 +262,7 @@ func main() {
 	}
 
 	// Give all 100 tokens to Bob
-	transferTransaction, err := hedera.NewTransferTransaction().
+	transferTransaction, err := hiero.NewTransferTransaction().
 		// The 100 tokens being given to bob
 		AddTokenTransfer(tokenId, bobId, 100).
 		// Have to take the 100 tokens from alice by negating the 100
@@ -287,7 +287,7 @@ func main() {
 
 	// Check alice's balance before Bob transfers 20 tokens to Charlie
 	// This is a free query
-	aliceBalance1, err := hedera.NewAccountBalanceQuery().
+	aliceBalance1, err := hiero.NewAccountBalanceQuery().
 		SetAccountID(aliceId).
 		Execute(client)
 	if err != nil {
@@ -297,7 +297,7 @@ func main() {
 	println("Alice's Hbar balance before Bob transfers 20 tokens to Charlie:", aliceBalance1.Hbars.String())
 
 	// Transfer 20 tokens from bob to charlie
-	transferTransaction, err = hedera.NewTransferTransaction().
+	transferTransaction, err = hiero.NewTransferTransaction().
 		// Taking away 20 tokens from bob
 		AddTokenTransfer(tokenId, bobId, -20).
 		// Giving 20 to charlie
@@ -321,7 +321,7 @@ func main() {
 	}
 
 	// Query to check alice's balance
-	aliceBalance2, err := hedera.NewAccountBalanceQuery().
+	aliceBalance2, err := hiero.NewAccountBalanceQuery().
 		SetAccountID(aliceId).
 		Execute(client)
 	if err != nil {
@@ -345,7 +345,7 @@ func main() {
 	// Charlie will receive all 20 tokens, and Bob will be charged an _additional_ 10% fee which
 	// will be transferred to Alice.
 
-	customFractionalFee := hedera.NewCustomFractionalFee().
+	customFractionalFee := hiero.NewCustomFractionalFee().
 		SetNumerator(1).
 		SetDenominator(10).
 		// The minimum amount to assess
@@ -355,11 +355,11 @@ func main() {
 		// The account to receive the custom fee
 		SetFeeCollectorAccountID(aliceId)
 
-	tokenFeeUpdate, err := hedera.NewTokenFeeScheduleUpdateTransaction().
+	tokenFeeUpdate, err := hiero.NewTokenFeeScheduleUpdateTransaction().
 		// The token for which the custom fee will be updated
 		SetTokenID(tokenId).
 		// The updated custom fee
-		SetCustomFees([]hedera.Fee{*customFractionalFee}).
+		SetCustomFees([]hiero.Fee{*customFractionalFee}).
 		FreezeWith(client)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error freezing token fee update", err))
@@ -378,7 +378,7 @@ func main() {
 	}
 
 	// Get token info, we can check if the custom fee is updated
-	tokenInfo2, err := hedera.NewTokenInfoQuery().
+	tokenInfo2, err := hiero.NewTokenInfoQuery().
 		SetTokenID(tokenId).
 		Execute(client)
 	if err != nil {
@@ -388,13 +388,13 @@ func main() {
 	println("Custom Fees according to TokenInfoQuery:")
 	for _, i := range tokenInfo2.CustomFees {
 		switch t := i.(type) {
-		case hedera.CustomFractionalFee:
+		case hiero.CustomFractionalFee:
 			println(t.String())
 		}
 	}
 
 	// Another account balance query to check alice's token balance before Bob transfers 20 tokens to Charlie
-	aliceBalance3, err := hedera.NewAccountBalanceQuery().
+	aliceBalance3, err := hiero.NewAccountBalanceQuery().
 		SetAccountID(aliceId).
 		Execute(client)
 	if err != nil {
@@ -404,7 +404,7 @@ func main() {
 	println("Alice's token balance before Bob transfers 20 tokens to Charlie:", aliceBalance3.Tokens.Get(tokenId))
 
 	// Once again transfer 20 tokens from bob to charlie
-	transferTransaction, err = hedera.NewTransferTransaction().
+	transferTransaction, err = hiero.NewTransferTransaction().
 		AddTokenTransfer(tokenId, bobId, -20).
 		AddTokenTransfer(tokenId, charlieId, 20).
 		FreezeWith(client)
@@ -425,7 +425,7 @@ func main() {
 	}
 
 	// Checking alice's token balance again
-	aliceBalance4, err := hedera.NewAccountBalanceQuery().
+	aliceBalance4, err := hiero.NewAccountBalanceQuery().
 		SetAccountID(aliceId).
 		Execute(client)
 	if err != nil {
@@ -448,7 +448,7 @@ func main() {
 
 	//Clean up
 
-	tokenDelete, _ := hedera.NewTokenDeleteTransaction().
+	tokenDelete, _ := hiero.NewTokenDeleteTransaction().
 		SetTokenID(tokenId).
 		FreezeWith(client)
 
@@ -456,8 +456,8 @@ func main() {
 	resp, _ = tokenDelete.Execute(client)
 	_, _ = resp.GetReceipt(client)
 
-	accDelete, _ := hedera.NewAccountDeleteTransaction().
-		SetTransactionID(hedera.TransactionIDGenerate(charlieId)).
+	accDelete, _ := hiero.NewAccountDeleteTransaction().
+		SetTransactionID(hiero.TransactionIDGenerate(charlieId)).
 		SetTransferAccountID(client.GetOperatorAccountID()).
 		SetAccountID(charlieId).
 		FreezeWith(client)
@@ -466,8 +466,8 @@ func main() {
 	resp, err = accDelete.Execute(client)
 	_, _ = resp.GetReceipt(client)
 
-	accDelete, _ = hedera.NewAccountDeleteTransaction().
-		SetTransactionID(hedera.TransactionIDGenerate(bobId)).
+	accDelete, _ = hiero.NewAccountDeleteTransaction().
+		SetTransactionID(hiero.TransactionIDGenerate(bobId)).
 		SetTransferAccountID(client.GetOperatorAccountID()).
 		SetAccountID(bobId).
 		FreezeWith(client)
@@ -476,8 +476,8 @@ func main() {
 	resp, _ = accDelete.Execute(client)
 	_, _ = resp.GetReceipt(client)
 
-	accDelete, _ = hedera.NewAccountDeleteTransaction().
-		SetTransactionID(hedera.TransactionIDGenerate(aliceId)).
+	accDelete, _ = hiero.NewAccountDeleteTransaction().
+		SetTransactionID(hiero.TransactionIDGenerate(aliceId)).
 		SetTransferAccountID(client.GetOperatorAccountID()).
 		SetAccountID(aliceId).
 		FreezeWith(client)

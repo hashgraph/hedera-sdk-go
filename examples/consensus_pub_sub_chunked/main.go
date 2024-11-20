@@ -5,27 +5,27 @@ import (
 	"os"
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2"
+	"github.com/hiero-ledger/hiero-sdk-go/v2"
 )
 
 func main() {
-	var client *hedera.Client
+	var client *hiero.Client
 	var err error
 
 	// Retrieving network type from environment variable HEDERA_NETWORK
-	client, err = hedera.ClientForName(os.Getenv("HEDERA_NETWORK"))
+	client, err = hiero.ClientForName(os.Getenv("HEDERA_NETWORK"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error creating client", err))
 	}
 
 	// Retrieving operator ID from environment variable OPERATOR_ID
-	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
+	operatorAccountID, err := hiero.AccountIDFromString(os.Getenv("OPERATOR_ID"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error converting string to AccountID", err))
 	}
 
 	// Retrieving operator key from environment variable OPERATOR_KEY
-	operatorKey, err := hedera.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
+	operatorKey, err := hiero.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error converting string to PrivateKey", err))
 	}
@@ -35,7 +35,7 @@ func main() {
 	client.SetOperator(operatorAccountID, operatorKey)
 
 	// Make a new topic ID to use
-	transactionResponse, err := hedera.NewTopicCreateTransaction().
+	transactionResponse, err := hiero.NewTopicCreateTransaction().
 		// Memo is not required
 		SetTransactionMemo("go sdk example create_pub_sub_chunked/main.go").
 		// Access control for TopicSubmitMessage.
@@ -69,14 +69,14 @@ func main() {
 	start := time.Now()
 
 	// Setup a mirror client to print out messages as we receive them
-	_, err = hedera.NewTopicMessageQuery().
+	_, err = hiero.NewTopicMessageQuery().
 		// For which topic ID
 		SetTopicID(topicID).
 		SetStartTime(time.Unix(0, 0)).
 		SetCompletionHandler(func() {
 			wait = false
 		}).
-		Subscribe(client, func(message hedera.TopicMessage) {
+		Subscribe(client, func(message hiero.TopicMessage) {
 			if string(message.Contents) == bigContents {
 				wait = false
 			}
@@ -89,8 +89,8 @@ func main() {
 	}
 
 	// Prepare a message send transaction that requires a submit key from "somewhere else"
-	_, err = hedera.NewTopicMessageSubmitTransaction().
-		SetNodeAccountIDs([]hedera.AccountID{transactionResponse.NodeID}).
+	_, err = hiero.NewTopicMessageSubmitTransaction().
+		SetNodeAccountIDs([]hiero.AccountID{transactionResponse.NodeID}).
 		// The message we are sending
 		SetMessage([]byte(bigContents)).
 		// How many chunks will the message be
@@ -122,10 +122,10 @@ func main() {
 	}
 
 	// Clean up, deleting the topic ID
-	transactionResponse, err = hedera.NewTopicDeleteTransaction().
+	transactionResponse, err = hiero.NewTopicDeleteTransaction().
 		SetTopicID(topicID).
-		SetNodeAccountIDs([]hedera.AccountID{transactionResponse.NodeID}).
-		SetMaxTransactionFee(hedera.NewHbar(5)).
+		SetNodeAccountIDs([]hiero.AccountID{transactionResponse.NodeID}).
+		SetMaxTransactionFee(hiero.NewHbar(5)).
 		Execute(client)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error deleting topic", err))

@@ -13,9 +13,9 @@ import (
 	"github.com/creachadair/jrpc2"
 	"github.com/creachadair/jrpc2/handler"
 	"github.com/creachadair/jrpc2/jhttp"
-	"github.com/hashgraph/hedera-sdk-go/tck/methods"
-	"github.com/hashgraph/hedera-sdk-go/tck/response"
-	"github.com/hashgraph/hedera-sdk-go/v2"
+	"github.com/hiero-ledger/hiero-sdk-go/tck/methods"
+	"github.com/hiero-ledger/hiero-sdk-go/tck/response"
+	"github.com/hiero-ledger/hiero-sdk-go/v2"
 	"github.com/joho/godotenv"
 )
 
@@ -85,12 +85,12 @@ func HandleError(_ context.Context, request *jrpc2.Request, err error) error {
 		if jrpcError, ok := err.(*jrpc2.Error); ok {
 			return jrpcError
 		}
-		// hedera specific errors
-		if hederaErr, ok := err.(hedera.ErrHederaReceiptStatus); ok {
-			return response.NewHederaReceiptError(hederaErr)
+		// hiero specific errors
+		if hieroErr, ok := err.(hiero.ErrHederaReceiptStatus); ok {
+			return response.NewHederaReceiptError(hieroErr)
 		}
-		if hederaErr, ok := err.(hedera.ErrHederaPreCheckStatus); ok {
-			return response.NewHederaPrecheckError(hederaErr)
+		if hieroErr, ok := err.(hiero.ErrHederaPreCheckStatus); ok {
+			return response.NewHederaPrecheckError(hieroErr)
 		}
 		// other errors
 		return response.InternalError

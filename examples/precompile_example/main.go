@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/hashgraph/hedera-sdk-go/v2"
-	"github.com/hashgraph/hedera-sdk-go/v2/examples/contract_helper"
+	"github.com/hiero-ledger/hiero-sdk-go/v2"
+	"github.com/hiero-ledger/hiero-sdk-go/v2/examples/contract_helper"
 )
 
 //go:embed PrecompileExample.json
@@ -18,12 +18,12 @@ type AbiObject struct {
 	ByteCode string `json:"bytecode"`
 }
 
-func additionalLogic(privateKey hedera.PrivateKey, keyList *hedera.KeyList, address string, client *hedera.Client) {
-	id, err := hedera.TokenIDFromSolidityAddress(address)
+func additionalLogic(privateKey hiero.PrivateKey, keyList *hiero.KeyList, address string, client *hiero.Client) {
+	id, err := hiero.TokenIDFromSolidityAddress(address)
 	if err != nil {
 		panic(err)
 	}
-	asd, err := hedera.NewTokenUpdateTransaction().SetTokenID(id).SetAdminKey(keyList).SetSupplyKey(keyList).Sign(privateKey).Execute(client)
+	asd, err := hiero.NewTokenUpdateTransaction().SetTokenID(id).SetAdminKey(keyList).SetSupplyKey(keyList).Sign(privateKey).Execute(client)
 	if err != nil {
 		panic(err)
 	}
@@ -34,23 +34,23 @@ func additionalLogic(privateKey hedera.PrivateKey, keyList *hedera.KeyList, addr
 	fmt.Printf("asd: %v\n", rec)
 }
 func main() {
-	var client *hedera.Client
+	var client *hiero.Client
 	var err error
 
 	// Retrieving network type from environment variable HEDERA_NETWORK
-	client, err = hedera.ClientForName(os.Getenv("HEDERA_NETWORK"))
+	client, err = hiero.ClientForName(os.Getenv("HEDERA_NETWORK"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error creating client", err))
 	}
 
 	// Retrieving operator ID from environment variable OPERATOR_ID
-	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
+	operatorAccountID, err := hiero.AccountIDFromString(os.Getenv("OPERATOR_ID"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error converting string to AccountID", err))
 	}
 
 	// Retrieving operator key from environment variable OPERATOR_KEY
-	operatorKey, err := hedera.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
+	operatorKey, err := hiero.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error converting string to PrivateKey", err))
 	}
@@ -58,14 +58,14 @@ func main() {
 	// Setting the client operator ID and key
 	client.SetOperator(operatorAccountID, operatorKey)
 
-	alicePrivateKey, err := hedera.PrivateKeyGenerateEd25519()
+	alicePrivateKey, err := hiero.PrivateKeyGenerateEd25519()
 	if err != nil {
 		panic(fmt.Sprintf("%v : error generating Alice's private key", err))
 	}
 	alicePublicKey := alicePrivateKey.PublicKey()
-	accountCreateResponse, err := hedera.NewAccountCreateTransaction().
+	accountCreateResponse, err := hiero.NewAccountCreateTransaction().
 		SetKey(alicePublicKey).
-		SetInitialBalance(hedera.NewHbar(1)).
+		SetInitialBalance(hiero.NewHbar(1)).
 		Execute(client)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error creating Alice's account", err))
@@ -76,7 +76,7 @@ func main() {
 		panic(fmt.Sprintf("%v : error retrieving account create receipt", err))
 	}
 
-	var aliceAccountID hedera.AccountID
+	var aliceAccountID hiero.AccountID
 	if accountCreateReceipt.AccountID != nil {
 		aliceAccountID = *accountCreateReceipt.AccountID
 	} else {
@@ -89,7 +89,7 @@ func main() {
 		panic("error reading from json")
 	}
 
-	contractFunctionParameters, err := hedera.NewContractFunctionParameters().
+	contractFunctionParameters, err := hiero.NewContractFunctionParameters().
 		AddAddress(client.GetOperatorAccountID().ToSolidityAddress())
 	if err != nil {
 		panic(fmt.Sprintf("%v : error making contract function parameters", err))
@@ -103,9 +103,9 @@ func main() {
 
 	contractHelper := contract_helper.NewContractHelper([]byte(abiObject.ByteCode), *contractFunctionParameters, client)
 
-	keyList := hedera.KeyListWithThreshold(1).Add(operatorKey.PublicKey()).Add(contractHelper.ContractID)
+	keyList := hiero.KeyListWithThreshold(1).Add(operatorKey.PublicKey()).Add(contractHelper.ContractID)
 
-	tx, err := hedera.NewAccountUpdateTransaction().SetAccountID(operatorAccountID).SetKey(keyList).Execute(client)
+	tx, err := hiero.NewAccountUpdateTransaction().SetAccountID(operatorAccountID).SetKey(keyList).Execute(client)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error updating alice's account", err))
 	}
@@ -113,9 +113,9 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	keyList = hedera.KeyListWithThreshold(1).Add(alicePublicKey).Add(contractHelper.ContractID)
+	keyList = hiero.KeyListWithThreshold(1).Add(alicePublicKey).Add(contractHelper.ContractID)
 
-	frozenTxn, err := hedera.NewAccountUpdateTransaction().SetAccountID(aliceAccountID).SetKey(keyList).FreezeWith(client)
+	frozenTxn, err := hiero.NewAccountUpdateTransaction().SetAccountID(aliceAccountID).SetKey(keyList).FreezeWith(client)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error updating alice's account", err))
 	}
@@ -129,11 +129,11 @@ func main() {
 	}
 
 	tokenUpdateFunction := func(address string) {
-		id, err := hedera.TokenIDFromSolidityAddress(address)
+		id, err := hiero.TokenIDFromSolidityAddress(address)
 		if err != nil {
 			panic(err)
 		}
-		frozenTxn, err := hedera.NewTokenUpdateTransaction().SetTokenID(id).SetAdminKey(keyList).SetSupplyKey(keyList).FreezeWith(client)
+		frozenTxn, err := hiero.NewTokenUpdateTransaction().SetTokenID(id).SetAdminKey(keyList).SetSupplyKey(keyList).FreezeWith(client)
 		if err != nil {
 			panic(err)
 		}
@@ -148,28 +148,28 @@ func main() {
 	}
 
 	contractHelper.
-		SetResultValidatorForStep(0, func(contractFunctionResult hedera.ContractFunctionResult) bool {
+		SetResultValidatorForStep(0, func(contractFunctionResult hiero.ContractFunctionResult) bool {
 			println("getPseudoRandomSeed() returned " + hex.EncodeToString(contractFunctionResult.GetBytes32(0)))
 			return true
 		}).
-		SetPayableAmountForStep(1, hedera.NewHbar(20)).
+		SetPayableAmountForStep(1, hiero.NewHbar(20)).
 		// step 3 associates Alice with the token, which requires Alice's signature
 		AddSignerForStep(3, alicePrivateKey).
 		AddSignerForStep(5, alicePrivateKey).
-		SetParameterSupplierForStep(11, func() *hedera.ContractFunctionParameters {
-			return hedera.NewContractFunctionParameters().
+		SetParameterSupplierForStep(11, func() *hiero.ContractFunctionParameters {
+			return hiero.NewContractFunctionParameters().
 				// when contracts work with a public key, they handle the raw bytes of the public key
 				AddBytes(alicePublicKey.BytesRaw())
 		}).
-		SetPayableAmountForStep(11, hedera.NewHbar(40)).
+		SetPayableAmountForStep(11, hiero.NewHbar(40)).
 		// Because we're setting the adminKey for the created NFT token to Alice's key,
 		// Alice must sign the ContractExecuteTransaction.
 		AddSignerForStep(11, alicePrivateKey).
 		SetStepLogic(11, tokenUpdateFunction).
 		// and Alice must sign for minting because her key is the supply key.
 		AddSignerForStep(12, alicePrivateKey).
-		SetParameterSupplierForStep(12, func() *hedera.ContractFunctionParameters {
-			return hedera.NewContractFunctionParameters().
+		SetParameterSupplierForStep(12, func() *hiero.ContractFunctionParameters {
+			return hiero.NewContractFunctionParameters().
 				// add three metadatas
 				AddBytesArray([][]byte{{0x01b}, {0x02b}, {0x03b}})
 		}). // and alice must sign to become associated with the token.

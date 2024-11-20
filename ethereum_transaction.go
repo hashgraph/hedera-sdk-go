@@ -1,29 +1,11 @@
-package hedera
+package hiero
 
-/*-
- *
- * Hedera Go SDK
- *
- * Copyright (C) 2020 - 2024 Hedera Hashgraph, LLC
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import (
 	"github.com/pkg/errors"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
+	"github.com/hiero-ledger/hiero-sdk-go/v2/proto/services"
 )
 
 // EthereumTransaction is used to create a EthereumTransaction transaction which can be used to construct and execute
@@ -100,7 +82,7 @@ func (tx *EthereumTransaction) GetCallData() FileID {
 }
 
 // SetMaxGasAllowed
-// The maximum amount, in tinybars, that the payer of the hedera transaction
+// The maximum amount, in tinybars, that the payer of the hiero transaction
 // is willing to pay to complete the transaction.
 func (tx *EthereumTransaction) SetMaxGasAllowed(gas int64) *EthereumTransaction {
 	tx._RequireNotFrozen()
@@ -108,7 +90,7 @@ func (tx *EthereumTransaction) SetMaxGasAllowed(gas int64) *EthereumTransaction 
 	return tx
 }
 
-// SetMaxGasAllowanceHbar sets the maximum amount, that the payer of the hedera transaction
+// SetMaxGasAllowanceHbar sets the maximum amount, that the payer of the hiero transaction
 // is willing to pay to complete the transaction.
 func (tx *EthereumTransaction) SetMaxGasAllowanceHbar(gas Hbar) *EthereumTransaction {
 	tx._RequireNotFrozen()
@@ -116,7 +98,7 @@ func (tx *EthereumTransaction) SetMaxGasAllowanceHbar(gas Hbar) *EthereumTransac
 	return tx
 }
 
-// GetMaxGasAllowed returns the maximum amount, that the payer of the hedera transaction
+// GetMaxGasAllowed returns the maximum amount, that the payer of the hiero transaction
 // is willing to pay to complete the transaction.
 func (tx *EthereumTransaction) GetMaxGasAllowed() int64 {
 	return tx.MaxGasAllowed
