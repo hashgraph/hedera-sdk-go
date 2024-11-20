@@ -23,10 +23,10 @@ concurrency:
 jobs:
     build:
         name: Build
-        runs-on: client-sdk-linux-medium
+        runs-on: hiero-client-sdk-linux-medium
         steps:
             - name: Harden Runner
-              uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
+              uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f # v2.10.2
               with:
                 egress-policy: audit
 
@@ -62,7 +62,7 @@ jobs:
     test:
         name: Unit and Integration Tests
         if: success()
-        runs-on: client-sdk-linux-medium
+        runs-on: hiero-client-sdk-linux-medium
 
         needs:
             - build
@@ -73,7 +73,7 @@ jobs:
 
         steps:
             - name: Harden Runner
-              uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
+              uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f # v2.10.2
               with:
                   egress-policy: audit
 
@@ -111,7 +111,7 @@ jobs:
 
             - name: Upload coverage to Codecov
               if: success()
-              uses: codecov/codecov-action@5c47607acb93fed5485fdbf7232e8a31425f672a # v5.0.2
+              uses: codecov/codecov-action@985343d70564a82044c1b7fcb84c2fa05405c1a2 # v5.0.4
               with:
                 token: ${{ secrets.CODECOV_TOKEN }}
                 files: ./unit.out,./e2e.out,./testnets.out
@@ -122,7 +122,7 @@ jobs:
     run-examples:
         name: Run Examples
         if: success()
-        runs-on: client-sdk-linux-medium
+        runs-on: hiero-client-sdk-linux-medium
 
         needs:
             - build
@@ -133,7 +133,7 @@ jobs:
 
         steps:
             - name: Harden Runner
-              uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
+              uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f # v2.10.2
               with:
                   egress-policy: audit
 
