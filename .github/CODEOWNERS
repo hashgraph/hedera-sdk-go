@@ -1,41 +1,32 @@
 # Default code owners for entire repository
-*                                               @hashgraph/hedera-sdk @hashgraph/hedera-sdk-go-maintainers @hashgraph/hedera-sdk-go-contributors
-
+*                                               @hiero-ledger/hiero-sdk-go-maintainers @hiero-ledger/hiero-sdk-go-committers
 #########################
 #####  Core Files  ######
 #########################
-
 # NOTE: Must be placed last to ensure enforcement over all other rules
 
 # Protection Rules for Github Configuration Files and Actions Workflows
-/.github/                                       @hashgraph/release-engineering @hashgraph/release-engineering-managers
-/.github/workflows/                             @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk @hashgraph/hedera-sdk-go-maintainers @hashgraph/hedera-sdk-go-contributors
+/.github/                                       @hiero-ledger/github-maintainers @hiero-ledger/github-committers
+/.github/workflows/                             @hiero-ledger/github-maintainers @hiero-ledger/github-committers @hiero-ledger/hiero-sdk-go-maintainers @hiero-ledger/hiero-sdk-go-committers
 
 # Legacy Maven project files
-**/pom.xml                                      @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk @hashgraph/hedera-sdk-go-maintainers  @hashgraph/hedera-sdk-go-contributors
+**/pom.xml                                      @hiero-ledger/github-maintainers @hiero-ledger/hiero-sdk-go-maintainers @hiero-ledger/hiero-sdk-go-committers
 
 # Gradle project files and inline plugins
-/gradle/                                        @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk @hashgraph/hedera-sdk-go-maintainers  @hashgraph/hedera-sdk-go-contributors
-gradlew                                         @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk @hashgraph/hedera-sdk-go-maintainers  @hashgraph/hedera-sdk-go-contributors
-gradlew.bat                                     @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk @hashgraph/hedera-sdk-go-maintainers  @hashgraph/hedera-sdk-go-contributors
-**/build-logic/                                 @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk @hashgraph/hedera-sdk-go-maintainers  @hashgraph/hedera-sdk-go-contributors
-**/gradle.*                                     @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk @hashgraph/hedera-sdk-go-maintainers  @hashgraph/hedera-sdk-go-contributors
-**/*.gradle.*                                   @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk @hashgraph/hedera-sdk-go-maintainers  @hashgraph/hedera-sdk-go-contributors
+/gradle/                                        @hiero-ledger/github-maintainers @hiero-ledger/github-committers @hiero-ledger/hiero-sdk-go-maintainers @hiero-ledger/hiero-sdk-go-committers
+gradlew                                         @hiero-ledger/github-maintainers @hiero-ledger/github-committers @hiero-ledger/hiero-sdk-go-maintainers @hiero-ledger/hiero-sdk-go-committers
+gradlew.bat                                     @hiero-ledger/github-maintainers @hiero-ledger/github-committers @hiero-ledger/hiero-sdk-go-maintainers @hiero-ledger/hiero-sdk-go-committers
+**/build-logic/                                 @hiero-ledger/github-maintainers @hiero-ledger/github-committers @hiero-ledger/hiero-sdk-go-maintainers @hiero-ledger/hiero-sdk-go-committers
+**/gradle.*                                     @hiero-ledger/github-maintainers @hiero-ledger/github-committers @hiero-ledger/hiero-sdk-go-maintainers @hiero-ledger/hiero-sdk-go-committers
+**/*.gradle.*                                   @hiero-ledger/github-maintainers @hiero-ledger/github-committers @hiero-ledger/hiero-sdk-go-maintainers @hiero-ledger/hiero-sdk-go-committers
 
 # Codacy Tool Configurations
-/config/                                        @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk @hashgraph/hedera-sdk-go-maintainers  @hashgraph/hedera-sdk-go-contributors
-.remarkrc                                       @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk @hashgraph/hedera-sdk-go-maintainers  @hashgraph/hedera-sdk-go-contributors
+/config/                                        @hiero-ledger/github-maintainers @hiero-ledger/hiero-sdk-go-maintainers @hiero-ledger/hiero-sdk-go-committers
+.remarkrc                                       @hiero-ledger/github-maintainers @hiero-ledger/hiero-sdk-go-maintainers @hiero-ledger/hiero-sdk-go-committers
 
 # Self-protection for root CODEOWNERS files (this file should not exist and should definitely require approval)
-/CODEOWNERS                                     @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk @hashgraph/hedera-sdk-go-maintainers  @hashgraph/hedera-sdk-go-contributors
+/CODEOWNERS                                     @hiero-ledger/github-maintainers
 
 # Protect the repository root files
-/README.md                                      @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk @hashgraph/hedera-sdk-go-maintainers  @hashgraph/hedera-sdk-go-contributors
-**/LICENSE                                      @hashgraph/release-engineering @hashgraph/release-engineering-managers
-
-# CodeCov configuration
-**/codecov.yml                                  @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk @hashgraph/hedera-sdk-go-maintainers  @hashgraph/hedera-sdk-go-contributors
-
-# Git Ignore definitions
-**/.gitignore                                   @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk @hashgraph/hedera-sdk-go-maintainers  @hashgraph/hedera-sdk-go-contributors
-**/.gitignore.*                                 @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/hedera-sdk @hashgraph/hedera-sdk-go-maintainers  @hashgraph/hedera-sdk-go-contributors
+/README.md                                      @hiero-ledger/github-maintainers @hiero-ledger/hiero-sdk-go-maintainers @hiero-ledger/hiero-sdk-go-committers @hiero-ledger/tsc
+**/LICENSE                                      @hiero-ledger/github-maintainers @hiero-ledger/tsc
