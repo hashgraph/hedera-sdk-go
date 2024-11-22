@@ -91,6 +91,29 @@ func TestAddAllPublicKeys(t *testing.T) {
 	assert.Equal(t, keys[1], kl.keys[1])
 }
 
+func TestGetKeys(t *testing.T) {
+	kl := NewKeyList()
+	key1 := MockKey{data: "key1"}
+	kl.Add(key1)
+	key2 := MockKey{data: "key2"}
+	kl.Add(key2)
+
+	keys := kl.GetKeys()
+	assert.Equal(t, key1, keys[0])
+	assert.Equal(t, key2, keys[1])
+}
+
+func TestGetThreshold(t *testing.T) {
+	kl := NewKeyList()
+	assert.Equal(t, -1, kl.GetThreshold())
+
+	kl.SetThreshold(2)
+	assert.Equal(t, 2, kl.GetThreshold())
+
+	kl = KeyListWithThreshold(4)
+	assert.Equal(t, 4, kl.GetThreshold())
+}
+
 func TestStringKeyList(t *testing.T) {
 	kl := KeyListWithThreshold(2)
 	key := MockKey{data: "key1"}
