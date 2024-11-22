@@ -23,7 +23,6 @@ package hedera
 import (
 	"context"
 	"encoding/hex"
-	"fmt"
 	"strconv"
 	"time"
 
@@ -214,12 +213,11 @@ func _Execute(client *Client, e Executable) (interface{}, error) {
 		var node *_Node
 		var ok bool
 
+		// If this is not the first attempt, double the backoff time up to the max backoff time
 		if attempt > 0 && currentBackoff <= e.GetMaxBackoff() {
-			fmt.Println("currentBackoff: ", currentBackoff)
-			fmt.Println("max backoff", e.GetMaxBackoff())
-			fmt.Println("----")
 			currentBackoff *= 2
 		}
+
 		if e.isTransaction() {
 			if attempt > 0 && len(e.GetNodeAccountIDs()) > 1 {
 				e.advanceRequest()
