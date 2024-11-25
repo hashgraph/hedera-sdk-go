@@ -24,53 +24,53 @@ func (a *AccountService) SetSdkService(service *SDKService) {
 }
 
 // CreateAccount jRPC method for createAccount
-func (a *AccountService) CreateAccount(_ context.Context, accountCreateParams param.CreateAccountParams) (*response.AccountResponse, error) {
+func (a *AccountService) CreateAccount(_ context.Context, params param.CreateAccountParams) (*response.AccountResponse, error) {
 	transaction := hedera.NewAccountCreateTransaction().SetGrpcDeadline(&threeSecondsDuration)
 
-	if accountCreateParams.Key != nil {
-		key, err := utils.GetKeyFromString(*accountCreateParams.Key)
+	if params.Key != nil {
+		key, err := utils.GetKeyFromString(*params.Key)
 		if err != nil {
 			return nil, err
 		}
 		transaction.SetKey(key)
 	}
-	if accountCreateParams.InitialBalance != nil {
-		transaction.SetInitialBalance(hedera.HbarFromTinybar(*accountCreateParams.InitialBalance))
+	if params.InitialBalance != nil {
+		transaction.SetInitialBalance(hedera.HbarFromTinybar(*params.InitialBalance))
 	}
-	if accountCreateParams.ReceiverSignatureRequired != nil {
-		transaction.SetReceiverSignatureRequired(*accountCreateParams.ReceiverSignatureRequired)
+	if params.ReceiverSignatureRequired != nil {
+		transaction.SetReceiverSignatureRequired(*params.ReceiverSignatureRequired)
 	}
-	if accountCreateParams.MaxAutomaticTokenAssociations != nil {
-		transaction.SetMaxAutomaticTokenAssociations(*accountCreateParams.MaxAutomaticTokenAssociations)
+	if params.MaxAutomaticTokenAssociations != nil {
+		transaction.SetMaxAutomaticTokenAssociations(*params.MaxAutomaticTokenAssociations)
 	}
-	if accountCreateParams.StakedAccountId != nil {
-		accountId, err := hedera.AccountIDFromString(*accountCreateParams.StakedAccountId)
+	if params.StakedAccountId != nil {
+		accountId, err := hedera.AccountIDFromString(*params.StakedAccountId)
 		if err != nil {
 			return nil, err
 		}
 		transaction.SetStakedAccountID(accountId)
 	}
-	if accountCreateParams.StakedNodeId != nil {
-		stakedNodeID, err := accountCreateParams.StakedNodeId.Int64()
+	if params.StakedNodeId != nil {
+		stakedNodeID, err := params.StakedNodeId.Int64()
 		if err != nil {
 			return nil, response.InvalidParams.WithData(err.Error())
 		}
 		transaction.SetStakedNodeID(stakedNodeID)
 	}
-	if accountCreateParams.DeclineStakingReward != nil {
-		transaction.SetDeclineStakingReward(*accountCreateParams.DeclineStakingReward)
+	if params.DeclineStakingReward != nil {
+		transaction.SetDeclineStakingReward(*params.DeclineStakingReward)
 	}
-	if accountCreateParams.Memo != nil {
-		transaction.SetAccountMemo(*accountCreateParams.Memo)
+	if params.Memo != nil {
+		transaction.SetAccountMemo(*params.Memo)
 	}
-	if accountCreateParams.AutoRenewPeriod != nil {
-		transaction.SetAutoRenewPeriod(time.Duration(*accountCreateParams.AutoRenewPeriod) * time.Second)
+	if params.AutoRenewPeriod != nil {
+		transaction.SetAutoRenewPeriod(time.Duration(*params.AutoRenewPeriod) * time.Second)
 	}
-	if accountCreateParams.Alias != nil {
-		transaction.SetAlias(*accountCreateParams.Alias)
+	if params.Alias != nil {
+		transaction.SetAlias(*params.Alias)
 	}
-	if accountCreateParams.CommonTransactionParams != nil {
-		accountCreateParams.CommonTransactionParams.FillOutTransaction(transaction, a.sdkService.Client)
+	if params.CommonTransactionParams != nil {
+		params.CommonTransactionParams.FillOutTransaction(transaction, a.sdkService.Client)
 	}
 	txResponse, err := transaction.Execute(a.sdkService.Client)
 	if err != nil {
@@ -88,63 +88,63 @@ func (a *AccountService) CreateAccount(_ context.Context, accountCreateParams pa
 }
 
 // UpdateAccount jRPC method for updateAccount
-func (a *AccountService) UpdateAccount(_ context.Context, accountUpdateParams param.UpdateAccountParams) (*response.AccountResponse, error) {
+func (a *AccountService) UpdateAccount(_ context.Context, params param.UpdateAccountParams) (*response.AccountResponse, error) {
 	transaction := hedera.NewAccountUpdateTransaction().SetGrpcDeadline(&threeSecondsDuration)
-	if accountUpdateParams.AccountId != nil {
-		accountId, _ := hedera.AccountIDFromString(*accountUpdateParams.AccountId)
+	if params.AccountId != nil {
+		accountId, _ := hedera.AccountIDFromString(*params.AccountId)
 		transaction.SetAccountID(accountId)
 	}
 
-	if accountUpdateParams.Key != nil {
-		key, err := utils.GetKeyFromString(*accountUpdateParams.Key)
+	if params.Key != nil {
+		key, err := utils.GetKeyFromString(*params.Key)
 		if err != nil {
 			return nil, err
 		}
 		transaction.SetKey(key)
 	}
 
-	if accountUpdateParams.ExpirationTime != nil {
-		transaction.SetExpirationTime(time.Unix(*accountUpdateParams.ExpirationTime, 0))
+	if params.ExpirationTime != nil {
+		transaction.SetExpirationTime(time.Unix(*params.ExpirationTime, 0))
 	}
 
-	if accountUpdateParams.ReceiverSignatureRequired != nil {
-		transaction.SetReceiverSignatureRequired(*accountUpdateParams.ReceiverSignatureRequired)
+	if params.ReceiverSignatureRequired != nil {
+		transaction.SetReceiverSignatureRequired(*params.ReceiverSignatureRequired)
 	}
 
-	if accountUpdateParams.MaxAutomaticTokenAssociations != nil {
-		transaction.SetMaxAutomaticTokenAssociations(*accountUpdateParams.MaxAutomaticTokenAssociations)
+	if params.MaxAutomaticTokenAssociations != nil {
+		transaction.SetMaxAutomaticTokenAssociations(*params.MaxAutomaticTokenAssociations)
 	}
 
-	if accountUpdateParams.StakedAccountId != nil {
-		accountId, err := hedera.AccountIDFromString(*accountUpdateParams.StakedAccountId)
+	if params.StakedAccountId != nil {
+		accountId, err := hedera.AccountIDFromString(*params.StakedAccountId)
 		if err != nil {
 			return nil, err
 		}
 		transaction.SetStakedAccountID(accountId)
 	}
 
-	if accountUpdateParams.StakedNodeId != nil {
-		stakedNodeID, err := accountUpdateParams.StakedNodeId.Int64()
+	if params.StakedNodeId != nil {
+		stakedNodeID, err := params.StakedNodeId.Int64()
 		if err != nil {
 			return nil, response.InvalidParams.WithData(err.Error())
 		}
 		transaction.SetStakedNodeID(stakedNodeID)
 	}
 
-	if accountUpdateParams.DeclineStakingReward != nil {
-		transaction.SetDeclineStakingReward(*accountUpdateParams.DeclineStakingReward)
+	if params.DeclineStakingReward != nil {
+		transaction.SetDeclineStakingReward(*params.DeclineStakingReward)
 	}
 
-	if accountUpdateParams.Memo != nil {
-		transaction.SetAccountMemo(*accountUpdateParams.Memo)
+	if params.Memo != nil {
+		transaction.SetAccountMemo(*params.Memo)
 	}
 
-	if accountUpdateParams.AutoRenewPeriod != nil {
-		transaction.SetAutoRenewPeriod(time.Duration(*accountUpdateParams.AutoRenewPeriod) * time.Second)
+	if params.AutoRenewPeriod != nil {
+		transaction.SetAutoRenewPeriod(time.Duration(*params.AutoRenewPeriod) * time.Second)
 	}
 
-	if accountUpdateParams.CommonTransactionParams != nil {
-		accountUpdateParams.CommonTransactionParams.FillOutTransaction(transaction, a.sdkService.Client)
+	if params.CommonTransactionParams != nil {
+		params.CommonTransactionParams.FillOutTransaction(transaction, a.sdkService.Client)
 	}
 
 	txResponse, err := transaction.Execute(a.sdkService.Client)
@@ -159,20 +159,20 @@ func (a *AccountService) UpdateAccount(_ context.Context, accountUpdateParams pa
 }
 
 // DeleteAccount jRPC method for deleteAccount
-func (a *AccountService) DeleteAccount(_ context.Context, deleteAccountParams param.DeleteAccountParams) (*response.AccountResponse, error) {
+func (a *AccountService) DeleteAccount(_ context.Context, params param.DeleteAccountParams) (*response.AccountResponse, error) {
 	transaction := hedera.NewAccountDeleteTransaction().SetGrpcDeadline(&threeSecondsDuration)
-	if deleteAccountParams.DeleteAccountId != nil {
-		accountId, _ := hedera.AccountIDFromString(*deleteAccountParams.DeleteAccountId)
+	if params.DeleteAccountId != nil {
+		accountId, _ := hedera.AccountIDFromString(*params.DeleteAccountId)
 		transaction.SetAccountID(accountId)
 	}
 
-	if deleteAccountParams.TransferAccountId != nil {
-		accountId, _ := hedera.AccountIDFromString(*deleteAccountParams.TransferAccountId)
+	if params.TransferAccountId != nil {
+		accountId, _ := hedera.AccountIDFromString(*params.TransferAccountId)
 		transaction.SetTransferAccountID(accountId)
 	}
 
-	if deleteAccountParams.CommonTransactionParams != nil {
-		deleteAccountParams.CommonTransactionParams.FillOutTransaction(transaction, a.sdkService.Client)
+	if params.CommonTransactionParams != nil {
+		params.CommonTransactionParams.FillOutTransaction(transaction, a.sdkService.Client)
 	}
 
 	txResponse, err := transaction.Execute(a.sdkService.Client)

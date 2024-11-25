@@ -23,10 +23,14 @@ func main() {
 	// Load dotenv
 	_ = godotenv.Load()
 
-	// Initialize the SDK service
+	// Initialize the services
 	sdkService := new(methods.SDKService)
+
 	accountService := new(methods.AccountService)
 	accountService.SetSdkService(sdkService)
+
+	tokenService := new(methods.TokenService)
+	tokenService.SetSdkService(sdkService)
 
 	// Create a new RPC server
 	assigner := handler.Map{
@@ -35,6 +39,7 @@ func main() {
 		"createAccount": postHandler(HandleError, handler.New(accountService.CreateAccount)),
 		"updateAccount": postHandler(HandleError, handler.New(accountService.UpdateAccount)),
 		"deleteAccount": postHandler(HandleError, handler.New(accountService.DeleteAccount)),
+		"createToken":   postHandler(HandleError, handler.New(tokenService.CreateToken)),
 		"generateKey":   postHandler(HandleError, handler.New(methods.GenerateKey)),
 	}
 
