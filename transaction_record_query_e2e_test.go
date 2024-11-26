@@ -41,10 +41,7 @@ func TestIntegrationTransactionRecordQueryCanExecute(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	record, err := NewTransactionRecordQuery().
-		SetTransactionID(resp.TransactionID).
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		Execute(env.Client)
+	record, err := resp.GetRecord(env.Client)
 	require.NoError(t, err)
 
 	accountID := *record.Receipt.AccountID
@@ -100,10 +97,7 @@ func TestIntegrationTransactionRecordQueryReceiptPaymentZero(t *testing.T) {
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	record, err := NewTransactionRecordQuery().
-		SetTransactionID(resp.TransactionID).
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		Execute(env.Client)
+	record, err := resp.GetRecord(env.Client)
 	require.NoError(t, err)
 
 	accountID := *record.Receipt.AccountID
@@ -154,12 +148,7 @@ func TestIntegrationTransactionRecordQueryInsufficientFee(t *testing.T) {
 	receipt, err := resp.SetIncludeChildren(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	_, err = NewTransactionRecordQuery().
-		SetTransactionID(resp.TransactionID).
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetMaxQueryPayment(HbarFromTinybar(99999)).
-		SetQueryPayment(HbarFromTinybar(1)).
-		Execute(env.Client)
+	_, err = resp.GetRecord(env.Client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "exceptional receipt status: INSUFFICIENT_TX_FEE", err.Error())

@@ -57,7 +57,7 @@ jobs:
                   repository: hashgraph/hedera-services
                   path: hedera-services
 
-            - name: Fetch Hedera SDK
+            - name: Fetch Hiero SDK
               uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
               with:
                   path: hiero-sdk-go
@@ -83,7 +83,7 @@ jobs:
               working-directory: hedera-services
               run: docker build -t services-node:$TAG .
 
-            - name: Run Hedera SDK Tests
+            - name: Run Hiero SDK Tests
               env:
                   OPERATOR_KEY: "302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137"
                   OPERATOR_ID: "0.0.2"

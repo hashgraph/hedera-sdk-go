@@ -198,10 +198,7 @@ func TestIntegrationTokenAssociateTransactionAutoAssociate(t *testing.T) {
 
 	assert.NotNil(t, receipt.TokenID)
 
-	record, err := NewTransactionRecordQuery().
-		SetTransactionID(resp.TransactionID).
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		Execute(env.Client)
+	record, err := resp.GetRecord(env.Client)
 	require.NoError(t, err)
 
 	for _, s := range record.AutomaticTokenAssociations {
