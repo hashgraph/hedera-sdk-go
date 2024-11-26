@@ -14,8 +14,8 @@
 
 # Gradle project files and inline plugins
 /gradle/                                        @hiero-ledger/github-maintainers @hiero-ledger/github-committers @hiero-ledger/hiero-sdk-go-maintainers @hiero-ledger/hiero-sdk-go-committers
-gradlew                                         @hiero-ledger/github-maintainers @hiero-ledger/github-committers @hiero-ledger/hiero-sdk-go-maintainers @hiero-ledger/hiero-sdk-go-committers
-gradlew.bat                                     @hiero-ledger/github-maintainers @hiero-ledger/github-committers @hiero-ledger/hiero-sdk-go-maintainers @hiero-ledger/hiero-sdk-go-committers
+gradlew                                         @hiero-ledger/github-maintainers @hiero-ledger/github-committers
+gradlew.bat                                     @hiero-ledger/github-maintainers @hiero-ledger/github-committers
 **/build-logic/                                 @hiero-ledger/github-maintainers @hiero-ledger/github-committers @hiero-ledger/hiero-sdk-go-maintainers @hiero-ledger/hiero-sdk-go-committers
 **/gradle.*                                     @hiero-ledger/github-maintainers @hiero-ledger/github-committers @hiero-ledger/hiero-sdk-go-maintainers @hiero-ledger/hiero-sdk-go-committers
 **/*.gradle.*                                   @hiero-ledger/github-maintainers @hiero-ledger/github-committers @hiero-ledger/hiero-sdk-go-maintainers @hiero-ledger/hiero-sdk-go-committers
