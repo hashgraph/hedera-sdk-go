@@ -189,6 +189,7 @@ func TestIntegrationAccountBalanceQueryWorksWithHollowAccountAlias(t *testing.T)
 }
 
 func TestIntegrationAccountBalanceQueryCanConnectToMainnetTls(t *testing.T) {
+	t.Skip("AccountBalanceQuery is throttled on mainnet")
 	t.Parallel()
 	client := ClientForMainnet()
 	client.SetTransportSecurity(true)

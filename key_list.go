@@ -60,6 +60,17 @@ func (kl *KeyList) AddAllPublicKeys(keys []PublicKey) *KeyList {
 	return kl
 }
 
+// GetKeys returns the internal list of Keys.
+func (kl KeyList) GetKeys() []Key {
+	return kl.keys
+}
+
+// GetThreshold returns the threshold value set on the KeyList.
+// A value of -1 means that there is no threshold set.
+func (kl KeyList) GetThreshold() int {
+	return kl.threshold
+}
+
 // String returns a string representation of the KeyList
 func (kl KeyList) String() string {
 	var s string

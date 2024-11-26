@@ -4,7 +4,6 @@ go 1.21
 
 require (
 	github.com/btcsuite/btcd/btcec/v2 v2.3.4
-	github.com/cenkalti/backoff/v4 v4.3.0
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.3.0
 	github.com/json-iterator/go v1.1.12
 	github.com/mitchellh/mapstructure v1.5.0
@@ -16,7 +15,7 @@ require (
 	golang.org/x/crypto v0.28.0
 	golang.org/x/text v0.19.0
 	google.golang.org/grpc v1.65.0
-	google.golang.org/protobuf v1.35.1
+	google.golang.org/protobuf v1.35.2
 )
 
 require (

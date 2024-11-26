@@ -1,3 +1,14 @@
+## v2.51.0
+
+### Fixed
+- Max backoff for grpc requests
+- Resubmit transaction in case of throttle status at record
+
+### Added
+- Getters for internal keys and threshold for `KeyList`
+- New api for creating client without schedule network update - `ClientFromConfigWithoutScheduleNetworkUpdate`
+- New api for creating client with mirror network - `ClientForMirrorNetwork`
+
 ## v2.50.0
 
 ### Changed

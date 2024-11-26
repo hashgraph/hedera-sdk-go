@@ -8,8 +8,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/cenkalti/backoff/v4"
-
 	protobuf "google.golang.org/protobuf/proto"
 
 	"github.com/pkg/errors"
@@ -173,12 +171,9 @@ func (e *executable) getNodeAccountID() AccountID {
 	return e.nodeAccountIDs._GetCurrent().(AccountID)
 }
 
+// nolint
 func _Execute(client *Client, e Executable) (interface{}, error) {
 	var maxAttempts int
-	backOff := backoff.NewExponentialBackOff()
-	backOff.InitialInterval = e.GetMinBackoff()
-	backOff.MaxInterval = e.GetMaxBackoff()
-	backOff.Multiplier = 2
 
 	if client.maxAttempts != nil {
 		maxAttempts = *client.maxAttempts
@@ -195,10 +190,15 @@ func _Execute(client *Client, e Executable) (interface{}, error) {
 	txLogger := e.getLogger(client.logger)
 	txID, msg := e.getTransactionIDAndMessage()
 
-	for attempt = int64(0); attempt < int64(maxAttempts); attempt, currentBackoff = attempt+1, currentBackoff*2 {
+	for attempt = int64(0); attempt < int64(maxAttempts); attempt++ {
 		var protoRequest interface{}
 		var node *_Node
 		var ok bool
+
+		// If this is not the first attempt, double the backoff time up to the max backoff time
+		if attempt > 0 && currentBackoff <= e.GetMaxBackoff() {
+			currentBackoff *= 2
+		}
 
 		if e.isTransaction() {
 			if attempt > 0 && len(e.GetNodeAccountIDs()) > 1 {
