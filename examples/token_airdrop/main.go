@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/hashgraph/hedera-sdk-go/v2"
+	"github.com/hiero-ledger/hiero-sdk-go/v2"
 )
 
 /**
@@ -13,23 +13,23 @@ import (
  */
 func main() {
 
-	var client *hedera.Client
+	var client *hiero.Client
 	var err error
 
 	// Retrieving network type from environment variable HEDERA_NETWORK
-	client, err = hedera.ClientForName(os.Getenv("HEDERA_NETWORK"))
+	client, err = hiero.ClientForName(os.Getenv("HEDERA_NETWORK"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error creating client", err))
 	}
 
 	// Retrieving operator ID from environment variable OPERATOR_ID
-	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
+	operatorAccountID, err := hiero.AccountIDFromString(os.Getenv("OPERATOR_ID"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error converting string to AccountID", err))
 	}
 
 	// Retrieving operator key from environment variable OPERATOR_KEY
-	operatorKey, err := hedera.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
+	operatorKey, err := hiero.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error converting string to PrivateKey", err))
 	}
@@ -43,10 +43,10 @@ func main() {
 	 * Step 1:
 	 * Create 4 accounts
 	 */
-	privateKey1, _ := hedera.PrivateKeyGenerateEd25519()
-	accountCreateResp, err := hedera.NewAccountCreateTransaction().
+	privateKey1, _ := hiero.PrivateKeyGenerateEd25519()
+	accountCreateResp, err := hiero.NewAccountCreateTransaction().
 		SetKey(privateKey1).
-		SetInitialBalance(hedera.NewHbar(10)).
+		SetInitialBalance(hiero.NewHbar(10)).
 		SetMaxAutomaticTokenAssociations(-1).
 		Execute(client)
 	if err != nil {
@@ -58,10 +58,10 @@ func main() {
 	}
 	alice := receipt.AccountID
 
-	privateKey2, _ := hedera.PrivateKeyGenerateEd25519()
-	accountCreateResp, err = hedera.NewAccountCreateTransaction().
+	privateKey2, _ := hiero.PrivateKeyGenerateEd25519()
+	accountCreateResp, err = hiero.NewAccountCreateTransaction().
 		SetKey(privateKey2).
-		SetInitialBalance(hedera.NewHbar(10)).
+		SetInitialBalance(hiero.NewHbar(10)).
 		SetMaxAutomaticTokenAssociations(1).
 		Execute(client)
 	if err != nil {
@@ -73,10 +73,10 @@ func main() {
 	}
 	bob := receipt.AccountID
 
-	privateKey3, _ := hedera.PrivateKeyGenerateEd25519()
-	accountCreateResp, err = hedera.NewAccountCreateTransaction().
+	privateKey3, _ := hiero.PrivateKeyGenerateEd25519()
+	accountCreateResp, err = hiero.NewAccountCreateTransaction().
 		SetKey(privateKey3).
-		SetInitialBalance(hedera.NewHbar(10)).
+		SetInitialBalance(hiero.NewHbar(10)).
 		SetMaxAutomaticTokenAssociations(0).
 		Execute(client)
 	if err != nil {
@@ -88,10 +88,10 @@ func main() {
 	}
 	carol := receipt.AccountID
 
-	treasuryKey, _ := hedera.PrivateKeyGenerateEd25519()
-	accountCreateResp, err = hedera.NewAccountCreateTransaction().
+	treasuryKey, _ := hiero.PrivateKeyGenerateEd25519()
+	accountCreateResp, err = hiero.NewAccountCreateTransaction().
 		SetKey(treasuryKey).
-		SetInitialBalance(hedera.NewHbar(10)).
+		SetInitialBalance(hiero.NewHbar(10)).
 		Execute(client)
 	if err != nil {
 		panic(fmt.Sprintf("%v error creating account", err))
@@ -107,7 +107,7 @@ func main() {
 	 * Step 2:
 	 * Create FT and NFT and mint
 	 */
-	tokenCreateTxn, _ := hedera.NewTokenCreateTransaction().
+	tokenCreateTxn, _ := hiero.NewTokenCreateTransaction().
 		SetTokenName("Fungible Token").
 		SetTokenSymbol("TFT").
 		SetTokenMemo("Example memo").
@@ -115,7 +115,7 @@ func main() {
 		SetInitialSupply(1000).
 		SetMaxSupply(1000).
 		SetTreasuryAccountID(*treasury).
-		SetSupplyType(hedera.TokenSupplyTypeFinite).
+		SetSupplyType(hiero.TokenSupplyTypeFinite).
 		SetAdminKey(operatorKey).
 		SetFreezeKey(operatorKey).
 		SetSupplyKey(operatorKey).
@@ -134,15 +134,15 @@ func main() {
 	}
 	tokenID := receipt.TokenID
 
-	nftCreateTransaction, _ := hedera.NewTokenCreateTransaction().
+	nftCreateTransaction, _ := hiero.NewTokenCreateTransaction().
 		SetTokenName("Example NFT").
 		SetTokenSymbol("ENFT").
-		SetTokenType(hedera.TokenTypeNonFungibleUnique).
+		SetTokenType(hiero.TokenTypeNonFungibleUnique).
 		SetDecimals(0).
 		SetInitialSupply(0).
 		SetMaxSupply(10).
 		SetTreasuryAccountID(*treasury).
-		SetSupplyType(hedera.TokenSupplyTypeFinite).
+		SetSupplyType(hiero.TokenSupplyTypeFinite).
 		SetAdminKey(operatorKey).
 		SetFreezeKey(operatorKey).
 		SetSupplyKey(operatorKey).
@@ -158,7 +158,7 @@ func main() {
 	nftID := *nftCreateReceipt.TokenID
 	var initialMetadataList = [][]byte{{2, 1}, {1, 2}, {1, 5}}
 
-	mintTransaction, _ := hedera.NewTokenMintTransaction().
+	mintTransaction, _ := hiero.NewTokenMintTransaction().
 		SetTokenID(nftID).
 		SetMetadatas(initialMetadataList).
 		FreezeWith(client)
@@ -177,7 +177,7 @@ func main() {
 	 * Airdrop fungible tokens to all 3 accounts
 	 */
 
-	airdropTx, _ := hedera.NewTokenAirdropTransaction().
+	airdropTx, _ := hiero.NewTokenAirdropTransaction().
 		AddTokenTransfer(*tokenID, *alice, 100).
 		AddTokenTransfer(*tokenID, *bob, 100).
 		AddTokenTransfer(*tokenID, *carol, 100).
@@ -199,14 +199,14 @@ func main() {
 	 * Step 5:
 	 * Query to verify alice and bob received the airdrops and carol did not
 	 */
-	aliceBalance, _ := hedera.NewAccountBalanceQuery().
+	aliceBalance, _ := hiero.NewAccountBalanceQuery().
 		SetAccountID(*alice).
 		Execute(client)
 
-	bobBalance, _ := hedera.NewAccountBalanceQuery().
+	bobBalance, _ := hiero.NewAccountBalanceQuery().
 		SetAccountID(*alice).
 		Execute(client)
-	carolBalance, _ := hedera.NewAccountBalanceQuery().
+	carolBalance, _ := hiero.NewAccountBalanceQuery().
 		SetAccountID(*alice).
 		Execute(client)
 
@@ -220,7 +220,7 @@ func main() {
 	 */
 	fmt.Println("Claiming ft with carol")
 
-	claimTx, _ := hedera.NewTokenClaimAirdropTransaction().
+	claimTx, _ := hiero.NewTokenClaimAirdropTransaction().
 		AddPendingAirdropId(record.PendingAirdropRecords[0].GetPendingAirdropId()).
 		FreezeWith(client)
 
@@ -228,7 +228,7 @@ func main() {
 	if err != nil {
 		panic(fmt.Sprintf("%v : error claiming tokens", err))
 	}
-	carolBalance, _ = hedera.NewAccountBalanceQuery().
+	carolBalance, _ = hiero.NewAccountBalanceQuery().
 		SetAccountID(*alice).
 		Execute(client)
 	fmt.Println("Carol ft balance after claim: ", carolBalance.Tokens.Get(*tokenID))
@@ -238,7 +238,7 @@ func main() {
 	 * Airdrop the NFTs to all three accounts
 	 */
 
-	airdropTx, _ = hedera.NewTokenAirdropTransaction().
+	airdropTx, _ = hiero.NewTokenAirdropTransaction().
 		AddNftTransfer(nftID.Nft(1), *treasury, *alice).
 		AddNftTransfer(nftID.Nft(2), *treasury, *bob).
 		AddNftTransfer(nftID.Nft(3), *treasury, *carol).
@@ -266,14 +266,14 @@ func main() {
 	 * Query to verify alice received the airdrop and bob and carol did not
 	 */
 
-	aliceBalance, _ = hedera.NewAccountBalanceQuery().
+	aliceBalance, _ = hiero.NewAccountBalanceQuery().
 		SetAccountID(*alice).
 		Execute(client)
 
-	bobBalance, _ = hedera.NewAccountBalanceQuery().
+	bobBalance, _ = hiero.NewAccountBalanceQuery().
 		SetAccountID(*alice).
 		Execute(client)
-	carolBalance, _ = hedera.NewAccountBalanceQuery().
+	carolBalance, _ = hiero.NewAccountBalanceQuery().
 		SetAccountID(*alice).
 		Execute(client)
 
@@ -286,7 +286,7 @@ func main() {
 	 * Claim the airdrop for bob
 	 */
 	fmt.Println("Claiming nft with Bob")
-	claimTx, _ = hedera.NewTokenClaimAirdropTransaction().
+	claimTx, _ = hiero.NewTokenClaimAirdropTransaction().
 		AddPendingAirdropId(record.PendingAirdropRecords[0].GetPendingAirdropId()).
 		FreezeWith(client)
 
@@ -298,7 +298,7 @@ func main() {
 	if err != nil {
 		panic(fmt.Sprintf("%v : error claiming tokens", err))
 	}
-	bobBalance, _ = hedera.NewAccountBalanceQuery().
+	bobBalance, _ = hiero.NewAccountBalanceQuery().
 		SetAccountID(*bob).
 		Execute(client)
 	fmt.Println("Bob nft balance after claim: ", bobBalance.Tokens.Get(nftID))
@@ -308,7 +308,7 @@ func main() {
 	 * Cancel the airdrop for carol
 	 */
 	fmt.Println("Canceling nft with Carol")
-	cancelTx, _ := hedera.NewTokenCancelAirdropTransaction().
+	cancelTx, _ := hiero.NewTokenCancelAirdropTransaction().
 		AddPendingAirdropId(record.PendingAirdropRecords[1].GetPendingAirdropId()).
 		FreezeWith(client)
 
@@ -320,7 +320,7 @@ func main() {
 	if err != nil {
 		panic(fmt.Sprintf("%v : error canceling tokens", err))
 	}
-	carolBalance, _ = hedera.NewAccountBalanceQuery().
+	carolBalance, _ = hiero.NewAccountBalanceQuery().
 		SetAccountID(*carol).
 		Execute(client)
 	fmt.Println("Carol nft balance after cancel: ", carolBalance.Tokens.Get(nftID))
@@ -331,7 +331,7 @@ func main() {
 	 */
 	fmt.Println("Rejecting nft with Bob")
 
-	rejectTxn, _ := hedera.NewTokenRejectTransaction().
+	rejectTxn, _ := hiero.NewTokenRejectTransaction().
 		AddNftID(nftID.Nft(2)).
 		SetOwnerID(*bob).
 		FreezeWith(client)
@@ -349,7 +349,7 @@ func main() {
 	 * Step 13:
 	 * Query to verify bob no longer has the NFT
 	 */
-	bobBalance, _ = hedera.NewAccountBalanceQuery().
+	bobBalance, _ = hiero.NewAccountBalanceQuery().
 		SetAccountID(*bob).
 		Execute(client)
 	fmt.Println("Bob nft balance after reject: ", bobBalance.Tokens.Get(nftID))
@@ -358,7 +358,7 @@ func main() {
 	 * Step 13:
 	 * Query to verify the NFT was returned to the Treasury
 	 */
-	treasuryBalance, _ := hedera.NewAccountBalanceQuery().
+	treasuryBalance, _ := hiero.NewAccountBalanceQuery().
 		SetAccountID(*treasury).
 		Execute(client)
 	fmt.Println("Treasury nft balance after reject: ", treasuryBalance.Tokens.Get(nftID))
@@ -368,7 +368,7 @@ func main() {
 	 * Reject the fungible tokens for Carol
 	 */
 
-	rejectTxn, _ = hedera.NewTokenRejectTransaction().
+	rejectTxn, _ = hiero.NewTokenRejectTransaction().
 		AddTokenID(*tokenID).
 		SetOwnerID(*carol).
 		FreezeWith(client)
@@ -386,7 +386,7 @@ func main() {
 	 * Step 14:
 	 * Query to verify carol no longer has the fungible tokens
 	 */
-	carolBalance, _ = hedera.NewAccountBalanceQuery().
+	carolBalance, _ = hiero.NewAccountBalanceQuery().
 		SetAccountID(*alice).
 		Execute(client)
 	fmt.Println("Carol ft balance after claim: ", carolBalance.Tokens.Get(*tokenID))
@@ -395,7 +395,7 @@ func main() {
 	 * Step 15:
 	 * Query to verify Treasury received the rejected fungible tokens
 	 */
-	treasuryBalance, _ = hedera.NewAccountBalanceQuery().
+	treasuryBalance, _ = hiero.NewAccountBalanceQuery().
 		SetAccountID(*treasury).
 		Execute(client)
 	fmt.Println("Treasury ft balance after reject: ", treasuryBalance.Tokens.Get(*tokenID))

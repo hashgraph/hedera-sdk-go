@@ -1,14 +1,16 @@
 package methods
 
+// SPDX-License-Identifier: Apache-2.0
+
 import (
 	"context"
 	"strconv"
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/tck/param"
-	"github.com/hashgraph/hedera-sdk-go/tck/response"
-	"github.com/hashgraph/hedera-sdk-go/tck/utils"
-	"github.com/hashgraph/hedera-sdk-go/v2"
+	"github.com/hiero-ledger/hiero-sdk-go/tck/param"
+	"github.com/hiero-ledger/hiero-sdk-go/tck/response"
+	"github.com/hiero-ledger/hiero-sdk-go/tck/utils"
+	"github.com/hiero-ledger/hiero-sdk-go/v2"
 )
 
 type TokenService struct {
@@ -22,7 +24,7 @@ func (t *TokenService) SetSdkService(service *SDKService) {
 // CreateToken jRPC method for createToken
 func (t *TokenService) CreateToken(_ context.Context, params param.CreateTokenParams) (*response.TokenResponse, error) {
 
-	transaction := hedera.NewTokenCreateTransaction().SetGrpcDeadline(&threeSecondsDuration)
+	transaction := hiero.NewTokenCreateTransaction().SetGrpcDeadline(&threeSecondsDuration)
 
 	if params.AdminKey != nil {
 		key, err := utils.GetKeyFromString(*params.AdminKey)
@@ -102,18 +104,18 @@ func (t *TokenService) CreateToken(_ context.Context, params param.CreateTokenPa
 	}
 	if params.TokenType != nil {
 		if *params.TokenType == "ft" {
-			transaction.SetTokenType(hedera.TokenTypeFungibleCommon)
+			transaction.SetTokenType(hiero.TokenTypeFungibleCommon)
 		} else if *params.TokenType == "nft" {
-			transaction.SetTokenType(hedera.TokenTypeNonFungibleUnique)
+			transaction.SetTokenType(hiero.TokenTypeNonFungibleUnique)
 		} else {
 			return nil, response.InvalidParams.WithData("Invalid token type")
 		}
 	}
 	if params.SupplyType != nil {
 		if *params.SupplyType == "finite" {
-			transaction.SetSupplyType(hedera.TokenSupplyTypeFinite)
+			transaction.SetSupplyType(hiero.TokenSupplyTypeFinite)
 		} else if *params.SupplyType == "infinite" {
-			transaction.SetSupplyType(hedera.TokenSupplyTypeInfinite)
+			transaction.SetSupplyType(hiero.TokenSupplyTypeInfinite)
 		} else {
 			return nil, response.InvalidParams.WithData("Invalid supply type")
 		}
@@ -133,7 +135,7 @@ func (t *TokenService) CreateToken(_ context.Context, params param.CreateTokenPa
 		transaction.SetInitialSupply(uint64(initialSupply))
 	}
 	if params.TreasuryAccountId != nil {
-		accountID, err := hedera.AccountIDFromString(*params.TreasuryAccountId)
+		accountID, err := hiero.AccountIDFromString(*params.TreasuryAccountId)
 		if err != nil {
 			return nil, err
 		}
@@ -150,7 +152,7 @@ func (t *TokenService) CreateToken(_ context.Context, params param.CreateTokenPa
 		transaction.SetExpirationTime(time.Unix(expirationTime, 0))
 	}
 	if params.AutoRenewAccountId != nil {
-		autoRenewAccountId, err := hedera.AccountIDFromString(*params.AutoRenewAccountId)
+		autoRenewAccountId, err := hiero.AccountIDFromString(*params.AutoRenewAccountId)
 		if err != nil {
 			return nil, err
 		}
@@ -173,20 +175,20 @@ func (t *TokenService) CreateToken(_ context.Context, params param.CreateTokenPa
 	}
 
 	if params.CustomFees != nil {
-		var customFeeList []hedera.Fee
+		var customFeeList []hiero.Fee
 		for _, customFee := range *params.CustomFees {
 			// Handle Fixed Fee
 			if customFee.FixedFee != nil {
-				fee := hedera.NewCustomFixedFee()
+				fee := hiero.NewCustomFixedFee()
 				fee.SetAmount(ParseIntFromOptional(&customFee.FixedFee.Amount))
-				feeCollector, err := hedera.AccountIDFromString(customFee.FeeCollectorAccountId)
+				feeCollector, err := hiero.AccountIDFromString(customFee.FeeCollectorAccountId)
 				if err != nil {
 					return nil, err
 				}
 				fee.SetFeeCollectorAccountID(feeCollector)
 				fee.SetAllCollectorsAreExempt(*customFee.FeeCollectorsExempt)
 				if customFee.FixedFee.DenominatingTokenId != nil {
-					tokenId, err := hedera.TokenIDFromString(*customFee.FixedFee.DenominatingTokenId)
+					tokenId, err := hiero.TokenIDFromString(*customFee.FixedFee.DenominatingTokenId)
 					if err != nil {
 						return nil, err
 					}
@@ -197,12 +199,12 @@ func (t *TokenService) CreateToken(_ context.Context, params param.CreateTokenPa
 
 			// Handle Fractional Fee
 			if customFee.FractionalFee != nil {
-				fee := hedera.NewCustomFractionalFee()
+				fee := hiero.NewCustomFractionalFee()
 				fee.SetNumerator(ParseIntFromOptional(&customFee.FractionalFee.Numerator))
 				fee.SetDenominator(ParseIntFromOptional(&customFee.FractionalFee.Denominator))
 				fee.SetMin(ParseIntFromOptional(&customFee.FractionalFee.MinimumAmount))
 				fee.SetMax(ParseIntFromOptional(&customFee.FractionalFee.MaximumAmount))
-				feeCollector, err := hedera.AccountIDFromString(customFee.FeeCollectorAccountId)
+				feeCollector, err := hiero.AccountIDFromString(customFee.FeeCollectorAccountId)
 				if err != nil {
 					return nil, err
 				}
@@ -213,10 +215,10 @@ func (t *TokenService) CreateToken(_ context.Context, params param.CreateTokenPa
 
 			// Handle Royalty Fee
 			if customFee.RoyaltyFee != nil {
-				fee := hedera.NewCustomRoyaltyFee()
+				fee := hiero.NewCustomRoyaltyFee()
 				fee.SetNumerator(ParseIntFromOptional(&customFee.RoyaltyFee.Numerator))
 				fee.SetDenominator(ParseIntFromOptional(&customFee.RoyaltyFee.Denominator))
-				feeCollector, err := hedera.AccountIDFromString(customFee.FeeCollectorAccountId)
+				feeCollector, err := hiero.AccountIDFromString(customFee.FeeCollectorAccountId)
 				if err != nil {
 					return nil, err
 				}
@@ -224,10 +226,10 @@ func (t *TokenService) CreateToken(_ context.Context, params param.CreateTokenPa
 				fee.SetAllCollectorsAreExempt(*customFee.FeeCollectorsExempt)
 
 				if customFee.RoyaltyFee.FallbackFee != nil {
-					fallback := hedera.NewCustomFixedFee()
+					fallback := hiero.NewCustomFixedFee()
 					fallback.SetAmount(ParseIntFromOptional(&customFee.RoyaltyFee.FallbackFee.Amount))
 					if customFee.RoyaltyFee.FallbackFee.DenominatingTokenId != nil {
-						tokenId, err := hedera.TokenIDFromString(*customFee.RoyaltyFee.FallbackFee.DenominatingTokenId)
+						tokenId, err := hiero.TokenIDFromString(*customFee.RoyaltyFee.FallbackFee.DenominatingTokenId)
 						if err != nil {
 							return nil, err
 						}

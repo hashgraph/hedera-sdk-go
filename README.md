@@ -18,9 +18,9 @@ $ go install github.com/hiero-ledger/hiero-sdk-go/v2@latest
 
 > [!NOTE]  
 >  `google.golang.org/protobuf` v1.27.1 Breaks the SDK as it contains multiple protobuf files
-with the same name. Make sure to use v1.26.1 instead. The follow snippet can be used in 
-`go.mod` to force the project to use v1.26.1
-> 
+> with the same name. Make sure to use v1.26.1 instead. The follow snippet can be used in
+> `go.mod` to force the project to use v1.26.1
+
 ```
 replace (
 	google.golang.org/protobuf v1.27.1 => google.golang.org/protobuf v1.26.1-0.20210525005349-febffdd88e85
@@ -48,7 +48,7 @@ $ env OPERATOR_KEY="<key>" OPERATOR_ID="<id>" go test -v Integration -timeout 99
 The config file _can_ contain both the network and the operator, but you can also
 use environment variables `OPERATOR_KEY` and `OPERATOR_ID`. If both are provided
 the network is used from the config file, but for the operator the environment variables
-take precedence. If the config file is not provided then the network will default to [Hedera testnet](https://docs.hedera.com/hedera/getting-started/introduction)
+take precedence. If the config file is not provided then the network will default to [Hiero testnet](https://docs.hedera.com/hedera/getting-started/introduction)
 and `OPERATOR_KEY` and `OPERATOR_ID` **must** be provided.
 
 [Example Config File](./client-config-with-operator.json)

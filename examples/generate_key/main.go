@@ -3,12 +3,12 @@ package main
 import (
 	"fmt"
 
-	"github.com/hashgraph/hedera-sdk-go/v2"
+	"github.com/hiero-ledger/hiero-sdk-go/v2"
 )
 
 func main() {
 	// Generating key
-	privateKey, err := hedera.GeneratePrivateKey()
+	privateKey, err := hiero.GeneratePrivateKey()
 	if err != nil {
 		panic(fmt.Sprintf("%v : error generating PrivateKey", err))
 	}

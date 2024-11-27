@@ -1,10 +1,12 @@
 package utils
 
+// SPDX-License-Identifier: Apache-2.0
+
 import (
 	"encoding/hex"
 	"errors"
 
-	"github.com/hashgraph/hedera-sdk-go/v2"
+	"github.com/hiero-ledger/hiero-sdk-go/v2"
 )
 
 var ErrFromKeyShouldBeProvided = errors.New("invalid parameters: fromKey should only be provided for ed25519PublicKey, ecdsaSecp256k1PublicKey, or evmAddress types")
@@ -13,19 +15,19 @@ var ErrKeysShouldBeProvided = errors.New("invalid parameters: keys should only b
 var ErrKeylistRequired = errors.New("invalid request: keys list is required for generating a KeyList type")
 var ErrThresholdRequired = errors.New("invalid request: threshold is required for generating a ThresholdKey type")
 
-func getKeyListFromString(keyStr string) (hedera.Key, error) {
+func getKeyListFromString(keyStr string) (hiero.Key, error) {
 	bytes, err := hex.DecodeString(keyStr)
 	if err != nil {
-		return hedera.KeyList{}, err
+		return hiero.KeyList{}, err
 	}
 
-	return hedera.KeyFromBytes(bytes)
+	return hiero.KeyFromBytes(bytes)
 }
 
-func GetKeyFromString(keyStr string) (hedera.Key, error) {
-	key, err := hedera.PublicKeyFromString(keyStr)
+func GetKeyFromString(keyStr string) (hiero.Key, error) {
+	key, err := hiero.PublicKeyFromString(keyStr)
 	if err != nil {
-		key, err := hedera.PrivateKeyFromStringDer(keyStr)
+		key, err := hiero.PrivateKeyFromStringDer(keyStr)
 		if err != nil {
 			return getKeyListFromString(keyStr)
 		}

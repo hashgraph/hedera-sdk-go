@@ -7,27 +7,27 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2"
+	"github.com/hiero-ledger/hiero-sdk-go/v2"
 )
 
 func main() {
-	var client *hedera.Client
+	var client *hiero.Client
 	var err error
 
 	// Retrieving network type from environment variable HEDERA_NETWORK
-	client, err = hedera.ClientForName(os.Getenv("HEDERA_NETWORK"))
+	client, err = hiero.ClientForName(os.Getenv("HEDERA_NETWORK"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error creating client", err))
 	}
 
 	// Retrieving operator ID from environment variable OPERATOR_ID
-	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
+	operatorAccountID, err := hiero.AccountIDFromString(os.Getenv("OPERATOR_ID"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error converting string to AccountID", err))
 	}
 
 	// Retrieving operator key from environment variable OPERATOR_KEY
-	operatorKey, err := hedera.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
+	operatorKey, err := hiero.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error converting string to PrivateKey", err))
 	}
@@ -36,7 +36,7 @@ func main() {
 	client.SetOperator(operatorAccountID, operatorKey)
 
 	//generate new submit key
-	submitKey, err := hedera.GeneratePrivateKey()
+	submitKey, err := hiero.GeneratePrivateKey()
 	if err != nil {
 		panic(fmt.Sprintf("%v : error generating PrivateKey", err))
 	}
@@ -44,7 +44,7 @@ func main() {
 	println("acc", client.GetOperatorAccountID().String())
 
 	// Create new topic ID
-	transactionResponse, err := hedera.NewTopicCreateTransaction().
+	transactionResponse, err := hiero.NewTopicCreateTransaction().
 		// You don't need any of this to create a topic
 		// If key is not set all submissions are allowed
 		SetTransactionMemo("HCS topic with submit key").
@@ -71,13 +71,13 @@ func main() {
 	time.Sleep(5 * time.Second)
 
 	// Setup a mirror client to print out messages as we receive them
-	_, err = hedera.NewTopicMessageQuery().
+	_, err = hiero.NewTopicMessageQuery().
 		// Sets for which topic
 		SetTopicID(topicID).
 		// Set when the query starts
 		SetStartTime(time.Unix(0, 0)).
 		// What to do when messages are received
-		Subscribe(client, func(message hedera.TopicMessage) {
+		Subscribe(client, func(message hiero.TopicMessage) {
 			// Print out the timestamp and the message
 			println(message.ConsensusTimestamp.String(), " received topic message:", string(message.Contents))
 		})
@@ -91,7 +91,7 @@ func main() {
 		println("Publishing message:", message)
 
 		// Prepare a message send transaction that requires a submit key from "somewhere else"
-		submitTx, err := hedera.NewTopicMessageSubmitTransaction().
+		submitTx, err := hiero.NewTopicMessageSubmitTransaction().
 			// Sets the topic ID we want to send to
 			SetTopicID(topicID).
 			// Sets the message

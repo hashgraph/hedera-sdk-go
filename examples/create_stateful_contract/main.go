@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/hashgraph/hedera-sdk-go/v2"
+	"github.com/hiero-ledger/hiero-sdk-go/v2"
 )
 
 type contract struct {
@@ -19,23 +19,23 @@ type contracts struct {
 }
 
 func main() {
-	var client *hedera.Client
+	var client *hiero.Client
 	var err error
 
 	// Retrieving network type from environment variable HEDERA_NETWORK
-	client, err = hedera.ClientForName(os.Getenv("HEDERA_NETWORK"))
+	client, err = hiero.ClientForName(os.Getenv("HEDERA_NETWORK"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error creating client", err))
 	}
 
 	// Retrieving operator ID from environment variable OPERATOR_ID
-	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
+	operatorAccountID, err := hiero.AccountIDFromString(os.Getenv("OPERATOR_ID"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error converting string to AccountID", err))
 	}
 
 	// Retrieving operator key from environment variable OPERATOR_KEY
-	operatorKey, err := hedera.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
+	operatorKey, err := hiero.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error converting string to PrivateKey", err))
 	}
@@ -73,7 +73,7 @@ func main() {
 	fmt.Printf("Contract bytecode size: %v bytes\n", len(smartContractByteCode))
 
 	// Upload a file containing the byte code
-	byteCodeTransactionResponse, err := hedera.NewFileCreateTransaction().
+	byteCodeTransactionResponse, err := hiero.NewFileCreateTransaction().
 		// A file is not implicitly owned by anyone, even the operator
 		// But we do use operator's key for this one
 		SetKeys(client.GetOperatorPublicKey()).
@@ -96,13 +96,13 @@ func main() {
 	fmt.Printf("contract bytecode file: %v\n", byteCodeFileID)
 
 	// Set the parameters that should be passed to the contract constructor
-	// In this case we are passing in a string with the value "hello from hedera!"
+	// In this case we are passing in a string with the value "hello from hiero!"
 	// as the only parameter that is passed to the contract
-	contractFunctionParams := hedera.NewContractFunctionParameters().
-		AddString("hello from hedera")
+	contractFunctionParams := hiero.NewContractFunctionParameters().
+		AddString("hello from hiero")
 
 	// Instantiate the contract instance
-	contractTransactionID, err := hedera.NewContractCreateTransaction().
+	contractTransactionID, err := hiero.NewContractCreateTransaction().
 		// Set gas to create the contract
 		// Failing to set this to a sufficient amount will result in "INSUFFICIENT_GAS" status
 		SetGas(200000).
@@ -139,14 +139,14 @@ func main() {
 	fmt.Printf("contract: %v\n", newContractID)
 
 	// Ask for the current message (set on creation)
-	callResult, err := hedera.NewContractCallQuery().
+	callResult, err := hiero.NewContractCallQuery().
 		// Set which contract
 		SetContractID(newContractID).
 		// The amount of gas to use for the call
 		// All of the gas offered will be used and charged a corresponding fee
 		SetGas(100000).
 		// This query requires payment, depends on gas used
-		SetQueryPayment(hedera.NewHbar(1)).
+		SetQueryPayment(hiero.NewHbar(1)).
 		// nil -> no parameters
 		// Specified which function to call, and the parameters to pass to the function
 		SetFunction("getMessage", nil).
@@ -165,23 +165,23 @@ func main() {
 	//      string := callResult.getString(1);
 	fmt.Printf("Message: %v\n", callResult.GetString(0))
 
-	// In this case we are passing in a string with the value "Hello from Hedera again!"
+	// In this case we are passing in a string with the value "Hello from Hiero again!"
 	// as the only parameter that is passed to the contract
-	contractFunctionParams = hedera.NewContractFunctionParameters().
-		AddString("Hello from Hedera again!")
+	contractFunctionParams = hiero.NewContractFunctionParameters().
+		AddString("Hello from Hiero again!")
 
 	// Update the message
-	contractExecuteID, err := hedera.NewContractExecuteTransaction().
+	contractExecuteID, err := hiero.NewContractExecuteTransaction().
 		// Set which contract
 		SetContractID(newContractID).
 		// Set the gas to execute the contract call
 		SetGas(100000).
 		// Set the function to call and the parameters to send
 		// in this case we're calling function "set_message" with a single
-		// string parameter of value "Hello from Hedera again!"
+		// string parameter of value "Hello from Hiero again!"
 		// If instead the "setMessage" method were to require "uint32, string"
 		// parameters then you must do:
-		//     contractFunctionParams := hedera.NewContractFunctionParameters().
+		//     contractFunctionParams := hiero.NewContractFunctionParameters().
 		//          .addUint32(1)
 		//          .addString("string 3")
 		SetFunction("setMessage", contractFunctionParams).
@@ -206,15 +206,15 @@ func main() {
 	// Print gas used
 	fmt.Printf("Execute gas used: %v\n", contractExecuteResult.GasUsed)
 
-	// Call a method on a contract that exists on Hedera
-	secondCallResult, err := hedera.NewContractCallQuery().
+	// Call a method on a contract that exists on Hiero
+	secondCallResult, err := hiero.NewContractCallQuery().
 		// Set which contract
 		SetContractID(newContractID).
 		// Set gas to use
 		SetGas(100000).
 		// Set the query payment explicitly since sometimes automatic payment calculated
 		// is too low
-		SetQueryPayment(hedera.NewHbar(1)).
+		SetQueryPayment(hiero.NewHbar(1)).
 		// Set the function to call on the contract
 		SetFunction("getMessage", nil).
 		Execute(client)

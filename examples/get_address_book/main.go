@@ -4,27 +4,27 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/hashgraph/hedera-sdk-go/v2"
+	"github.com/hiero-ledger/hiero-sdk-go/v2"
 )
 
 func main() {
-	var client *hedera.Client
+	var client *hiero.Client
 	var err error
 
 	// Retrieving network type from environment variable HEDERA_NETWORK
-	client, err = hedera.ClientForName(os.Getenv("HEDERA_NETWORK"))
+	client, err = hiero.ClientForName(os.Getenv("HEDERA_NETWORK"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error creating client", err))
 	}
 
 	// Retrieving operator ID from environment variable OPERATOR_ID
-	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
+	operatorAccountID, err := hiero.AccountIDFromString(os.Getenv("OPERATOR_ID"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error converting string to AccountID", err))
 	}
 
 	// Retrieving operator key from environment variable OPERATOR_KEY
-	operatorKey, err := hedera.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
+	operatorKey, err := hiero.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error converting string to PrivateKey", err))
 	}
@@ -32,9 +32,9 @@ func main() {
 	// Setting the client operator ID and key
 	client.SetOperator(operatorAccountID, operatorKey)
 
-	fileQuery := hedera.NewFileContentsQuery().
+	fileQuery := hiero.NewFileContentsQuery().
 		// Set the file ID for address book which is 0.0.102
-		SetFileID(hedera.FileIDForAddressBook())
+		SetFileID(hiero.FileIDForAddressBook())
 
 	println("the network that address book is for:", client.GetNetworkName().String())
 
@@ -46,7 +46,7 @@ func main() {
 	println("file contents cost:", cost.String())
 
 	// Have to always set the cost a little bigger, otherwise it is possible it won't go through
-	fileQuery.SetMaxQueryPayment(hedera.NewHbar(1))
+	fileQuery.SetMaxQueryPayment(hiero.NewHbar(1))
 
 	// Execute the file content query
 	contents, err := fileQuery.Execute(client)

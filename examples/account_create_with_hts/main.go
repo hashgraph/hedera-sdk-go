@@ -2,24 +2,25 @@ package main
 
 import (
 	"fmt"
-	"github.com/hashgraph/hedera-sdk-go/v2"
 	"os"
+
+	"github.com/hiero-ledger/hiero-sdk-go/v2"
 )
 
 func main() {
 
-	client, err := hedera.ClientForName(os.Getenv("HEDERA_NETWORK"))
+	client, err := hiero.ClientForName(os.Getenv("HEDERA_NETWORK"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error creating client", err))
 	}
 
-	operatorId, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
+	operatorId, err := hiero.AccountIDFromString(os.Getenv("OPERATOR_ID"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error converting string to AccountID", err))
 	}
 
 	// Retrieving operator key from environment variable OPERATOR_KEY
-	operatorKey, err := hedera.PrivateKeyFromStringEd25519(os.Getenv("OPERATOR_KEY"))
+	operatorKey, err := hiero.PrivateKeyFromStringEd25519(os.Getenv("OPERATOR_KEY"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error converting string to PrivateKey", err))
 	}
@@ -27,15 +28,15 @@ func main() {
 	// Setting the client operator ID and key
 	client.SetOperator(operatorId, operatorKey)
 
-	supplyKey, err := hedera.PrivateKeyGenerateEcdsa()
+	supplyKey, err := hiero.PrivateKeyGenerateEcdsa()
 	if err != nil {
 		panic(fmt.Sprintf("%v : error creating supply key", err))
 	}
-	freezeKey, err := hedera.PrivateKeyGenerateEcdsa()
+	freezeKey, err := hiero.PrivateKeyGenerateEcdsa()
 	if err != nil {
 		panic(fmt.Sprintf("%v : error creating freeze key", err))
 	}
-	wipeKey, err := hedera.PrivateKeyGenerateEcdsa()
+	wipeKey, err := hiero.PrivateKeyGenerateEcdsa()
 	if err != nil {
 		panic(fmt.Sprintf("%v : error creating wipe key", err))
 	}
@@ -44,7 +45,7 @@ func main() {
 	 *
 	 * Step 1
 	 *
-	 * Create an NFT using the Hedera Token Service
+	 * Create an NFT using the Hiero Token Service
 	 */
 	fmt.Println("Example 1")
 	// IPFS content identifiers for the NFT metadata
@@ -54,18 +55,18 @@ func main() {
 		"Qmd3kGgSrAwwSrhesYcY7K54f3qD7MDo38r7Po2dChtQx5",
 		"QmWgkKz3ozgqtnvbCLeh7EaR1H8u5Sshx3ZJzxkcrT3jbw"}
 	// Creating the transaction for token creation
-	nftCreateTransaction, err := hedera.NewTokenCreateTransaction().
+	nftCreateTransaction, err := hiero.NewTokenCreateTransaction().
 		SetTokenName("HIP-542 Example Collection").SetTokenSymbol("HIP-542").
-		SetTokenType(hedera.TokenTypeNonFungibleUnique).SetDecimals(0).
+		SetTokenType(hiero.TokenTypeNonFungibleUnique).SetDecimals(0).
 		SetInitialSupply(0).SetMaxSupply(int64(len(cid))).
-		SetTreasuryAccountID(operatorId).SetSupplyType(hedera.TokenSupplyTypeFinite).
+		SetTreasuryAccountID(operatorId).SetSupplyType(hiero.TokenSupplyTypeFinite).
 		SetAdminKey(operatorKey).SetFreezeKey(freezeKey).SetWipeKey(wipeKey).SetSupplyKey(supplyKey).FreezeWith(client)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error creating token transaction", err))
 	}
 	// Sign the transaction with the operator key
 	nftSignTransaction := nftCreateTransaction.Sign(operatorKey)
-	// Submit the transaction to the Hedera network
+	// Submit the transaction to the Hiero network
 	nftCreateSubmit, err := nftSignTransaction.Execute(client)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error submitting transaction", err))
@@ -85,10 +86,10 @@ func main() {
 	 * Mint the NFT
 	 */
 
-	nftCollection := []hedera.TransactionReceipt{}
+	nftCollection := []hiero.TransactionReceipt{}
 
 	for i, s := range cid {
-		mintTransaction, err := hedera.NewTokenMintTransaction().SetTokenID(nftTokenID).SetMetadata([]byte(s)).FreezeWith(client)
+		mintTransaction, err := hiero.NewTokenMintTransaction().SetTokenID(nftTokenID).SetMetadata([]byte(s)).FreezeWith(client)
 		if err != nil {
 			panic(fmt.Sprintf("%v : error creating mint transaction", err))
 		}
@@ -111,7 +112,7 @@ func main() {
 	 */
 
 	fmt.Println("Creating new account...")
-	privateKey, err := hedera.PrivateKeyGenerateEcdsa()
+	privateKey, err := hiero.PrivateKeyGenerateEcdsa()
 	if err != nil {
 		panic(fmt.Sprintf("%v : error generating private key", err))
 	}
@@ -127,13 +128,13 @@ func main() {
 	 *
 	 * Tranfer the NFT to the public key alias using the transfer transaction
 	 */
-	nftTransferTransaction, err := hedera.NewTransferTransaction().AddNftTransfer(exampleNftId, operatorId, *aliasAccountId).FreezeWith(client)
+	nftTransferTransaction, err := hiero.NewTransferTransaction().AddNftTransfer(exampleNftId, operatorId, *aliasAccountId).FreezeWith(client)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error creating transaction", err))
 	}
 	// Sign the transaction with the operator key
 	nftTransferTransactionSign := nftTransferTransaction.Sign(operatorKey)
-	// Submit the transaction to the Hedera network
+	// Submit the transaction to the Hiero network
 	nftTransferTransactionSubmit, err := nftTransferTransactionSign.Execute(client)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error submitting transaction", err))
@@ -148,7 +149,7 @@ func main() {
 	 */
 
 	//Returns the info for the specified NFT id
-	nftInfo, err := hedera.NewTokenNftInfoQuery().SetNftID(exampleNftId).Execute(client)
+	nftInfo, err := hiero.NewTokenNftInfoQuery().SetNftID(exampleNftId).Execute(client)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error info query transaction", err))
 	}
@@ -160,7 +161,7 @@ func main() {
 	 *
 	 * Show the new account ID owns the NFT
 	 */
-	accountInfo, err := hedera.NewAccountInfoQuery().SetAccountID(*aliasAccountId).Execute(client)
+	accountInfo, err := hiero.NewAccountInfoQuery().SetAccountID(*aliasAccountId).Execute(client)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error account info query", err))
 	}
@@ -177,19 +178,19 @@ func main() {
 	 *
 	 * Step 1
 	 *
-	 * Create a fungible HTS token using the Hedera Token Service
+	 * Create a fungible HTS token using the Hiero Token Service
 	 */
 	fmt.Println("Example 2")
 
-	tokenCreateTransaction, err := hedera.NewTokenCreateTransaction().SetTokenName("HIP-542 Token").
-		SetTokenSymbol("H542").SetTokenType(hedera.TokenTypeFungibleCommon).SetTreasuryAccountID(operatorId).
+	tokenCreateTransaction, err := hiero.NewTokenCreateTransaction().SetTokenName("HIP-542 Token").
+		SetTokenSymbol("H542").SetTokenType(hiero.TokenTypeFungibleCommon).SetTreasuryAccountID(operatorId).
 		SetInitialSupply(10000).SetDecimals(2).SetAutoRenewAccount(operatorId).FreezeWith(client)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error creating transaction", err))
 	}
 	// Sign the transaction with the operator key
 	tokenCreateTransactionSign := tokenCreateTransaction.Sign(operatorKey)
-	// Submit the transaction to the Hedera network
+	// Submit the transaction to the Hiero network
 	tokenCreateTransactionSubmit, err := tokenCreateTransactionSign.Execute(client)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error submitting transaction", err))
@@ -208,7 +209,7 @@ func main() {
 	 *
 	 * Create an ECDSA public key alias
 	 */
-	privateKey2, err := hedera.PrivateKeyGenerateEcdsa()
+	privateKey2, err := hiero.PrivateKeyGenerateEcdsa()
 	if err != nil {
 		panic(fmt.Sprintf("%v : error generating private key", err))
 	}
@@ -225,7 +226,7 @@ func main() {
 	 * Transfer the fungible token to the public key alias
 	 */
 
-	tokenTransferTransaction, err := hedera.NewTransferTransaction().
+	tokenTransferTransaction, err := hiero.NewTransferTransaction().
 		AddTokenTransfer(tokenId, operatorId, -10).AddTokenTransfer(tokenId, aliasAccountId2, 10).
 		FreezeWith(client)
 	if err != nil {
@@ -233,7 +234,7 @@ func main() {
 	}
 	// Sign the transaction with the operator key
 	tokenTransferTransactionSign := tokenTransferTransaction.Sign(operatorKey)
-	// Submit the transaction to the Hedera network
+	// Submit the transaction to the Hiero network
 	tokenTransferTransactionSubmit, err := tokenTransferTransactionSign.Execute(client)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error submitting transaction", err))
@@ -247,7 +248,7 @@ func main() {
 	 * Return the new account ID in the child record
 	 */
 
-	accountId2Info, err := hedera.NewAccountInfoQuery().SetAccountID(aliasAccountId2).Execute(client)
+	accountId2Info, err := hiero.NewAccountInfoQuery().SetAccountID(aliasAccountId2).Execute(client)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error executing acount info query", err))
 	}
@@ -260,7 +261,7 @@ func main() {
 	 * Show the new account ID owns the fungible token
 	 */
 
-	accountBalances, err := hedera.NewAccountBalanceQuery().SetAccountID(aliasAccountId2).Execute(client)
+	accountBalances, err := hiero.NewAccountBalanceQuery().SetAccountID(aliasAccountId2).Execute(client)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error receiving account balance", err))
 	}

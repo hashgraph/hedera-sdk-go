@@ -4,25 +4,25 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/hashgraph/hedera-sdk-go/v2"
+	"github.com/hiero-ledger/hiero-sdk-go/v2"
 )
 
 func main() {
-	var client *hedera.Client
+	var client *hiero.Client
 	var err error
 
 	// Retrieving network type from environment variable HEDERA_NETWORK
-	client, err = hedera.ClientForName(os.Getenv("HEDERA_NETWORK"))
+	client, err = hiero.ClientForName(os.Getenv("HEDERA_NETWORK"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error creating client", err))
 	}
 	// Retrieving operator ID from environment variable OPERATOR_ID
-	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
+	operatorAccountID, err := hiero.AccountIDFromString(os.Getenv("OPERATOR_ID"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error converting string to AccountID", err))
 	}
 	// Retrieving operator key from environment variable OPERATOR_KEY
-	operatorKey, err := hedera.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
+	operatorKey, err := hiero.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error converting string to PrivateKey", err))
 	}
@@ -34,9 +34,9 @@ func main() {
 	updateImmutableTokenMetadata(client)
 }
 
-func updateMutableTokenMetadata(client *hedera.Client) {
+func updateMutableTokenMetadata(client *hiero.Client) {
 	// Create admin key
-	adminKey, err := hedera.PrivateKeyGenerateEd25519()
+	adminKey, err := hiero.PrivateKeyGenerateEd25519()
 	if err != nil {
 		panic(fmt.Sprintf("%v : error creating admin key", err))
 	}
@@ -46,11 +46,11 @@ func updateMutableTokenMetadata(client *hedera.Client) {
 	var newMetadata = []byte{3, 4, 5, 6}
 
 	// Create the token
-	tx, err := hedera.NewTokenCreateTransaction().
+	tx, err := hiero.NewTokenCreateTransaction().
 		SetTokenName("ffff").
 		SetTokenSymbol("F").
 		SetDecimals(3).
-		SetTokenType(hedera.TokenTypeFungibleCommon). // The same flow can be executed with a TokenTypeNonFungibleUnique (i.e. HIP-765)
+		SetTokenType(hiero.TokenTypeFungibleCommon). // The same flow can be executed with a TokenTypeNonFungibleUnique (i.e. HIP-765)
 		SetTokenMetadata(initialMetadata).
 		SetInitialSupply(1000000).
 		SetTreasuryAccountID(client.GetOperatorAccountID()).
@@ -72,7 +72,7 @@ func updateMutableTokenMetadata(client *hedera.Client) {
 	fmt.Println("created token: ", receipt.TokenID.String())
 
 	// Query the token info to get the metadata after creation
-	info, err := hedera.NewTokenInfoQuery().
+	info, err := hiero.NewTokenInfoQuery().
 		SetTokenID(*receipt.TokenID).
 		Execute(client)
 	if err != nil {
@@ -81,7 +81,7 @@ func updateMutableTokenMetadata(client *hedera.Client) {
 	fmt.Println("token's metadata after creation: ", info.Metadata)
 
 	// Update the token's metadata
-	tx1, err := hedera.NewTokenUpdateTransaction().
+	tx1, err := hiero.NewTokenUpdateTransaction().
 		SetTokenID(*receipt.TokenID).
 		SetTokenMetadata(newMetadata).
 		FreezeWith(client)
@@ -99,7 +99,7 @@ func updateMutableTokenMetadata(client *hedera.Client) {
 	}
 
 	// Query the token info to get the metadata after update
-	info, err = hedera.NewTokenInfoQuery().
+	info, err = hiero.NewTokenInfoQuery().
 		SetTokenID(*receipt.TokenID).
 		Execute(client)
 	if err != nil {
@@ -108,9 +108,9 @@ func updateMutableTokenMetadata(client *hedera.Client) {
 	fmt.Println("token's metadata after update: ", info.Metadata)
 }
 
-func updateImmutableTokenMetadata(client *hedera.Client) {
+func updateImmutableTokenMetadata(client *hiero.Client) {
 	// Create metadata key
-	metadataKey, err := hedera.PrivateKeyGenerateEd25519()
+	metadataKey, err := hiero.PrivateKeyGenerateEd25519()
 	if err != nil {
 		panic(fmt.Sprintf("%v : error creating admin key", err))
 	}
@@ -120,11 +120,11 @@ func updateImmutableTokenMetadata(client *hedera.Client) {
 	var newMetadata = []byte{3, 4, 5, 6}
 
 	// Create the token
-	resp, err := hedera.NewTokenCreateTransaction().
+	resp, err := hiero.NewTokenCreateTransaction().
 		SetTokenName("ffff").
 		SetTokenSymbol("F").
 		SetDecimals(3).
-		SetTokenType(hedera.TokenTypeFungibleCommon). // The same flow can be executed with a TokenTypeNonFungibleUnique (i.e. HIP-765)
+		SetTokenType(hiero.TokenTypeFungibleCommon). // The same flow can be executed with a TokenTypeNonFungibleUnique (i.e. HIP-765)
 		SetTokenMetadata(initialMetadata).
 		SetInitialSupply(1000000).
 		SetTreasuryAccountID(client.GetOperatorAccountID()).
@@ -142,7 +142,7 @@ func updateImmutableTokenMetadata(client *hedera.Client) {
 	fmt.Println("created token: ", receipt.TokenID.String())
 
 	// Query the token info to get the metadata after creation
-	info, err := hedera.NewTokenInfoQuery().
+	info, err := hiero.NewTokenInfoQuery().
 		SetTokenID(*receipt.TokenID).
 		Execute(client)
 	if err != nil {
@@ -151,7 +151,7 @@ func updateImmutableTokenMetadata(client *hedera.Client) {
 	fmt.Println("token's metadata after creation: ", info.Metadata)
 
 	// Update the token's metadata
-	tx, err := hedera.NewTokenUpdateTransaction().
+	tx, err := hiero.NewTokenUpdateTransaction().
 		SetTokenID(*receipt.TokenID).
 		SetTokenMetadata(newMetadata).
 		FreezeWith(client)
@@ -169,7 +169,7 @@ func updateImmutableTokenMetadata(client *hedera.Client) {
 	}
 
 	// Query the token info to get the metadata after update
-	info, err = hedera.NewTokenInfoQuery().
+	info, err = hiero.NewTokenInfoQuery().
 		SetTokenID(*receipt.TokenID).
 		Execute(client)
 	if err != nil {

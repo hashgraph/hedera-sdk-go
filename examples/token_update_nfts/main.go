@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/hashgraph/hedera-sdk-go/v2"
+	"github.com/hiero-ledger/hiero-sdk-go/v2"
 )
 
 /**
@@ -12,23 +12,23 @@ import (
  * @description Update nfts metadata of non-fungible token with metadata key
  */
 func main() {
-	var client *hedera.Client
+	var client *hiero.Client
 	var err error
 
 	// Retrieving network type from environment variable HEDERA_NETWORK
-	client, err = hedera.ClientForName(os.Getenv("HEDERA_NETWORK"))
+	client, err = hiero.ClientForName(os.Getenv("HEDERA_NETWORK"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error creating client", err))
 	}
 
 	// Retrieving operator ID from environment variable OPERATOR_ID
-	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
+	operatorAccountID, err := hiero.AccountIDFromString(os.Getenv("OPERATOR_ID"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error converting string to AccountID", err))
 	}
 
 	// Retrieving operator key from environment variable OPERATOR_KEY
-	operatorKey, err := hedera.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
+	operatorKey, err := hiero.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error converting string to PrivateKey", err))
 	}
@@ -36,7 +36,7 @@ func main() {
 	// Setting the client operator ID and key
 	client.SetOperator(operatorAccountID, operatorKey)
 
-	metadataKey, err := hedera.PrivateKeyGenerateEd25519()
+	metadataKey, err := hiero.PrivateKeyGenerateEd25519()
 	if err != nil {
 		panic(fmt.Sprintf("%v : error creating metadata key", err))
 	}
@@ -46,11 +46,11 @@ func main() {
 	var updatedMetadata = []byte{22, 22}
 
 	// Create token with metadata key
-	nftCreateTransaction, err := hedera.NewTokenCreateTransaction().
+	nftCreateTransaction, err := hiero.NewTokenCreateTransaction().
 		SetTokenName("HIP-542 Example Collection").SetTokenSymbol("HIP-542").
-		SetTokenType(hedera.TokenTypeNonFungibleUnique).SetDecimals(0).
+		SetTokenType(hiero.TokenTypeNonFungibleUnique).SetDecimals(0).
 		SetInitialSupply(0).SetMaxSupply(10).
-		SetTreasuryAccountID(client.GetOperatorAccountID()).SetSupplyType(hedera.TokenSupplyTypeFinite).
+		SetTreasuryAccountID(client.GetOperatorAccountID()).SetSupplyType(hiero.TokenSupplyTypeFinite).
 		SetAdminKey(operatorKey).SetFreezeKey(operatorKey).SetSupplyKey(operatorKey).SetMetadataKey(metadataKey).FreezeWith(client)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error creating token transaction", err))
@@ -59,7 +59,7 @@ func main() {
 	// Sign the transaction with the operator key
 	nftSignTransaction := nftCreateTransaction.Sign(operatorKey)
 
-	// Submit the transaction to the Hedera network
+	// Submit the transaction to the Hiero network
 	nftCreateSubmit, err := nftSignTransaction.Execute(client)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error submitting transaction", err))
@@ -75,14 +75,14 @@ func main() {
 	nftTokenID := *nftCreateReceipt.TokenID
 	fmt.Println("Created NFT with token id: ", nftTokenID)
 
-	tokenInfo, err := hedera.NewTokenInfoQuery().SetTokenID(nftTokenID).Execute(client)
+	tokenInfo, err := hiero.NewTokenInfoQuery().SetTokenID(nftTokenID).Execute(client)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error getting token info", err))
 	}
 	fmt.Println("Token metadata key: ", tokenInfo.MetadataKey.String())
 
 	// Mint nfts
-	mintTransaction, _ := hedera.NewTokenMintTransaction().SetTokenID(nftTokenID).SetMetadatas(initialMetadataList).FreezeWith(client)
+	mintTransaction, _ := hiero.NewTokenMintTransaction().SetTokenID(nftTokenID).SetMetadatas(initialMetadataList).FreezeWith(client)
 	for _, v := range mintTransaction.GetMetadatas() {
 		fmt.Println("Set metadata: ", v)
 	}
@@ -101,8 +101,8 @@ func main() {
 	fmt.Println(serials)
 	var metadataAfterMint = make([][]byte, len(initialMetadataList))
 	for i, v := range serials {
-		nftID := hedera.NftID{TokenID: nftTokenID, SerialNumber: v}
-		nftInfo, err := hedera.NewTokenNftInfoQuery().SetNftID(nftID).Execute(client)
+		nftID := hiero.NftID{TokenID: nftTokenID, SerialNumber: v}
+		nftInfo, err := hiero.NewTokenNftInfoQuery().SetNftID(nftID).Execute(client)
 		if err != nil {
 			panic(fmt.Sprintf("%v : error getting token info", err))
 		}
@@ -112,7 +112,7 @@ func main() {
 	fmt.Println("Metadata after mint: ", metadataAfterMint)
 
 	// Create account owner of nft
-	accountCreateTransaction, err := hedera.NewAccountCreateTransaction().
+	accountCreateTransaction, err := hiero.NewAccountCreateTransaction().
 		SetKey(operatorKey).SetMaxAutomaticTokenAssociations(10). // If the account does not have any automatic token association slots open ONLY then associate the NFT to the account
 		Execute(client)
 	if err != nil {
@@ -125,7 +125,7 @@ func main() {
 	newAccountId := receipt.AccountID
 
 	// Transfer the NFT to the new account
-	tokenTransferTransaction, err := hedera.NewTransferTransaction().AddNftTransfer(nftTokenID.Nft(serials[0]), operatorAccountID, *newAccountId).Execute(client)
+	tokenTransferTransaction, err := hiero.NewTransferTransaction().AddNftTransfer(nftTokenID.Nft(serials[0]), operatorAccountID, *newAccountId).Execute(client)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error transfering nft", err))
 	}
@@ -135,7 +135,7 @@ func main() {
 	}
 
 	// update nfts metadata
-	metadataUpdateTransaction, err := hedera.NewTokenUpdateNftsTransaction().
+	metadataUpdateTransaction, err := hiero.NewTokenUpdateNftsTransaction().
 		SetTokenID(nftTokenID).
 		SetSerialNumbers(serials).
 		SetMetadata(updatedMetadata).
@@ -157,8 +157,8 @@ func main() {
 
 	// Check that metadata for the NFT was updated correctly
 	for _, v := range serials {
-		nftID := hedera.NftID{TokenID: nftTokenID, SerialNumber: v}
-		nftInfo, err := hedera.NewTokenNftInfoQuery().SetNftID(nftID).Execute(client)
+		nftID := hiero.NftID{TokenID: nftTokenID, SerialNumber: v}
+		nftInfo, err := hiero.NewTokenNftInfoQuery().SetNftID(nftID).Execute(client)
 		if err != nil {
 			panic(fmt.Sprintf("%v : error getting token info", err))
 		}

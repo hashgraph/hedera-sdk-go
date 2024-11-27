@@ -1,5 +1,7 @@
 package param
 
+// SPDX-License-Identifier: Apache-2.0
+
 type CustomFee struct {
 	FeeCollectorAccountId string         `json:"feeCollectorAccountId"`
 	FeeCollectorsExempt   *bool          `json:"feeCollectorsExempt"`

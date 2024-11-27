@@ -1,7 +1,7 @@
 //go:build all || e2e
 // +build all e2e
 
-package hedera
+package hiero
 
 import (
 	"testing"

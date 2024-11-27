@@ -1,5 +1,7 @@
 package param
 
+// SPDX-License-Identifier: Apache-2.0
+
 type CreateTokenParams struct {
 	Name                    *string                  `json:"name,omitempty"`
 	Symbol                  *string                  `json:"symbol,omitempty"`

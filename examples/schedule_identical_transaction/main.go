@@ -4,27 +4,27 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/hashgraph/hedera-sdk-go/v2"
+	"github.com/hiero-ledger/hiero-sdk-go/v2"
 )
 
 func main() {
-	var client *hedera.Client
+	var client *hiero.Client
 	var err error
 
 	// Retrieving network type from environment variable HEDERA_NETWORK
-	client, err = hedera.ClientForName(os.Getenv("HEDERA_NETWORK"))
+	client, err = hiero.ClientForName(os.Getenv("HEDERA_NETWORK"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error creating client", err))
 	}
 
 	// Retrieving operator ID from environment variable OPERATOR_ID
-	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
+	operatorAccountID, err := hiero.AccountIDFromString(os.Getenv("OPERATOR_ID"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error converting string to AccountID", err))
 	}
 
 	// Retrieving operator key from environment variable OPERATOR_KEY
-	operatorKey, err := hedera.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
+	operatorKey, err := hiero.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error converting string to PrivateKey", err))
 	}
@@ -32,18 +32,18 @@ func main() {
 	// Setting the client operator ID and key
 	client.SetOperator(operatorAccountID, operatorKey)
 
-	pubKeys := make([]hedera.PublicKey, 3)
-	clients := make([]*hedera.Client, 3)
-	accounts := make([]hedera.AccountID, 3)
+	pubKeys := make([]hiero.PublicKey, 3)
+	clients := make([]*hiero.Client, 3)
+	accounts := make([]hiero.AccountID, 3)
 
 	fmt.Println("threshold key example")
 	fmt.Println("Keys: ")
 
-	var scheduleID *hedera.ScheduleID
+	var scheduleID *hiero.ScheduleID
 
 	// Loop to generate keys, clients, and accounts
 	for i := range pubKeys {
-		newKey, err := hedera.GeneratePrivateKey()
+		newKey, err := hiero.GeneratePrivateKey()
 		if err != nil {
 			panic(fmt.Sprintf("%v : error generating PrivateKey", err))
 		}
@@ -54,11 +54,11 @@ func main() {
 
 		pubKeys[i] = newKey.PublicKey()
 
-		createResponse, err := hedera.NewAccountCreateTransaction().
+		createResponse, err := hiero.NewAccountCreateTransaction().
 			// The key that must sign each transfer out of the account. If receiverSigRequired is true, then
 			// it must also sign any transfer into the account.
 			SetKey(newKey).
-			SetInitialBalance(hedera.NewHbar(1)).
+			SetInitialBalance(hiero.NewHbar(1)).
 			Execute(client)
 		if err != nil {
 			panic(fmt.Sprintf("%v : error creating account", err))
@@ -70,7 +70,7 @@ func main() {
 			panic(fmt.Sprintf("%v : error getting receipt 1", err))
 		}
 
-		newClient, err := hedera.ClientForName(os.Getenv("HEDERA_NETWORK"))
+		newClient, err := hiero.ClientForName(os.Getenv("HEDERA_NETWORK"))
 		if err != nil {
 			panic(fmt.Sprintf("%v : error creating client", err))
 		}
@@ -84,16 +84,16 @@ func main() {
 
 	// A threshold key with a threshold of 2 and length of 3 requires
 	// at least 2 of the 3 keys to sign anything modifying the account
-	keyList := hedera.KeyListWithThreshold(2).
+	keyList := hiero.KeyListWithThreshold(2).
 		AddAllPublicKeys(pubKeys)
 
 	// We are using all of these keys, so the scheduled transaction doesn't automatically go through
 	// It works perfectly fine with just one key
-	createResponse, err := hedera.NewAccountCreateTransaction().
+	createResponse, err := hiero.NewAccountCreateTransaction().
 		// The key that must sign each transfer out of the account. If receiverSigRequired is true, then
 		// it must also sign any transfer into the account.
 		SetKey(keyList).
-		SetInitialBalance(hedera.NewHbar(10)).
+		SetInitialBalance(hiero.NewHbar(10)).
 		Execute(client)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error executing create account transaction", err))
@@ -113,11 +113,11 @@ func main() {
 
 		// Each client creates an identical transaction, sending 1 hbar to each of the created accounts,
 		// sent from the threshold Account
-		tx := hedera.NewTransferTransaction()
+		tx := hiero.NewTransferTransaction()
 		for _, account := range accounts {
-			tx.AddHbarTransfer(account, hedera.NewHbar(1))
+			tx.AddHbarTransfer(account, hiero.NewHbar(1))
 		}
-		tx.AddHbarTransfer(thresholdAccount, hedera.NewHbar(3).Negated())
+		tx.AddHbarTransfer(thresholdAccount, hiero.NewHbar(3).Negated())
 
 		tx, err := tx.FreezeWith(client)
 		if err != nil {
@@ -129,7 +129,7 @@ func main() {
 			panic(fmt.Sprintf("%v : error while signing with operator client ", operator))
 		}
 
-		scheduledTx, err := hedera.NewScheduleCreateTransaction().
+		scheduledTx, err := hiero.NewScheduleCreateTransaction().
 			SetScheduledTransaction(signedTransaction)
 		if err != nil {
 			panic(fmt.Sprintf("%v : error while setting scheduled transaction with operator client", operator))
@@ -143,9 +143,9 @@ func main() {
 			panic(fmt.Sprintf("%v : error while executing schedule create transaction with operator", operator))
 		}
 
-		receipt, err := hedera.NewTransactionReceiptQuery().
+		receipt, err := hiero.NewTransactionReceiptQuery().
 			SetTransactionID(response.TransactionID).
-			SetNodeAccountIDs([]hedera.AccountID{response.NodeID}).
+			SetNodeAccountIDs([]hiero.AccountID{response.NodeID}).
 			Execute(client)
 		if err != nil {
 			panic(fmt.Sprintf("%v : error while getting schedule create receipt transaction with operator", operator))
@@ -159,13 +159,13 @@ func main() {
 		}
 
 		if scheduleID.String() != receipt.ScheduleID.String() {
-			panic("invalid generated schedule id, expected " + scheduleID.String() + ", got "+ receipt.ScheduleID.String())
+			panic("invalid generated schedule id, expected " + scheduleID.String() + ", got " + receipt.ScheduleID.String())
 		}
 
 		// If the status return by the receipt is related to already created, execute a schedule sign transaction
-		if receipt.Status == hedera.StatusIdenticalScheduleAlreadyCreated {
-			signTransaction, err := hedera.NewScheduleSignTransaction().
-				SetNodeAccountIDs([]hedera.AccountID{createResponse.NodeID}).
+		if receipt.Status == hiero.StatusIdenticalScheduleAlreadyCreated {
+			signTransaction, err := hiero.NewScheduleSignTransaction().
+				SetNodeAccountIDs([]hiero.AccountID{createResponse.NodeID}).
 				SetScheduleID(*receipt.ScheduleID).
 				Execute(client)
 
@@ -183,9 +183,9 @@ func main() {
 	}
 
 	// Making sure the scheduled transaction executed properly with schedule info query
-	info, err := hedera.NewScheduleInfoQuery().
+	info, err := hiero.NewScheduleInfoQuery().
 		SetScheduleID(*scheduleID).
-		SetNodeAccountIDs([]hedera.AccountID{createResponse.NodeID}).
+		SetNodeAccountIDs([]hiero.AccountID{createResponse.NodeID}).
 		Execute(client)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error retrieving schedule info after signing", err))
@@ -195,7 +195,7 @@ func main() {
 	if !info.ExecutedAt.IsZero() {
 		println("Signing success, signed at: ", info.ExecutedAt.String())
 		println("Signatories: ", info.Signatories.String())
-	}else{
+	} else {
 		panic("Signing failed")
 	}
 }

@@ -1,7 +1,7 @@
-package hedera
+package hiero
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
+	"github.com/hiero-ledger/hiero-sdk-go/v2/proto/services"
 
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
