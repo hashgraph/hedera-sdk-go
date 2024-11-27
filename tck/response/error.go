@@ -2,7 +2,7 @@ package response
 
 import (
 	"github.com/creachadair/jrpc2"
-	"github.com/hashgraph/hedera-sdk-go/v2"
+	"github.com/hiero-ledger/hiero-sdk-go/v2"
 )
 
 // see https://json-rpc.readthedocs.io/en/latest/exceptions.html
@@ -15,7 +15,7 @@ const (
 var (
 	InvalidParams = jrpc2.Errorf(InvalidParamsCode, "Invalid params")
 	InternalError = jrpc2.Errorf(jrpc2.InternalError, "Internal error")
-	HederaError   = jrpc2.Errorf(HederaErrorCode, "Hedera error")
+	HederaError   = jrpc2.Errorf(HederaErrorCode, "Hiero error")
 )
 
 type ErrorData struct {
@@ -23,10 +23,10 @@ type ErrorData struct {
 	Message string `json:"message"`
 }
 
-func NewHederaReceiptError(err hedera.ErrHederaReceiptStatus) error {
+func NewHederaReceiptError(err hiero.ErrHederaReceiptStatus) error {
 	return HederaError.WithData(&ErrorData{Status: err.Status.String(), Message: err.Error()})
 }
 
-func NewHederaPrecheckError(err hedera.ErrHederaPreCheckStatus) error {
+func NewHederaPrecheckError(err hiero.ErrHederaPreCheckStatus) error {
 	return HederaError.WithData(&ErrorData{Status: err.Status.String(), Message: err.Error()})
 }

@@ -4,27 +4,27 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/hashgraph/hedera-sdk-go/v2"
+	"github.com/hiero-ledger/hiero-sdk-go/v2"
 )
 
 func main() {
-	var client *hedera.Client
+	var client *hiero.Client
 	var err error
 
 	// Retrieving network type from environment variable HEDERA_NETWORK
-	client, err = hedera.ClientForName(os.Getenv("HEDERA_NETWORK"))
+	client, err = hiero.ClientForName(os.Getenv("HEDERA_NETWORK"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error creating client", err))
 	}
 
 	// Retrieving operator ID from environment variable OPERATOR_ID
-	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
+	operatorAccountID, err := hiero.AccountIDFromString(os.Getenv("OPERATOR_ID"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error converting string to AccountID", err))
 	}
 
 	// Retrieving operator key from environment variable OPERATOR_KEY
-	operatorKey, err := hedera.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
+	operatorKey, err := hiero.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error converting string to PrivateKey", err))
 	}
@@ -34,12 +34,12 @@ func main() {
 	client.SetOperator(operatorAccountID, operatorKey)
 
 	/*
-	 * Hedera supports a form of auto account creation.
+	 * Hiero supports a form of auto account creation.
 	 *
 	 * You can "create" an account by generating a private key, and then deriving the public key,
-	 * without any need to interact with the Hedera network.  The public key more or less acts as the user's
+	 * without any need to interact with the Hiero network.  The public key more or less acts as the user's
 	 * account ID.  This public key is an account's aliasKey: a public key that aliases (or will eventually alias)
-	 * to a Hedera account.
+	 * to a Hiero account.
 	 *
 	 * An AccountId takes one of two forms: a normal AccountId with a null aliasKey member takes the form 0.0.123,
 	 * while an account ID with a non-null aliasKey member takes the form
@@ -51,14 +51,14 @@ func main() {
 	 * transactions, however most queries and transactions involving such an AccountId won't work until Hbar has
 	 * been transferred to the aliasKey account.
 	 *
-	 * There is no record in the Hedera network of an account associated with a given aliasKey
+	 * There is no record in the Hiero network of an account associated with a given aliasKey
 	 * until an amount of Hbar is transferred to the account.  The moment that Hbar is transferred to that aliasKey
-	 * AccountId is the moment that that account actually begins to exist in the Hedera ledger.
+	 * AccountId is the moment that that account actually begins to exist in the Hiero ledger.
 	 */
 
 	println("Creating a new account")
 
-	key, err := hedera.GeneratePrivateKey()
+	key, err := hiero.GeneratePrivateKey()
 	if err != nil {
 		panic(fmt.Sprintf("%v : error generating private key", err))
 	}
@@ -83,15 +83,15 @@ func main() {
 	*
 	* If the shard and realm are known, you may use PublicKeyFromString() then PublicKey.toAccountId() to construct the
 	* aliasKey AccountID
-	* fromStr, err := hedera.AccountIDFromString("0.0.302a300506032b6570032100114e6abc371b82dab5c15ea149f02d34a012087b163516dd70f44acafabf7777")
-	* publicKey2, err := hedera.PublicKeyFromString("302a300506032b6570032100114e6abc371b82dab5c15ea149f02d34a012087b163516dd70f44acafabf7777")
+	* fromStr, err := hiero.AccountIDFromString("0.0.302a300506032b6570032100114e6abc371b82dab5c15ea149f02d34a012087b163516dd70f44acafabf7777")
+	* publicKey2, err := hiero.PublicKeyFromString("302a300506032b6570032100114e6abc371b82dab5c15ea149f02d34a012087b163516dd70f44acafabf7777")
 	* fromKeyString := publicKey2.ToAccountID(0,0)
 	 */
 
 	println("Transferring some Hbar to the new account")
-	resp, err := hedera.NewTransferTransaction().
-		AddHbarTransfer(client.GetOperatorAccountID(), hedera.NewHbar(1).Negated()).
-		AddHbarTransfer(*aliasAccountID, hedera.NewHbar(1)).
+	resp, err := hiero.NewTransferTransaction().
+		AddHbarTransfer(client.GetOperatorAccountID(), hiero.NewHbar(1).Negated()).
+		AddHbarTransfer(*aliasAccountID, hiero.NewHbar(1)).
 		Execute(client)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error executing transfer transaction", err))
@@ -106,7 +106,7 @@ func main() {
 		panic(fmt.Sprintf("%v : error getting transfer transaction receipt", err))
 	}
 
-	balance, err := hedera.NewAccountBalanceQuery().
+	balance, err := hiero.NewAccountBalanceQuery().
 		SetAccountID(*aliasAccountID).
 		Execute(client)
 	if err != nil {
@@ -115,7 +115,7 @@ func main() {
 
 	println("Balance of the new account:", balance.Hbars.String())
 
-	info, err := hedera.NewAccountInfoQuery().
+	info, err := hiero.NewAccountInfoQuery().
 		SetAccountID(*aliasAccountID).
 		Execute(client)
 	if err != nil {

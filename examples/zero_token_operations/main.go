@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/hashgraph/hedera-sdk-go/v2"
-	"github.com/hashgraph/hedera-sdk-go/v2/examples/contract_helper"
+	"github.com/hiero-ledger/hiero-sdk-go/v2"
+	"github.com/hiero-ledger/hiero-sdk-go/v2/examples/contract_helper"
 )
 
 type Contract struct {
@@ -16,22 +16,22 @@ type Contract struct {
 // Steps 1-5 are executed through ContractHelper and calling HIP564Example Contract.
 // Step 6 is executed through the SDK
 func main() {
-	var client *hedera.Client
+	var client *hiero.Client
 	var err error
 	var contract Contract
 	// Retrieving network type from environment variable HEDERA_NETWORK, i.e. testnet
-	client, err = hedera.ClientForName(os.Getenv("HEDERA_NETWORK"))
+	client, err = hiero.ClientForName(os.Getenv("HEDERA_NETWORK"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error creating client", err))
 	}
 
 	//Grab your testnet account ID and private key from the environment variable
-	myAccountId, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
+	myAccountId, err := hiero.AccountIDFromString(os.Getenv("OPERATOR_ID"))
 	if err != nil {
 		panic(err)
 	}
 
-	myPrivateKey, err := hedera.PrivateKeyFromStringEd25519(os.Getenv("OPERATOR_KEY"))
+	myPrivateKey, err := hiero.PrivateKeyFromStringEd25519(os.Getenv("OPERATOR_KEY"))
 	if err != nil {
 		panic(err)
 	}
@@ -42,7 +42,7 @@ func main() {
 
 	client.SetOperator(myAccountId, myPrivateKey)
 	//Generate new keys for the account you will create
-	alicePrivateKey, err := hedera.PrivateKeyGenerateEd25519()
+	alicePrivateKey, err := hiero.PrivateKeyGenerateEd25519()
 	if err != nil {
 		panic(err)
 	}
@@ -50,9 +50,9 @@ func main() {
 	newAccountPublicKey := alicePrivateKey.PublicKey()
 
 	//Create new account and assign the public key
-	aliceAccount, err := hedera.NewAccountCreateTransaction().
+	aliceAccount, err := hiero.NewAccountCreateTransaction().
 		SetKey(newAccountPublicKey).
-		SetInitialBalance(hedera.HbarFrom(1000, hedera.HbarUnits.Tinybar)).
+		SetInitialBalance(hiero.HbarFrom(1000, hiero.HbarUnits.Tinybar)).
 		Execute(client)
 	if err != nil {
 		panic(err)
@@ -67,11 +67,11 @@ func main() {
 	aliceAccountId := *receipt.AccountID
 	fmt.Println("aliceAcountid is: ", aliceAccountId)
 	//Transfer hbar from your testnet account to the new account
-	transaction := hedera.NewTransferTransaction().
-		AddHbarTransfer(myAccountId, hedera.HbarFrom(-1000, hedera.HbarUnits.Tinybar)).
-		AddHbarTransfer(aliceAccountId, hedera.HbarFrom(1000, hedera.HbarUnits.Tinybar))
+	transaction := hiero.NewTransferTransaction().
+		AddHbarTransfer(myAccountId, hiero.HbarFrom(-1000, hiero.HbarUnits.Tinybar)).
+		AddHbarTransfer(aliceAccountId, hiero.HbarFrom(1000, hiero.HbarUnits.Tinybar))
 
-	//Submit the transaction to a Hedera network
+	//Submit the transaction to a Hiero network
 	transaction.Execute(client)
 
 	rawContract, err := os.ReadFile("../precompile_example/ZeroTokenOperations.json")
@@ -83,7 +83,7 @@ func main() {
 	if err != nil {
 		panic(fmt.Sprintf("%v : error unmarshaling the json file", err))
 	}
-	params, err := hedera.NewContractFunctionParameters().AddAddress(myAccountId.ToSolidityAddress())
+	params, err := hiero.NewContractFunctionParameters().AddAddress(myAccountId.ToSolidityAddress())
 	if err != nil {
 		panic(fmt.Sprintf("%v : error adding first address to contract function parameters", err))
 	}
@@ -93,10 +93,10 @@ func main() {
 	}
 
 	helper := contract_helper.NewContractHelper([]byte(contract.Bytecode), *params, client)
-	helper.SetPayableAmountForStep(0, hedera.NewHbar(20)).AddSignerForStep(1, alicePrivateKey)
+	helper.SetPayableAmountForStep(0, hiero.NewHbar(20)).AddSignerForStep(1, alicePrivateKey)
 
-	keyList := hedera.KeyListWithThreshold(1).Add(myPrivateKey.PublicKey()).Add(helper.ContractID)
-	frozenTxn, err := hedera.NewAccountUpdateTransaction().SetAccountID(myAccountId).SetKey(keyList).FreezeWith(client)
+	keyList := hiero.KeyListWithThreshold(1).Add(myPrivateKey.PublicKey()).Add(helper.ContractID)
+	frozenTxn, err := hiero.NewAccountUpdateTransaction().SetAccountID(myAccountId).SetKey(keyList).FreezeWith(client)
 	if err != nil {
 		panic(err)
 	}
@@ -108,9 +108,9 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	keyList = hedera.KeyListWithThreshold(1).Add(alicePrivateKey.PublicKey()).Add(helper.ContractID)
+	keyList = hiero.KeyListWithThreshold(1).Add(alicePrivateKey.PublicKey()).Add(helper.ContractID)
 
-	frozenTxn, err = hedera.NewAccountUpdateTransaction().SetAccountID(aliceAccountId).SetKey(keyList).FreezeWith(client)
+	frozenTxn, err = hiero.NewAccountUpdateTransaction().SetAccountID(aliceAccountId).SetKey(keyList).FreezeWith(client)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error updating alice's account", err))
 	}
@@ -128,7 +128,7 @@ func main() {
 	// if err != nil {
 	// 	panic(fmt.Sprintf("%v : error in helper", err))
 	// }
-	transactionResponse, err := hedera.NewTokenCreateTransaction().
+	transactionResponse, err := hiero.NewTokenCreateTransaction().
 		SetTokenName("Black Sea LimeChain Token").
 		SetTokenSymbol("BSL").
 		SetTreasuryAccountID(myAccountId).
@@ -153,10 +153,10 @@ func main() {
 	fmt.Printf("token = %v\n", tokenID.String())
 
 	// Associating the token with the second account, so it can interact with the token
-	associatingTransaction, err := hedera.NewTokenAssociateTransaction().
+	associatingTransaction, err := hiero.NewTokenAssociateTransaction().
 		// The account ID to be associated
 		SetAccountID(aliceAccountId).
-		SetNodeAccountIDs([]hedera.AccountID{transactionResponse.NodeID}).
+		SetNodeAccountIDs([]hiero.AccountID{transactionResponse.NodeID}).
 		// The token ID that the account will be associated to
 		SetTokenIDs(tokenID).
 		FreezeWith(client)
@@ -180,7 +180,7 @@ func main() {
 	fmt.Printf("Associated account %v with token %v\n", aliceAccountId.String(), tokenID.String())
 
 	// Transfer 0 tokens
-	transactionResponse, err = hedera.NewTransferTransaction().
+	transactionResponse, err = hiero.NewTransferTransaction().
 		AddTokenTransfer(tokenID, myAccountId, 0).AddTokenTransfer(tokenID, aliceAccountId, 0).Execute(client)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error transfering token", err))

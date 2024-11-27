@@ -1,27 +1,9 @@
 //go:build all || unit
 // +build all unit
 
-package hedera
+package hiero
 
-/*-
- *
- * Hedera Go SDK
- *
- * Copyright (C) 2020 - 2024 Hedera Hashgraph, LLC
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import (
 	"bytes"
@@ -29,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
+	"github.com/hiero-ledger/hiero-sdk-go/v2/proto/services"
 	protobuf "google.golang.org/protobuf/proto"
 
 	"github.com/stretchr/testify/assert"
@@ -118,9 +100,9 @@ func TestUnitContractCreateTransactionMock(t *testing.T) {
 
 		if bod, ok := transactionBody.Data.(*services.TransactionBody_ContractCreateInstance); ok {
 			require.Equal(t, bod.ContractCreateInstance.InitcodeSource.(*services.ContractCreateTransactionBody_FileID).FileID.FileNum, int64(123))
-			params := NewContractFunctionParameters().AddString("hello from hedera")
+			params := NewContractFunctionParameters().AddString("hello from hiero")
 			require.Equal(t, bytes.Compare(bod.ContractCreateInstance.ConstructorParameters, params._Build(nil)), 0)
-			require.Equal(t, bod.ContractCreateInstance.Memo, "hedera-sdk-go::TestContractCreateTransaction_Execute")
+			require.Equal(t, bod.ContractCreateInstance.Memo, "hiero-sdk-go::TestContractCreateTransaction_Execute")
 			require.Equal(t, bod.ContractCreateInstance.Gas, int64(100000))
 			require.Equal(t, hex.EncodeToString(bod.ContractCreateInstance.AdminKey.GetEd25519()), key.PublicKey().StringRaw())
 		}
@@ -140,9 +122,9 @@ func TestUnitContractCreateTransactionMock(t *testing.T) {
 		SetAdminKey(client.GetOperatorPublicKey()).
 		SetNodeAccountIDs([]AccountID{{Account: 3}}).
 		SetGas(100000).
-		SetConstructorParameters(NewContractFunctionParameters().AddString("hello from hedera")).
+		SetConstructorParameters(NewContractFunctionParameters().AddString("hello from hiero")).
 		SetBytecodeFileID(FileID{File: 123}).
-		SetContractMemo("hedera-sdk-go::TestContractCreateTransaction_Execute").
+		SetContractMemo("hiero-sdk-go::TestContractCreateTransaction_Execute").
 		Execute(client)
 	require.NoError(t, err)
 }

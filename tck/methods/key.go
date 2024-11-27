@@ -5,10 +5,10 @@ import (
 	"encoding/hex"
 	"errors"
 
-	"github.com/hashgraph/hedera-sdk-go/tck/param"
-	"github.com/hashgraph/hedera-sdk-go/tck/response"
-	"github.com/hashgraph/hedera-sdk-go/tck/utils"
-	"github.com/hashgraph/hedera-sdk-go/v2"
+	"github.com/hiero-ledger/hiero-sdk-go/tck/param"
+	"github.com/hiero-ledger/hiero-sdk-go/tck/response"
+	"github.com/hiero-ledger/hiero-sdk-go/tck/utils"
+	"github.com/hiero-ledger/hiero-sdk-go/v2"
 )
 
 // GenerateKey generates key based on provided key params
@@ -47,10 +47,10 @@ func processKeyRecursively(params param.KeyParams, response *response.GenerateKe
 	case param.ED25519_PRIVATE_KEY, param.ECDSA_SECP256K1_PRIVATE_KEY:
 		var privateKey string
 		if params.Type == param.ED25519_PRIVATE_KEY {
-			pk, _ := hedera.PrivateKeyGenerateEd25519()
+			pk, _ := hiero.PrivateKeyGenerateEd25519()
 			privateKey = pk.StringDer()
 		} else {
-			pk, _ := hedera.PrivateKeyGenerateEcdsa()
+			pk, _ := hiero.PrivateKeyGenerateEcdsa()
 			privateKey = pk.StringDer()
 		}
 		if isList {
@@ -62,22 +62,22 @@ func processKeyRecursively(params param.KeyParams, response *response.GenerateKe
 		var publicKey, privateKey string
 
 		setKeysFromKey := func(fromKey string, isEd25519 bool) {
-			var pk hedera.PrivateKey
+			var pk hiero.PrivateKey
 			if isEd25519 {
-				pk, _ = hedera.PrivateKeyFromStringEd25519(fromKey)
+				pk, _ = hiero.PrivateKeyFromStringEd25519(fromKey)
 			} else {
-				pk, _ = hedera.PrivateKeyFromStringECDSA(fromKey)
+				pk, _ = hiero.PrivateKeyFromStringECDSA(fromKey)
 			}
 			privateKey = pk.StringDer()
 			publicKey = pk.PublicKey().StringDer()
 		}
 
 		generateKeys := func(isEd25519 bool) {
-			var pk hedera.PrivateKey
+			var pk hiero.PrivateKey
 			if isEd25519 {
-				pk, _ = hedera.PrivateKeyGenerateEd25519()
+				pk, _ = hiero.PrivateKeyGenerateEd25519()
 			} else {
-				pk, _ = hedera.PrivateKeyGenerateEcdsa()
+				pk, _ = hiero.PrivateKeyGenerateEcdsa()
 			}
 			privateKey = pk.StringDer()
 			publicKey = pk.PublicKey().StringDer()
@@ -98,7 +98,7 @@ func processKeyRecursively(params param.KeyParams, response *response.GenerateKe
 		return publicKey, nil
 
 	case param.LIST_KEY, param.THRESHOLD_KEY:
-		keyList := hedera.NewKeyList()
+		keyList := hiero.NewKeyList()
 		for _, keyParams := range *params.Keys {
 			keyStr, err := processKeyRecursively(keyParams, response, true)
 			if err != nil {
@@ -114,7 +114,7 @@ func processKeyRecursively(params param.KeyParams, response *response.GenerateKe
 			keyList.SetThreshold(*params.Threshold)
 		}
 
-		keyListBytes, err := hedera.KeyToBytes(keyList)
+		keyListBytes, err := hiero.KeyToBytes(keyList)
 		if err != nil {
 			return "", err
 		}
@@ -127,18 +127,18 @@ func processKeyRecursively(params param.KeyParams, response *response.GenerateKe
 			if err != nil {
 				return "", err
 			}
-			publicKey, ok := key.(hedera.PublicKey)
+			publicKey, ok := key.(hiero.PublicKey)
 			if ok {
 				return publicKey.ToEthereumAddress(), nil
 			}
 
-			privateKey, ok := key.(hedera.PrivateKey)
+			privateKey, ok := key.(hiero.PrivateKey)
 			if ok {
 				return privateKey.PublicKey().ToEthereumAddress(), nil
 			}
 			return "", errors.New("invalid parameters: fromKey for evmAddress is not ECDSAsecp256k1")
 		}
-		privateKey, err := hedera.PrivateKeyGenerateEcdsa()
+		privateKey, err := hiero.PrivateKeyGenerateEcdsa()
 		if err != nil {
 			return "", err
 		}

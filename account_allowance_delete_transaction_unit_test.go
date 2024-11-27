@@ -1,13 +1,13 @@
 //go:build all || unit
 // +build all unit
 
-package hedera
+package hiero
 
 import (
 	"testing"
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
+	"github.com/hiero-ledger/hiero-sdk-go/v2/proto/services"
 
 	"github.com/stretchr/testify/require"
 	protobuf "google.golang.org/protobuf/proto"

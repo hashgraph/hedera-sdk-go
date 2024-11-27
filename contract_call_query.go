@@ -1,36 +1,18 @@
-package hedera
+package hiero
 
-/*-
- *
- * Hedera Go SDK
- *
- * Copyright (C) 2020 - 2024 Hedera Hashgraph, LLC
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
+	"github.com/hiero-ledger/hiero-sdk-go/v2/proto/services"
 )
 
 // ContractCallQuery calls a function of the given smart contract instance, giving it ContractFunctionParameters as its
 // inputs. It will consume the entire given amount of gas.
 //
 // This is performed locally on the particular _Node that the client is communicating with. It cannot change the state of
-// the contract instance (and so, cannot spend anything from the instance's Hedera account). It will not have a
+// the contract instance (and so, cannot spend anything from the instance's Hiero account). It will not have a
 // consensus timestamp. It cannot generate a record or a receipt. This is useful for calling getter functions, which
 // purely read the state and don't change it. It is faster and cheaper than a ContractExecuteTransaction, because it is
 // purely local to a single  _Node.
@@ -78,7 +60,7 @@ func (q *ContractCallQuery) GetContractID() ContractID {
 // SetSenderID
 // The account that is the "sender." If not present it is the accountId from the transactionId.
 // Typically a different value than specified in the transactionId requires a valid signature
-// over either the hedera transaction or foreign transaction data.
+// over either the hiero transaction or foreign transaction data.
 func (q *ContractCallQuery) SetSenderID(id AccountID) *ContractCallQuery {
 	q.senderID = &id
 	return q

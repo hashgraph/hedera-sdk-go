@@ -4,13 +4,13 @@ import (
 	"context"
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/tck/param"
-	"github.com/hashgraph/hedera-sdk-go/tck/response"
-	"github.com/hashgraph/hedera-sdk-go/tck/utils"
-	"github.com/hashgraph/hedera-sdk-go/v2"
+	"github.com/hiero-ledger/hiero-sdk-go/tck/param"
+	"github.com/hiero-ledger/hiero-sdk-go/tck/response"
+	"github.com/hiero-ledger/hiero-sdk-go/tck/utils"
+	"github.com/hiero-ledger/hiero-sdk-go/v2"
 )
 
-// ---- Struct to hold hedera.Client implementation and to implement the methods of the specification ----
+// ---- Struct to hold hiero.Client implementation and to implement the methods of the specification ----
 type AccountService struct {
 	sdkService *SDKService
 }
@@ -25,7 +25,7 @@ func (a *AccountService) SetSdkService(service *SDKService) {
 
 // CreateAccount jRPC method for createAccount
 func (a *AccountService) CreateAccount(_ context.Context, accountCreateParams param.CreateAccountParams) (*response.AccountResponse, error) {
-	transaction := hedera.NewAccountCreateTransaction().SetGrpcDeadline(&threeSecondsDuration)
+	transaction := hiero.NewAccountCreateTransaction().SetGrpcDeadline(&threeSecondsDuration)
 
 	if accountCreateParams.Key != nil {
 		key, err := utils.GetKeyFromString(*accountCreateParams.Key)
@@ -35,7 +35,7 @@ func (a *AccountService) CreateAccount(_ context.Context, accountCreateParams pa
 		transaction.SetKey(key)
 	}
 	if accountCreateParams.InitialBalance != nil {
-		transaction.SetInitialBalance(hedera.HbarFromTinybar(*accountCreateParams.InitialBalance))
+		transaction.SetInitialBalance(hiero.HbarFromTinybar(*accountCreateParams.InitialBalance))
 	}
 	if accountCreateParams.ReceiverSignatureRequired != nil {
 		transaction.SetReceiverSignatureRequired(*accountCreateParams.ReceiverSignatureRequired)
@@ -44,7 +44,7 @@ func (a *AccountService) CreateAccount(_ context.Context, accountCreateParams pa
 		transaction.SetMaxAutomaticTokenAssociations(*accountCreateParams.MaxAutomaticTokenAssociations)
 	}
 	if accountCreateParams.StakedAccountId != nil {
-		accountId, err := hedera.AccountIDFromString(*accountCreateParams.StakedAccountId)
+		accountId, err := hiero.AccountIDFromString(*accountCreateParams.StakedAccountId)
 		if err != nil {
 			return nil, err
 		}
@@ -81,7 +81,7 @@ func (a *AccountService) CreateAccount(_ context.Context, accountCreateParams pa
 		return nil, err
 	}
 	var accId string
-	if receipt.Status == hedera.StatusSuccess {
+	if receipt.Status == hiero.StatusSuccess {
 		accId = receipt.AccountID.String()
 	}
 	return &response.AccountResponse{AccountId: accId, Status: receipt.Status.String()}, nil
@@ -89,9 +89,9 @@ func (a *AccountService) CreateAccount(_ context.Context, accountCreateParams pa
 
 // UpdateAccount jRPC method for updateAccount
 func (a *AccountService) UpdateAccount(_ context.Context, accountUpdateParams param.UpdateAccountParams) (*response.AccountResponse, error) {
-	transaction := hedera.NewAccountUpdateTransaction().SetGrpcDeadline(&threeSecondsDuration)
+	transaction := hiero.NewAccountUpdateTransaction().SetGrpcDeadline(&threeSecondsDuration)
 	if accountUpdateParams.AccountId != nil {
-		accountId, _ := hedera.AccountIDFromString(*accountUpdateParams.AccountId)
+		accountId, _ := hiero.AccountIDFromString(*accountUpdateParams.AccountId)
 		transaction.SetAccountID(accountId)
 	}
 
@@ -116,7 +116,7 @@ func (a *AccountService) UpdateAccount(_ context.Context, accountUpdateParams pa
 	}
 
 	if accountUpdateParams.StakedAccountId != nil {
-		accountId, err := hedera.AccountIDFromString(*accountUpdateParams.StakedAccountId)
+		accountId, err := hiero.AccountIDFromString(*accountUpdateParams.StakedAccountId)
 		if err != nil {
 			return nil, err
 		}
@@ -160,14 +160,14 @@ func (a *AccountService) UpdateAccount(_ context.Context, accountUpdateParams pa
 
 // DeleteAccount jRPC method for deleteAccount
 func (a *AccountService) DeleteAccount(_ context.Context, deleteAccountParams param.DeleteAccountParams) (*response.AccountResponse, error) {
-	transaction := hedera.NewAccountDeleteTransaction().SetGrpcDeadline(&threeSecondsDuration)
+	transaction := hiero.NewAccountDeleteTransaction().SetGrpcDeadline(&threeSecondsDuration)
 	if deleteAccountParams.DeleteAccountId != nil {
-		accountId, _ := hedera.AccountIDFromString(*deleteAccountParams.DeleteAccountId)
+		accountId, _ := hiero.AccountIDFromString(*deleteAccountParams.DeleteAccountId)
 		transaction.SetAccountID(accountId)
 	}
 
 	if deleteAccountParams.TransferAccountId != nil {
-		accountId, _ := hedera.AccountIDFromString(*deleteAccountParams.TransferAccountId)
+		accountId, _ := hiero.AccountIDFromString(*deleteAccountParams.TransferAccountId)
 		transaction.SetTransferAccountID(accountId)
 	}
 

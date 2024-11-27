@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/hashgraph/hedera-sdk-go/v2"
+	"github.com/hiero-ledger/hiero-sdk-go/v2"
 )
 
 // Convert hex string to byte array
@@ -29,7 +29,7 @@ func main() {
 	}
 
 	// Create a new RLP item to decode into
-	decodedItem := hedera.NewRLPItem(hedera.LIST_TYPE) // Assuming this is a list type based on your data
+	decodedItem := hiero.NewRLPItem(hiero.LIST_TYPE) // Assuming this is a list type based on your data
 	if err := decodedItem.Read(encodedBytes); err != nil {
 		fmt.Println("Error decoding RLP:", err)
 		return

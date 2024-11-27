@@ -4,27 +4,27 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/hashgraph/hedera-sdk-go/v2"
+	"github.com/hiero-ledger/hiero-sdk-go/v2"
 )
 
 func main() {
-	var client *hedera.Client
+	var client *hiero.Client
 	var err error
 
 	// Retrieving network type from environment variable HEDERA_NETWORK
-	client, err = hedera.ClientForName(os.Getenv("HEDERA_NETWORK"))
+	client, err = hiero.ClientForName(os.Getenv("HEDERA_NETWORK"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error creating client", err))
 	}
 
 	// Retrieving operator ID from environment variable OPERATOR_ID
-	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
+	operatorAccountID, err := hiero.AccountIDFromString(os.Getenv("OPERATOR_ID"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error converting string to AccountID", err))
 	}
 
 	// Retrieving operator key from environment variable OPERATOR_KEY
-	operatorKey, err := hedera.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
+	operatorKey, err := hiero.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error converting string to PrivateKey", err))
 	}
@@ -32,15 +32,15 @@ func main() {
 	// Setting the client operator ID and key
 	client.SetOperator(operatorAccountID, operatorKey)
 
-	bobsKey, err := hedera.PrivateKeyGenerateEd25519()
+	bobsKey, err := hiero.PrivateKeyGenerateEd25519()
 	if err != nil {
 		panic(fmt.Sprintf("%v : error generating Bob's key", err))
 	}
 
-	bobsAccountCreate, err := hedera.NewAccountCreateTransaction().
+	bobsAccountCreate, err := hiero.NewAccountCreateTransaction().
 		SetReceiverSignatureRequired(true).
 		SetKey(bobsKey).
-		SetInitialBalance(hedera.NewHbar(10)).
+		SetInitialBalance(hiero.NewHbar(10)).
 		FreezeWith(client)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error freezing account creation", err))
@@ -67,7 +67,7 @@ func main() {
 	println("Alice's ID:", client.GetOperatorAccountID().String())
 	println("Bob's ID:", bobsID.String())
 
-	bobsInitialBalance, err := hedera.NewAccountBalanceQuery().
+	bobsInitialBalance, err := hiero.NewAccountBalanceQuery().
 		SetAccountID(bobsID).
 		Execute(client)
 	if err != nil {
@@ -76,12 +76,12 @@ func main() {
 
 	println("Bob's initial balance:", bobsInitialBalance.Hbars.String())
 
-	transactionID := hedera.TransactionIDGenerate(bobsID)
+	transactionID := hiero.TransactionIDGenerate(bobsID)
 
-	transferToSchedule := hedera.NewTransferTransaction().
+	transferToSchedule := hiero.NewTransferTransaction().
 		SetTransactionID(transactionID).
-		AddHbarTransfer(client.GetOperatorAccountID(), hedera.HbarFrom(-2, hedera.HbarUnits.Hbar)).
-		AddHbarTransfer(bobsID, hedera.HbarFrom(2, hedera.HbarUnits.Hbar))
+		AddHbarTransfer(client.GetOperatorAccountID(), hiero.HbarFrom(-2, hiero.HbarUnits.Hbar)).
+		AddHbarTransfer(bobsID, hiero.HbarFrom(2, hiero.HbarUnits.Hbar))
 
 	scheduleTransaction, err := transferToSchedule.Schedule()
 	if err != nil {
@@ -109,7 +109,7 @@ func main() {
 		panic(fmt.Sprintf("%v : missing Bob's ScheduleID", err))
 	}
 
-	bobsBalanceAfterSchedule, err := hedera.NewAccountBalanceQuery().
+	bobsBalanceAfterSchedule, err := hiero.NewAccountBalanceQuery().
 		SetAccountID(bobsID).
 		Execute(client)
 	if err != nil {
@@ -120,7 +120,7 @@ func main() {
 
 	//clean up
 
-	deleteAccount, err := hedera.NewAccountDeleteTransaction().
+	deleteAccount, err := hiero.NewAccountDeleteTransaction().
 		SetAccountID(bobsID).
 		SetTransferAccountID(client.GetOperatorAccountID()).
 		FreezeWith(client)

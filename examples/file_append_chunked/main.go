@@ -4,27 +4,27 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/hashgraph/hedera-sdk-go/v2"
+	"github.com/hiero-ledger/hiero-sdk-go/v2"
 )
 
 func main() {
-	var client *hedera.Client
+	var client *hiero.Client
 	var err error
 
 	// Retrieving network type from environment variable HEDERA_NETWORK
-	client, err = hedera.ClientForName(os.Getenv("HEDERA_NETWORK"))
+	client, err = hiero.ClientForName(os.Getenv("HEDERA_NETWORK"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error creating client", err))
 	}
 
 	// Retrieving operator ID from environment variable OPERATOR_ID
-	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
+	operatorAccountID, err := hiero.AccountIDFromString(os.Getenv("OPERATOR_ID"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error converting string to AccountID", err))
 	}
 
 	// Retrieving operator key from environment variable OPERATOR_KEY
-	operatorKey, err := hedera.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
+	operatorKey, err := hiero.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error converting string to PrivateKey", err))
 	}
@@ -33,16 +33,16 @@ func main() {
 	client.SetOperator(operatorAccountID, operatorKey)
 
 	// Create a new file
-	newFileResponse, err := hedera.NewFileCreateTransaction().
+	newFileResponse, err := hiero.NewFileCreateTransaction().
 		// Accepts both Key and []Key
 		// All keys at the top level of a key list must sign to create or modify the file. Any one of
 		// the keys at the top level key list can sign to delete the file.
 		SetKeys(client.GetOperatorPublicKey()).
 		// Basic starting file content
-		SetContents([]byte("Hello from Hedera.")).
+		SetContents([]byte("Hello from hiero.")).
 		SetMemo("go file append test").
 		// Set max fee if we don't want to get overcharged
-		SetMaxTransactionFee(hedera.NewHbar(2)).
+		SetMaxTransactionFee(hiero.NewHbar(2)).
 		Execute(client)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error creating file", err))
@@ -58,15 +58,15 @@ func main() {
 	fileID := *receipt.FileID
 
 	// File append
-	fileResponse, err := hedera.NewFileAppendTransaction().
+	fileResponse, err := hiero.NewFileAppendTransaction().
 		// Make sure the node is the same as the new file, as we don't have to wait for propagation
-		SetNodeAccountIDs([]hedera.AccountID{newFileResponse.NodeID}).
+		SetNodeAccountIDs([]hiero.AccountID{newFileResponse.NodeID}).
 		// File ID to append to
 		SetFileID(fileID).
 		// Contents that will be appended to the end of the file
 		SetContents([]byte(bigContents)).
 		// Set max transaction when you are not sure how much it will cost.
-		SetMaxTransactionFee(hedera.NewHbar(5)).
+		SetMaxTransactionFee(hiero.NewHbar(5)).
 		Execute(client)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error executing file append transaction", err))
@@ -80,9 +80,9 @@ func main() {
 
 	// Checking if append succeeded
 	println(receipt.Status.String())
-	info, err := hedera.NewFileInfoQuery().
+	info, err := hiero.NewFileInfoQuery().
 		// Once again same node account ID
-		SetNodeAccountIDs([]hedera.AccountID{fileResponse.NodeID}).
+		SetNodeAccountIDs([]hiero.AccountID{fileResponse.NodeID}).
 		// Only the file ID is required for this
 		SetFileID(fileID).
 		Execute(client)

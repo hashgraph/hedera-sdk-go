@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/hashgraph/hedera-sdk-go/v2"
+	"github.com/hiero-ledger/hiero-sdk-go/v2"
 )
 
 // a simple contract struct
@@ -17,11 +17,11 @@ type contract struct {
 }
 
 func main() {
-	var client *hedera.Client
+	var client *hiero.Client
 	var err error
 
 	net := os.Getenv("HEDERA_NETWORK")
-	client, err = hedera.ClientForName(net)
+	client, err = hiero.ClientForName(net)
 	if err != nil {
 		panic(fmt.Sprintf("%v : error creating client", err))
 	}
@@ -30,12 +30,12 @@ func main() {
 	configOperatorKey := os.Getenv("OPERATOR_KEY")
 
 	if configOperatorID != "" && configOperatorKey != "" {
-		operatorAccountID, err := hedera.AccountIDFromString(configOperatorID)
+		operatorAccountID, err := hiero.AccountIDFromString(configOperatorID)
 		if err != nil {
 			panic(fmt.Sprintf("%v : error converting string to AccountID", err))
 		}
 
-		operatorKey, err := hedera.PrivateKeyFromString(configOperatorKey)
+		operatorKey, err := hiero.PrivateKeyFromString(configOperatorKey)
 		if err != nil {
 			panic(fmt.Sprintf("%v : error converting string to PrivateKey", err))
 		}
@@ -72,8 +72,8 @@ func main() {
 	fmt.Printf("Contract bytecode size: %v bytes\n", len(contractByteCode))
 
 	// Upload a file containing the byte code
-	byteCodeTransactionID, err := hedera.NewFileCreateTransaction().
-		SetMaxTransactionFee(hedera.NewHbar(2)).
+	byteCodeTransactionID, err := hiero.NewFileCreateTransaction().
+		SetMaxTransactionFee(hiero.NewHbar(2)).
 		// All keys at the top level of a key list must sign to create or modify the file
 		SetKeys(client.GetOperatorPublicKey()).
 		// Initial contents, in our case it's the contract object converted to bytes
@@ -98,7 +98,7 @@ func main() {
 	fmt.Printf("contract bytecode file: %v\n", byteCodeFileID)
 
 	// Instantiate the contract instance
-	contractTransactionResponse, err := hedera.NewContractCreateTransaction().
+	contractTransactionResponse, err := hiero.NewContractCreateTransaction().
 		// Failing to set this to a sufficient amount will result in "INSUFFICIENT_GAS" status
 		SetGas(100000).
 		// The file ID we got from the record of the file created previously
@@ -130,17 +130,17 @@ func main() {
 	fmt.Printf("Contract: %v\n", newContractID)
 
 	// Call the contract to receive the greeting
-	callResult, err := hedera.NewContractCallQuery().
+	callResult, err := hiero.NewContractCallQuery().
 		SetContractID(newContractID).
 		// The amount of gas to use for the call
 		// All of the gas offered will be used and charged a corresponding fee
 		SetGas(100000).
 		// This query requires payment, depends on gas used
-		SetQueryPayment(hedera.NewHbar(1)).
+		SetQueryPayment(hiero.NewHbar(1)).
 		// Specified which function to call, and the parameters to pass to the function
 		SetFunction("greet", nil).
 		// This requires payment
-		SetMaxQueryPayment(hedera.NewHbar(5)).
+		SetMaxQueryPayment(hiero.NewHbar(5)).
 		Execute(client)
 
 	if err != nil {
@@ -151,7 +151,7 @@ func main() {
 	fmt.Printf("Message: %v\n", callResult.GetString(0))
 
 	// Clean up, delete the transaction
-	deleteTransactionResponse, err := hedera.NewContractDeleteTransaction().
+	deleteTransactionResponse, err := hiero.NewContractDeleteTransaction().
 		// Only thing required here is the contract ID
 		SetContractID(newContractID).
 		SetTransferAccountID(client.GetOperatorAccountID()).

@@ -4,18 +4,18 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/hashgraph/hedera-sdk-go/v2"
+	"github.com/hiero-ledger/hiero-sdk-go/v2"
 )
 
 func main() {
 	// Generate 24 word mnemonic
-	mnemonic24, err := hedera.GenerateMnemonic24()
+	mnemonic24, err := hiero.GenerateMnemonic24()
 	if err != nil {
 		panic(fmt.Sprintf("%v : error generating 24 word mnemonic", err))
 	}
 
 	// Generate 12 word mnemonic
-	mnemonic12, err := hedera.GenerateMnemonic12()
+	mnemonic12, err := hiero.GenerateMnemonic12()
 	if err != nil {
 		panic(fmt.Sprintf("%v : error generating 12 word mnemonic", err))
 	}
@@ -24,7 +24,7 @@ func main() {
 	legacyString := "jolly,kidnap,tom,lawn,drunk,chick,optic,lust,mutter,mole,bride,galley,dense,member,sage,neural,widow,decide,curb,aboard,margin,manure"
 
 	// Initializing a legacy mnemonic from legacy string
-	mnemonicLegacy, err := hedera.NewMnemonic(strings.Split(legacyString, ","))
+	mnemonicLegacy, err := hiero.NewMnemonic(strings.Split(legacyString, ","))
 	if err != nil {
 		panic(fmt.Sprintf("%v : error generating mnemonic from legacy string", err))
 	}

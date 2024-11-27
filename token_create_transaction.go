@@ -1,29 +1,11 @@
-package hedera
+package hiero
 
-/*-
- *
- * Hedera Go SDK
- *
- * Copyright (C) 2020 - 2024 Hedera Hashgraph, LLC
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto/services"
+	"github.com/hiero-ledger/hiero-sdk-go/v2/proto/services"
 )
 
 // TokenCreateTransaction
@@ -430,7 +412,7 @@ func (tx *TokenCreateTransaction) GetInitialSupply() uint64 {
 	return tx.initialSupply
 }
 
-// The default Freeze status (frozen or unfrozen) of Hedera accounts relative to this token. If true, an account must be unfrozen before it can receive the token
+// The default Freeze status (frozen or unfrozen) of Hiero accounts relative to this token. If true, an account must be unfrozen before it can receive the token
 func (tx *TokenCreateTransaction) SetFreezeDefault(freezeDefault bool) *TokenCreateTransaction {
 	tx._RequireNotFrozen()
 	tx.freezeDefault = &freezeDefault

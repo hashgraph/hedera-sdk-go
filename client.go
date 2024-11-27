@@ -1,24 +1,6 @@
-package hedera
+package hiero
 
-/*-
- *
- * Hedera Go SDK
- *
- * Copyright (C) 2020 - 2024 Hedera Hashgraph, LLC
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import (
 	"context"
@@ -43,7 +25,7 @@ var previewnetNodes, _ = NodeAddressBookFromBytes(previewnetAddress)
 var testnetAddress []byte
 var testnetNodes, _ = NodeAddressBookFromBytes(testnetAddress)
 
-// Client is the Hedera protocol wrapper for the SDK used by all
+// Client is the Hiero protocol wrapper for the SDK used by all
 // transaction and query types.
 type Client struct {
 	defaultMaxTransactionFee Hbar
@@ -105,7 +87,7 @@ func ClientForNetwork(network map[string]AccountID) *Client {
 }
 
 // ClientForMainnet returns a preconfigured client for use with the standard
-// Hedera mainnet.
+// Hiero mainnet.
 // Most users will want to set an _Operator account with .SetOperator so
 // transactions can be automatically given TransactionIDs and signed.
 func ClientForMainnet() *Client {
@@ -113,7 +95,7 @@ func ClientForMainnet() *Client {
 }
 
 // ClientForTestnet returns a preconfigured client for use with the standard
-// Hedera testnet.
+// Hiero testnet.
 // Most users will want to set an _Operator account with .SetOperator so
 // transactions can be automatically given TransactionIDs and signed.
 func ClientForTestnet() *Client {
@@ -121,7 +103,7 @@ func ClientForTestnet() *Client {
 }
 
 // ClientForPreviewnet returns a preconfigured client for use with the standard
-// Hedera previewnet.
+// Hiero previewnet.
 // Most users will want to set an _Operator account with .SetOperator so
 // transactions can be automatically given TransactionIDs and signed.
 func ClientForPreviewnet() *Client {
@@ -132,7 +114,7 @@ func ClientForPreviewnet() *Client {
 // and returns a Client instance which can be used to
 func _NewClient(network _Network, mirrorNetwork []string, ledgerId *LedgerID, shouldScheduleNetworkUpdate bool) *Client {
 	ctx, cancel := context.WithCancel(context.Background())
-	logger := NewLogger("hedera-sdk-go", LogLevel(os.Getenv("HEDERA_SDK_GO_LOG_LEVEL")))
+	logger := NewLogger("hiero-sdk-go", LogLevel(os.Getenv("HEDERA_SDK_GO_LOG_LEVEL")))
 	var defaultLogger Logger = logger
 
 	client := Client{
@@ -221,7 +203,7 @@ func ClientForName(name string) (*Client, error) {
 		client.SetMirrorNetwork(mirror)
 		return client, nil
 	default:
-		return &Client{}, fmt.Errorf("%q is not recognized as a valid Hedera _Network", name)
+		return &Client{}, fmt.Errorf("%q is not recognized as a valid Hiero _Network", name)
 	}
 }
 

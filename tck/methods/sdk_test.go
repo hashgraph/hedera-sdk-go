@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/hashgraph/hedera-sdk-go/tck/param"
+	"github.com/hiero-ledger/hiero-sdk-go/tck/param"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
