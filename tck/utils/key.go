@@ -1,5 +1,7 @@
 package utils
 
+// SPDX-License-Identifier: Apache-2.0
+
 import (
 	"encoding/hex"
 	"errors"

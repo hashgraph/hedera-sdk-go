@@ -1,5 +1,7 @@
 package response
 
+// SPDX-License-Identifier: Apache-2.0
+
 import (
 	"github.com/creachadair/jrpc2"
 	"github.com/hiero-ledger/hiero-sdk-go/v2"
