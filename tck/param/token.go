@@ -28,3 +28,29 @@ type CreateTokenParams struct {
 	Metadata                *string                  `json:"metadata,omitempty"`
 	CommonTransactionParams *CommonTransactionParams `json:"commonTransactionParams,omitempty"`
 }
+
+type UpdateTokenParams struct {
+	TokenId                 *string                  `json:"tokenId,omitempty"`
+	Name                    *string                  `json:"name,omitempty"`
+	Symbol                  *string                  `json:"symbol,omitempty"`
+	TreasuryAccountId       *string                  `json:"treasuryAccountId,omitempty"`
+	AdminKey                *string                  `json:"adminKey,omitempty"`
+	KycKey                  *string                  `json:"kycKey,omitempty"`
+	FreezeKey               *string                  `json:"freezeKey,omitempty"`
+	WipeKey                 *string                  `json:"wipeKey,omitempty"`
+	SupplyKey               *string                  `json:"supplyKey,omitempty"`
+	FeeScheduleKey          *string                  `json:"feeScheduleKey,omitempty"`
+	PauseKey                *string                  `json:"pauseKey,omitempty"`
+	MetadataKey             *string                  `json:"metadataKey,omitempty"`
+	ExpirationTime          *string                  `json:"expirationTime,omitempty"`
+	AutoRenewAccountId      *string                  `json:"autoRenewAccountId,omitempty"`
+	AutoRenewPeriod         *string                  `json:"autoRenewPeriod,omitempty"`
+	Memo                    *string                  `json:"memo,omitempty"`
+	Metadata                *string                  `json:"metadata,omitempty"`
+	CommonTransactionParams *CommonTransactionParams `json:"commonTransactionParams,omitempty"`
+}
+
+type DeleteTokenParams struct {
+	TokenId                 *string                  `json:"tokenId,omitempty"`
+	CommonTransactionParams *CommonTransactionParams `json:"commonTransactionParams,omitempty"`
+}

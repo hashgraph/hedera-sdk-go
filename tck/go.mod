@@ -6,7 +6,7 @@ require (
 	github.com/creachadair/jrpc2 v1.1.2
 	github.com/hiero-ledger/hiero-sdk-go/v2 v2.42.0
 	github.com/joho/godotenv v1.5.1
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 )
 
 replace github.com/hiero-ledger/hiero-sdk-go/v2 => ../
