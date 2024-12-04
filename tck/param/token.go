@@ -54,3 +54,9 @@ type DeleteTokenParams struct {
 	TokenId                 *string                  `json:"tokenId,omitempty"`
 	CommonTransactionParams *CommonTransactionParams `json:"commonTransactionParams,omitempty"`
 }
+
+type UpdateTokenFeeScheduleParams struct {
+	TokenId                 *string                  `json:"tokenId,omitempty"`
+	CommonTransactionParams *CommonTransactionParams `json:"commonTransactionParams,omitempty"`
+	CustomFees              *[]CustomFee             `json:"customFees,omitempty"`
+}

@@ -43,6 +43,11 @@ func ParseCustomFees(paramFees []param.CustomFee) ([]hiero.Fee, error) {
 			if err != nil {
 				return nil, err
 			}
+			if customFee.FractionalFee.AssessmentMethod == "inclusive" {
+				fee.SetAssessmentMethod(hiero.FeeAssessmentMethodInclusive)
+			} else {
+				fee.SetAssessmentMethod(hiero.FeeAssessmentMethodExclusive)
+			}
 			fee.SetFeeCollectorAccountID(feeCollector)
 			fee.SetAllCollectorsAreExempt(*customFee.FeeCollectorsExempt)
 			customFeeList = append(customFeeList, fee)
