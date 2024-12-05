@@ -193,3 +193,163 @@ func (t *TokenService) CreateToken(_ context.Context, params param.CreateTokenPa
 
 	return &response.TokenResponse{TokenId: receipt.TokenID.String(), Status: receipt.Status.String()}, nil
 }
+
+// UpdateToken jRPC method for updateToken
+func (t *TokenService) UpdateToken(_ context.Context, params param.UpdateTokenParams) (*response.TokenResponse, error) {
+
+	transaction := hiero.NewTokenUpdateTransaction().SetGrpcDeadline(&threeSecondsDuration)
+
+	if params.TokenId != nil {
+		tokenId, err := hiero.TokenIDFromString(*params.TokenId)
+		if err != nil {
+			return nil, err
+		}
+		transaction.SetTokenID(tokenId)
+	}
+	if params.AdminKey != nil {
+		key, err := utils.GetKeyFromString(*params.AdminKey)
+		if err != nil {
+			return nil, err
+		}
+		transaction.SetAdminKey(key)
+	}
+
+	if params.KycKey != nil {
+		key, err := utils.GetKeyFromString(*params.KycKey)
+		if err != nil {
+			return nil, err
+		}
+		transaction.SetKycKey(key)
+	}
+
+	if params.FreezeKey != nil {
+		key, err := utils.GetKeyFromString(*params.FreezeKey)
+		if err != nil {
+			return nil, err
+		}
+		transaction.SetFreezeKey(key)
+	}
+
+	if params.WipeKey != nil {
+		key, err := utils.GetKeyFromString(*params.WipeKey)
+		if err != nil {
+			return nil, err
+		}
+		transaction.SetWipeKey(key)
+	}
+
+	if params.PauseKey != nil {
+		key, err := utils.GetKeyFromString(*params.PauseKey)
+		if err != nil {
+			return nil, err
+		}
+		transaction.SetPauseKey(key)
+	}
+
+	if params.MetadataKey != nil {
+		key, err := utils.GetKeyFromString(*params.MetadataKey)
+		if err != nil {
+			return nil, err
+		}
+		transaction.SetMetadataKey(key)
+	}
+
+	if params.SupplyKey != nil {
+		key, err := utils.GetKeyFromString(*params.SupplyKey)
+		if err != nil {
+			return nil, err
+		}
+		transaction.SetSupplyKey(key)
+	}
+
+	if params.FeeScheduleKey != nil {
+		key, err := utils.GetKeyFromString(*params.FeeScheduleKey)
+		if err != nil {
+			return nil, err
+		}
+		transaction.SetFeeScheduleKey(key)
+	}
+
+	if params.Name != nil {
+		transaction.SetTokenName(*params.Name)
+	}
+	if params.Symbol != nil {
+		transaction.SetTokenSymbol(*params.Symbol)
+	}
+	if params.Memo != nil {
+		transaction.SetTokenMemo(*params.Memo)
+	}
+	if params.TreasuryAccountId != nil {
+		accountID, err := hiero.AccountIDFromString(*params.TreasuryAccountId)
+		if err != nil {
+			return nil, err
+		}
+		transaction.SetTreasuryAccountID(accountID)
+	}
+	if params.ExpirationTime != nil {
+		expirationTime, err := strconv.ParseInt(*params.ExpirationTime, 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		transaction.SetExpirationTime(time.Unix(expirationTime, 0))
+	}
+	if params.AutoRenewAccountId != nil {
+		autoRenewAccountId, err := hiero.AccountIDFromString(*params.AutoRenewAccountId)
+		if err != nil {
+			return nil, err
+		}
+		transaction.SetAutoRenewAccount(autoRenewAccountId)
+	}
+	if params.AutoRenewPeriod != nil {
+		autoRenewPeriodSeconds, err := strconv.ParseInt(*params.AutoRenewPeriod, 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		transaction.SetAutoRenewPeriod(time.Duration(autoRenewPeriodSeconds) * time.Second)
+	}
+
+	if params.Metadata != nil {
+		transaction.SetTokenMetadata([]byte(*params.Metadata))
+	}
+
+	if params.CommonTransactionParams != nil {
+		params.CommonTransactionParams.FillOutTransaction(transaction, t.sdkService.Client)
+	}
+
+	txResponse, err := transaction.Execute(t.sdkService.Client)
+	if err != nil {
+		return nil, err
+	}
+	receipt, err := txResponse.GetReceipt(t.sdkService.Client)
+	if err != nil {
+		return nil, err
+	}
+
+	return &response.TokenResponse{Status: receipt.Status.String()}, nil
+}
+
+// DeleteToken jRPC method for deleteToken
+func (t *TokenService) DeleteToken(_ context.Context, params param.DeleteTokenParams) (*response.TokenResponse, error) {
+
+	transaction := hiero.NewTokenDeleteTransaction().SetGrpcDeadline(&threeSecondsDuration)
+	if params.TokenId != nil {
+		tokenId, err := hiero.TokenIDFromString(*params.TokenId)
+		if err != nil {
+			return nil, err
+		}
+		transaction.SetTokenID(tokenId)
+	}
+	if params.CommonTransactionParams != nil {
+		params.CommonTransactionParams.FillOutTransaction(transaction, t.sdkService.Client)
+	}
+	txResponse, err := transaction.Execute(t.sdkService.Client)
+	if err != nil {
+		return nil, err
+	}
+	receipt, err := txResponse.GetReceipt(t.sdkService.Client)
+	if err != nil {
+		return nil, err
+	}
+
+	return &response.TokenResponse{Status: receipt.Status.String()}, nil
+}

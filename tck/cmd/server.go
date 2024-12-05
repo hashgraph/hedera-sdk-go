@@ -42,6 +42,8 @@ func main() {
 		"updateAccount": postHandler(HandleError, handler.New(accountService.UpdateAccount)),
 		"deleteAccount": postHandler(HandleError, handler.New(accountService.DeleteAccount)),
 		"createToken":   postHandler(HandleError, handler.New(tokenService.CreateToken)),
+		"updateToken":   postHandler(HandleError, handler.New(tokenService.UpdateToken)),
+		"deleteToken":   postHandler(HandleError, handler.New(tokenService.DeleteToken)),
 		"generateKey":   postHandler(HandleError, handler.New(methods.GenerateKey)),
 	}
 
