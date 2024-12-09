@@ -335,6 +335,9 @@ const (
 	StatusInvalidPendingAirdropId                                  Status = 367
 	StatusTokenAirdropWithFallbackRoyalty                          Status = 368
 	StatusInvalidTokenIdPendingAirdrop                             Status = 369
+	StatusScheduleExpiryIsBusy                                     Status = 370
+	StatusInvalidGrpcCertificateHash                               Status = 371
+	StatusMissingExpiryTime                                        Status = 372
 )
 
 // String() returns a string representation of the status
@@ -996,6 +999,12 @@ func (status Status) String() string { // nolint
 		return "TOKEN_AIRDROP_WITH_FALLBACK_ROYALTY"
 	case StatusInvalidTokenIdPendingAirdrop:
 		return "INVALID_TOKEN_IN_PENDING_AIRDROP"
+	case StatusInvalidGrpcCertificateHash:
+		return "INVALID_GRPC_CERTIFICATE_HASH"
+	case StatusScheduleExpiryIsBusy:
+		return "SCHEDULE_EXPIRY_IS_BUSY"
+	case StatusMissingExpiryTime:
+		return "MISSING_EXPIRY_TIME"
 	}
 
 	panic(fmt.Sprintf("unreachable: Status.String() switch statement is non-exhaustive. Status: %v", uint32(status)))
