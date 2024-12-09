@@ -335,11 +335,9 @@ const (
 	StatusInvalidPendingAirdropId                                  Status = 367
 	StatusTokenAirdropWithFallbackRoyalty                          Status = 368
 	StatusInvalidTokenIdPendingAirdrop                             Status = 369
-	StatusScheduleExpiryMustBeFuture                               Status = 370
-	StatusSheduleExpiryTooLong                                     Status = 371
-	StatusScheduleExpiryIsBusy                                     Status = 372
-	StatusInvalidGrpcCertificateHash                               Status = 373
-	StatusMissingExpiryTime                                        Status = 374
+	StatusScheduleExpiryIsBusy                                     Status = 370
+	StatusInvalidGrpcCertificateHash                               Status = 371
+	StatusMissingExpiryTime                                        Status = 372
 )
 
 // String() returns a string representation of the status
@@ -1001,14 +999,10 @@ func (status Status) String() string { // nolint
 		return "TOKEN_AIRDROP_WITH_FALLBACK_ROYALTY"
 	case StatusInvalidTokenIdPendingAirdrop:
 		return "INVALID_TOKEN_IN_PENDING_AIRDROP"
-	case StatusScheduleExpiryMustBeFuture:
-		return "SCHEDULE_EXPIRY_MUST_BE_FUTURE"
-	case StatusSheduleExpiryTooLong:
-		return "SCHEDULE_EXPIRY_TOO_LONG"
-	case StatusScheduleExpiryIsBusy:
-		return "SCHEDULE_EXPIRY_IS_BUSY"
 	case StatusInvalidGrpcCertificateHash:
 		return "INVALID_GRPC_CERTIFICATE_HASH"
+	case StatusScheduleExpiryIsBusy:
+		return "SCHEDULE_EXPIRY_IS_BUSY"
 	case StatusMissingExpiryTime:
 		return "MISSING_EXPIRY_TIME"
 	}
