@@ -563,3 +563,444 @@ func DisabledTestIntegrationScheduledTokenNftTransferTransaction(t *testing.T) {
 	assert.Equal(t, accountID.String(), nftInfo[0].AccountID.String())
 	require.NoError(t, err)
 }
+
+var oneDayInSecs int64 = 24 * 60 * 60
+
+func TestIntegrationScheduleCreateTransactionSign(t *testing.T) {
+	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
+
+	key, err := GeneratePrivateKey()
+	require.NoError(t, err)
+
+	createResponse, err := NewAccountCreateTransaction().
+		SetKey(key.PublicKey()).
+		SetInitialBalance(NewHbar(1)).
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	transactionReceipt, err := createResponse.GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	accountId := *transactionReceipt.AccountID
+
+	// Create the transaction
+	transaction := NewTransferTransaction().
+		AddHbarTransfer(accountId, HbarFrom(-1, HbarUnits.Hbar)).
+		AddHbarTransfer(env.Client.GetOperatorAccountID(), HbarFrom(1, HbarUnits.Hbar))
+
+	scheduled, err := transaction.Schedule()
+	require.NoError(t, err)
+
+	// Schedule the transaction
+	resp, err := scheduled.
+		SetExpirationTime(time.Now().Add(time.Duration(oneDayInSecs) * time.Second)).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	scheduleId := *receipt.ScheduleID
+
+	// Verify the transaction is not executed
+	scheduleInfo, err := NewScheduleInfoQuery().
+		SetScheduleID(scheduleId).
+		Execute(env.Client)
+	require.NoError(t, err)
+	require.Nil(t, scheduleInfo.ExecutedAt)
+
+	// Schedule sign
+	frozenSign, err := NewScheduleSignTransaction().
+		SetScheduleID(scheduleId).
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+
+	resp, err = frozenSign.Sign(key).Execute(env.Client)
+	require.NoError(t, err)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	// Verify the transaction is executed
+	scheduleInfo, err = NewScheduleInfoQuery().
+		SetScheduleID(scheduleId).
+		Execute(env.Client)
+	require.NoError(t, err)
+	require.NotNil(t, scheduleInfo.ExecutedAt)
+}
+
+func TestIntegrationScheduleCreateTransactionInvalidExpiry(t *testing.T) {
+	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
+
+	key, err := GeneratePrivateKey()
+	require.NoError(t, err)
+
+	createResponse, err := NewAccountCreateTransaction().
+		SetKey(key.PublicKey()).
+		SetInitialBalance(NewHbar(1)).
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	transactionReceipt, err := createResponse.GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	accountId := *transactionReceipt.AccountID
+
+	// Create the transaction
+	transaction := NewTransferTransaction().
+		AddHbarTransfer(accountId, HbarFrom(-1, HbarUnits.Hbar)).
+		AddHbarTransfer(env.Client.GetOperatorAccountID(), HbarFrom(1, HbarUnits.Hbar))
+
+	scheduled, err := transaction.Schedule()
+	require.NoError(t, err)
+
+	// Schedule the transaction
+	resp, err := scheduled.
+		SetExpirationTime(time.Now().Add(time.Hour * 24 * 365)).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.ErrorContains(t, err, "exceptional receipt status: SCHEDULE_EXPIRY_TOO_LONG")
+}
+
+func TestIntegrationScheduleCreateTransactionInvalidExpiryInThePast(t *testing.T) {
+	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
+
+	key, err := GeneratePrivateKey()
+	require.NoError(t, err)
+
+	createResponse, err := NewAccountCreateTransaction().
+		SetKey(key.PublicKey()).
+		SetInitialBalance(NewHbar(1)).
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	transactionReceipt, err := createResponse.GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	accountId := *transactionReceipt.AccountID
+
+	// Create the transaction
+	transaction := NewTransferTransaction().
+		AddHbarTransfer(accountId, HbarFrom(-1, HbarUnits.Hbar)).
+		AddHbarTransfer(env.Client.GetOperatorAccountID(), HbarFrom(1, HbarUnits.Hbar))
+
+	scheduled, err := transaction.Schedule()
+	require.NoError(t, err)
+
+	// Schedule the transaction
+	resp, err := scheduled.
+		SetExpirationTime(time.Now().Add(-time.Hour * 24 * 365)).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.ErrorContains(t, err, "receipt status: SCHEDULE_EXPIRY_MUST_BE_FUTURE")
+}
+
+func TestIntegrationScheduleCreateTransactionWaitForExpiry(t *testing.T) {
+	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
+
+	key, err := GeneratePrivateKey()
+	require.NoError(t, err)
+
+	createResponse, err := NewAccountCreateTransaction().
+		SetKey(key.PublicKey()).
+		SetInitialBalance(NewHbar(1)).
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	transactionReceipt, err := createResponse.GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	accountId := *transactionReceipt.AccountID
+
+	// Create the transaction
+	transaction := NewTransferTransaction().
+		AddHbarTransfer(accountId, HbarFrom(-1, HbarUnits.Hbar)).
+		AddHbarTransfer(env.Client.GetOperatorAccountID(), HbarFrom(1, HbarUnits.Hbar))
+
+	scheduled, err := transaction.Schedule()
+	require.NoError(t, err)
+
+	// Schedule the transaction
+	resp, err := scheduled.
+		SetExpirationTime(time.Now().Add(time.Duration(oneDayInSecs) * time.Second)).
+		SetWaitForExpiry(true).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	scheduleId := *receipt.ScheduleID
+
+	// Verify the transaction is not executed
+	scheduleInfo, err := NewScheduleInfoQuery().
+		SetScheduleID(scheduleId).
+		Execute(env.Client)
+	require.NoError(t, err)
+	require.Nil(t, scheduleInfo.ExecutedAt)
+
+	// Schedule sign
+	frozenSign, err := NewScheduleSignTransaction().
+		SetScheduleID(scheduleId).
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+
+	resp, err = frozenSign.Sign(key).Execute(env.Client)
+	require.NoError(t, err)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	// Verify the transaction is still not executed
+	scheduleInfo, err = NewScheduleInfoQuery().
+		SetScheduleID(scheduleId).
+		Execute(env.Client)
+	require.NoError(t, err)
+	require.Nil(t, scheduleInfo.ExecutedAt)
+}
+
+func TestIntegrationScheduleCreateTransactionUpdateSignRequirements(t *testing.T) {
+	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
+
+	key1, err := GeneratePrivateKey()
+	require.NoError(t, err)
+
+	key2, err := GeneratePrivateKey()
+	require.NoError(t, err)
+
+	key3, err := GeneratePrivateKey()
+	require.NoError(t, err)
+
+	key4, err := GeneratePrivateKey()
+	require.NoError(t, err)
+
+	keyList := NewKeyList().
+		Add(key1).
+		Add(key2).
+		Add(key3).
+		SetThreshold(2)
+
+	createResponse, err := NewAccountCreateTransaction().
+		SetKey(keyList).
+		SetInitialBalance(NewHbar(1)).
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	transactionReceipt, err := createResponse.GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	accountId := *transactionReceipt.AccountID
+
+	// Create the transaction
+	transaction := NewTransferTransaction().
+		AddHbarTransfer(accountId, HbarFrom(-1, HbarUnits.Hbar)).
+		AddHbarTransfer(env.Client.GetOperatorAccountID(), HbarFrom(1, HbarUnits.Hbar))
+
+	scheduled, err := transaction.Schedule()
+	require.NoError(t, err)
+
+	// Schedule the transaction
+	resp, err := scheduled.
+		SetExpirationTime(time.Now().Add(time.Duration(oneDayInSecs) * time.Second)).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	scheduleId := *receipt.ScheduleID
+
+	scheduleInfo, err := NewScheduleInfoQuery().
+		SetScheduleID(scheduleId).
+		Execute(env.Client)
+	require.NoError(t, err)
+	require.Nil(t, scheduleInfo.ExecutedAt)
+
+	// Schedule sign with 1 key
+	frozenSign, err := NewScheduleSignTransaction().
+		SetScheduleID(scheduleId).
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+
+	resp, err = frozenSign.Sign(key1).Execute(env.Client)
+	require.NoError(t, err)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	// Verify the transaction is still not executed
+	scheduleInfo, err = NewScheduleInfoQuery().
+		SetScheduleID(scheduleId).
+		Execute(env.Client)
+	require.NoError(t, err)
+	require.Nil(t, scheduleInfo.ExecutedAt)
+
+	// Update the signing requirements
+	frozenUpdate, err := NewAccountUpdateTransaction().
+		SetAccountID(accountId).
+		SetKey(key4.PublicKey()).
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+
+	resp, err = frozenUpdate.
+		Sign(key1).
+		Sign(key2).
+		Sign(key4).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	// Verify the transaction is still not executed
+	scheduleInfo, err = NewScheduleInfoQuery().
+		SetScheduleID(scheduleId).
+		Execute(env.Client)
+	require.NoError(t, err)
+	require.Nil(t, scheduleInfo.ExecutedAt)
+
+	// Sign with the updated key
+	frozenSign, err = NewScheduleSignTransaction().
+		SetScheduleID(scheduleId).
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+
+	resp, err = frozenSign.Sign(key4).Execute(env.Client)
+	require.NoError(t, err)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	// Verify the transaction is executed
+	scheduleInfo, err = NewScheduleInfoQuery().
+		SetScheduleID(scheduleId).
+		Execute(env.Client)
+	require.NoError(t, err)
+	require.NotNil(t, scheduleInfo.ExecutedAt)
+}
+
+func TestIntegrationScheduleCreateTransactionMultiSig(t *testing.T) {
+	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
+
+	key1, err := GeneratePrivateKey()
+	require.NoError(t, err)
+
+	key2, err := GeneratePrivateKey()
+	require.NoError(t, err)
+
+	key3, err := GeneratePrivateKey()
+	require.NoError(t, err)
+
+	keyList := NewKeyList().
+		Add(key1).
+		Add(key2).
+		Add(key3).
+		SetThreshold(2)
+
+	createResponse, err := NewAccountCreateTransaction().
+		SetKey(keyList).
+		SetInitialBalance(NewHbar(1)).
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	transactionReceipt, err := createResponse.GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	accountId := *transactionReceipt.AccountID
+
+	// Create the transaction
+	transaction := NewTransferTransaction().
+		AddHbarTransfer(accountId, HbarFrom(-1, HbarUnits.Hbar)).
+		AddHbarTransfer(env.Client.GetOperatorAccountID(), HbarFrom(1, HbarUnits.Hbar))
+
+	scheduled, err := transaction.Schedule()
+	require.NoError(t, err)
+
+	// Schedule the transaction
+	resp, err := scheduled.
+		SetExpirationTime(time.Now().Add(time.Duration(oneDayInSecs) * time.Second)).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	scheduleId := *receipt.ScheduleID
+
+	scheduleInfo, err := NewScheduleInfoQuery().
+		SetScheduleID(scheduleId).
+		Execute(env.Client)
+	require.NoError(t, err)
+	require.Nil(t, scheduleInfo.ExecutedAt)
+
+	// Schedule sign with 1 key
+	frozenSign, err := NewScheduleSignTransaction().
+		SetScheduleID(scheduleId).
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+
+	resp, err = frozenSign.Sign(key1).Execute(env.Client)
+	require.NoError(t, err)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	// Verify the transaction is still not executed
+	scheduleInfo, err = NewScheduleInfoQuery().
+		SetScheduleID(scheduleId).
+		Execute(env.Client)
+	require.NoError(t, err)
+	require.Nil(t, scheduleInfo.ExecutedAt)
+
+	// Update the signing requirements
+	frozenUpdate, err := NewAccountUpdateTransaction().
+		SetAccountID(accountId).
+		SetKey(key1.PublicKey()).
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+
+	resp, err = frozenUpdate.
+		Sign(key1).
+		Sign(key2).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	// Verify the transaction is still not executed
+	scheduleInfo, err = NewScheduleInfoQuery().
+		SetScheduleID(scheduleId).
+		Execute(env.Client)
+	require.NoError(t, err)
+	require.Nil(t, scheduleInfo.ExecutedAt)
+
+	// Sign with one more key
+	frozenSign, err = NewScheduleSignTransaction().
+		SetScheduleID(scheduleId).
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+
+	resp, err = frozenSign.Sign(key2).Execute(env.Client)
+	require.NoError(t, err)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	// Verify the transaction is executed
+	scheduleInfo, err = NewScheduleInfoQuery().
+		SetScheduleID(scheduleId).
+		Execute(env.Client)
+	require.NoError(t, err)
+	require.NotNil(t, scheduleInfo.ExecutedAt)
+}
