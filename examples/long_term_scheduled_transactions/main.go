@@ -271,7 +271,7 @@ func main() {
 	}
 
 	/*
-		Step 8:
+		Step 9:
 		Verify that the transfer successfully executes roughly at the time of its expiration.
 	*/
 	accountBalance, err = hiero.NewAccountBalanceQuery().
@@ -284,8 +284,7 @@ func main() {
 
 	startTime := time.Now()
 	for time.Since(startTime) < 10*time.Second {
-		time.Sleep(100 * time.Millisecond)
-		// System.out.printf("Elapsed time: %.1f seconds\r", elapsedTime / 1000.0);
+		time.Sleep(1000 * time.Millisecond)
 		fmt.Printf("Elapsed time: %.1f seconds\r", time.Since(startTime).Seconds())
 	}
 
@@ -303,5 +302,4 @@ func main() {
 	client.Close()
 
 	fmt.Println("Example Complete!")
-
 }
