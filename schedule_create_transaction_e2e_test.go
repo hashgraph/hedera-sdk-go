@@ -405,8 +405,7 @@ func TestIntegrationScheduleCreateTransactionWithTransferTransaction(t *testing.
 	assert.NotNil(t, info.ExecutedAt)
 }
 
-// TODO
-func DisabledTestIntegrationScheduledTokenNftTransferTransaction(t *testing.T) {
+func TestIntegrationScheduledTokenNftTransferTransaction(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 	defer CloseIntegrationTestEnv(env, nil)
 
@@ -506,7 +505,8 @@ func DisabledTestIntegrationScheduledTokenNftTransferTransaction(t *testing.T) {
 	tx := NewTransferTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		AddNftTransfer(tokenID.Nft(mintReceipt.SerialNumbers[0]), env.OperatorID, accountID).
-		AddNftTransfer(tokenID.Nft(mintReceipt.SerialNumbers[1]), env.OperatorID, accountID)
+		AddNftTransfer(tokenID.Nft(mintReceipt.SerialNumbers[1]), env.OperatorID, accountID).
+		SetMaxTransactionFee(NewHbar(10))
 
 	scheduleTx, err := tx.Schedule()
 	require.NoError(t, err)
