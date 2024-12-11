@@ -733,7 +733,7 @@ func TestIntegrationScheduleCreateTransactionWaitForExpiry(t *testing.T) {
 
 	// Schedule the transaction
 	resp, err := scheduled.
-		SetExpirationTime(time.Now().Add(10 * time.Second)).
+		SetExpirationTime(time.Now().Add(5 * time.Second)).
 		SetWaitForExpiry(true).
 		Execute(env.Client)
 	require.NoError(t, err)
@@ -774,7 +774,7 @@ func TestIntegrationScheduleCreateTransactionWaitForExpiry(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	time.Sleep(10 * time.Second)
+	time.Sleep(5 * time.Second)
 
 	accountBalanceAfter, err := NewAccountBalanceQuery().
 		SetAccountID(accountId).
