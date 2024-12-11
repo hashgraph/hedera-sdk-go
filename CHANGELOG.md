@@ -1,3 +1,11 @@
+## v2.52.0
+
+### Added
+- Support for Long Term Scheduled Transactions (HIP-423).
+
+### Changed
+- Renamed packages to hiero
+
 ## v2.51.0
 
 ### Fixed
