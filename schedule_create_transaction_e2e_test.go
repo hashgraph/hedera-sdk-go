@@ -713,8 +713,7 @@ func TestIntegrationScheduleCreateTransactionWaitForExpiry(t *testing.T) {
 
 	createResponse, err := NewAccountCreateTransaction().
 		SetKey(key.PublicKey()).
-		SetInitialBalance(NewHbar(1)).
-		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetInitialBalance(NewHbar(2)).
 		Execute(env.Client)
 	require.NoError(t, err)
 
@@ -725,15 +724,16 @@ func TestIntegrationScheduleCreateTransactionWaitForExpiry(t *testing.T) {
 
 	// Create the transaction
 	transaction := NewTransferTransaction().
-		AddHbarTransfer(accountId, HbarFrom(-1, HbarUnits.Hbar)).
-		AddHbarTransfer(env.Client.GetOperatorAccountID(), HbarFrom(1, HbarUnits.Hbar))
+		AddHbarTransfer(accountId, NewHbar(1).Negated()).
+		AddHbarTransfer(env.Client.GetOperatorAccountID(), NewHbar(1)).
+		SetMaxTransactionFee(NewHbar(10))
 
 	scheduled, err := transaction.Schedule()
 	require.NoError(t, err)
 
 	// Schedule the transaction
 	resp, err := scheduled.
-		SetExpirationTime(time.Now().Add(time.Duration(oneDayInSecs) * time.Second)).
+		SetExpirationTime(time.Now().Add(10 * time.Second)).
 		SetWaitForExpiry(true).
 		Execute(env.Client)
 	require.NoError(t, err)
@@ -742,6 +742,7 @@ func TestIntegrationScheduleCreateTransactionWaitForExpiry(t *testing.T) {
 	require.NoError(t, err)
 
 	scheduleId := *receipt.ScheduleID
+	txId := *receipt.TransactionID
 
 	// Verify the transaction is not executed
 	scheduleInfo, err := NewScheduleInfoQuery().
@@ -767,6 +768,24 @@ func TestIntegrationScheduleCreateTransactionWaitForExpiry(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 	require.Nil(t, scheduleInfo.ExecutedAt)
+
+	accountBalanceBefore, err := NewAccountBalanceQuery().
+		SetAccountID(accountId).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	time.Sleep(10 * time.Second)
+
+	accountBalanceAfter, err := NewAccountBalanceQuery().
+		SetAccountID(accountId).
+		Execute(env.Client)
+	require.NoError(t, err)
+	assert.Equal(t, accountBalanceBefore.Hbars.AsTinybar(), accountBalanceAfter.Hbars.AsTinybar()+100000000)
+
+	_, err = NewTransactionRecordQuery().
+		SetTransactionID(txId).
+		Execute(env.Client)
+	require.NoError(t, err)
 }
 
 func TestIntegrationScheduleCreateTransactionUpdateSignRequirements(t *testing.T) {

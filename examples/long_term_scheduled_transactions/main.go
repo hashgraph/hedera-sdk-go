@@ -89,7 +89,8 @@ func main() {
 	fmt.Println("Creating new scheduled transaction with 1 day expiry")
 	transfer := hiero.NewTransferTransaction().
 		AddHbarTransfer(alice, hiero.NewHbar(1).Negated()).
-		AddHbarTransfer(client.GetOperatorAccountID(), hiero.NewHbar(1))
+		AddHbarTransfer(client.GetOperatorAccountID(), hiero.NewHbar(1)).
+		SetMaxTransactionFee(hiero.NewHbar(10))
 
 	schedule, err := transfer.Schedule()
 	if err != nil {
@@ -194,7 +195,8 @@ func main() {
 	fmt.Println("Creating new scheduled transaction with 10 seconds expiry")
 	transfer = hiero.NewTransferTransaction().
 		AddHbarTransfer(alice, hiero.NewHbar(1).Negated()).
-		AddHbarTransfer(client.GetOperatorAccountID(), hiero.NewHbar(1))
+		AddHbarTransfer(client.GetOperatorAccountID(), hiero.NewHbar(1)).
+		SetMaxTransactionFee(hiero.NewHbar(10))
 
 	schedule, err = transfer.Schedule()
 	if err != nil {
@@ -212,6 +214,7 @@ func main() {
 		panic(fmt.Sprintf("%v : error getting schedule receipt", err))
 	}
 	scheduleID2 := *scheduleReceipt.ScheduleID
+	txId := *scheduleReceipt.ScheduledTransactionID
 
 	/*
 		Step 7:
@@ -295,6 +298,14 @@ func main() {
 		panic(fmt.Sprintf("%v : error getting account balance", err))
 	}
 	fmt.Println("Alice's account balance after scheduled transfer", accountBalance.Hbars)
+
+	record, err := hiero.NewTransactionRecordQuery().
+		SetTransactionID(txId).
+		Execute(client)
+	if err != nil {
+		panic(fmt.Sprintf("%v : error getting transaction record", err))
+	}
+	fmt.Println("Transaction status: ", record.Receipt.Status)
 
 	/*
 	 * Clean up:
