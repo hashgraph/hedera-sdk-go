@@ -187,7 +187,7 @@ func (query *mirrorNodeContractQuery) estimateGas(client *Client) (uint64, error
 	hexString = strings.TrimPrefix(hexString, "0x")
 	gas, err := strconv.ParseUint(hexString, 16, 64)
 	if err != nil {
-		return 0, fmt.Errorf("failed to parse hex string: %w", err)
+		return 0, fmt.Errorf("failed to parse the result: %w", err)
 	}
 	return gas, nil
 }
@@ -278,15 +278,8 @@ func (query *mirrorNodeContractQuery) performContractCallToMirrorNode(client *Cl
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			fmt.Println("Error reading the body:", err)
-		}
-
-		// Print the body content
-		fmt.Println("Response Body:")
-		fmt.Println(string(body))
-		return nil, fmt.Errorf("unexpected status code: %d, reason, %s", resp.StatusCode, body)
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("received non-200 response from Mirror Node: %d, details: %s", resp.StatusCode, body)
 	}
 
 	var result map[string]any

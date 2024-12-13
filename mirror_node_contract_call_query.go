@@ -2,7 +2,7 @@ package hiero
 
 // SPDX-License-Identifier: Apache-2.0
 
-// MirrorNodeContractCallQuery extends MirrorNodeContractQuery
+// MirrorNodeContractCallQuery returns a result from EVM transient simulation of read-write operations.
 type MirrorNodeContractCallQuery struct {
 	mirrorNodeContractQuery
 }

@@ -2,7 +2,7 @@ package hiero
 
 // SPDX-License-Identifier: Apache-2.0
 
-// MirrorNodeContractEstimateGasQuery extends MirrorNodeContractQuery
+// MirrorNodeContractCallQuery returns a result from EVM gas estimation of read-write operations.
 type MirrorNodeContractEstimateGasQuery struct {
 	mirrorNodeContractQuery
 }
