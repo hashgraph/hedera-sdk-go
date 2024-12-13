@@ -384,3 +384,43 @@ func DisabledTestIntegrationTokenNftTransferRecordQuery(t *testing.T) { // nolin
 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 }
+
+func TestIntegrationTransactionRecordQueryGetScheduleRef(t *testing.T) {
+	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
+
+	key, err := GeneratePrivateKey()
+	require.NoError(t, err)
+
+	createResponse, err := NewAccountCreateTransaction().
+		SetKey(key.PublicKey()).
+		SetInitialBalance(NewHbar(2)).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	transactionReceipt, err := createResponse.GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	accountId := *transactionReceipt.AccountID
+
+	// Create the transaction
+	transaction := NewTransferTransaction().
+		AddHbarTransfer(accountId, NewHbar(1).Negated()).
+		AddHbarTransfer(env.Client.GetOperatorAccountID(), NewHbar(1)).
+		SetMaxTransactionFee(NewHbar(10))
+
+	scheduled, err := transaction.Schedule()
+	require.NoError(t, err)
+
+	// Schedule the transaction
+	resp, err := scheduled.
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	record, err := resp.SetValidateStatus(true).GetRecord(env.Client)
+	require.NoError(t, err)
+
+	// Get the schedule reference
+	scheduleRef := record.ScheduleRef
+	require.NotNil(t, scheduleRef)
+}

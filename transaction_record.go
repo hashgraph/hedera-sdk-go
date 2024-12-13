@@ -9,7 +9,6 @@ import (
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
-	"google.golang.org/protobuf/types/known/wrapperspb"
 
 	protobuf "google.golang.org/protobuf/proto"
 
@@ -23,12 +22,12 @@ type TransactionRecord struct {
 	TransactionHash            []byte
 	ConsensusTimestamp         time.Time
 	TransactionID              TransactionID
+	ScheduleRef                ScheduleID
 	TransactionMemo            string
 	TransactionFee             Hbar
 	Transfers                  []Transfer
 	TokenTransfers             map[TokenID][]TokenTransfer
 	NftTransfers               map[TokenID][]_TokenNftTransfer
-	ExpectedDecimals           map[TokenID]uint32
 	CallResult                 *ContractFunctionResult
 	CallResultIsCreate         bool
 	AssessedCustomFees         []AssessedCustomFee
@@ -102,12 +101,12 @@ func (record TransactionRecord) MarshalJSON() ([]byte, error) {
 
 	m["transactionHash"] = hex.EncodeToString(record.TransactionHash)
 	m["transactionId"] = record.TransactionID.String()
+	m["scheduleRef"] = record.ScheduleRef.String()
 	m["transactionMemo"] = record.TransactionMemo
 	m["transactionFee"] = fmt.Sprint(record.TransactionFee.AsTinybar())
 	m["transfers"] = transfersJSON
 	m["tokenTransfers"] = tokenTransfersMap
 	m["nftTransfers"] = tokenTransfersNftMap
-	m["expectedDecimals"] = record.ExpectedDecimals
 	m["callResultIsCreate"] = record.CallResultIsCreate
 
 	type AssessedCustomFeeJSON struct {
@@ -344,6 +343,11 @@ func _TransactionRecordFromProtobuf(protoResponse *services.TransactionGetRecord
 		transactionID = _TransactionIDFromProtobuf(pb.TransactionID)
 	}
 
+	var scheduleRef ScheduleID
+	if pb.ScheduleRef != nil {
+		scheduleRef = *_ScheduleIDFromProtobuf(pb.ScheduleRef)
+	}
+
 	var pendingAirdropRecords []PendingAirdropRecord
 	for _, pendingAirdropRecord := range pb.NewPendingAirdrops {
 		pendingAirdropRecords = append(pendingAirdropRecords, _PendingAirdropRecordFromProtobuf(pendingAirdropRecord))
@@ -354,6 +358,7 @@ func _TransactionRecordFromProtobuf(protoResponse *services.TransactionGetRecord
 		TransactionHash:            pb.TransactionHash,
 		ConsensusTimestamp:         _TimeFromProtobuf(pb.ConsensusTimestamp),
 		TransactionID:              transactionID,
+		ScheduleRef:                scheduleRef,
 		TransactionMemo:            pb.Memo,
 		TransactionFee:             HbarFromTinybar(int64(pb.TransactionFee)),
 		Transfers:                  accountTransfers,
@@ -421,10 +426,6 @@ func (record TransactionRecord) _ToProtobuf() (*services.TransactionGetRecordRes
 			Transfers: tokenTemp,
 		}
 
-		if decimal, ok := record.ExpectedDecimals[tokenID]; ok {
-			bod.ExpectedDecimals = &wrapperspb.UInt32Value{Value: decimal}
-		}
-
 		tokenTransfers = append(tokenTransfers, bod)
 	}
 
@@ -472,6 +473,7 @@ func (record TransactionRecord) _ToProtobuf() (*services.TransactionGetRecordRes
 			Nanos:   int32(record.ConsensusTimestamp.Nanosecond()),
 		},
 		TransactionID:              record.TransactionID._ToProtobuf(),
+		ScheduleRef:                record.ScheduleRef._ToProtobuf(),
 		Memo:                       record.TransactionMemo,
 		TransactionFee:             uint64(record.TransactionFee.AsTinybar()),
 		TransferList:               &transferList,

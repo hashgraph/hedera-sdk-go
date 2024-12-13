@@ -17,6 +17,7 @@ import (
 type TransactionReceipt struct {
 	Status                  Status
 	ExchangeRate            *ExchangeRate
+	NextExchangeRate        *ExchangeRate
 	TopicID                 *TopicID
 	FileID                  *FileID
 	ContractID              *ContractID
@@ -53,14 +54,24 @@ func (receipt *TransactionReceipt) _ToMap() map[string]interface{} {
 		ExpirationTime string `json:"expirationTime"`
 	}
 
+	const layout = "2006-01-02T15:04:05.000Z"
 	if receipt.ExchangeRate != nil {
-		const layout = "2006-01-02T15:04:05.000Z"
 		expiration := time.Unix(receipt.ExchangeRate.expirationTime.Seconds, 0)
 		expirationStr := expiration.UTC().Format(layout)
 
 		m["exchangeRate"] = ExchangeRateJSON{
 			Hbars:          receipt.ExchangeRate.Hbars,
 			Cents:          receipt.ExchangeRate.cents,
+			ExpirationTime: expirationStr,
+		}
+	}
+	if receipt.NextExchangeRate != nil {
+		expiration := time.Unix(receipt.NextExchangeRate.expirationTime.Seconds, 0)
+		expirationStr := expiration.UTC().Format(layout)
+
+		m["nextExchangeRate"] = ExchangeRateJSON{
+			Hbars:          receipt.NextExchangeRate.Hbars,
+			Cents:          receipt.NextExchangeRate.cents,
 			ExpirationTime: expirationStr,
 		}
 	}
@@ -122,9 +133,16 @@ func _TransactionReceiptFromProtobuf(protoResponse *services.TransactionGetRecei
 	}
 
 	var rate *ExchangeRate
+	var nextRate *ExchangeRate
 	if protoReceipt.ExchangeRate != nil {
 		exchangeRateValue := _ExchangeRateFromProtobuf(protoReceipt.ExchangeRate.GetCurrentRate())
-		rate = &exchangeRateValue
+		if exchangeRateValue.expirationTime != nil {
+			rate = &exchangeRateValue
+		}
+		nextExchangeRateValue := _ExchangeRateFromProtobuf(protoReceipt.ExchangeRate.GetNextRate())
+		if nextExchangeRateValue.expirationTime != nil {
+			nextRate = &nextExchangeRateValue
+		}
 	}
 
 	var topicSequenceHash []byte
@@ -166,6 +184,7 @@ func _TransactionReceiptFromProtobuf(protoResponse *services.TransactionGetRecei
 	return TransactionReceipt{
 		Status:                  Status(protoReceipt.Status),
 		ExchangeRate:            rate,
+		NextExchangeRate:        nextRate,
 		TopicID:                 topicID,
 		FileID:                  fileID,
 		ContractID:              contractID,
@@ -196,11 +215,19 @@ func (receipt TransactionReceipt) _ToProtobuf() *services.TransactionGetReceiptR
 		NodeId:                  receipt.NodeID,
 	}
 
+	var currentExchangeRate *services.ExchangeRate
 	if receipt.ExchangeRate != nil {
-		receiptFinal.ExchangeRate = &services.ExchangeRateSet{
-			CurrentRate: receipt.ExchangeRate._ToProtobuf(),
-			NextRate:    receipt.ExchangeRate._ToProtobuf(),
-		}
+		currentExchangeRate = receipt.ExchangeRate._ToProtobuf()
+	}
+
+	var nextExchangeRate *services.ExchangeRate
+	if receipt.NextExchangeRate != nil {
+		nextExchangeRate = receipt.NextExchangeRate._ToProtobuf()
+	}
+
+	receiptFinal.ExchangeRate = &services.ExchangeRateSet{
+		CurrentRate: currentExchangeRate,
+		NextRate:    nextExchangeRate,
 	}
 
 	if receipt.TopicID != nil {

@@ -330,7 +330,6 @@ func TestUnitTransactionRecordQueryMarshalJSON(t *testing.T) {
         "duplicates":[],
         "ethereumHash":"01020304",
         "evmAddress":"deadbeef",
-        "expectedDecimals":null,
         "nftTransfers":{"0.0.123":[{"sender":"0.0.1246","recipient":"0.0.1246","isApproved":true,"serial":123}]},
         "paidStakingRewards":[
             {"accountId":"0.0.1157","amount":"-1041694270","isApproved":false},
@@ -373,6 +372,7 @@ func TestUnitTransactionRecordQueryMarshalJSON(t *testing.T) {
             "topicSequenceNumber":0,
             "totalSupply":0
         },
+				"scheduleRef":"0.0.0",
         "tokenTransfers":{"0.0.123":{"0.0.1246":"789"}},
         "transactionFee":"41694270",
         "transactionHash":"cac44f2db045ba441f3fbc295217f2eb0f956293d28b3401578f6160e66f4e47ea87952d91c4b1cb5bda6447823b979a",
