@@ -70,8 +70,8 @@ func (receipt *TransactionReceipt) _ToMap() map[string]interface{} {
 		expirationStr := expiration.UTC().Format(layout)
 
 		m["nextExchangeRate"] = ExchangeRateJSON{
-			Hbars:          receipt.ExchangeRate.Hbars,
-			Cents:          receipt.ExchangeRate.cents,
+			Hbars:          receipt.NextExchangeRate.Hbars,
+			Cents:          receipt.NextExchangeRate.cents,
 			ExpirationTime: expirationStr,
 		}
 	}
@@ -215,11 +215,19 @@ func (receipt TransactionReceipt) _ToProtobuf() *services.TransactionGetReceiptR
 		NodeId:                  receipt.NodeID,
 	}
 
-	if receipt.ExchangeRate != nil && receipt.NextExchangeRate != nil {
-		receiptFinal.ExchangeRate = &services.ExchangeRateSet{
-			CurrentRate: receipt.ExchangeRate._ToProtobuf(),
-			NextRate:    receipt.NextExchangeRate._ToProtobuf(),
-		}
+	var currentExchangeRate *services.ExchangeRate
+	if receipt.ExchangeRate != nil {
+		currentExchangeRate = receipt.ExchangeRate._ToProtobuf()
+	}
+
+	var nextExchangeRate *services.ExchangeRate
+	if receipt.NextExchangeRate != nil {
+		nextExchangeRate = receipt.NextExchangeRate._ToProtobuf()
+	}
+
+	receiptFinal.ExchangeRate = &services.ExchangeRateSet{
+		CurrentRate: currentExchangeRate,
+		NextRate:    nextExchangeRate,
 	}
 
 	if receipt.TopicID != nil {

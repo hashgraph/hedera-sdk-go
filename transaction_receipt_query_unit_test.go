@@ -288,7 +288,7 @@ func TestUnitTransactionReceiptToJson(t *testing.T) {
 								},
 							},
 							NextRate: &services.ExchangeRate{
-								HbarEquiv: 30000,
+								HbarEquiv: 50000,
 								CentEquiv: 154271,
 								ExpirationTime: &services.TimestampSeconds{
 									Seconds: 1694689200,
@@ -328,13 +328,6 @@ func TestUnitTransactionReceiptToJson(t *testing.T) {
 										Seconds: 1694689200,
 									},
 								},
-								NextRate: &services.ExchangeRate{
-									HbarEquiv: 30000,
-									CentEquiv: 154271,
-									ExpirationTime: &services.TimestampSeconds{
-										Seconds: 1694689200,
-									},
-								},
 							},
 						},
 					},
@@ -363,15 +356,8 @@ func TestUnitTransactionReceiptToJson(t *testing.T) {
 							TopicSequenceNumber: 10,
 							TopicRunningHash:    []byte{10},
 							ExchangeRate: &services.ExchangeRateSet{
-								CurrentRate: &services.ExchangeRate{
-									HbarEquiv: 30000,
-									CentEquiv: 154271,
-									ExpirationTime: &services.TimestampSeconds{
-										Seconds: 1694689200,
-									},
-								},
 								NextRate: &services.ExchangeRate{
-									HbarEquiv: 30000,
+									HbarEquiv: 50000,
 									CentEquiv: 154271,
 									ExpirationTime: &services.TimestampSeconds{
 										Seconds: 1694689200,
@@ -399,16 +385,104 @@ func TestUnitTransactionReceiptToJson(t *testing.T) {
 	require.NoError(t, err)
 	jsonBytes, err := receipt.MarshalJSON()
 	require.NoError(t, err)
-	expected := `{"accountId":"0.0.123","children":[{"accountId":"0.0.123","children":[],"contractId":"0.0.456","duplicates":[],"exchangeRate":
-	{"hbars":30000,"cents":154271,"expirationTime":"2023-09-14T11:00:00.000Z"},"fileId":"0.0.789","nextExchangeRate":{"cents":154271, "expirationTime":"2023-09-14T11:00:00.000Z", "hbars":30000},"nodeId":0,"scheduleId":"0.0.321",
-	"scheduledTransactionId":"0.0.123@1694689200.000000000","serialNumbers":[1,2,3],"status":"SUCCESS","tokenId":"0.0.987","topicId":"0.0.654",
-	"topicRunningHash":"0a","topicRunningHashVersion":0,"topicSequenceNumber":10,"totalSupply":0}],"contractId":"0.0.456",
-	"duplicates":[{"accountId":"0.0.123","children":[],"contractId":"0.0.456","duplicates":[],"exchangeRate":{"hbars":30000,"cents":154271,
-	"expirationTime":"2023-09-14T11:00:00.000Z"},"fileId":"0.0.789","nextExchangeRate":{"cents":154271, "expirationTime":"2023-09-14T11:00:00.000Z", "hbars":30000},"nodeId":0,"scheduleId":"0.0.321","scheduledTransactionId":"0.0.123@1694689200.000000000",
-	"serialNumbers":[1,2,3],"status":"SUCCESS","tokenId":"0.0.987","topicId":"0.0.654","topicRunningHash":"0a","topicRunningHashVersion":0,
-	"topicSequenceNumber":10,"totalSupply":0}],"exchangeRate":{"hbars":30000,"cents":154271,"expirationTime":"2023-09-14T11:00:00.000Z"},
-	"fileId":"0.0.789","nextExchangeRate":{"cents":154271, "expirationTime":"2023-09-14T11:00:00.000Z", "hbars":30000},"nodeId":1,"scheduleId":"0.0.321","scheduledTransactionId":"0.0.123@1694689200.000000000","serialNumbers":[1,2,3],"status":"SUCCESS",
-	"tokenId":"0.0.987","topicId":"0.0.654","topicRunningHash":"0a","topicRunningHashVersion":0,"topicSequenceNumber":10,"totalSupply":0}`
+	expected := `
+{
+   "accountId":"0.0.123",
+   "children":[
+      {
+         "accountId":"0.0.123",
+         "children":[
+            
+         ],
+         "contractId":"0.0.456",
+         "duplicates":[
+            
+         ],
+         "exchangeRate":{
+            "hbars":30000,
+            "cents":154271,
+            "expirationTime":"2023-09-14T11:00:00.000Z"
+         },
+         "fileId":"0.0.789",
+         "nodeId":0,
+         "scheduleId":"0.0.321",
+         "scheduledTransactionId":"0.0.123@1694689200.000000000",
+         "serialNumbers":[
+            1,
+            2,
+            3
+         ],
+         "status":"SUCCESS",
+         "tokenId":"0.0.987",
+         "topicId":"0.0.654",
+         "topicRunningHash":"0a",
+         "topicRunningHashVersion":0,
+         "topicSequenceNumber":10,
+         "totalSupply":0
+      }
+   ],
+   "contractId":"0.0.456",
+   "duplicates":[
+      {
+         "accountId":"0.0.123",
+         "children":[
+            
+         ],
+         "contractId":"0.0.456",
+         "duplicates":[
+            
+         ],
+         "fileId":"0.0.789",
+         "nextExchangeRate":{
+            "cents":154271,
+            "expirationTime":"2023-09-14T11:00:00.000Z",
+            "hbars":50000
+         },
+         "nodeId":0,
+         "scheduleId":"0.0.321",
+         "scheduledTransactionId":"0.0.123@1694689200.000000000",
+         "serialNumbers":[
+            1,
+            2,
+            3
+         ],
+         "status":"SUCCESS",
+         "tokenId":"0.0.987",
+         "topicId":"0.0.654",
+         "topicRunningHash":"0a",
+         "topicRunningHashVersion":0,
+         "topicSequenceNumber":10,
+         "totalSupply":0
+      }
+   ],
+   "exchangeRate":{
+      "hbars":30000,
+      "cents":154271,
+      "expirationTime":"2023-09-14T11:00:00.000Z"
+   },
+   "fileId":"0.0.789",
+   "nextExchangeRate":{
+      "cents":154271,
+      "expirationTime":"2023-09-14T11:00:00.000Z",
+      "hbars":50000
+   },
+   "nodeId":1,
+   "scheduleId":"0.0.321",
+   "scheduledTransactionId":"0.0.123@1694689200.000000000",
+   "serialNumbers":[
+      1,
+      2,
+      3
+   ],
+   "status":"SUCCESS",
+   "tokenId":"0.0.987",
+   "topicId":"0.0.654",
+   "topicRunningHash":"0a",
+   "topicRunningHashVersion":0,
+   "topicSequenceNumber":10,
+   "totalSupply":0
+}
+	`
 
 	assert.JSONEqf(t, expected, string(jsonBytes), "json should be equal")
 
