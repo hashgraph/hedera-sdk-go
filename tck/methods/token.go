@@ -353,3 +353,37 @@ func (t *TokenService) DeleteToken(_ context.Context, params param.DeleteTokenPa
 
 	return &response.TokenResponse{Status: receipt.Status.String()}, nil
 }
+
+// UpdateTokenFeeSchedule jRPC method for updateTokenFeeSchedule
+func (t *TokenService) UpdateTokenFeeSchedule(_ context.Context, params param.UpdateTokenFeeScheduleParams) (*response.TokenResponse, error) {
+	transaction := hiero.NewTokenFeeScheduleUpdateTransaction().SetGrpcDeadline(&threeSecondsDuration)
+
+	if params.TokenId != nil {
+		tokenId, err := hiero.TokenIDFromString(*params.TokenId)
+		if err != nil {
+			return nil, err
+		}
+		transaction.SetTokenID(tokenId)
+	}
+	if params.CustomFees != nil {
+		customFees, err := utils.ParseCustomFees(*params.CustomFees)
+		if err != nil {
+			return nil, err
+		}
+		transaction.SetCustomFees(customFees)
+	}
+	if params.CommonTransactionParams != nil {
+		params.CommonTransactionParams.FillOutTransaction(transaction, t.sdkService.Client)
+	}
+
+	txResponse, err := transaction.Execute(t.sdkService.Client)
+	if err != nil {
+		return nil, err
+	}
+	receipt, err := txResponse.GetReceipt(t.sdkService.Client)
+	if err != nil {
+		return nil, err
+	}
+
+	return &response.TokenResponse{Status: receipt.Status.String()}, nil
+}

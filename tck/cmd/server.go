@@ -36,15 +36,16 @@ func main() {
 
 	// Create a new RPC server
 	assigner := handler.Map{
-		"setup":         postHandler(HandleError, handler.New(sdkService.Setup)),
-		"reset":         postHandler(HandleError, handler.New(sdkService.Reset)),
-		"createAccount": postHandler(HandleError, handler.New(accountService.CreateAccount)),
-		"updateAccount": postHandler(HandleError, handler.New(accountService.UpdateAccount)),
-		"deleteAccount": postHandler(HandleError, handler.New(accountService.DeleteAccount)),
-		"createToken":   postHandler(HandleError, handler.New(tokenService.CreateToken)),
-		"updateToken":   postHandler(HandleError, handler.New(tokenService.UpdateToken)),
-		"deleteToken":   postHandler(HandleError, handler.New(tokenService.DeleteToken)),
-		"generateKey":   postHandler(HandleError, handler.New(methods.GenerateKey)),
+		"setup":                  postHandler(HandleError, handler.New(sdkService.Setup)),
+		"reset":                  postHandler(HandleError, handler.New(sdkService.Reset)),
+		"createAccount":          postHandler(HandleError, handler.New(accountService.CreateAccount)),
+		"updateAccount":          postHandler(HandleError, handler.New(accountService.UpdateAccount)),
+		"deleteAccount":          postHandler(HandleError, handler.New(accountService.DeleteAccount)),
+		"createToken":            postHandler(HandleError, handler.New(tokenService.CreateToken)),
+		"updateToken":            postHandler(HandleError, handler.New(tokenService.UpdateToken)),
+		"deleteToken":            postHandler(HandleError, handler.New(tokenService.DeleteToken)),
+		"updateTokenFeeSchedule": postHandler(HandleError, handler.New(tokenService.UpdateTokenFeeSchedule)),
+		"generateKey":            postHandler(HandleError, handler.New(methods.GenerateKey)),
 	}
 
 	bridge := jhttp.NewBridge(assigner, nil)

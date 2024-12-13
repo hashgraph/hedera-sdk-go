@@ -18,10 +18,11 @@ type FixedFee struct {
 
 // FractionalFee represents the fractional fee structure.
 type FractionalFee struct {
-	Numerator     string `json:"numerator"`
-	Denominator   string `json:"denominator"`
-	MinimumAmount string `json:"minimumAmount"`
-	MaximumAmount string `json:"maximumAmount"`
+	Numerator        string `json:"numerator"`
+	Denominator      string `json:"denominator"`
+	MinimumAmount    string `json:"minimumAmount"`
+	MaximumAmount    string `json:"maximumAmount"`
+	AssessmentMethod string `json:"assessmentMethod"`
 }
 
 // RoyaltyFee represents the royalty fee structure.
