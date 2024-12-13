@@ -130,3 +130,26 @@ func TestIntegrationFileUpdateTransactionHandleFeeScheduleUpload(t *testing.T) {
 
 	assert.Equal(t, StatusFeeScheduleFilePartUploaded, receipt.Status)
 }
+
+func TestIntegrationTransactionReceiptQueryGetExchageRates(t *testing.T) {
+	t.Parallel()
+	env := NewIntegrationTestEnv(t)
+	defer CloseIntegrationTestEnv(env, nil)
+
+	newKey, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+
+	newBalance := NewHbar(2)
+
+	resp, err := NewAccountCreateTransaction().
+		SetKey(newKey.PublicKey()).
+		SetInitialBalance(newBalance).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	assert.NotNil(t, receipt.ExchangeRate.expirationTime)
+	assert.NotNil(t, receipt.NextExchangeRate.expirationTime)
+}
