@@ -1,5 +1,7 @@
 package main
 
+// SPDX-License-Identifier: Apache-2.0
+
 import (
 	"context"
 	"fmt"
@@ -18,8 +20,6 @@ import (
 	"github.com/hiero-ledger/hiero-sdk-go/v2"
 	"github.com/joho/godotenv"
 )
-
-// SPDX-License-Identifier: Apache-2.0
 
 func main() {
 	// Load dotenv
