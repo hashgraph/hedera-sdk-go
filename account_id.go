@@ -324,6 +324,9 @@ const (
 	EvmAddress
 )
 
+var httpString string = "http"
+var httpsString string = "https"
+
 func (id *AccountID) _MirrorNodeRequest(client *Client, populateType string) (map[string]interface{}, error) {
 	if client.mirrorNetwork == nil || len(client.GetMirrorNetwork()) == 0 {
 		return nil, errors.New("mirror node is not set")
@@ -337,11 +340,11 @@ func (id *AccountID) _MirrorNodeRequest(client *Client, populateType string) (ma
 	mirrorUrl = mirrorUrl[:index]
 
 	var url string
-	protocol := "https"
+	protocol := httpsString
 	port := ""
 
 	if client.GetLedgerID().String() == "" {
-		protocol = "http"
+		protocol = httpString
 		port = ":5551"
 	}
 
