@@ -42,6 +42,12 @@ func (query *MirrorNodeContractCallQuery) SetFunction(name string, params *Contr
 	return query
 }
 
+// SetFunction sets the function parameters as their raw bytes.
+func (query *MirrorNodeContractCallQuery) SetFunctionParameters(byteArray []byte) *MirrorNodeContractCallQuery {
+	query.setFunctionParameters(byteArray)
+	return query
+}
+
 // SetValue sets the amount of value (in tinybars or wei) to be sent to the contract in the transaction.
 func (query *MirrorNodeContractCallQuery) SetValue(value int64) *MirrorNodeContractCallQuery {
 	query.setValue(value)

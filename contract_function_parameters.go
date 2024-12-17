@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"strings"
 )
 
 // ContractFunctionParameters is a struct which builds a solidity function call
@@ -1718,8 +1719,9 @@ func (contract *ContractFunctionParameters) AddBytes32(value [32]byte) *Contract
 
 // AddAddress adds an address parameter to the function call
 func (contract *ContractFunctionParameters) AddAddress(value string) (*ContractFunctionParameters, error) {
+	value = strings.TrimPrefix(value, "0x")
 	if len(value) != 40 {
-		return contract, errors.Unwrap(fmt.Errorf("address is required to be 40 characters"))
+		return contract, fmt.Errorf("address is required to be 40 characters")
 	}
 
 	addressBytes, err := hex.DecodeString(value)

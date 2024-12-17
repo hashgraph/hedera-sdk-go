@@ -42,6 +42,12 @@ func (query *MirrorNodeContractEstimateGasQuery) SetFunction(name string, params
 	return query
 }
 
+// SetFunction sets the function parameters as their raw bytes.
+func (query *MirrorNodeContractEstimateGasQuery) SetFunctionParameters(byteArray []byte) *MirrorNodeContractEstimateGasQuery {
+	query.setFunctionParameters(byteArray)
+	return query
+}
+
 // SetValue sets the amount of value (in tinybars or wei) to be sent to the contract in the transaction.
 func (query *MirrorNodeContractEstimateGasQuery) SetValue(value int64) *MirrorNodeContractEstimateGasQuery {
 	query.setValue(value)

@@ -58,7 +58,7 @@ func (query *mirrorNodeContractQuery) setContractEvmAddress(contractEvmAddress s
 
 // GetContractEvmAddress returns the 20-byte EVM address of the contract to call.
 func (query *mirrorNodeContractQuery) GetContractEvmAddress() string {
-	if query.senderEvmAddress == nil {
+	if query.contractEvmAddress == nil {
 		return ""
 	}
 	return *query.contractEvmAddress
@@ -93,13 +93,18 @@ func (query *mirrorNodeContractQuery) GetSenderEvmAddress() string {
 	return *query.senderEvmAddress
 }
 
-// setFunction sets the function parameters as their raw bytes.
+// setFunction sets which function to call, and the ContractFunctionParams to pass to the function
 func (query *mirrorNodeContractQuery) setFunction(name string, params *ContractFunctionParameters) {
 	if params == nil {
 		params = NewContractFunctionParameters()
 	}
 
 	query.callData = params._Build(&name)
+}
+
+// setFunctionParameters sets the function parameters as their raw bytes.
+func (q *mirrorNodeContractQuery) setFunctionParameters(byteArray []byte) {
+	q.callData = byteArray
 }
 
 // GetCallData returns the calldata
@@ -165,7 +170,7 @@ func (query *mirrorNodeContractQuery) GetBlockNumber() int64 {
 
 // Returns gas estimation for the EVM execution
 func (query *mirrorNodeContractQuery) estimateGas(client *Client) (uint64, error) {
-	err := query.fillEvmAddresses(client)
+	err := query.fillEvmAddresses()
 	if err != nil {
 		return 0, err
 	}
@@ -194,7 +199,7 @@ func (query *mirrorNodeContractQuery) estimateGas(client *Client) (uint64, error
 
 // Does transient simulation of read-write operations and returns the result in hexadecimal string format. The result can be any solidity type.
 func (query *mirrorNodeContractQuery) call(client *Client) (string, error) {
-	err := query.fillEvmAddresses(client)
+	err := query.fillEvmAddresses()
 	if err != nil {
 		return "", err
 	}
@@ -223,27 +228,19 @@ func (query *mirrorNodeContractQuery) call(client *Client) (string, error) {
 }
 
 // Retrieve and set the evm addresses if necessary
-func (query *mirrorNodeContractQuery) fillEvmAddresses(client *Client) error {
+func (query *mirrorNodeContractQuery) fillEvmAddresses() error {
 	// fill contractEvmAddress
 	if query.contractEvmAddress == nil {
 		if query.contractID == nil {
 			return errors.New("contractID is not set")
 		}
-		err := query.contractID.PopulateEvmAddress(client)
-		if err != nil {
-			return err
-		}
-		address := hex.EncodeToString(query.contractID.EvmAddress)
+		address := query.contractID.ToSolidityAddress()
 		query.contractEvmAddress = &address
 	}
 
 	// fill senderEvmAddress
 	if query.senderEvmAddress == nil && query.sender != nil {
-		err := query.sender.PopulateEvmAddress(client)
-		if err != nil {
-			return err
-		}
-		address := hex.EncodeToString(*query.sender.AliasEvmAddress)
+		address := query.sender.ToSolidityAddress()
 		query.senderEvmAddress = &address
 	}
 	return nil
@@ -276,7 +273,6 @@ func (query *mirrorNodeContractQuery) performContractCallToMirrorNode(client *Cl
 	}
 
 	defer resp.Body.Close()
-
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
 		return nil, fmt.Errorf("received non-200 response from Mirror Node: %d, details: %s", resp.StatusCode, body)

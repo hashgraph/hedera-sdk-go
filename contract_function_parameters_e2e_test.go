@@ -304,6 +304,9 @@ func TestUint8Min(t *testing.T) {
 	defer CloseIntegrationTestEnv(env, nil)
 	deployContract(env)
 	value := uint8(0)
+	gas, err := NewMirrorNodeContractEstimateGasQuery().
+		SetContractID(contractID).SetFunction("returnUint8", NewContractFunctionParameters().AddUint8(value)).Execute(env.Client)
+	require.NoError(t, err)
 	contractCal, err := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).
 		SetContractID(contractID).SetFunction("returnUint8", NewContractFunctionParameters().AddUint8(value)).SetMaxQueryPayment(NewHbar(20)).Execute(env.Client)
 	require.NoError(t, err)
@@ -315,6 +318,9 @@ func TestUint8Max(t *testing.T) {
 	defer CloseIntegrationTestEnv(env, nil)
 	deployContract(env)
 	value := uint8(255)
+	gas, err := NewMirrorNodeContractEstimateGasQuery().
+		SetContractID(contractID).SetFunction("returnUint8", NewContractFunctionParameters().AddUint8(value)).Execute(env.Client)
+	require.NoError(t, err)
 	contractCal, err := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).
 		SetContractID(contractID).SetFunction("returnUint8", NewContractFunctionParameters().AddUint8(value)).SetMaxQueryPayment(NewHbar(20)).Execute(env.Client)
 	require.NoError(t, err)
@@ -327,6 +333,8 @@ func TestUint16Min(t *testing.T) {
 	defer CloseIntegrationTestEnv(env, nil)
 	deployContract(env)
 	value := uint16(0)
+	gas, err := NewMirrorNodeContractEstimateGasQuery().
+		SetContractID(contractID).SetFunction("returnUint16", NewContractFunctionParameters().AddUint16(value)).Execute(env.Client)
 	contractCal, err := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).
 		SetContractID(contractID).SetFunction("returnUint16", NewContractFunctionParameters().AddUint16(value)).SetMaxQueryPayment(NewHbar(20)).Execute(env.Client)
 	require.NoError(t, err)
@@ -339,6 +347,8 @@ func TestUint16Max(t *testing.T) {
 	defer CloseIntegrationTestEnv(env, nil)
 	deployContract(env)
 	value := uint16(65535)
+	gas, err := NewMirrorNodeContractEstimateGasQuery().
+		SetContractID(contractID).SetFunction("returnUint16", NewContractFunctionParameters().AddUint16(value)).Execute(env.Client)
 	contractCal, err := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).
 		SetContractID(contractID).SetFunction("returnUint16", NewContractFunctionParameters().AddUint16(value)).SetMaxQueryPayment(NewHbar(20)).Execute(env.Client)
 	require.NoError(t, err)
@@ -1656,6 +1666,10 @@ func TestAddress(t *testing.T) {
 	value := "1234567890123456789012345678901234567890"
 	params, err := NewContractFunctionParameters().AddAddress(value)
 	require.NoError(t, err)
+	gas, err := NewMirrorNodeContractEstimateGasQuery().
+		SetContractID(contractID).SetFunction("returnAddress", params).Execute(env.Client)
+	require.NoError(t, err)
+
 	contractCal := NewContractCallQuery().SetGas(gas).SetQueryPayment(NewHbar(1)).
 		SetContractID(contractID).SetFunction("returnAddress", params)
 	result, err := contractCal.Execute(env.Client)
