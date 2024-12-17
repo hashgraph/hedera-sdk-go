@@ -153,35 +153,35 @@ func (id ContractID) ToSolidityAddress() string {
 	return _IdToSolidityAddress(id.Shard, id.Realm, id.Contract)
 }
 
-// PopulateEvmAddress gets the actual `EvmAddress` field of the `ContractID` from the Mirror Node.
-func (id *ContractID) PopulateEvmAddress(client *Client) error {
-	result, err := id._MirrorNodeRequest(client, "evmAddress")
-	if err != nil {
-		return err
-	}
-
-	mirrorEvmAddress, ok := result["evm_address"].(string)
-	if !ok {
-		return errors.New("unexpected response format")
-	}
-
-	mirrorEvmAddress = strings.TrimPrefix(mirrorEvmAddress, "0x")
-	asd, err := hex.DecodeString(mirrorEvmAddress)
-	if err != nil {
-		return err
-	}
-	id.EvmAddress = asd
-	return nil
-}
-
 // PopulateContract gets the actual `Contract` field of the `ContractId` from the Mirror Node.
 // Should be used after generating `ContractId.FromEvmAddress()` because it sets the `Contract` field to `0`
 // automatically since there is no connection between the `Contract` and the `evmAddress`
 func (id *ContractID) PopulateContract(client *Client) error {
-	result, err := id._MirrorNodeRequest(client, "contractId")
+	if client.mirrorNetwork == nil || len(client.GetMirrorNetwork()) == 0 {
+		return errors.New("mirror node is not set")
+	}
+	mirrorUrl := client.GetMirrorNetwork()[0]
+	index := strings.Index(mirrorUrl, ":")
+	if index == -1 {
+		return errors.New("invalid mirrorUrl format")
+	}
+	mirrorUrl = mirrorUrl[:index]
+	url := fmt.Sprintf("https://%s/api/v1/contracts/%s", mirrorUrl, hex.EncodeToString(id.EvmAddress))
+	if client.GetLedgerID().String() == "" {
+		url = fmt.Sprintf("http://%s:5551/api/v1/contracts/%s", mirrorUrl, hex.EncodeToString(id.EvmAddress))
+	}
+
+	resp, err := http.Get(url) // #nosec
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
+
+	var result map[string]interface{}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return err
+	}
+
 	mirrorContractId, ok := result["contract_id"].(string)
 	if !ok {
 		return errors.New("unexpected response format")
@@ -210,47 +210,6 @@ func (id ContractID) _ToProtobuf() *services.ContractID {
 	resultID.Contract = &services.ContractID_ContractNum{ContractNum: int64(id.Contract)}
 
 	return &resultID
-}
-
-func (id *ContractID) _MirrorNodeRequest(client *Client, populateType string) (map[string]interface{}, error) {
-	if client.mirrorNetwork == nil || len(client.GetMirrorNetwork()) == 0 {
-		return nil, errors.New("mirror node is not set")
-	}
-
-	mirrorUrl := client.GetMirrorNetwork()[0]
-	index := strings.Index(mirrorUrl, ":")
-	if index == -1 {
-		return nil, errors.New("invalid mirrorUrl format")
-	}
-	mirrorUrl = mirrorUrl[:index]
-
-	var url string
-	protocol := httpsString
-	port := ""
-
-	if client.GetLedgerID().String() == "" {
-		protocol = httpString
-		port = ":5551"
-	}
-
-	if populateType == "contractId" {
-		url = fmt.Sprintf("%s://%s%s/api/v1/contracts/%s", protocol, mirrorUrl, port, hex.EncodeToString(id.EvmAddress))
-	} else {
-		url = fmt.Sprintf("%s://%s%s/api/v1/contracts/%s", protocol, mirrorUrl, port, id.String())
-	}
-
-	resp, err := http.Get(url) // #nosec
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	var result map[string]interface{}
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		return nil, err
-	}
-
-	return result, nil
 }
 
 func _ContractIDFromProtobuf(contractID *services.ContractID) *ContractID {

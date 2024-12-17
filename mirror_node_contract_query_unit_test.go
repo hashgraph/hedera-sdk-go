@@ -15,181 +15,157 @@ import (
 func TestMirrorNodeContractQuerySetAndGetContractID(t *testing.T) {
 	contractID := ContractID{Shard: 0, Realm: 0, Contract: 1234}
 
-	queries := []interface {
-		setContractID(ContractID)
-		GetContractID() ContractID
-	}{
-		&mirrorNodeContractQuery{},
-		NewMirrorNodeContractEstimateGasQuery(),
-		NewMirrorNodeContractCallQuery(),
-	}
+	query1 := &mirrorNodeContractQuery{}
+	query1.setContractID(contractID)
+	assert.Equal(t, contractID, query1.GetContractID())
 
-	for _, query := range queries {
-		query.setContractID(contractID)
-		assert.Equal(t, contractID, query.GetContractID())
-	}
+	query2 := NewMirrorNodeContractEstimateGasQuery()
+	query2.SetContractID(contractID)
+	assert.Equal(t, contractID, query2.GetContractID())
+
+	query3 := NewMirrorNodeContractCallQuery()
+	query3.SetContractID(contractID)
+	assert.Equal(t, contractID, query3.GetContractID())
 }
 
 func TestMirrorNodeContractQuerySetAndGetSenderEvmAddress(t *testing.T) {
 	evmAddress := "0x1234567890abcdef1234567890abcdef12345678"
 
-	queries := []interface {
-		setSenderEvmAddress(string)
-		GetSenderEvmAddress() string
-		GetSender() AccountID
-	}{
-		&mirrorNodeContractQuery{},
-		NewMirrorNodeContractEstimateGasQuery(),
-		NewMirrorNodeContractCallQuery(),
-	}
+	query1 := &mirrorNodeContractQuery{}
+	query1.setSenderEvmAddress(evmAddress)
+	assert.Equal(t, evmAddress, query1.GetSenderEvmAddress())
+	assert.Equal(t, AccountID{}, query1.GetSender())
 
-	for _, query := range queries {
-		query.setSenderEvmAddress(evmAddress)
-		assert.Equal(t, evmAddress, query.GetSenderEvmAddress())
-		assert.Equal(t, AccountID{}, query.GetSender())
-	}
+	query2 := NewMirrorNodeContractEstimateGasQuery()
+	query2.SetSenderEvmAddress(evmAddress)
+	assert.Equal(t, evmAddress, query2.GetSenderEvmAddress())
+	assert.Equal(t, AccountID{}, query2.GetSender())
+
+	query3 := NewMirrorNodeContractCallQuery()
+	query3.SetSenderEvmAddress(evmAddress)
+	assert.Equal(t, evmAddress, query3.GetSenderEvmAddress())
+	assert.Equal(t, AccountID{}, query3.GetSender())
 }
 
 func TestMirrorNodeContractQuerySetAndGetContractEvmAddress(t *testing.T) {
 	evmAddress := "0x1234567890abcdef1234567890abcdef12345678"
 
-	queries := []interface {
-		setContractEvmAddress(string)
-		GetContractEvmAddress() string
-		GetContractID() ContractID
-	}{
-		&mirrorNodeContractQuery{},
-		NewMirrorNodeContractEstimateGasQuery(),
-		NewMirrorNodeContractCallQuery(),
-	}
+	query1 := &mirrorNodeContractQuery{}
+	query1.setContractEvmAddress(evmAddress)
+	assert.Equal(t, evmAddress, query1.GetContractEvmAddress())
+	assert.Equal(t, ContractID{}, query1.GetContractID())
 
-	for _, query := range queries {
-		query.setContractEvmAddress(evmAddress)
-		assert.Equal(t, evmAddress, query.GetContractEvmAddress())
-		assert.Equal(t, ContractID{}, query.GetContractID())
-	}
+	query2 := NewMirrorNodeContractEstimateGasQuery()
+	query2.SetContractEvmAddress(evmAddress)
+	assert.Equal(t, evmAddress, query2.GetContractEvmAddress())
+	assert.Equal(t, ContractID{}, query2.GetContractID())
+
+	query3 := NewMirrorNodeContractCallQuery()
+	query3.SetContractEvmAddress(evmAddress)
+	assert.Equal(t, evmAddress, query3.GetContractEvmAddress())
+	assert.Equal(t, ContractID{}, query3.GetContractID())
 }
 
 func TestMirrorNodeContractQuerySetAndGetCallData(t *testing.T) {
 	params := []byte("test")
 
-	queries := []interface {
-		setFunctionParameters([]byte)
-		GetCallData() []byte
-	}{
-		&mirrorNodeContractQuery{},
-		NewMirrorNodeContractEstimateGasQuery(),
-		NewMirrorNodeContractCallQuery(),
-	}
+	query1 := &mirrorNodeContractQuery{}
+	query1.setFunctionParameters(params)
+	assert.Equal(t, params, query1.GetCallData())
 
-	for _, query := range queries {
-		query.setFunctionParameters(params)
-		assert.Equal(t, params, query.GetCallData())
-	}
+	query2 := NewMirrorNodeContractEstimateGasQuery()
+	query2.SetFunctionParameters(params)
+	assert.Equal(t, params, query2.GetCallData())
+
+	query3 := NewMirrorNodeContractCallQuery()
+	query3.SetFunctionParameters(params)
+	assert.Equal(t, params, query3.GetCallData())
 }
 
 func TestMirrorNodeContractQuerySetFunctionWithoutParameters(t *testing.T) {
-	queries := []interface {
-		setFunction(string, *ContractFunctionParameters)
-		GetCallData() []byte
-	}{
-		&mirrorNodeContractQuery{},
-		NewMirrorNodeContractEstimateGasQuery(),
-		NewMirrorNodeContractCallQuery(),
-	}
+	query1 := &mirrorNodeContractQuery{}
+	query1.setFunction("myFunction", nil)
+	assert.NotNil(t, query1.GetCallData())
 
-	for _, query := range queries {
-		query.setFunction("myFunction", nil)
-		assert.NotNil(t, query.GetCallData())
-	}
+	query2 := NewMirrorNodeContractEstimateGasQuery()
+	query2.SetFunction("myFunction", nil)
+	assert.NotNil(t, query2.GetCallData())
+
+	query3 := NewMirrorNodeContractCallQuery()
+	query3.SetFunction("myFunction", nil)
+	assert.NotNil(t, query3.GetCallData())
 }
 
 func TestMirrorNodeContractQuerySetAndGetBlockNumber(t *testing.T) {
 	blockNumber := int64(123456)
 
-	queries := []interface {
-		setBlockNumber(int64)
-		GetBlockNumber() int64
-	}{
-		&mirrorNodeContractQuery{},
-		NewMirrorNodeContractEstimateGasQuery(),
-		NewMirrorNodeContractCallQuery(),
-	}
+	query1 := &mirrorNodeContractQuery{}
+	query1.setBlockNumber(blockNumber)
+	assert.Equal(t, blockNumber, query1.GetBlockNumber())
 
-	for _, query := range queries {
-		query.setBlockNumber(blockNumber)
-		assert.Equal(t, blockNumber, query.GetBlockNumber())
-	}
+	query2 := NewMirrorNodeContractCallQuery()
+	query2.SetBlockNumber(blockNumber)
+	assert.Equal(t, blockNumber, query2.GetBlockNumber())
 }
 
 func TestMirrorNodeContractQuerySetAndGetValue(t *testing.T) {
 	value := int64(1000)
 
-	queries := []interface {
-		setValue(int64)
-		GetValue() int64
-	}{
-		&mirrorNodeContractQuery{},
-		NewMirrorNodeContractEstimateGasQuery(),
-		NewMirrorNodeContractCallQuery(),
-	}
+	query1 := &mirrorNodeContractQuery{}
+	query1.setValue(value)
+	assert.Equal(t, value, query1.GetValue())
 
-	for _, query := range queries {
-		query.setValue(value)
-		assert.Equal(t, value, query.GetValue())
-	}
+	query2 := NewMirrorNodeContractEstimateGasQuery()
+	query2.SetValue(value)
+	assert.Equal(t, value, query2.GetValue())
+
+	query3 := NewMirrorNodeContractCallQuery()
+	query3.SetValue(value)
+	assert.Equal(t, value, query3.GetValue())
 }
 
 func TestMirrorNodeContractQuerySetAndGetGasLimit(t *testing.T) {
 	gas := int64(50000)
 
-	queries := []interface {
-		setGasLimit(int64)
-		GetGasLimit() int64
-	}{
-		&mirrorNodeContractQuery{},
-		NewMirrorNodeContractEstimateGasQuery(),
-		NewMirrorNodeContractCallQuery(),
-	}
+	query1 := &mirrorNodeContractQuery{}
+	query1.setGasLimit(gas)
+	assert.Equal(t, gas, query1.GetGasLimit())
 
-	for _, query := range queries {
-		query.setGasLimit(gas)
-		assert.Equal(t, gas, query.GetGasLimit())
-	}
+	query2 := NewMirrorNodeContractEstimateGasQuery()
+	query2.SetGasLimit(gas)
+	assert.Equal(t, gas, query2.GetGasLimit())
+
+	query3 := NewMirrorNodeContractCallQuery()
+	query3.SetGasLimit(gas)
+	assert.Equal(t, gas, query3.GetGasLimit())
 }
 
 func TestMirrorNodeContractQuerySetAndGetGasPrice(t *testing.T) {
 	gasPrice := int64(200)
 
-	queries := []interface {
-		setGasPrice(int64)
-		GetGasPrice() int64
-	}{
-		&mirrorNodeContractQuery{},
-		NewMirrorNodeContractEstimateGasQuery(),
-		NewMirrorNodeContractCallQuery(),
-	}
+	query1 := &mirrorNodeContractQuery{}
+	query1.setGasPrice(gasPrice)
+	assert.Equal(t, gasPrice, query1.GetGasPrice())
 
-	for _, query := range queries {
-		query.setGasPrice(gasPrice)
-		assert.Equal(t, gasPrice, query.GetGasPrice())
-	}
+	query2 := NewMirrorNodeContractEstimateGasQuery()
+	query2.SetGasPrice(gasPrice)
+	assert.Equal(t, gasPrice, query2.GetGasPrice())
+
+	query3 := NewMirrorNodeContractCallQuery()
+	query3.SetGasPrice(gasPrice)
+	assert.Equal(t, gasPrice, query3.GetGasPrice())
 }
 
 func TestMirrorNodeContractQueryEstimateGasWithMissingContractIDOrEvmAddressThrowsException(t *testing.T) {
-	queries := []interface {
-		setFunction(string, *ContractFunctionParameters)
-		estimateGas(*Client) (uint64, error)
-	}{
-		&mirrorNodeContractQuery{},
-		NewMirrorNodeContractEstimateGasQuery(),
-	}
+	query1 := &mirrorNodeContractQuery{}
+	query1.setFunction("testFunction", NewContractFunctionParameters().AddString("params"))
+	_, err1 := query1.estimateGas(nil)
+	require.Error(t, err1)
 
-	for _, query := range queries {
-		query.setFunction("testFunction", NewContractFunctionParameters().AddString("params"))
-		_, err := query.estimateGas(nil)
-		require.Error(t, err)
-	}
+	query2 := NewMirrorNodeContractEstimateGasQuery()
+	query2.setFunction("testFunction", NewContractFunctionParameters().AddString("params"))
+	_, err2 := query2.Execute(nil)
+	require.Error(t, err2)
 }
 
 func TestMirrorNodeContractQueryCreateJSONPayloadAllFieldsSet(t *testing.T) {
