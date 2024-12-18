@@ -132,10 +132,10 @@ func privateKeyFromBytes(privateKey []byte) (*btcec.PrivateKey, error) {
 	// Define the curve order N (secp256k1)
 	curve := secp256k1.S256()
 	N := curve.N
-	
+
 	// Convert privKeyBytes to a big integer
 	privKeyInt := new(big.Int).SetBytes(privateKey)
-	
+
 	// Check if the private key is in the valid range [1, N-1]
 	if privKeyInt.Cmp(big.NewInt(0)) <= 0 || privKeyInt.Cmp(N) >= 0 {
 		return nil, fmt.Errorf("private key is out of range: must be between 1 and N-1")

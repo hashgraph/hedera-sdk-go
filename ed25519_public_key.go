@@ -46,7 +46,7 @@ func _Ed25519PublicKeyFromBytesRaw(bytes []byte) (*_Ed25519PublicKey, error) {
 	if bytes == nil {
 		return &_Ed25519PublicKey{}, errByteArrayNull
 	}
-	
+
 	if len(bytes) != ed25519.PublicKeySize {
 		return &_Ed25519PublicKey{}, _NewErrBadKeyf("invalid public key length: %v bytes", len(bytes))
 	}
