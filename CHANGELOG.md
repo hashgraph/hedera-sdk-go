@@ -1,3 +1,15 @@
+## v2.53.0
+
+### Added
+- `NextExchangeRate` in the `TransactionReceipt`.
+- `ScheduleRef` in the `TransactionRecord`.
+- 2 new queries `MirrorNodeContractCallQuery` and `MirrorNodeContractEstimateGasQuery` for estimation/simulation of contract operations.
+- Missing `RequestType`s in `request_type.go`.
+- Validation for creating ECDSA Public keys from bytes.
+
+### Changed
+- Removed `ExpectedDecimals` from the `TransactionRecord`, as 'dead' property.
+
 ## v2.52.0
 
 ### Added
