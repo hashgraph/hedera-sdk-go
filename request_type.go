@@ -128,6 +128,60 @@ const (
 	RequestTypeScheduleSign RequestType = 72
 	// Get Scheduled Transaction Information
 	RequestTypeScheduleGetInfo RequestType = 73
+	// Get Token Account Nft Information
+	RequestTypeTokenGetAccountNftInfos RequestType = 74
+	// Get Token Nft Information
+	RequestTypeTokenGetNftInfo RequestType = 75
+	// Get Token Nft List Information
+	RequestTypeTokenGetNftInfos RequestType = 76
+	// Update a token's custom fee schedule, if permissible
+	RequestTypeTokenFeeScheduleUpdate RequestType = 77
+	// Get execution time(s) by TransactionID, if available
+	RequestTypeNetworkGetExecutionTime RequestType = 78
+	// Pause the Token
+	RequestTypeTokenPause RequestType = 79
+	// Unpause the Token
+	RequestTypeTokenUnpause RequestType = 80
+	// Approve allowance for a spender relative to the owner account
+	RequestTypeCryptoApproveAllowance RequestType = 81
+	// Deletes granted allowances on owner account
+	RequestTypeCryptoDeleteAllowance RequestType = 82
+	// Gets all the information about an account, including balance and allowances
+	RequestTypeGetAccountDetails RequestType = 83
+	// Ethereum Transaction
+	RequestTypeEthereumTransaction RequestType = 84
+	// Updates the staking info at the end of staking period
+	RequestTypeNodeStakeUpdate RequestType = 85
+	// Generates a pseudorandom number
+	RequestTypePrng RequestType = 86
+	// Get a record for a transaction (lasts 180 seconds)
+	RequestTypeTransactionGetFastRecord RequestType = 87
+	// Update the metadata of one or more NFT's of a specific token type
+	RequestTypeTokenUpdateNfts RequestType = 88
+	// Create a new node
+	RequestTypeNodeCreate RequestType = 89
+	// Update an existing node
+	RequestTypeNodeUpdate RequestType = 90
+	// Delete a node
+	RequestTypeNodeDelete RequestType = 91
+	// Transfer token balances to treasury
+	RequestTypeTokenReject RequestType = 92
+	// Airdrop tokens to accounts
+	RequestTypeTokenAirdrop RequestType = 93
+	// Remove pending airdrops from state
+	RequestTypeTokenCancelAirdrop RequestType = 94
+	// Claim pending airdrops
+	RequestTypeTokenClaimAirdrop RequestType = 95
+	// TSS Messages for a candidate roster
+	RequestTypeTssMessage RequestType = 96
+	// Vote on TSS validity
+	RequestTypeTssVote RequestType = 97
+	// Node's signature of block hash using TSS private share
+	RequestTypeTssShareSignature RequestType = 98
+	// Submit node public TSS encryption key
+	RequestTypeTssEncryptionKey RequestType = 99
+	// Submit signature of state root hash
+	RequestTypeStateSignatureTransaction RequestType = 100
 )
 
 // String() returns a string representation of the status
@@ -253,6 +307,60 @@ func (requestType RequestType) String() string { // nolint
 		return "SCHEDULE_SIGN"
 	case RequestTypeScheduleGetInfo:
 		return "SCHEDULE_GET_INFO"
+	case RequestTypeTokenGetAccountNftInfos:
+		return "TOKEN_GET_ACCOUNT_NFT_INFOS"
+	case RequestTypeTokenGetNftInfo:
+		return "TOKEN_GET_NFT_INFO"
+	case RequestTypeTokenGetNftInfos:
+		return "TOKEN_GET_NFT_INFOS"
+	case RequestTypeTokenFeeScheduleUpdate:
+		return "TOKEN_FEE_SCHEDULE_UPDATE"
+	case RequestTypeNetworkGetExecutionTime:
+		return "NETWORK_GET_EXECUTION_TIME"
+	case RequestTypeTokenPause:
+		return "TOKEN_PAUSE"
+	case RequestTypeTokenUnpause:
+		return "TOKEN_UNPAUSE"
+	case RequestTypeCryptoApproveAllowance:
+		return "CRYPTO_APPROVE_ALLOWANCE"
+	case RequestTypeCryptoDeleteAllowance:
+		return "CRYPTO_DELETE_ALLOWANCE"
+	case RequestTypeGetAccountDetails:
+		return "GET_ACCOUNT_DETAILS"
+	case RequestTypeEthereumTransaction:
+		return "ETHEREUM_TRANSACTION"
+	case RequestTypeNodeStakeUpdate:
+		return "NODE_STAKE_UPDATE"
+	case RequestTypePrng:
+		return "PRNG"
+	case RequestTypeTransactionGetFastRecord:
+		return "TRANSACTION_GET_FAST_RECORD"
+	case RequestTypeTokenUpdateNfts:
+		return "TOKEN_UPDATE_NFTS"
+	case RequestTypeNodeCreate:
+		return "NODE_CREATE"
+	case RequestTypeNodeUpdate:
+		return "NODE_UPDATE"
+	case RequestTypeNodeDelete:
+		return "NODE_DELETE"
+	case RequestTypeTokenReject:
+		return "TOKEN_REJECT"
+	case RequestTypeTokenAirdrop:
+		return "TOKEN_AIRDROP"
+	case RequestTypeTokenCancelAirdrop:
+		return "TOKEN_CANCEL_AIRDROP"
+	case RequestTypeTokenClaimAirdrop:
+		return "TOKEN_CLAIM_AIRDROP"
+	case RequestTypeTssMessage:
+		return "TSS_MESSAGE"
+	case RequestTypeTssVote:
+		return "TSS_VOTE"
+	case RequestTypeTssShareSignature:
+		return "TSS_SHARE_SIGNATURE"
+	case RequestTypeTssEncryptionKey:
+		return "TSS_ENCRYPTION_KEY"
+	case RequestTypeStateSignatureTransaction:
+		return "STATE_SIGNATURE_TRANSACTION"
 	}
 
 	panic(fmt.Sprintf("unreachable: RequestType.String() switch statement is non-exhaustive. RequestType: %v", uint32(requestType)))
