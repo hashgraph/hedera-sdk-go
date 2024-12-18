@@ -36,151 +36,104 @@ type mirrorNodeContractQuery struct {
 	blockNumber *int64
 }
 
-// setContractID sets the contract instance to call
-func (query *mirrorNodeContractQuery) setContractID(contractID ContractID) {
-	query.contractID = &contractID
-}
-
 // GetContractID returns the contract instance to call
-func (query *mirrorNodeContractQuery) GetContractID() ContractID {
-	if query.contractID == nil {
+func (mirrorNodeContractQuery *mirrorNodeContractQuery) GetContractID() ContractID {
+	if mirrorNodeContractQuery.contractID == nil {
 		return ContractID{}
 	}
 
-	return *query.contractID
-}
-
-// setContractEvmAddress Set the 20-byte EVM address of the contract to call.
-func (query *mirrorNodeContractQuery) setContractEvmAddress(contractEvmAddress string) {
-	query.contractEvmAddress = &contractEvmAddress
-	query.contractID = nil
+	return *mirrorNodeContractQuery.contractID
 }
 
 // GetContractEvmAddress returns the 20-byte EVM address of the contract to call.
-func (query *mirrorNodeContractQuery) GetContractEvmAddress() string {
-	if query.contractEvmAddress == nil {
+func (mirrorNodeContractQuery *mirrorNodeContractQuery) GetContractEvmAddress() string {
+	if mirrorNodeContractQuery.contractEvmAddress == nil {
 		return ""
 	}
-	return *query.contractEvmAddress
-}
-
-// setSender sets the sender of the transaction simulation.
-func (query *mirrorNodeContractQuery) setSender(sender AccountID) {
-	query.sender = &sender
+	return *mirrorNodeContractQuery.contractEvmAddress
 }
 
 // GetSender returns the sender of the transaction simulation.
-func (query *mirrorNodeContractQuery) GetSender() AccountID {
-	if query.sender == nil {
+func (mirrorNodeContractQuery *mirrorNodeContractQuery) GetSender() AccountID {
+	if mirrorNodeContractQuery.sender == nil {
 		return AccountID{}
 	}
 
-	return *query.sender
-}
-
-// setSenderEvmAddress Set the 20-byte EVM address of the sender of the transaction simulation.
-func (query *mirrorNodeContractQuery) setSenderEvmAddress(senderEvmAddress string) {
-	query.senderEvmAddress = &senderEvmAddress
-	query.sender = nil
+	return *mirrorNodeContractQuery.sender
 }
 
 // GetSenderEvmAddress returns the 20-byte EVM address of the sender of the transaction simulation.
-func (query *mirrorNodeContractQuery) GetSenderEvmAddress() string {
-	if query.senderEvmAddress == nil {
+func (mirrorNodeContractQuery *mirrorNodeContractQuery) GetSenderEvmAddress() string {
+	if mirrorNodeContractQuery.senderEvmAddress == nil {
 		return ""
 	}
 
-	return *query.senderEvmAddress
+	return *mirrorNodeContractQuery.senderEvmAddress
 }
 
 // setFunction sets which function to call, and the ContractFunctionParams to pass to the function
-func (query *mirrorNodeContractQuery) setFunction(name string, params *ContractFunctionParameters) {
+func (mirrorNodeContractQuery *mirrorNodeContractQuery) setFunction(name string, params *ContractFunctionParameters) {
 	if params == nil {
 		params = NewContractFunctionParameters()
 	}
 
-	query.callData = params._Build(&name)
-}
-
-// setFunctionParameters sets the function parameters as their raw bytes.
-func (q *mirrorNodeContractQuery) setFunctionParameters(byteArray []byte) {
-	q.callData = byteArray
+	mirrorNodeContractQuery.callData = params._Build(&name)
 }
 
 // GetCallData returns the calldata
-func (query *mirrorNodeContractQuery) GetCallData() []byte {
-	return query.callData
-}
-
-// setValue Sets the amount of value (in tinybars or wei) to be sent to the contract in the transaction.
-func (query *mirrorNodeContractQuery) setValue(value int64) {
-	query.value = &value
+func (mirrorNodeContractQuery *mirrorNodeContractQuery) GetCallData() []byte {
+	return mirrorNodeContractQuery.callData
 }
 
 // GetValue returns the amount of value (in tinybars or wei) to be sent to the contract in the transaction.
-func (query *mirrorNodeContractQuery) GetValue() int64 {
-	if query.value == nil {
+func (mirrorNodeContractQuery *mirrorNodeContractQuery) GetValue() int64 {
+	if mirrorNodeContractQuery.value == nil {
 		return 0
 	}
 
-	return *query.value
-}
-
-// setGasLimit Sets the gas limit for the contract call. This specifies the maximum amount of gas that the transaction can consume.
-func (query *mirrorNodeContractQuery) setGasLimit(gasLimit int64) {
-	query.gasLimit = &gasLimit
+	return *mirrorNodeContractQuery.value
 }
 
 // GetGasLimit returns the gas limit for the contract call. This specifies the maximum amount of gas that the transaction can consume.
-func (query *mirrorNodeContractQuery) GetGasLimit() int64 {
-	if query.gasLimit == nil {
+func (mirrorNodeContractQuery *mirrorNodeContractQuery) GetGasLimit() int64 {
+	if mirrorNodeContractQuery.gasLimit == nil {
 		return 0
 	}
 
-	return *query.gasLimit
-}
-
-// setGasPrice Sets the gas price to be used for the contract call. This specifies the price of each unit of gas used in the transaction.
-func (query *mirrorNodeContractQuery) setGasPrice(gasPrice int64) {
-	query.gasPrice = &gasPrice
+	return *mirrorNodeContractQuery.gasLimit
 }
 
 // GetGasPrice returns the gas price to be used for the contract call. This specifies the price of each unit of gas used in the transaction.
-func (query *mirrorNodeContractQuery) GetGasPrice() int64 {
-	if query.gasPrice == nil {
+func (mirrorNodeContractQuery *mirrorNodeContractQuery) GetGasPrice() int64 {
+	if mirrorNodeContractQuery.gasPrice == nil {
 		return 0
 	}
 
-	return *query.gasPrice
-}
-
-// setBlockNumber Sets the block number for the simulation of the contract call. The block number determines the context of the contract call simulation within the blockchain.
-func (query *mirrorNodeContractQuery) setBlockNumber(blockNumber int64) {
-	query.blockNumber = &blockNumber
+	return *mirrorNodeContractQuery.gasPrice
 }
 
 // GetBlockNumber returns the block number for the simulation of the contract call. The block number determines the context of the contract call simulation within the blockchain.
-func (query *mirrorNodeContractQuery) GetBlockNumber() int64 {
-	if query.blockNumber == nil {
+func (mirrorNodeContractQuery *mirrorNodeContractQuery) GetBlockNumber() int64 {
+	if mirrorNodeContractQuery.blockNumber == nil {
 		return 0
 	}
 
-	return *query.blockNumber
+	return *mirrorNodeContractQuery.blockNumber
 }
 
 // Returns gas estimation for the EVM execution
-func (query *mirrorNodeContractQuery) estimateGas(client *Client) (uint64, error) {
-	err := query.fillEvmAddresses()
+func (mirrorNodeContractQuery *mirrorNodeContractQuery) estimateGas(client *Client) (uint64, error) {
+	err := mirrorNodeContractQuery.fillEvmAddresses()
 	if err != nil {
 		return 0, err
 	}
 
-	jsonPayload, err := query.createJSONPayload(true, "latest")
+	jsonPayload, err := mirrorNodeContractQuery.createJSONPayload(true, "latest")
 	if err != nil {
 		return 0, err
 	}
 
-	result, err := query.performContractCallToMirrorNode(client, jsonPayload)
+	result, err := mirrorNodeContractQuery.performContractCallToMirrorNode(client, jsonPayload)
 	if err != nil {
 		return 0, err
 	}
@@ -198,24 +151,24 @@ func (query *mirrorNodeContractQuery) estimateGas(client *Client) (uint64, error
 }
 
 // Does transient simulation of read-write operations and returns the result in hexadecimal string format. The result can be any solidity type.
-func (query *mirrorNodeContractQuery) call(client *Client) (string, error) {
-	err := query.fillEvmAddresses()
+func (mirrorNodeContractQuery *mirrorNodeContractQuery) call(client *Client) (string, error) {
+	err := mirrorNodeContractQuery.fillEvmAddresses()
 	if err != nil {
 		return "", err
 	}
 
 	var blockNumber string
-	if query.blockNumber == nil {
+	if mirrorNodeContractQuery.blockNumber == nil {
 		blockNumber = "latest"
 	} else {
-		blockNumber = fmt.Sprintf("%d", *query.blockNumber)
+		blockNumber = fmt.Sprintf("%d", *mirrorNodeContractQuery.blockNumber)
 	}
-	jsonPayload, err := query.createJSONPayload(false, blockNumber)
+	jsonPayload, err := mirrorNodeContractQuery.createJSONPayload(false, blockNumber)
 	if err != nil {
 		return "", err
 	}
 
-	result, err := query.performContractCallToMirrorNode(client, jsonPayload)
+	result, err := mirrorNodeContractQuery.performContractCallToMirrorNode(client, jsonPayload)
 	if err != nil {
 		return "", err
 	}
@@ -228,25 +181,25 @@ func (query *mirrorNodeContractQuery) call(client *Client) (string, error) {
 }
 
 // Retrieve and set the evm addresses if necessary
-func (query *mirrorNodeContractQuery) fillEvmAddresses() error {
+func (mirrorNodeContractQuery *mirrorNodeContractQuery) fillEvmAddresses() error {
 	// fill contractEvmAddress
-	if query.contractEvmAddress == nil {
-		if query.contractID == nil {
+	if mirrorNodeContractQuery.contractEvmAddress == nil {
+		if mirrorNodeContractQuery.contractID == nil {
 			return errors.New("contractID is not set")
 		}
-		address := query.contractID.ToSolidityAddress()
-		query.contractEvmAddress = &address
+		address := mirrorNodeContractQuery.contractID.ToSolidityAddress()
+		mirrorNodeContractQuery.contractEvmAddress = &address
 	}
 
 	// fill senderEvmAddress
-	if query.senderEvmAddress == nil && query.sender != nil {
-		address := query.sender.ToSolidityAddress()
-		query.senderEvmAddress = &address
+	if mirrorNodeContractQuery.senderEvmAddress == nil && mirrorNodeContractQuery.sender != nil {
+		address := mirrorNodeContractQuery.sender.ToSolidityAddress()
+		mirrorNodeContractQuery.senderEvmAddress = &address
 	}
 	return nil
 }
 
-func (query *mirrorNodeContractQuery) performContractCallToMirrorNode(client *Client, jsonPayload string) (map[string]any, error) {
+func (mirrorNodeContractQuery *mirrorNodeContractQuery) performContractCallToMirrorNode(client *Client, jsonPayload string) (map[string]any, error) {
 	if client.mirrorNetwork == nil || len(client.GetMirrorNetwork()) == 0 {
 		return nil, errors.New("mirror node is not set")
 	}
@@ -258,11 +211,11 @@ func (query *mirrorNodeContractQuery) performContractCallToMirrorNode(client *Cl
 	mirrorUrl = mirrorUrl[:index]
 
 	var url string
-	protocol := httpsString
+	protocol := "https"
 	port := ""
 
 	if client.GetLedgerID().String() == "" {
-		protocol = httpString
+		protocol = "http"
 		port = ":8545"
 	}
 	url = fmt.Sprintf("%s://%s%s/api/v1/contracts/call", protocol, mirrorUrl, port)
@@ -285,28 +238,28 @@ func (query *mirrorNodeContractQuery) performContractCallToMirrorNode(client *Cl
 	return result, nil
 }
 
-func (query *mirrorNodeContractQuery) createJSONPayload(estimate bool, blockNumber string) (string, error) {
-	hexData := hex.EncodeToString(query.callData)
+func (mirrorNodeContractQuery *mirrorNodeContractQuery) createJSONPayload(estimate bool, blockNumber string) (string, error) {
+	hexData := hex.EncodeToString(mirrorNodeContractQuery.callData)
 
 	payload := map[string]any{
 		"data":        hexData,
-		"to":          query.contractEvmAddress,
+		"to":          mirrorNodeContractQuery.contractEvmAddress,
 		"estimate":    estimate,
 		"blockNumber": blockNumber,
 	}
 
 	// Conditionally add fields if they are set to non-default values
-	if query.senderEvmAddress != nil {
-		payload["from"] = query.senderEvmAddress
+	if mirrorNodeContractQuery.senderEvmAddress != nil {
+		payload["from"] = mirrorNodeContractQuery.senderEvmAddress
 	}
-	if query.gasLimit != nil {
-		payload["gas"] = query.gasLimit
+	if mirrorNodeContractQuery.gasLimit != nil {
+		payload["gas"] = mirrorNodeContractQuery.gasLimit
 	}
-	if query.gasPrice != nil {
-		payload["gasPrice"] = query.gasPrice
+	if mirrorNodeContractQuery.gasPrice != nil {
+		payload["gasPrice"] = mirrorNodeContractQuery.gasPrice
 	}
-	if query.value != nil {
-		payload["value"] = query.value
+	if mirrorNodeContractQuery.value != nil {
+		payload["value"] = mirrorNodeContractQuery.value
 	}
 
 	jsonBytes, err := json.Marshal(payload)

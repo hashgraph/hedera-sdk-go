@@ -8,74 +8,76 @@ type MirrorNodeContractCallQuery struct {
 }
 
 func NewMirrorNodeContractCallQuery() *MirrorNodeContractCallQuery {
-	query := new(MirrorNodeContractCallQuery)
-	return query
+	mirrorNodeContractCallQuery := new(MirrorNodeContractCallQuery)
+	return mirrorNodeContractCallQuery
 }
 
 // SetContractID sets the contract instance to call.
-func (query *MirrorNodeContractCallQuery) SetContractID(contractID ContractID) *MirrorNodeContractCallQuery {
-	query.setContractID(contractID)
-	return query
+func (mirrorNodeContractCallQuery *MirrorNodeContractCallQuery) SetContractID(contractID ContractID) *MirrorNodeContractCallQuery {
+	mirrorNodeContractCallQuery.contractID = &contractID
+	return mirrorNodeContractCallQuery
 }
 
 // SetContractEvmAddress sets the 20-byte EVM address of the contract to call.
-func (query *MirrorNodeContractCallQuery) SetContractEvmAddress(contractEvmAddress string) *MirrorNodeContractCallQuery {
-	query.setContractEvmAddress(contractEvmAddress)
-	return query
+func (mirrorNodeContractCallQuery *MirrorNodeContractCallQuery) SetContractEvmAddress(contractEvmAddress string) *MirrorNodeContractCallQuery {
+	mirrorNodeContractCallQuery.contractEvmAddress = &contractEvmAddress
+	mirrorNodeContractCallQuery.contractID = nil
+	return mirrorNodeContractCallQuery
 }
 
 // SetSender sets the sender of the transaction simulation.
-func (query *MirrorNodeContractCallQuery) SetSender(sender AccountID) *MirrorNodeContractCallQuery {
-	query.setSender(sender)
-	return query
+func (mirrorNodeContractCallQuery *MirrorNodeContractCallQuery) SetSender(sender AccountID) *MirrorNodeContractCallQuery {
+	mirrorNodeContractCallQuery.sender = &sender
+	return mirrorNodeContractCallQuery
 }
 
 // SetSenderEvmAddress sets the 20-byte EVM address of the sender of the transaction simulation.
-func (query *MirrorNodeContractCallQuery) SetSenderEvmAddress(senderEvmAddress string) *MirrorNodeContractCallQuery {
-	query.setSenderEvmAddress(senderEvmAddress)
-	return query
+func (mirrorNodeContractCallQuery *MirrorNodeContractCallQuery) SetSenderEvmAddress(senderEvmAddress string) *MirrorNodeContractCallQuery {
+	mirrorNodeContractCallQuery.senderEvmAddress = &senderEvmAddress
+	mirrorNodeContractCallQuery.sender = nil
+	return mirrorNodeContractCallQuery
 }
 
 // SetFunction sets the function parameters as their raw bytes.
-func (query *MirrorNodeContractCallQuery) SetFunction(name string, params *ContractFunctionParameters) *MirrorNodeContractCallQuery {
-	query.setFunction(name, params)
-	return query
+func (mirrorNodeContractCallQuery *MirrorNodeContractCallQuery) SetFunction(name string, params *ContractFunctionParameters) *MirrorNodeContractCallQuery {
+	mirrorNodeContractCallQuery.setFunction(name, params)
+	return mirrorNodeContractCallQuery
 }
 
 // SetFunction sets the function parameters as their raw bytes.
-func (query *MirrorNodeContractCallQuery) SetFunctionParameters(byteArray []byte) *MirrorNodeContractCallQuery {
-	query.setFunctionParameters(byteArray)
-	return query
+func (mirrorNodeContractCallQuery *MirrorNodeContractCallQuery) SetFunctionParameters(byteArray []byte) *MirrorNodeContractCallQuery {
+	mirrorNodeContractCallQuery.callData = byteArray
+	return mirrorNodeContractCallQuery
 }
 
 // SetValue sets the amount of value (in tinybars or wei) to be sent to the contract in the transaction.
-func (query *MirrorNodeContractCallQuery) SetValue(value int64) *MirrorNodeContractCallQuery {
-	query.setValue(value)
-	return query
+func (mirrorNodeContractCallQuery *MirrorNodeContractCallQuery) SetValue(value int64) *MirrorNodeContractCallQuery {
+	mirrorNodeContractCallQuery.value = &value
+	return mirrorNodeContractCallQuery
 }
 
 // SetGasLimit sets the gas limit for the contract call.
 // This specifies the maximum amount of gas that the transaction can consume.
-func (query *MirrorNodeContractCallQuery) SetGasLimit(gasLimit int64) *MirrorNodeContractCallQuery {
-	query.setGasLimit(gasLimit)
-	return query
+func (mirrorNodeContractCallQuery *MirrorNodeContractCallQuery) SetGasLimit(gasLimit int64) *MirrorNodeContractCallQuery {
+	mirrorNodeContractCallQuery.gasLimit = &gasLimit
+	return mirrorNodeContractCallQuery
 }
 
 // SetGasPrice sets the gas price to be used for the contract call.
 // This specifies the price of each unit of gas used in the transaction.
-func (query *MirrorNodeContractCallQuery) SetGasPrice(gasPrice int64) *MirrorNodeContractCallQuery {
-	query.setGasPrice(gasPrice)
-	return query
+func (mirrorNodeContractCallQuery *MirrorNodeContractCallQuery) SetGasPrice(gasPrice int64) *MirrorNodeContractCallQuery {
+	mirrorNodeContractCallQuery.gasPrice = &gasPrice
+	return mirrorNodeContractCallQuery
 }
 
 // SetBlockNumber sets the block number for the simulation of the contract call.
 // The block number determines the context of the contract call simulation within the blockchain.
-func (query *MirrorNodeContractCallQuery) SetBlockNumber(blockNumber int64) *MirrorNodeContractCallQuery {
-	query.setBlockNumber(blockNumber)
-	return query
+func (mirrorNodeContractCallQuery *MirrorNodeContractCallQuery) SetBlockNumber(blockNumber int64) *MirrorNodeContractCallQuery {
+	mirrorNodeContractCallQuery.blockNumber = &blockNumber
+	return mirrorNodeContractCallQuery
 }
 
-// Returns gas estimation for the EVM execution
-func (query *MirrorNodeContractCallQuery) Execute(client *Client) (string, error) {
-	return query.call(client)
+// Does transient simulation of read-write operations and returns the result in hexadecimal string format.
+func (mirrorNodeContractCallQuery *MirrorNodeContractCallQuery) Execute(client *Client) (string, error) {
+	return mirrorNodeContractCallQuery.call(client)
 }

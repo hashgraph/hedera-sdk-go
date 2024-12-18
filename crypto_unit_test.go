@@ -661,7 +661,6 @@ func TestUnitPrivateKeyFromBytesDerECDSAUncompressed(t *testing.T) {
 	require.NoError(t, err)
 	key2, err := PrivateKeyFromBytesDer(bytes)
 	require.NoError(t, err)
-	fmt.Printf("key2.String(): %v\n", key2.String())
 	require.True(t, strings.HasPrefix(key2.String(), _ECDSAPrivatePrefix))
 }
 
