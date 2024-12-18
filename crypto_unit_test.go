@@ -848,7 +848,7 @@ func TestUnitECDSAPrivateKeyFromBytesRawInvalidKey(t *testing.T) {
 	invalidPrivateKey := make([]byte, 32)
 	_, err := _ECDSAPrivateKeyFromBytesRaw(invalidPrivateKey)
 	require.Error(t, err)
-	expectedError := "invalid private key, zero or negative"
+	expectedError := "private key is out of range: must be between 1 and N-1"
 	if err.Error() != expectedError {
 		t.Errorf("expected error message %q, but got %q", expectedError, err.Error())
 	}
