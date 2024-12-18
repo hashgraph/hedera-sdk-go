@@ -11,10 +11,12 @@ import (
 	"encoding/pem"
 	"fmt"
 	"io"
+	"math/big"
 	"strings"
 
 	"github.com/btcsuite/btcd/btcec/v2"
 	ecdsa "github.com/btcsuite/btcd/btcec/v2/ecdsa"
+	"github.com/decred/dcrd/dcrec/secp256k1/v4"
 	"github.com/hiero-ledger/hiero-sdk-go/v2/proto/services"
 	"github.com/pkg/errors"
 )
@@ -111,6 +113,36 @@ func _ECDSAPrivateKeyFromBytesDer(data []byte) (*_ECDSAPrivateKey, error) {
 		return nil, err
 	}
 	return &_ECDSAPrivateKey{keyData: key}, nil
+}
+
+func privateKeyFromBytes(privateKey []byte) (*btcec.PrivateKey, error) {
+	if len(privateKey) != 32 {
+		return nil, fmt.Errorf("invalid private key length")
+	}
+	var allNonPositive bool = true
+	for _, v := range privateKey {
+		if v > 0 {
+			allNonPositive = false
+		}
+	}
+	if allNonPositive {
+		return nil, fmt.Errorf("invalid private key, zero or negative")
+	}
+
+	// Define the curve order N (secp256k1)
+	curve := secp256k1.S256()
+	N := curve.N
+	
+	// Convert privKeyBytes to a big integer
+	privKeyInt := new(big.Int).SetBytes(privateKey)
+	
+	// Check if the private key is in the valid range [1, N-1]
+	if privKeyInt.Cmp(big.NewInt(0)) <= 0 || privKeyInt.Cmp(N) >= 0 {
+		return nil, fmt.Errorf("private key is out of range: must be between 1 and N-1")
+	}
+
+	pk, _ := btcec.PrivKeyFromBytes(privateKey)
+	return pk, nil
 }
 
 func _ECDSAPrivateKeyFromSeed(seed []byte) (*_ECDSAPrivateKey, error) {

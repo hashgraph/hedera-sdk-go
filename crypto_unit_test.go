@@ -925,6 +925,12 @@ func TestUnitECDSAPublicKeyFromBytesRawInvalidKey(t *testing.T) {
 	}
 }
 
+func TestUnitECDSAPrivateKeyFromBytesRawInvalidNValue(t *testing.T) {
+	secp256k1UpperNValue := "fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141"
+	_, err := _ECDSAPrivateKeyFromString(secp256k1UpperNValue)
+	require.Error(t, err)
+}
+
 func TestUnitECDSAPublicKeyFromBytesDerInvalidKey(t *testing.T) {
 	_, err := _ECDSAPublicKeyFromBytesDer(nil)
 	require.Error(t, err)
