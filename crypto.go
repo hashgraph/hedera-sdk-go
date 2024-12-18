@@ -918,23 +918,6 @@ func VerifySignature(pubkey, digestHash, signature []byte) bool {
 	return pubKey.IsEqual(recoveredKey)
 }
 
-func privateKeyFromBytes(privateKey []byte) (*btcec.PrivateKey, error) {
-	if len(privateKey) != 32 {
-		return nil, fmt.Errorf("invalid private key length")
-	}
-	var allNonPositive bool = true
-	for _, v := range privateKey {
-		if v > 0 {
-			allNonPositive = false
-		}
-	}
-	if allNonPositive {
-		return nil, fmt.Errorf("invalid private key, zero or negative")
-	}
-	pk, _ := btcec.PrivKeyFromBytes(privateKey)
-	return pk, nil
-}
-
 func CompressPubkey(pubKey *secp256k1.PublicKey) []byte {
 	return pubKey.SerializeCompressed()
 }
