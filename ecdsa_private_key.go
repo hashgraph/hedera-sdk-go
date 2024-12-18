@@ -119,15 +119,6 @@ func privateKeyFromBytes(privateKey []byte) (*btcec.PrivateKey, error) {
 	if len(privateKey) != 32 {
 		return nil, fmt.Errorf("invalid private key length")
 	}
-	var allNonPositive bool = true
-	for _, v := range privateKey {
-		if v > 0 {
-			allNonPositive = false
-		}
-	}
-	if allNonPositive {
-		return nil, fmt.Errorf("invalid private key, zero or negative")
-	}
 
 	// Define the curve order N (secp256k1)
 	curve := secp256k1.S256()
