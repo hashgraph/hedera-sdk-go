@@ -56,7 +56,7 @@ type GetAccountInfoParams struct {
 
 type GetTransactionReceiptParams struct {
 	BaseParams
-	TransactionID     *string `json:"transactionId"`
+	TransactionId     *string `json:"transactionId"`
 	IncludeDuplicates *bool   `json:"includeDuplicates"`
 	IncludeChildren   *bool   `json:"includeChildren"`
 	ValidateStatus    *bool   `json:"validateStatus"`

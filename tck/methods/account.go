@@ -628,11 +628,11 @@ func stakingInfoToResponse(info *hiero.StakingInfo) *response.StakingInfoRespons
 
 // GetTransactionReceipt jRPC method for getTransactionReceipt
 func (a *AccountService) GetTransactionReceipt(_ context.Context, params param.GetTransactionReceiptParams) (*response.TransactionReceiptResponse, error) {
-	if params.TransactionID == nil {
+	if params.TransactionId == nil {
 		return nil, hiero.ErrHederaPreCheckStatus{Status: hiero.StatusInvalidTransactionID}
 	}
 
-	transactionId, err := hiero.TransactionIdFromString(*params.TransactionID)
+	transactionId, err := hiero.TransactionIdFromString(*params.TransactionId)
 	if err != nil {
 		return nil, err
 	}
@@ -672,7 +672,6 @@ func (a *AccountService) GetTransactionReceipt(_ context.Context, params param.G
 	}
 
 	return &result, nil
-
 }
 
 func transactionReceiptToResponse(receipt hiero.TransactionReceipt) response.TransactionReceiptResponse {
@@ -751,7 +750,6 @@ func transactionReceiptToResponse(receipt hiero.TransactionReceipt) response.Tra
 	}
 
 	return result
-
 }
 
 // GetMirrorNodeAccountBalance jRPC method for getMirrorNodeAccountBalance
