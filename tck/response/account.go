@@ -3,8 +3,9 @@ package response
 // SPDX-License-Identifier: Apache-2.0
 
 type AccountResponse struct {
-	AccountId string `json:"accountId"`
-	Status    string `json:"status"`
+	AccountId     string `json:"accountId"`
+	Status        string `json:"status"`
+	TransactionId string `json:"transactionId,omitempty"`
 }
 
 type AccountInfoResponse struct {
@@ -79,6 +80,31 @@ type StakingInfoResponse struct {
 	StakedToMe           string  `json:"stakedToMe"`
 	StakedAccountId      *string `json:"stakedAccountId"`
 	StakedNodeId         *string `json:"stakedNodeId"`
+}
+
+type TransactionReceiptResponse struct {
+	Status                 string                       `json:"status"`
+	AccountId              *string                      `json:"accountId"`
+	FileId                 *string                      `json:"fileId"`
+	ContractId             *string                      `json:"contractId"`
+	TopicId                *string                      `json:"topicId"`
+	TokenId                *string                      `json:"tokenId"`
+	ScheduleId             *string                      `json:"scheduleId"`
+	ExchangeRate           *ExchangeRate                `json:"exchangeRate"`
+	TopicSequenceNumber    *string                      `json:"topicSequenceNumber"`
+	TopicRunningHash       *string                      `json:"topicRunningHash"`
+	TotalSupply            *string                      `json:"totalSupply"`
+	ScheduledTransactionId *string                      `json:"scheduledTransactionId"`
+	Serials                []string                     `json:"serials"`
+	Duplicates             []TransactionReceiptResponse `json:"duplicates"`
+	Children               []TransactionReceiptResponse `json:"children"`
+	NodeId                 *string                      `json:"nodeId"`
+}
+
+type ExchangeRate struct {
+	Hbars          int32   `json:"hbars"`
+	Cents          int32   `json:"cents"`
+	ExpirationTime *string `json:"expirationTime"`
 }
 
 type MirrorNodeAccountBalanceResponse struct {

@@ -97,7 +97,7 @@ func (a *AccountService) CreateAccount(_ context.Context, params param.CreateAcc
 	if receipt.Status == hiero.StatusSuccess {
 		accId = receipt.AccountID.String()
 	}
-	return &response.AccountResponse{AccountId: accId, Status: receipt.Status.String()}, nil
+	return &response.AccountResponse{AccountId: accId, Status: receipt.Status.String(), TransactionId: txResponse.TransactionID.String()}, nil
 }
 
 // buildCreateAccount builds an account create transaction without executing it (for scheduling)
@@ -624,6 +624,134 @@ func stakingInfoToResponse(info *hiero.StakingInfo) *response.StakingInfoRespons
 	}
 
 	return stakeInfo
+}
+
+// GetTransactionReceipt jRPC method for getTransactionReceipt
+func (a *AccountService) GetTransactionReceipt(_ context.Context, params param.GetTransactionReceiptParams) (*response.TransactionReceiptResponse, error) {
+	if params.TransactionID == nil {
+		return nil, hiero.ErrHederaPreCheckStatus{Status: hiero.StatusInvalidTransactionID}
+	}
+
+	transactionId, err := hiero.TransactionIdFromString(*params.TransactionID)
+	if err != nil {
+		return nil, err
+	}
+
+	query := hiero.NewTransactionReceiptQuery().SetGrpcDeadline(&threeSecondsDuration).SetTransactionID(transactionId)
+
+	if params.IncludeChildren != nil {
+		query.SetIncludeChildren(*params.IncludeChildren)
+	}
+
+	if params.IncludeDuplicates != nil {
+		query.SetIncludeDuplicates(*params.IncludeDuplicates)
+	}
+
+	receipt, err := query.Execute(a.sdkService.GetClient(params.SessionId))
+	if err != nil {
+		return nil, err
+	}
+
+	validateStatus := true
+	if params.ValidateStatus != nil {
+		validateStatus = *params.ValidateStatus
+	}
+
+	if err := receipt.ValidateStatus(validateStatus); err != nil {
+		return nil, err
+	}
+
+	result := transactionReceiptToResponse(receipt)
+
+	for _, duplicate := range receipt.Duplicates {
+		result.Duplicates = append(result.Duplicates, transactionReceiptToResponse(duplicate))
+	}
+
+	for _, child := range receipt.Children {
+		result.Children = append(result.Children, transactionReceiptToResponse(child))
+	}
+
+	return &result, nil
+
+}
+
+func transactionReceiptToResponse(receipt hiero.TransactionReceipt) response.TransactionReceiptResponse {
+	result := response.TransactionReceiptResponse{
+		Status:     receipt.Status.String(),
+		Serials:    utils.MapSerialNumbersToString(receipt.SerialNumbers),
+		Duplicates: []response.TransactionReceiptResponse{},
+		Children:   []response.TransactionReceiptResponse{},
+	}
+
+	if receipt.AccountID != nil {
+		accountId := receipt.AccountID.String()
+		result.AccountId = &accountId
+	}
+
+	if receipt.ContractID != nil {
+		contractId := receipt.ContractID.String()
+		result.ContractId = &contractId
+	}
+
+	if receipt.FileID != nil {
+		fileId := receipt.FileID.String()
+		result.FileId = &fileId
+	}
+
+	if receipt.TopicID != nil {
+		topicId := receipt.TopicID.String()
+		result.TopicId = &topicId
+	}
+
+	if receipt.TokenID != nil {
+		tokenId := receipt.TokenID.String()
+		result.TokenId = &tokenId
+	}
+
+	if receipt.ScheduleID != nil {
+		scheduleId := receipt.ScheduleID.String()
+		result.ScheduleId = &scheduleId
+	}
+
+	if receipt.ScheduledTransactionID != nil {
+		scheduledTransactionId := receipt.ScheduledTransactionID.String()
+		result.ScheduledTransactionId = &scheduledTransactionId
+	}
+
+	if receipt.ExchangeRate != nil {
+		result.ExchangeRate = &response.ExchangeRate{
+			Hbars: receipt.ExchangeRate.Hbars,
+			Cents: receipt.ExchangeRate.GetCents(),
+		}
+
+		if expirationTime := receipt.ExchangeRate.GetExpirationTime(); expirationTime != nil {
+			expiration := expirationTime.UTC().Format(time.RFC3339)
+			result.ExchangeRate.ExpirationTime = &expiration
+		}
+	}
+
+	if receipt.TopicSequenceNumber != 0 {
+		topicSequenceNumber := strconv.FormatUint(receipt.TopicSequenceNumber, 10)
+		result.TopicSequenceNumber = &topicSequenceNumber
+	}
+
+	if len(receipt.TopicRunningHash) > 0 {
+		topicRunningHash := hex.EncodeToString(receipt.TopicRunningHash)
+		result.TopicRunningHash = &topicRunningHash
+	}
+
+	if receipt.TotalSupply != 0 {
+		totalSupply := strconv.FormatUint(receipt.TotalSupply, 10)
+		result.TotalSupply = &totalSupply
+	}
+
+	if receipt.NodeID != 0 {
+		nodeId := strconv.FormatUint(receipt.NodeID, 10)
+		result.NodeId = &nodeId
+	}
+
+	return result
+
 }
 
 // GetMirrorNodeAccountBalance jRPC method for getMirrorNodeAccountBalance

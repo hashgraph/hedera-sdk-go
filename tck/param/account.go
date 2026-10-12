@@ -54,6 +54,14 @@ type GetAccountInfoParams struct {
 	AccountId *string `json:"accountId"`
 }
 
+type GetTransactionReceiptParams struct {
+	BaseParams
+	TransactionID     *string `json:"transactionId"`
+	IncludeDuplicates *bool   `json:"includeDuplicates"`
+	IncludeChildren   *bool   `json:"includeChildren"`
+	ValidateStatus    *bool   `json:"validateStatus"`
+}
+
 type GetMirrorNodeAccountBalanceParams struct {
 	BaseParams
 	AccountId *string `json:"accountId"`
