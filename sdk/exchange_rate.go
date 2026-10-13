@@ -4,6 +4,7 @@ package hiero
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/hiero-ledger/hiero-sdk-go/v2/proto/services"
 	protobuf "google.golang.org/protobuf/proto"
@@ -72,4 +73,19 @@ func ExchangeRateFromBytes(data []byte) (ExchangeRate, error) {
 // String returns a string representation of the ExchangeRate
 func (exchange *ExchangeRate) String() string {
 	return fmt.Sprintf("Hbars: %d to Cents: %d, expires: %s", exchange.Hbars, exchange.cents, exchange.expirationTime.String())
+}
+
+// GetCents returns the number of cents (USD) in the exchange rate
+func (exchange *ExchangeRate) GetCents() int32 {
+	return exchange.cents
+}
+
+// GetExpirationTime returns the expiration time of the exchange rate
+func (exchange *ExchangeRate) GetExpirationTime() *time.Time {
+	if exchange.expirationTime == nil {
+		return nil
+	}
+
+	expirationTime := time.Unix(exchange.expirationTime.Seconds, 0)
+	return &expirationTime
 }
