@@ -219,3 +219,36 @@ func (t *FileService) AppendFile(_ context.Context, params param.AppendFileParam
 		Status: receipt.Status.String(),
 	}, nil
 }
+
+// GetFileInfo jRPC method for getFileInfo
+func (t *FileService) GetFileInfo(_ context.Context, params param.GetFileInfoParams) (*response.FileInfoResponse, error) {
+	query := hiero.NewFileInfoQuery().SetGrpcDeadline(&threeSecondsDuration)
+
+	if params.FileId != nil {
+		fileId, err := hiero.FileIDFromString(*params.FileId)
+		if err != nil {
+			return nil, err
+		}
+		query.SetFileID(fileId)
+	}
+
+	info, err := query.Execute(t.sdkService.GetClient(params.SessionId))
+	if err != nil {
+		return nil, err
+	}
+
+	keys := []string{}
+	for _, key := range info.Keys.GetKeys() {
+		keys = append(keys, key.String())
+	}
+
+	return &response.FileInfoResponse{
+		FileId:         info.FileID.String(),
+		Size:           strconv.FormatInt(info.Size, 10),
+		ExpirationTime: strconv.FormatInt(info.ExpirationTime.Unix(), 10),
+		IsDeleted:      info.IsDeleted,
+		Keys:           keys,
+		Memo:           info.FileMemo,
+		LedgerId:       info.LedgerID.String(),
+	}, nil
+}

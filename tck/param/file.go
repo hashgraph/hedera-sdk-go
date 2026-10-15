@@ -30,3 +30,8 @@ type AppendFileParams struct {
 	MaxChunks *int    `json:"maxChunks"`
 	ChunkSize *int    `json:"chunkSize"`
 }
+
+type GetFileInfoParams struct {
+	BaseParams
+	FileId *string `json:"fileId"`
+}
