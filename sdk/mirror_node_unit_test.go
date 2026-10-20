@@ -5,11 +5,14 @@ package hiero
 // SPDX-License-Identifier: Apache-2.0
 
 import (
+	"context"
+	"net"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"google.golang.org/grpc"
 )
 
 func TestUnitMirrorNodeGetSchemeErrors(t *testing.T) {
@@ -208,4 +211,36 @@ func TestUnitMirrorNodeClose(t *testing.T) {
 	// Test closing node (should not error when no client is set)
 	err = node._Close()
 	assert.NoError(t, err)
+}
+
+func TestUnitMirrorNodeStreamBackoff(t *testing.T) {
+	t.Parallel()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	start := time.Now()
+	require.False(t, waitMirrorStreamBackoff(ctx, 10))
+	require.Less(t, time.Since(start), time.Second)
+
+	require.True(t, waitMirrorStreamBackoff(context.Background(), 0))
+}
+
+func setupMirrorServer(t *testing.T, register func(server *grpc.Server)) *Client {
+	t.Helper()
+
+	listener, err := net.Listen("tcp", "localhost:0")
+	require.NoError(t, err)
+
+	server := grpc.NewServer()
+	register(server)
+	go func() { _ = server.Serve(listener) }()
+	t.Cleanup(server.Stop)
+
+	client, err := _NewMockClient()
+	require.NoError(t, err)
+	client.SetMirrorNetwork([]string{listener.Addr().String()})
+	t.Cleanup(func() { _ = client.Close() })
+
+	return client
 }
