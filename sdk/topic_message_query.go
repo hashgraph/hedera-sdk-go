@@ -4,6 +4,8 @@ package hiero
 
 import (
 	"context"
+	"fmt"
+	"io"
 	"regexp"
 	"time"
 
@@ -22,7 +24,6 @@ type TopicMessageQuery struct {
 	errorHandler      func(stat status.Status)
 	completionHandler func()
 	retryHandler      func(err error) bool
-	attempt           uint64
 	maxAttempts       uint64
 	topicID           *TopicID
 	startTime         *time.Time
@@ -99,7 +100,7 @@ func (query *TopicMessageQuery) GetLimit() uint64 {
 	return query.limit
 }
 
-// SetMaxAttempts Sets the amount of attempts to try to retrieve message
+// SetMaxAttempts Sets the amount of consecutive attempts to reconnect after the subscription stream fails
 func (query *TopicMessageQuery) SetMaxAttempts(maxAttempts uint64) *TopicMessageQuery {
 	query.maxAttempts = maxAttempts
 	return query
@@ -189,58 +190,86 @@ func (query *TopicMessageQuery) Subscribe(client *Client, onNext func(TopicMessa
 
 	stream, err := channel.SubscribeTopic(ctx, pbBody)
 	if err != nil {
+		cancel()
 		return SubscriptionHandle{}, err
 	}
 	messages := make(map[string][]*mirror.ConsensusTopicResponse)
+	retryHandler, maxAttempts, limited := query.retryHandler, query.maxAttempts, query.limit > 0
 
-	resultStream := processProtoMessageStream(ctx, stream, query.attempt, query.maxAttempts, query.retryHandler)
+	// consumeMessages reopens the stream from the last received message until the subscription ends.
+	consumeMessages := func() {
+		var attempt uint64
+		var err error
 
-	consumeMessages := func(ctx context.Context, incomingStream <-chan streamResult[*mirror.ConsensusTopicResponse]) {
 		for {
-			select {
-			case <-ctx.Done():
-				query.completionHandler()
-				return
-			case streamResult, ok := <-incomingStream:
-				// channel closed
-				if !ok {
+			if err != nil {
+				switch {
+				case ctx.Err() != nil, err == io.EOF, limited && pbBody.Limit == 0:
+					query.completionHandler()
+					return
+				case !retryHandler(err):
+					query.errorHandler(_TopicMessageQueryErrorStatus(err))
+					return
+				case attempt >= maxAttempts:
+					query.errorHandler(_TopicMessageQueryErrorStatus(fmt.Errorf("max attempts reached: %w", err)))
+					return
+				}
+
+				if !waitMirrorStreamBackoff(ctx, attempt) {
 					query.completionHandler()
 					return
 				}
-				if streamResult.err != nil {
-					if grpcErr, ok := status.FromError(streamResult.err); ok {
-						query.errorHandler(*grpcErr)
-					} else {
-						query.errorHandler(*status.New(codes.Unknown, "Unknown error occurred"))
-					}
-					return
+				attempt++
+
+				if stream, err = channel.SubscribeTopic(ctx, pbBody); err != nil {
+					continue
+				}
+			}
+
+			var resp *mirror.ConsensusTopicResponse
+			if resp, err = stream.Recv(); err != nil {
+				continue
+			}
+			attempt = 0
+
+			if resp.ConsensusTimestamp != nil {
+				pbBody.ConsensusStartTime = _TimeToProtobuf(_TimeFromProtobuf(resp.ConsensusTimestamp).Add(time.Nanosecond))
+			}
+			if pbBody.Limit > 0 {
+				pbBody.Limit--
+			}
+
+			if resp.ChunkInfo == nil || resp.ChunkInfo.Total == 1 {
+				onNext(_TopicMessageOfSingle(resp))
+			} else {
+				txID := _TransactionIDFromProtobuf(resp.ChunkInfo.InitialTransactionID).String()
+				message, ok := messages[txID]
+				if !ok {
+					message = make([]*mirror.ConsensusTopicResponse, 0, resp.ChunkInfo.Total)
 				}
 
-				if streamResult.data.ChunkInfo == nil || streamResult.data.ChunkInfo.Total == 1 {
-					onNext(_TopicMessageOfSingle(streamResult.data))
-				} else {
-					txID := _TransactionIDFromProtobuf(streamResult.data.ChunkInfo.InitialTransactionID).String()
-					message, ok := messages[txID]
-					if !ok {
-						message = make([]*mirror.ConsensusTopicResponse, 0, streamResult.data.ChunkInfo.Total)
-					}
+				message = append(message, resp)
+				messages[txID] = message
 
-					message = append(message, streamResult.data)
-					messages[txID] = message
+				if int32(len(message)) == resp.ChunkInfo.Total {
+					delete(messages, txID)
 
-					if int32(len(message)) == streamResult.data.ChunkInfo.Total {
-						delete(messages, txID)
-
-						onNext(_TopicMessageOfMany(message))
-					}
+					onNext(_TopicMessageOfMany(message))
 				}
-
 			}
 		}
 	}
 
-	go consumeMessages(ctx, resultStream)
+	go consumeMessages()
 	return handle, nil
+}
+
+func _TopicMessageQueryErrorStatus(err error) status.Status {
+	if grpcErr, ok := status.FromError(err); ok {
+		return *grpcErr
+	}
+
+	return *status.New(codes.Unknown, "Unknown error occurred")
 }
 
 func _DefaultErrorHandler(stat status.Status) {

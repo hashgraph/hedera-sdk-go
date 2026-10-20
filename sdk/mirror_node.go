@@ -314,3 +314,15 @@ type streamResult[T any] struct {
 	data T
 	err  error
 }
+
+// waitMirrorStreamBackoff waits before a mirror node stream is reopened and reports false if ctx ends first.
+func waitMirrorStreamBackoff(ctx context.Context, attempt uint64) bool {
+	delay := math.Min(250.0*math.Pow(2.0, float64(attempt)), 8000)
+
+	select {
+	case <-ctx.Done():
+		return false
+	case <-time.After(time.Duration(delay) * time.Millisecond):
+		return true
+	}
+}
